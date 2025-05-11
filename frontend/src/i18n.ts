@@ -88,6 +88,24 @@ export const i18nData = {
       "User set as user successfully": "User set as user successfully",
       "User set as upload permission successfully": "User set as upload permission successfully",
       "User removed upload permission successfully": "User removed upload permission successfully",
+
+      // Resource details page
+      "Resource ID is required": "Resource ID is required",
+      "Files": "Files",
+      "Comments": "Comments",
+      "Upload": "Upload",
+      "Create File": "Create File",
+      "Please select a file type": "Please select a file type",
+      "Please fill in all fields": "Please fill in all fields",
+      "File created successfully": "File created successfully",
+      "Successfully create uploading task.": "Successfully create uploading task.",
+      "Please select a file and storage": "Please select a file and storage",
+      "Redirect": "Redirect",
+      "User who click the file will be redirected to the URL": "User who click the file will be redirected to the URL",
+      "File Name": "File Name",
+      "URL": "URL",
+      "Upload a file to server, then the file will be moved to the selected storage.": "Upload a file to server, then the file will be moved to the selected storage.",
+      "Select Storage": "Select Storage",
     }
   },
   "zh-CN": {
@@ -179,6 +197,24 @@ export const i18nData = {
       "User set as user successfully": "用户已成功设为普通用户",
       "User set as upload permission successfully": "用户已成功授予上传权限",
       "User removed upload permission successfully": "用户已成功移除上传权限",
+
+      // Resource details page
+      "Resource ID is required": "资源ID是必需的",
+      "Files": "文件",
+      "Comments": "评论",
+      "Upload": "上传",
+      "Create File": "创建文件",
+      "Please select a file type": "请选择文件类型",
+      "Please fill in all fields": "请填写所有字段",
+      "File created successfully": "文件创建成功",
+      "Successfully create uploading task.": "成功创建上传任务。",
+      "Please select a file and storage": "请选择文件和存储",
+      "Redirect": "重定向",
+      "User who click the file will be redirected to the URL": "点击文件的用户将被重定向到URL",
+      "File Name": "文件名",
+      "URL": "URL",
+      "Upload a file to server, then the file will be moved to the selected storage.": "将文件上传到服务器，然后文件将被移动到选定的存储中。",
+      "Select Storage": "选择存储",
     }
   },
   "zh-TW": {
@@ -270,6 +306,24 @@ export const i18nData = {
       "User set as user successfully": "用戶已成功設為普通用戶",
       "User set as upload permission successfully": "用戶已成功授予上傳權限",
       "User removed upload permission successfully": "用戶已成功移除上傳權限",
+
+      // Resource details page
+      "Resource ID is required": "資源ID是必需的",
+      "Files": "檔案",
+      "Comments": "評論",
+      "Upload": "上傳",
+      "Create File": "創建檔案",
+      "Please select a file type": "請選擇檔案類型",
+      "Please fill in all fields": "請填寫所有欄位",
+      "File created successfully": "檔案創建成功",
+      "Successfully create uploading task.": "成功創建上傳任務。",
+      "Please select a file and storage": "請選擇檔案和儲存",
+      "Redirect": "重定向",
+      "User who click the file will be redirected to the URL": "點擊檔案的用戶將被重定向到URL",
+      "File Name": "檔案名",
+      "URL": "URL",
+      "Upload a file to server, then the file will be moved to the selected storage.": "將檔案上傳到伺服器，然後檔案將被移動到選定的儲存中。",
+      "Select Storage": "選擇儲存",
     }
   }
 }
