@@ -1,0 +1,21 @@
+package model
+
+import "gorm.io/gorm"
+
+type Tag struct {
+	gorm.Model
+	Name      string     `gorm:"unique"`
+	Resources []Resource `gorm:"many2many:resource_tags;"`
+}
+
+type TagView struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+}
+
+func (t *Tag) ToView() *TagView {
+	return &TagView{
+		ID:   t.ID,
+		Name: t.Name,
+	}
+}

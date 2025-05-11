@@ -1,0 +1,35 @@
+package model
+
+import (
+	"gorm.io/gorm"
+	"time"
+)
+
+type Storage struct {
+	gorm.Model
+	Name        string
+	Type        string
+	Config      string
+	MaxSize     int64
+	CurrentSize int64
+}
+
+type StorageView struct {
+	ID          uint      `json:"id"`
+	Name        string    `json:"name"`
+	Type        string    `json:"type"`
+	MaxSize     int64     `json:"maxSize"`
+	CurrentSize int64     `json:"currentSize"`
+	CreatedAt   time.Time `json:"createdAt"`
+}
+
+func (s *Storage) ToView() StorageView {
+	return StorageView{
+		ID:          s.ID,
+		Name:        s.Name,
+		Type:        s.Type,
+		MaxSize:     s.MaxSize,
+		CurrentSize: s.CurrentSize,
+		CreatedAt:   s.CreatedAt,
+	}
+}
