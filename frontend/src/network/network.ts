@@ -422,17 +422,14 @@ class Network {
     }
   }
 
-  async uploadFileBlock(fileId: number, index: number, blockData: Blob): Promise<Response<any>> {
+  async uploadFileBlock(fileId: number, index: number, blockData: ArrayBuffer): Promise<Response<any>> {
     try {
-      const formData = new FormData();
-      formData.append('block', blockData);
-
       const response = await axios.post(
         `${this.apiBaseUrl}/files/upload/block/${fileId}/${index}`,
-        formData,
+        blockData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'application/octet-stream',
           }
         }
       );
