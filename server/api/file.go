@@ -14,6 +14,7 @@ func AddFileRoutes(router fiber.Router) {
 		fileGroup.Post("/upload/init", initUpload)
 		fileGroup.Post("/upload/block/:id/:index", uploadBlock)
 		fileGroup.Post("/upload/finish/:id", finishUpload)
+		fileGroup.Post("/upload/cancel/:id", cancelUpload)
 		fileGroup.Post("/redirect", createRedirectFile)
 		fileGroup.Get("/:id", getFile)
 		fileGroup.Put("/:id", updateFile)
@@ -92,7 +93,24 @@ func finishUpload(c fiber.Ctx) error {
 	})
 }
 
-// createRedirectFile 创建重定向文件
+func cancelUpload(c fiber.Ctx) error {
+	uid := c.Locals("uid").(uint)
+
+	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
+	if err != nil {
+		return model.NewRequestError("Invalid file ID")
+	}
+
+	if err := service.CancelUploadingFile(uid, uint(id)); err != nil {
+		return err
+	}
+
+	return c.JSON(model.Response[any]{
+		Success: true,
+		Message: "Upload cancelled successfully",
+	})
+}
+
 func createRedirectFile(c fiber.Ctx) error {
 	uid := c.Locals("uid").(uint)
 

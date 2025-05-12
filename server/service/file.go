@@ -230,6 +230,34 @@ func FinishUploadingFile(uid uint, fid uint) (*model.FileView, error) {
 	return dbFile.ToView(), nil
 }
 
+func CancelUploadingFile(uid uint, fid uint) error {
+	uploadingFile, err := dao.GetUploadingFile(fid)
+	if err != nil {
+		log.Error("failed to get uploading file: ", err)
+		return model.NewNotFoundError("file not found")
+	}
+	if uploadingFile.UserID != uid {
+		return model.NewUnAuthorizedError("user cannot cancel uploading file")
+	}
+
+	if err := dao.DeleteUploadingFile(fid); err != nil {
+		log.Error("failed to delete uploading file: ", err)
+		return model.NewInternalServerError("failed to delete uploading file")
+	}
+
+	go func() {
+		// Wait for 1 second to ensure there is no block being uploading
+		time.Sleep(time.Second)
+		if err := os.RemoveAll(uploadingFile.TempPath); err != nil {
+			log.Error("failed to remove temp dir: ", err)
+		}
+	}()
+
+	updateUploadingSize(-uploadingFile.TotalSize)
+
+	return nil
+}
+
 func CreateRedirectFile(uid uint, filename string, description string, resourceID uint, redirectUrl string) (*model.FileView, error) {
 	canUpload, err := checkUserCanUpload(uid)
 	if err != nil {

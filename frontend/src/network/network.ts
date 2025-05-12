@@ -456,6 +456,19 @@ class Network {
     }
   }
 
+  async cancelFileUpload(fileId: number): Promise<Response<void>> {
+    try {
+      const response = await axios.post(`${this.apiBaseUrl}/files/upload/cancel/${fileId}`);
+      return response.data;
+    } catch (e: any) {
+      console.error(e);
+      return {
+        success: false,
+        message: e.toString(),
+      };
+    }
+  }
+
   async createRedirectFile(filename: string, description: string, 
                           resourceId: number, redirectUrl: string): Promise<Response<RFile>> {
     try {
