@@ -15,7 +15,7 @@ func CreateUploadingFile(filename string, description string, fileSize int64, bl
 		TotalSize:        fileSize,
 		BlockSize:        blockSize,
 		TempPath:         tempPath,
-		Blocks:           make(model.UploadingFileBlocks, blocksCount),
+		Blocks:           make([]bool, blocksCount),
 		TargetResourceID: resourceID,
 		TargetStorageID:  storageID,
 		UserID:           userID,

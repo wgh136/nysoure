@@ -4,6 +4,7 @@ import {useNavigate, useOutlet} from "react-router";
 import {useEffect, useState} from "react";
 import {MdOutlinePerson, MdSearch, MdSettings} from "react-icons/md";
 import { useTranslation } from "react-i18next";
+import UploadingSideBar from "./uploading_side_bar.tsx";
 
 export default function Navigator() {
   const outlet = useOutlet()
@@ -20,6 +21,7 @@ export default function Navigator() {
         </div>
         <div className="flex gap-2">
           <SearchBar/>
+          <UploadingSideBar/>
           {
             app.isAdmin() && <button className={"btn btn-circle btn-ghost"} onClick={() => {
               navigate("/manage");

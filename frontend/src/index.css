@@ -111,3 +111,17 @@ body {
 .animate-appearance-in {
     animation: appearance-in 250ms ease-out normal both;
 }
+
+.move-up-animation {
+    animation: moveUpAndDown 2s infinite;
+    position: relative;
+}
+
+@keyframes moveUpAndDown {
+    0% {
+        top: 0;
+    }
+    100% {
+        top: -100%;
+    }
+}

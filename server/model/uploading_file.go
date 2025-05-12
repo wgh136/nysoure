@@ -16,7 +16,7 @@ type UploadingFile struct {
 	UserID           uint
 	BlockSize        int64
 	TotalSize        int64
-	Blocks           UploadingFileBlocks `gorm:"type:blob"`
+	Blocks           []bool `gorm:"type:blob;serializer:blocks"`
 	TempPath         string
 	Resource         Resource `gorm:"foreignKey:TargetResourceID"`
 	Storage          Storage  `gorm:"foreignKey:TargetStorageID"`
@@ -26,30 +26,53 @@ func (uf *UploadingFile) BlocksCount() int {
 	return int((uf.TotalSize + uf.BlockSize - 1) / uf.BlockSize)
 }
 
-type UploadingFileBlocks []bool
+type BoolListSerializer struct{}
 
-func (ufb *UploadingFileBlocks) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue interface{}) (err error) {
-	data, ok := dbValue.([]byte)
-	if !ok {
-		return nil
-	}
-	*ufb = make([]bool, len(data)*8)
-	for i, b := range data {
-		for j := 0; j < 8; j++ {
-			(*ufb)[i*8+j] = (b>>j)&1 == 1
+func (BoolListSerializer) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue interface{}) (err error) {
+	fieldValue := reflect.New(field.FieldType)
+
+	if dbValue == nil {
+		fieldValue.Set(reflect.Zero(field.FieldType))
+	} else if b, ok := dbValue.([]byte); ok {
+		data := make([]bool, len(b)*8)
+		for i := 0; i < len(b); i++ {
+			for j := 0; j < 8; j++ {
+				data[i*8+j] = (b[i] & (1 << j)) != 0
+			}
 		}
+		i := fieldValue.Interface()
+		d, ok := i.(*[]bool)
+		if !ok {
+			panic("failed to convert to *[]bool")
+		}
+		*d = data
+	} else {
+		return gorm.ErrInvalidValue
 	}
+
+	field.ReflectValueOf(ctx, dst).Set(fieldValue.Elem())
 	return nil
 }
 
-func (ufb UploadingFileBlocks) Value(ctx context.Context, field *schema.Field, dbValue reflect.Value) (value interface{}, err error) {
-	data := make([]byte, (len(ufb)+7)/8)
-	for i, b := range ufb {
-		if b {
-			data[i/8] |= 1 << (i % 8)
-		}
+func (BoolListSerializer) Value(ctx context.Context, field *schema.Field, dst reflect.Value, fieldValue interface{}) (interface{}, error) {
+	if fieldValue == nil {
+		return nil, nil
 	}
-	return data, nil
+	if data, ok := fieldValue.([]bool); ok {
+		b := make([]byte, (len(data)+7)/8)
+		for i := 0; i < len(data); i++ {
+			if data[i] {
+				b[i/8] |= 1 << (i % 8)
+			}
+		}
+		return b, nil
+	}
+	return nil, gorm.ErrInvalidValue
+}
+
+func init() {
+	// Register the custom serializer for the Blocks field
+	schema.RegisterSerializer("blocks", BoolListSerializer{})
 }
 
 type UploadingFileView struct {

@@ -22,6 +22,8 @@ export default function ResourcePage() {
 
   const [resource, setResource] = useState<ResourceDetails | null>(null)
 
+  const [page, setPage] = useState(0)
+
   const reload = useCallback(async () => {
     if (!isNaN(id)) {
       setResource(null)
@@ -86,8 +88,10 @@ export default function ResourcePage() {
         }
       </p>
       <div className="tabs tabs-box my-4 mx-2 p-4">
-        <label className="tab ">
-          <input type="radio" name="my_tabs" defaultChecked/>
+        <label className="tab">
+          <input type="radio" name="my_tabs" checked={page === 0} onChange={() => {
+            setPage(0)
+          }}/>
           <MdOutlineArticle className="text-xl mr-2"/>
           <span className="text-sm">
           {t("Description")}
@@ -98,7 +102,9 @@ export default function ResourcePage() {
         </div>
 
         <label className="tab">
-          <input type="radio" name="my_tabs"/>
+          <input type="radio" name="my_tabs" checked={page === 1} onChange={() => {
+            setPage(1)
+          }}/>
           <MdOutlineDataset className="text-xl mr-2"/>
           <span className="text-sm">
           {t("Files")}
@@ -109,7 +115,9 @@ export default function ResourcePage() {
         </div>
 
         <label className="tab">
-          <input type="radio" name="my_tabs"/>
+          <input type="radio" name="my_tabs" checked={page === 2} onChange={() => {
+            setPage(2)
+          }}/>
           <MdOutlineComment className="text-xl mr-2"/>
           <span className="text-sm">
           {t("Comments")}
@@ -218,6 +226,7 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
         reload()
       } else {
         setError(res.message)
+        setSubmitting(false)
       }
     } else {
       if (!file || !storage) {
@@ -225,14 +234,18 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
         setSubmitting(false)
         return
       }
-      const res = await uploadingManager.addTask(file, resourceId, storage.id, description);
+      const res = await uploadingManager.addTask(file, resourceId, storage.id, description, () => {
+        if (mounted.current) {
+          reload();
+        }
+      });
       if (res.success) {
         const dialog = document.getElementById("upload_dialog") as HTMLDialogElement
         dialog.close()
         showToast({message: t("Successfully create uploading task."), type: "success"})
-        reload()
       } else {
         setError(res.message)
+        setSubmitting(false)
       }
     }
   }
