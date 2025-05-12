@@ -346,3 +346,28 @@ func GetFile(fid uint) (*model.FileView, error) {
 
 	return file.ToView(), nil
 }
+
+func DownloadFile(fid uint) (string, string, error) {
+	file, err := dao.GetFile(fid)
+	if err != nil {
+		log.Error("failed to get file: ", err)
+		return "", "", model.NewNotFoundError("file not found")
+	}
+
+	if file.StorageID == nil {
+		if file.RedirectUrl != "" {
+			return file.RedirectUrl, file.Filename, nil
+		}
+		return "", "", model.NewRequestError("file is not available")
+	}
+
+	iStorage := storage.NewStorage(file.Storage)
+	if iStorage == nil {
+		log.Error("failed to find storage: ", err)
+		return "", "", model.NewInternalServerError("failed to find storage")
+	}
+
+	path, err := iStorage.Download(file.StorageKey)
+
+	return path, file.Filename, err
+}

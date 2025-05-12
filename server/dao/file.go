@@ -85,7 +85,7 @@ func CreateFile(filename string, description string, resourceID uint, storageID 
 
 func GetFile(id uint) (*model.File, error) {
 	f := &model.File{}
-	if err := db.Where("id = ?", id).First(f).Error; err != nil {
+	if err := db.Preload("Storage").Where("id = ?", id).First(f).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, model.NewNotFoundError("file not found")
 		}

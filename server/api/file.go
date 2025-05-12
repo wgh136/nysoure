@@ -6,6 +6,7 @@ import (
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"strconv"
+	"strings"
 )
 
 func AddFileRoutes(router fiber.Router) {
@@ -19,6 +20,7 @@ func AddFileRoutes(router fiber.Router) {
 		fileGroup.Get("/:id", getFile)
 		fileGroup.Put("/:id", updateFile)
 		fileGroup.Delete("/:id", deleteFile)
+		fileGroup.Get("/download/:id", downloadFile)
 	}
 }
 
@@ -199,4 +201,21 @@ func deleteFile(c fiber.Ctx) error {
 		Success: true,
 		Message: "File deleted successfully",
 	})
+}
+
+func downloadFile(c fiber.Ctx) error {
+	idStr, err := strconv.ParseUint(c.Params("id"), 10, 32)
+	if err != nil {
+		return model.NewRequestError("Invalid file ID")
+	}
+	id := uint(idStr)
+	s, filename, err := service.DownloadFile(id)
+	if err != nil {
+		return err
+	}
+	if strings.HasPrefix(s, "http") {
+		return c.Redirect().Status(fiber.StatusFound).To(s)
+	}
+	c.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	return c.SendFile(s)
 }

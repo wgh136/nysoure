@@ -147,7 +147,10 @@ function FileTile({file}: { file: RFile }) {
         <p className={"text-sm"}>{file.description}</p>
       </div>
       <div>
-        <button className={"btn btn-primary btn-soft btn-square"}>
+        <button className={"btn btn-primary btn-soft btn-square"} onClick={() => {
+          const link = network.getFileDownloadLink(file.id);
+          window.open(link, "_blank");
+        }}>
           <MdOutlineDownload size={24}/>
         </button>
       </div>

@@ -529,6 +529,10 @@ class Network {
       };
     }
   }
+
+  getFileDownloadLink(fileId: number): string {
+    return `${this.apiBaseUrl}/files/download/${fileId}`;
+  }
 }
 
 export const network = new Network();
