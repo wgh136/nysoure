@@ -12,17 +12,14 @@ import (
 func handleUploadImage(c fiber.Ctx) error {
 	uid, ok := c.Locals("uid").(uint)
 	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
-	if err := service.HavePermissionToUpload(uid); err != nil {
-		return err
+		return model.NewUnAuthorizedError("You must be logged in to upload an image")
 	}
 	data := c.Body()
 	contentType := http.DetectContentType(data)
 	if !strings.HasPrefix(contentType, "image/") {
 		return model.NewRequestError("Invalid image format")
 	}
-	id, err := service.CreateImage(data)
+	id, err := service.CreateImage(uid, data)
 	if err != nil {
 		return err
 	}
@@ -64,10 +61,7 @@ func handleDeleteImage(c fiber.Ctx) error {
 	if !ok {
 		return model.NewUnAuthorizedError("Unauthorized")
 	}
-	if err := service.HavePermissionToUpload(uid); err != nil {
-		return err
-	}
-	if err := service.DeleteImage(uint(id)); err != nil {
+	if err := service.DeleteImage(uid, uint(id)); err != nil {
 		return err
 	}
 	return c.Status(fiber.StatusOK).JSON(model.Response[any]{

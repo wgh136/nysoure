@@ -8,7 +8,7 @@ import (
 
 type User struct {
 	gorm.Model
-	Username      string
+	Username      string `gorm:"uniqueIndex;not null"`
 	PasswordHash  []byte
 	IsAdmin       bool
 	CanUpload     bool

@@ -16,12 +16,6 @@ func handleUserRegister(c fiber.Ctx) error {
 	if username == "" || password == "" {
 		return model.NewRequestError("Username and password are required")
 	}
-	if len(password) < 6 {
-		return model.NewRequestError("Password must be at least 6 characters long")
-	}
-	if len(username) < 3 {
-		return model.NewRequestError("Username must be at least 3 characters long")
-	}
 	user, err := service.CreateUser(username, password)
 	if err != nil {
 		return err

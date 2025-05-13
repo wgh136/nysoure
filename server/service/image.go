@@ -34,7 +34,7 @@ func init() {
 			}
 			if len(images) > 0 {
 				for _, i := range images {
-					err := DeleteImage(i.ID)
+					err := deleteImage(i.ID)
 					if err != nil {
 						log.Errorf("Failed to delete unused image %d: %v", i.ID, err)
 					}
@@ -45,7 +45,16 @@ func init() {
 	}()
 }
 
-func CreateImage(data []byte) (uint, error) {
+func CreateImage(uid uint, data []byte) (uint, error) {
+	canUpload, err := checkUserCanUpload(uid)
+	if err != nil {
+		log.Error("Error checking user upload permission:", err)
+		return 0, model.NewInternalServerError("Error checking user upload permission")
+	}
+	if !canUpload {
+		return 0, model.NewUnAuthorizedError("User cannot upload images")
+	}
+
 	if len(data) == 0 {
 		return 0, model.NewRequestError("Image data is empty")
 	} else if len(data) > 1024*1024*5 {
@@ -112,7 +121,24 @@ func GetImage(id uint) ([]byte, error) {
 	return data, nil
 }
 
-func DeleteImage(id uint) error {
+func DeleteImage(uid, id uint) error {
+	canUpload, err := checkUserCanUpload(uid)
+	if err != nil {
+		log.Error("Error checking user upload permission:", err)
+		return model.NewInternalServerError("Error checking user upload permission")
+	}
+	if !canUpload {
+		return model.NewUnAuthorizedError("User cannot upload images")
+	}
+	err = deleteImage(id)
+	if err != nil {
+		log.Error("Error deleting image:", err)
+		return model.NewInternalServerError("Error deleting image")
+	}
+	return nil
+}
+
+func deleteImage(id uint) error {
 	i, err := dao.GetImageByID(id)
 	if err != nil {
 		return err

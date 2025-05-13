@@ -12,7 +12,11 @@ func handleCreateTag(c fiber.Ctx) error {
 	if tag == "" {
 		return model.NewRequestError("name is required")
 	}
-	t, err := service.CreateTag(tag)
+	uid, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewUnAuthorizedError("You must be logged in to create a tag")
+	}
+	t, err := service.CreateTag(uid, tag)
 	if err != nil {
 		return err
 	}

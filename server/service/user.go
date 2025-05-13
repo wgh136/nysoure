@@ -18,6 +18,12 @@ const (
 )
 
 func CreateUser(username, password string) (model.UserViewWithToken, error) {
+	if len(username) < 3 || len(username) > 20 {
+		return model.UserViewWithToken{}, model.NewRequestError("Username must be between 3 and 20 characters")
+	}
+	if len(password) < 6 || len(password) > 20 {
+		return model.UserViewWithToken{}, model.NewRequestError("Password must be between 6 and 20 characters")
+	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return model.UserViewWithToken{}, err
@@ -57,7 +63,7 @@ func ChangePassword(id uint, oldPassword, newPassword string) (model.UserViewWit
 		return model.UserViewWithToken{}, err
 	}
 	if err := bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(oldPassword)); err != nil {
-		return model.UserViewWithToken{}, err
+		return model.UserViewWithToken{}, model.NewUnAuthorizedError("Invalid old password")
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
@@ -115,17 +121,6 @@ func getEmbedAvatar(id uint) ([]byte, error) {
 	fileIndex := id%embedAvatarCount + 1
 	fileName := fmt.Sprintf("avatars/%d.png", fileIndex)
 	return static.Static.ReadFile(fileName)
-}
-
-func HavePermissionToUpload(id uint) error {
-	user, err := dao.GetUserByID(id)
-	if err != nil {
-		return err
-	}
-	if !user.IsAdmin && !user.CanUpload {
-		return model.NewUnAuthorizedError("User does not have permission to upload")
-	}
-	return nil
 }
 
 func SetUserAdmin(adminID uint, targetUserID uint, isAdmin bool) (model.UserView, error) {
