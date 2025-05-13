@@ -9,8 +9,17 @@ import (
 )
 
 func CreateResource(r model.Resource) (model.Resource, error) {
-	// Create a new resource in the database
-	if err := db.Create(&r).Error; err != nil {
+	err := db.Transaction(func(tx *gorm.DB) error {
+		err := tx.Create(&r).Error
+		if err != nil {
+			return err
+		}
+		if err := tx.Model(&model.User{}).Where("id = ?", r.UserID).Update("uploads_count", gorm.Expr("uploads_count + ?", 1)).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
 		return model.Resource{}, err
 	}
 	return r, nil
@@ -55,13 +64,22 @@ func UpdateResource(r model.Resource) error {
 }
 
 func DeleteResource(id uint) error {
-	// Delete a resource from the database
-	r := model.Resource{}
-	r.ID = id
-	if err := db.Delete(&r).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return err
-	}
-	return nil
+	return db.Transaction(func(tx *gorm.DB) error {
+		var r model.Resource
+		if err := tx.Where("id = ?", id).First(&r).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return model.NewNotFoundError("Resource not found")
+			}
+			return err
+		}
+		if err := tx.Model(&model.User{}).Where("id = ?", r.UserID).Update("uploads_count", gorm.Expr("uploads_count - ?", 1)).Error; err != nil {
+			return err
+		}
+		if err := tx.Delete(&r).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func Search(query string, page, pageSize int) ([]model.Resource, int, error) {
@@ -177,4 +195,18 @@ func ExistsResource(id uint) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func AddResourceViewCount(id uint) error {
+	if err := db.Model(&model.Resource{}).Where("id = ?", id).Update("views", gorm.Expr("views + ?", 1)).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func AddResourceDownloadCount(id uint) error {
+	if err := db.Model(&model.Resource{}).Where("id = ?", id).Update("downloads", gorm.Expr("downloads + ?", 1)).Error; err != nil {
+		return err
+	}
+	return nil
 }

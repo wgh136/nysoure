@@ -16,6 +16,8 @@ type Resource struct {
 	Files             []File  `gorm:"foreignKey:ResourceID"`
 	UserID            uint
 	User              User
+	Views             uint
+	Downloads         uint
 }
 
 type ResourceView struct {
@@ -37,6 +39,8 @@ type ResourceDetailView struct {
 	Images            []ImageView `json:"images"`
 	Files             []FileView  `json:"files"`
 	Author            UserView    `json:"author"`
+	Views             uint        `json:"views"`
+	Downloads         uint        `json:"downloads"`
 }
 
 func (r *Resource) ToView() ResourceView {
@@ -85,5 +89,7 @@ func (r *Resource) ToDetailView() ResourceDetailView {
 		Images:            images,
 		Files:             files,
 		Author:            r.User.ToView(),
+		Views:             r.Views,
+		Downloads:         r.Downloads,
 	}
 }

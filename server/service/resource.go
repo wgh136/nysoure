@@ -56,6 +56,7 @@ func CreateResource(uid uint, params *ResourceCreateParams) (uint, error) {
 
 func GetResource(id uint) (*model.ResourceDetailView, error) {
 	r, err := dao.GetResourceByID(id)
+	_ = dao.AddResourceViewCount(id)
 	if err != nil {
 		return nil, err
 	}

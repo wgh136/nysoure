@@ -379,6 +379,7 @@ func DownloadFile(fid string) (string, string, error) {
 
 	if file.StorageID == nil {
 		if file.RedirectUrl != "" {
+			_ = dao.AddResourceDownloadCount(file.ResourceID)
 			return file.RedirectUrl, file.Filename, nil
 		}
 		return "", "", model.NewRequestError("file is not available")
@@ -395,6 +396,8 @@ func DownloadFile(fid string) (string, string, error) {
 	}
 
 	path, err := iStorage.Download(file.StorageKey, file.Filename)
+
+	_ = dao.AddResourceDownloadCount(file.ResourceID)
 
 	return path, file.Filename, err
 }

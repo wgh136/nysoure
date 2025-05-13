@@ -5,6 +5,8 @@ export interface User {
   avatar_path: string;
   is_admin: boolean;
   can_upload: boolean;
+  uploads_count: number;
+  comments_count: number;
 }
 
 export interface UserWithToken extends User {
@@ -62,6 +64,8 @@ export interface ResourceDetails {
   images: Image[];
   files: RFile[];
   author: User;
+  views: number;
+  downloads: number;
 }
 
 export interface Storage {

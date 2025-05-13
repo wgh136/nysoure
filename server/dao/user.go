@@ -61,6 +61,9 @@ func GetUserByUsername(username string) (model.User, error) {
 func GetUserByID(id uint) (model.User, error) {
 	var user model.User
 	if err := db.First(&user, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return user, model.NewNotFoundError("User not found")
+		}
 		return user, err
 	}
 	return user, nil

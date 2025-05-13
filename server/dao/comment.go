@@ -1,15 +1,30 @@
 package dao
 
-import "nysoure/server/model"
+import (
+	"gorm.io/gorm"
+	"nysoure/server/model"
+)
 
 func CreateComment(content string, userID uint, resourceID uint) (model.Comment, error) {
-	c := model.Comment{
-		Content:    content,
-		UserID:     userID,
-		ResourceID: resourceID,
+	var comment model.Comment
+	err := db.Transaction(func(tx *gorm.DB) error {
+		comment = model.Comment{
+			Content:    content,
+			UserID:     userID,
+			ResourceID: resourceID,
+		}
+		if err := tx.Create(&comment).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&model.User{}).Where("id = ?", userID).Update("comments_count", gorm.Expr("comments_count + 1")).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return model.Comment{}, err
 	}
-	err := db.Save(&c).Error
-	return c, err
+	return comment, nil
 }
 
 func GetCommentByResourceID(resourceID uint, page, pageSize int) ([]model.Comment, int, error) {
