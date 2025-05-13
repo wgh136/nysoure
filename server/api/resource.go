@@ -99,6 +99,34 @@ func handleListResources(c fiber.Ctx) error {
 	})
 }
 
+func handleListResourcesWithTag(c fiber.Ctx) error {
+	tag := c.Params("tag")
+	if tag == "" {
+		return model.NewRequestError("Tag is required")
+	}
+	pageStr := c.Query("page")
+	if pageStr == "" {
+		pageStr = "1"
+	}
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return model.NewRequestError("Invalid page number")
+	}
+	resources, totalPages, err := service.GetResourcesWithTag(tag, page)
+	if err != nil {
+		return err
+	}
+	if resources == nil {
+		resources = []model.ResourceView{}
+	}
+	return c.Status(fiber.StatusOK).JSON(model.PageResponse[model.ResourceView]{
+		Success:    true,
+		Data:       resources,
+		TotalPages: totalPages,
+		Message:    "Resources retrieved successfully",
+	})
+}
+
 func handleSearchResources(c fiber.Ctx) error {
 	query := c.Query("keyword")
 	if query == "" {
@@ -135,5 +163,6 @@ func AddResourceRoutes(api fiber.Router) {
 		resource.Get("/", handleListResources)
 		resource.Get("/:id", handleGetResource)
 		resource.Delete("/:id", handleDeleteResource)
+		resource.Get("/tag/:tag", handleListResourcesWithTag)
 	}
 }

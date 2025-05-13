@@ -308,6 +308,23 @@ class Network {
     }
   }
 
+  async getResourcesByTag(tag: string, page: number): Promise<PageResponse<Resource>> {
+    try {
+      const response = await axios.get(`${this.apiBaseUrl}/resource/tag/${tag}`, {
+        params: {
+          page
+        }
+      })
+      return response.data
+    } catch (e: any) {
+      console.error(e)
+      return {
+        success: false,
+        message: e.toString(),
+      }
+    }
+  }
+
   async searchResources(keyword: string, page: number): Promise<PageResponse<Resource>> {
     try {
       const response = await axios.get(`${this.apiBaseUrl}/resource/search`, {

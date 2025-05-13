@@ -1,4 +1,4 @@
-import {useParams} from "react-router";
+import {useNavigate, useParams} from "react-router";
 import {createContext, useCallback, useContext, useEffect, useRef, useState} from "react";
 import {ResourceDetails, RFile, Storage, Comment} from "../network/models.ts";
 import {network} from "../network/network.ts";
@@ -49,6 +49,8 @@ export default function ResourcePage() {
     }
   }, [id])
 
+  const navigate = useNavigate()
+
   if (isNaN(id)) {
     return <div className="alert alert-error shadow-lg">
       <div>
@@ -84,7 +86,9 @@ export default function ResourcePage() {
       <p className={"px-4 pt-2"}>
         {
           resource.tags.map((e) => {
-            return <span key={e.id} className="badge badge-primary mr-2 text-sm">{e.name}</span>
+            return <span key={e.id} className="badge badge-primary mr-2 text-sm cursor-pointer" onClick={() => {
+              navigate(`/tag/${e.name}`);
+            }}>{e.name}</span>
           })
         }
       </p>

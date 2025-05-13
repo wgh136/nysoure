@@ -17,7 +17,7 @@ export default function ResourcesView({loader}: {loader: (page: number) => Promi
     isLoadingRef.current = true
     const res = await loader(pageRef.current)
     if (!res.success) {
-      showToast({message: "Error loading resources", type: "error"})
+      showToast({message: res.message, type: "error"})
     } else {
       isLoadingRef.current = false
       pageRef.current = pageRef.current + 1

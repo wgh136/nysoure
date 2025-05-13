@@ -125,3 +125,8 @@ body {
         top: -100%;
     }
 }
+
+.text-md {
+    font-size: 1rem;
+    line-height: 1.5rem;
+}

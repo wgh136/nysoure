@@ -41,7 +41,7 @@ func GetResourceList(page, pageSize int) ([]model.Resource, int, error) {
 		return nil, 0, err
 	}
 
-	totalPages := int(total) / pageSize
+	totalPages := (total + int64(pageSize) - 1) / int64(pageSize)
 
 	return resources, int(totalPages), nil
 }
@@ -110,7 +110,7 @@ func Search(query string, page, pageSize int) ([]model.Resource, int, error) {
 	if endIndex > len(resource) {
 		endIndex = len(resource)
 	}
-	totalPages := len(resource) / pageSize
+	totalPages := (len(resource) + pageSize - 1) / pageSize
 
 	result := make([]model.Resource, 0, endIndex-startIndex)
 	for i := startIndex; i < endIndex; i++ {
@@ -157,13 +157,13 @@ func GetResourceByTag(tagID uint, page int, pageSize int) ([]model.Resource, int
 
 	total = db.Model(&model.Tag{}).Where("id = ?", tagID).Association("Resources").Count()
 
-	if err := db.Model(&model.Tag{}).Where("id = ?", tagID).Preload("User").Preload("Resources", func(tx *gorm.DB) *gorm.DB {
-		return tx.Offset((page - 1) * pageSize).Limit(pageSize)
+	if err := db.Model(&model.Tag{}).Where("id = ?", tagID).Preload("Resources", func(tx *gorm.DB) *gorm.DB {
+		return tx.Offset((page - 1) * pageSize).Limit(pageSize).Preload("Tags").Preload("User").Preload("Images").Order("created_at DESC")
 	}).First(&tag).Error; err != nil {
 		return nil, 0, err
 	}
 
-	totalPages := int(total) / pageSize
+	totalPages := (int(total) + pageSize - 1) / pageSize
 
 	return tag.Resources, totalPages, nil
 }

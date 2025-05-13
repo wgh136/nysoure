@@ -8,6 +8,7 @@ import SearchPage from "./pages/search_page.tsx";
 import ResourcePage from "./pages/resource_details_page.tsx";
 import "./i18n.ts"
 import ManagePage from "./pages/manage_page.tsx";
+import TaggedResourcesPage from "./pages/tagged_resources_page.tsx";
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
           <Route path={"/search"} element={<SearchPage/>} />
           <Route path={"/resources/:id"} element={<ResourcePage/>}/>
           <Route path={"/manage"} element={<ManagePage/>}/>
+          <Route path={"/tag/:tag"} element={<TaggedResourcesPage/>}/>
         </Route>
       </Routes>
     </BrowserRouter>
