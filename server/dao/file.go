@@ -3,6 +3,7 @@ package dao
 import (
 	"errors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"nysoure/server/model"
 	"time"
 )
@@ -35,15 +36,22 @@ func GetUploadingFile(id uint) (*model.UploadingFile, error) {
 }
 
 func UpdateUploadingBlock(id uint, blockIndex int) error {
-	uf := &model.UploadingFile{}
-	if err := db.Where("id = ?", id).First(uf).Error; err != nil {
-		return err
-	}
-	if blockIndex < 0 || blockIndex >= uf.BlocksCount() {
-		return nil
-	}
-	uf.Blocks[blockIndex] = true
-	return db.Save(uf).Error
+	return db.Transaction(func(tx *gorm.DB) error {
+		// 使用 FOR UPDATE 锁获取记录
+		uf := &model.UploadingFile{}
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", id).First(uf).Error; err != nil {
+			return err
+		}
+
+		if blockIndex < 0 || blockIndex >= uf.BlocksCount() {
+			return nil
+		}
+
+		uf.Blocks[blockIndex] = true
+
+		// 在事务中立即保存更改
+		return tx.Save(uf).Error
+	})
 }
 
 func DeleteUploadingFile(id uint) error {
@@ -134,4 +142,19 @@ func UpdateFile(id uint, filename string, description string) (*model.File, erro
 		return nil, err
 	}
 	return f, nil
+}
+
+func SetFileStorageKey(id uint, storageKey string) error {
+	f := &model.File{}
+	if err := db.Where("id = ?", id).First(f).Error; err != nil {
+		return err
+	}
+	f.StorageKey = storageKey
+	if err := db.Save(f).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.NewNotFoundError("file not found")
+		}
+		return err
+	}
+	return nil
 }

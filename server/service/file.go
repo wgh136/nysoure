@@ -179,21 +179,19 @@ func FinishUploadingFile(uid uint, fid uint) (*model.FileView, error) {
 		return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
 	}
 
-	defer func() {
-		_ = os.Remove(resultFilePath)
-	}()
-
 	for i := 0; i < uploadingFile.BlocksCount(); i++ {
 		blockPath := filepath.Join(uploadingFile.TempPath, strconv.Itoa(i))
 		data, err := os.ReadFile(blockPath)
 		if err != nil {
 			log.Error("failed to read block file: ", err)
 			_ = file.Close()
+			_ = os.Remove(resultFilePath)
 			return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
 		}
 		if _, err := file.Write(data); err != nil {
 			log.Error("failed to write result file: ", err)
 			_ = file.Close()
+			_ = os.Remove(resultFilePath)
 			return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
 		}
 	}
@@ -205,27 +203,40 @@ func FinishUploadingFile(uid uint, fid uint) (*model.FileView, error) {
 	s, err := dao.GetStorage(uploadingFile.TargetStorageID)
 	if err != nil {
 		log.Error("failed to get storage: ", err)
+		_ = os.Remove(resultFilePath)
 		return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
 	}
 
 	iStorage := storage.NewStorage(s)
 	if iStorage == nil {
 		log.Error("failed to find storage: ", err)
+		_ = os.Remove(resultFilePath)
 		return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
 	}
 
-	storageKey, err := iStorage.Upload(resultFilePath)
-	if err != nil {
-		log.Error("failed to upload file: ", err)
-		return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
-	}
-
-	dbFile, err := dao.CreateFile(uploadingFile.Filename, uploadingFile.Description, uploadingFile.TargetResourceID, &uploadingFile.TargetStorageID, storageKey, "")
+	dbFile, err := dao.CreateFile(uploadingFile.Filename, uploadingFile.Description, uploadingFile.TargetResourceID, &uploadingFile.TargetStorageID, "", "")
 	if err != nil {
 		log.Error("failed to create file in db: ", err)
-		_ = iStorage.Delete(storageKey)
+		_ = os.Remove(resultFilePath)
 		return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
 	}
+
+	go func() {
+		defer func() {
+			_ = os.Remove(resultFilePath)
+		}()
+		storageKey, err := iStorage.Upload(resultFilePath)
+		if err != nil {
+			log.Error("failed to upload file to storage: ", err)
+		} else {
+			err = dao.SetFileStorageKey(dbFile.ID, storageKey)
+			if err != nil {
+				_ = iStorage.Delete(storageKey)
+				_ = dao.DeleteFile(dbFile.ID)
+				log.Error("failed to set file storage key: ", err)
+			}
+		}
+	}()
 
 	return dbFile.ToView(), nil
 }
@@ -365,6 +376,10 @@ func DownloadFile(fid uint) (string, string, error) {
 	if iStorage == nil {
 		log.Error("failed to find storage: ", err)
 		return "", "", model.NewInternalServerError("failed to find storage")
+	}
+
+	if file.StorageKey == "" {
+		return "", "", model.NewRequestError("file is not available, please try again later")
 	}
 
 	path, err := iStorage.Download(file.StorageKey)
