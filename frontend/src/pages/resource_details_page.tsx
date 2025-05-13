@@ -223,6 +223,7 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
       }
       const res = await network.createRedirectFile(filename, description, resourceId, redirectUrl);
       if (res.success) {
+        setSubmitting(false)
         const dialog = document.getElementById("upload_dialog") as HTMLDialogElement
         dialog.close()
         showToast({message: t("File created successfully"), type: "success"})
@@ -243,6 +244,7 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
         }
       });
       if (res.success) {
+        setSubmitting(false)
         const dialog = document.getElementById("upload_dialog") as HTMLDialogElement
         dialog.close()
         showToast({message: t("Successfully create uploading task."), type: "success"})
