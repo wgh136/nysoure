@@ -79,6 +79,7 @@ export default function StorageView() {
         <tr>
           <td>{t("Name")}</td>
           <td>{t("Created At")}</td>
+          <td>{t("Size")}</td>
           <td>{t("Action")}</td>
         </tr>
         </thead>
@@ -91,6 +92,9 @@ export default function StorageView() {
               </td>
               <td>
                 {(new Date(s.createdAt)).toLocaleString()}
+              </td>
+              <td>
+                {(s.currentSize/1024/1024).toFixed(2)} / {s.maxSize/1024/1024} MB
               </td>
               <td>
                 <button className={"btn btn-square"} type={"button"} onClick={() => {

@@ -336,7 +336,7 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
               <option value={""} disabled>{t("Select Storage")}</option>
               {
                 storages.current?.map((s) => {
-                  return <option key={s.id} value={s.id}>{s.name}</option>
+                  return <option key={s.id} value={s.id}>{s.name}({(s.currentSize/1024/1024).toFixed(2)}/{s.maxSize/1024/1024}MB)</option>
                 })
               }
             </select>
