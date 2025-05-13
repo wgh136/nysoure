@@ -7,10 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	pageSize = 20
-)
-
 type ResourceCreateParams struct {
 	Title             string   `json:"title" binding:"required"`
 	AlternativeTitles []string `json:"alternative_titles"`

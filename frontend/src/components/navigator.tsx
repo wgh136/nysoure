@@ -5,6 +5,7 @@ import {useEffect, useState} from "react";
 import {MdOutlinePerson, MdSearch, MdSettings} from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import UploadingSideBar from "./uploading_side_bar.tsx";
+import {IoLogoGithub} from "react-icons/io";
 
 export default function Navigator() {
   const outlet = useOutlet()
@@ -29,6 +30,11 @@ export default function Navigator() {
               <MdSettings size={24}/>
             </button>
           }
+          <button className={"btn btn-circle btn-ghost"} onClick={() => {
+            window.open("https://github.com/wgh136/nysoure", "_blank");
+          }}>
+            <IoLogoGithub size={24}/>
+          </button>
           {
             app.isLoggedIn() ? <UserButton/> : <button className={"btn btn-primary btn-square btn-soft"} onClick={() => {
               navigate("/login");

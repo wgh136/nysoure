@@ -39,6 +39,14 @@ func ExistsUser(username string) (bool, error) {
 	return count > 0, nil
 }
 
+func ExistsUserByID(id uint) (bool, error) {
+	var count int64
+	if err := db.Model(&model.User{}).Where("id = ?", id).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
 func GetUserByUsername(username string) (model.User, error) {
 	var user model.User
 	if err := db.Where("username = ?", username).First(&user).Error; err != nil {
@@ -76,17 +84,14 @@ func IsUserDataBaseEmpty() (bool, error) {
 	return false, nil
 }
 
-// 获取分页用户列表
 func ListUsers(page, pageSize int) ([]model.User, int64, error) {
 	var users []model.User
 	var total int64
 
-	// 获取总数
 	if err := db.Model(&model.User{}).Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	// 分页获取用户
 	offset := (page - 1) * pageSize
 	if err := db.Offset(offset).Limit(pageSize).Order("id desc").Find(&users).Error; err != nil {
 		return nil, 0, err
@@ -95,17 +100,14 @@ func ListUsers(page, pageSize int) ([]model.User, int64, error) {
 	return users, total, nil
 }
 
-// 根据用户名搜索用户
 func SearchUsersByUsername(username string, page, pageSize int) ([]model.User, int64, error) {
 	var users []model.User
 	var total int64
 
-	// 获取符合条件的总数
 	if err := db.Model(&model.User{}).Where("username LIKE ?", "%"+username+"%").Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	// 分页获取符合条件的用户
 	offset := (page - 1) * pageSize
 	if err := db.Where("username LIKE ?", "%"+username+"%").Offset(offset).Limit(pageSize).Order("id desc").Find(&users).Error; err != nil {
 		return nil, 0, err
@@ -114,7 +116,6 @@ func SearchUsersByUsername(username string, page, pageSize int) ([]model.User, i
 	return users, total, nil
 }
 
-// 删除用户
 func DeleteUser(id uint) error {
 	return db.Delete(&model.User{}, id).Error
 }

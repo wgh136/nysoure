@@ -89,3 +89,10 @@ export interface UploadingFile {
   storageId: number;
   resourceId: number;
 }
+
+export interface Comment {
+  id: number;
+  content: string;
+  created_at: string;
+  user: User;
+}

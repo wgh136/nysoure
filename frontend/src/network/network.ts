@@ -11,7 +11,8 @@ import {
   Tag,
   UploadingFile,
   User,
-  UserWithToken
+  UserWithToken,
+  Comment
 } from "./models.ts";
 
 class Network {
@@ -532,6 +533,28 @@ class Network {
 
   getFileDownloadLink(fileId: string): string {
     return `${this.apiBaseUrl}/files/download/${fileId}`;
+  }
+
+  async createComment(resourceID: number, content: string): Promise<Response<any>> {
+    try {
+      const response = await axios.postForm(`${this.apiBaseUrl}/comments/${resourceID}`, { content });
+      return response.data;
+    } catch (e: any) {
+      console.error(e);
+      return { success: false, message: e.toString() };
+    }
+  }
+
+  async listComments(resourceID: number, page: number = 1): Promise<PageResponse<Comment>> {
+    try {
+      const response = await axios.get(`${this.apiBaseUrl}/comments/${resourceID}`, {
+        params: { page }
+      });
+      return response.data;
+    } catch (e: any) {
+      console.error(e);
+      return { success: false, message: e.toString() };
+    }
   }
 }
 

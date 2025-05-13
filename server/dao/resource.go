@@ -167,3 +167,14 @@ func GetResourceByTag(tagID uint, page int, pageSize int) ([]model.Resource, int
 
 	return tag.Resources, totalPages, nil
 }
+
+func ExistsResource(id uint) (bool, error) {
+	var r model.Resource
+	if err := db.Model(&model.Resource{}).Where("id = ?", id).First(&r).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}

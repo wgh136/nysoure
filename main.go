@@ -32,6 +32,7 @@ func main() {
 		api.AddResourceRoutes(apiG)
 		api.AddStorageRoutes(apiG)
 		api.AddFileRoutes(apiG)
+		api.AddCommentRoutes(apiG)
 	}
 
 	log.Fatal(app.Listen(":3000"))

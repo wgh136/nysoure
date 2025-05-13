@@ -1,0 +1,62 @@
+package api
+
+import (
+	"github.com/gofiber/fiber/v3"
+	"nysoure/server/model"
+	"nysoure/server/service"
+	"strconv"
+)
+
+func AddCommentRoutes(router fiber.Router) {
+	api := router.Group("/comments")
+	api.Post("/:resourceID", createComment)
+	api.Get("/:resourceID", listComments)
+}
+
+func createComment(c fiber.Ctx) error {
+	userID, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewRequestError("You must be logged in to comment")
+	}
+	resourceIDStr := c.Params("resourceID")
+	resourceID, err := strconv.Atoi(resourceIDStr)
+	if err != nil {
+		return model.NewRequestError("Invalid resource ID")
+	}
+	content := c.FormValue("content")
+	if content == "" {
+		return model.NewRequestError("Content cannot be empty")
+	}
+	comment, err := service.CreateComment(content, userID, uint(resourceID))
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusCreated).JSON(model.Response[model.CommentView]{
+		Success: true,
+		Data:    *comment,
+		Message: "Comment created successfully",
+	})
+}
+
+func listComments(c fiber.Ctx) error {
+	resourceIDStr := c.Params("resourceID")
+	resourceID, err := strconv.Atoi(resourceIDStr)
+	if err != nil {
+		return model.NewRequestError("Invalid resource ID")
+	}
+	pageStr := c.Query("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return model.NewRequestError("Invalid page number")
+	}
+	comments, totalPages, err := service.ListComments(uint(resourceID), page)
+	if err != nil {
+		return err
+	}
+	return c.JSON(model.PageResponse[model.CommentView]{
+		Success:    true,
+		Data:       comments,
+		TotalPages: totalPages,
+		Message:    "Comments retrieved successfully",
+	})
+}

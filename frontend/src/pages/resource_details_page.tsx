@@ -1,6 +1,6 @@
 import {useParams} from "react-router";
 import {createContext, useCallback, useContext, useEffect, useRef, useState} from "react";
-import {ResourceDetails, RFile, Storage} from "../network/models.ts";
+import {ResourceDetails, RFile, Storage, Comment} from "../network/models.ts";
 import {network} from "../network/network.ts";
 import showToast from "../components/toast.ts";
 import Markdown from "react-markdown";
@@ -10,11 +10,12 @@ import {MdAdd, MdOutlineArticle, MdOutlineComment, MdOutlineDataset, MdOutlineDo
 import {app} from "../app.ts";
 import {uploadingManager} from "../network/uploading.ts";
 import {ErrorAlert} from "../components/alert.tsx";
-import { useTranslation } from "react-i18next";
+import {useTranslation} from "react-i18next";
+import Pagination from "../components/pagination.tsx";
 
 export default function ResourcePage() {
   const params = useParams()
-  const { t } = useTranslation();
+  const {t} = useTranslation();
 
   const idStr = params.id
 
@@ -123,7 +124,9 @@ export default function ResourcePage() {
           {t("Comments")}
         </span>
         </label>
-        <div key={"comments"} className="tab-content p-2">{t("Comments")}</div>
+        <div key={"comments"} className="tab-content p-2">
+          <Comments resourceId={resource.id}/>
+        </div>
       </div>
       <div className="h-4"></div>
     </div>
@@ -180,7 +183,7 @@ enum FileType {
 }
 
 function CreateFileDialog({resourceId}: { resourceId: number }) {
-  const { t } = useTranslation();
+  const {t} = useTranslation();
   const [isLoading, setLoading] = useState(false)
   const storages = useRef<Storage[] | null>(null)
   const mounted = useRef(true)
@@ -321,7 +324,8 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
 
         {
           fileType === FileType.upload && <>
-            <p className={"text-sm p-2"}>{t("Upload a file to server, then the file will be moved to the selected storage.")}</p>
+            <p
+              className={"text-sm p-2"}>{t("Upload a file to server, then the file will be moved to the selected storage.")}</p>
             <select className="select select-primary w-full my-2" defaultValue={""} onChange={(e) => {
               const id = parseInt(e.target.value)
               if (isNaN(id)) {
@@ -336,7 +340,8 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
               <option value={""} disabled>{t("Select Storage")}</option>
               {
                 storages.current?.map((s) => {
-                  return <option key={s.id} value={s.id}>{s.name}({(s.currentSize/1024/1024).toFixed(2)}/{s.maxSize/1024/1024}MB)</option>
+                  return <option key={s.id}
+                                 value={s.id}>{s.name}({(s.currentSize / 1024 / 1024).toFixed(2)}/{s.maxSize / 1024 / 1024}MB)</option>
                 })
               }
             </select>
@@ -370,3 +375,113 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
   </>
 }
 
+function Comments({resourceId}: { resourceId: number }) {
+  const [page, setPage] = useState(1);
+
+  const [maxPage, setMaxPage] = useState(0);
+
+  const [listKey, setListKey] = useState(0);
+
+  const [commentContent, setCommentContent] = useState("");
+
+  const [isLoading, setLoading] = useState(false);
+
+  const reload = useCallback(() => {
+    setPage(1);
+    setMaxPage(0);
+    setListKey(prev => prev + 1);
+  }, [])
+
+  const sendComment = async () => {
+    if (isLoading) {
+      return;
+    }
+    if (commentContent === "") {
+      showToast({message: "Comment content cannot be empty", type: "error"});
+      return;
+    }
+    setLoading(true);
+    const res = await network.createComment(resourceId, commentContent);
+    if (res.success) {
+      setCommentContent("");
+      showToast({message: "Comment created successfully", type: "success"});
+      reload();
+    } else {
+      showToast({message: res.message, type: "error"});
+    }
+    setLoading(false);
+  }
+
+  return <div>
+    <div className={"mt-4 mb-6 textarea w-full p-4 h-28 flex flex-col"}>
+      <textarea placeholder={"Write down your comment"} className={"w-full resize-none grow"} value={commentContent}
+                onChange={(e) => setCommentContent(e.target.value)}/>
+      <div className={"flex flex-row-reverse"}>
+        <button onClick={sendComment}
+                className={`btn btn-primary h-8 text-sm mx-2 ${commentContent === "" && "btn-disabled"}`}>
+          {isLoading ? <span className={"loading loading-spinner loading-sm"}></span> : null}
+          Submit
+        </button>
+      </div>
+    </div>
+    <CommentsList resourceId={resourceId} page={page} maxPageCallback={setMaxPage} key={listKey}/>
+    {maxPage && <div className={"w-full flex justify-center"}>
+      <Pagination page={page} setPage={setPage} totalPages={maxPage}/>
+    </div>}
+  </div>
+}
+
+function CommentsList({resourceId, page, maxPageCallback}: {
+  resourceId: number,
+  page: number,
+  maxPageCallback: (maxPage: number) => void
+}) {
+  const [comments, setComments] = useState<Comment[] | null>(null);
+
+  useEffect(() => {
+    network.listComments(resourceId, page).then((res) => {
+      if (res.success) {
+        setComments(res.data!);
+        maxPageCallback(res.totalPages || 1);
+      } else {
+        showToast({
+          message: res.message,
+          type: "error",
+        });
+      }
+    });
+  }, [maxPageCallback, page, resourceId]);
+
+  if (comments == null) {
+    return <div className={"w-full"}>
+      <Loading/>
+    </div>
+  }
+
+  return <>
+    {
+      comments.map((comment) => {
+        return <CommentTile comment={comment} key={comment.id}/>
+      })
+    }
+  </>
+}
+
+function CommentTile({comment}: { comment: Comment }) {
+  return <div className={"card card-border border-base-300 p-2 my-3"}>
+    <div className={"flex flex-row items-center my-1 mx-1"}>
+      <div className="avatar">
+        <div className="w-8 rounded-full">
+          <img src={network.getUserAvatar(comment.user)} alt={"avatar"}/>
+        </div>
+      </div>
+      <div className={"w-2"}></div>
+      <div className={"text-sm font-bold"}>{comment.user.username}</div>
+      <div className={"grow"}></div>
+      <div className={"text-sm text-gray-500"}>{new Date(comment.created_at).toLocaleString()}</div>
+    </div>
+    <div className={"text-sm p-2"}>
+      {comment.content}
+    </div>
+  </div>
+}
