@@ -11,7 +11,7 @@ type LocalStorage struct {
 	Path string
 }
 
-func (s *LocalStorage) Upload(filePath string) (string, error) {
+func (s *LocalStorage) Upload(filePath string, _ string) (string, error) {
 	id := uuid.New().String()
 	inputPath := s.Path + "/" + id
 	input, err := os.OpenFile(inputPath, os.O_RDWR|os.O_CREATE, 0755)
@@ -31,7 +31,7 @@ func (s *LocalStorage) Upload(filePath string) (string, error) {
 	return id, nil
 }
 
-func (s *LocalStorage) Download(storageKey string) (string, error) {
+func (s *LocalStorage) Download(storageKey string, _ string) (string, error) {
 	path := s.Path + "/" + storageKey
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return "", ErrFileUnavailable

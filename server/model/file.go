@@ -6,6 +6,7 @@ import (
 
 type File struct {
 	gorm.Model
+	UUID        string `gorm:"uniqueIndex;not null"`
 	Filename    string
 	Description string
 	StorageKey  string
@@ -16,17 +17,18 @@ type File struct {
 	Resource    Resource `gorm:"foreignKey:ResourceID"`
 	UserID      uint
 	User        User `gorm:"foreignKey:UserID"`
+	Size        int64
 }
 
 type FileView struct {
-	ID          uint   `json:"id"`
+	ID          string `json:"id"`
 	Filename    string `json:"filename"`
 	Description string `json:"description"`
 }
 
 func (f *File) ToView() *FileView {
 	return &FileView{
-		ID:          f.ID,
+		ID:          f.UUID,
 		Filename:    f.Filename,
 		Description: f.Description,
 	}

@@ -74,7 +74,7 @@ export interface Storage {
 }
 
 export interface RFile {
-  id: number;
+  id: string;
   filename: string;
   description: string;
 }

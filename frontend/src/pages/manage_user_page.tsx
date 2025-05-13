@@ -71,7 +71,7 @@ function UserTable({ page, searchKeyword, totalPagesCallback }: { page: number, 
 
   useEffect(() => {
     fetchUsers();
-  }, [page, searchKeyword]);
+  }, [fetchUsers]);
 
   const handleChanged = useCallback(async () => {
     setUsers(null);

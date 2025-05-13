@@ -140,12 +140,7 @@ func createRedirectFile(c fiber.Ctx) error {
 }
 
 func getFile(c fiber.Ctx) error {
-	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
-	if err != nil {
-		return model.NewRequestError("Invalid file ID")
-	}
-
-	file, err := service.GetFile(uint(id))
+	file, err := service.GetFile(c.Params("id"))
 	if err != nil {
 		return err
 	}
@@ -159,11 +154,6 @@ func getFile(c fiber.Ctx) error {
 func updateFile(c fiber.Ctx) error {
 	uid := c.Locals("uid").(uint)
 
-	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
-	if err != nil {
-		return model.NewRequestError("Invalid file ID")
-	}
-
 	type UpdateFileRequest struct {
 		Filename    string `json:"filename"`
 		Description string `json:"description"`
@@ -174,7 +164,7 @@ func updateFile(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid request parameters")
 	}
 
-	result, err := service.UpdateFile(uid, uint(id), req.Filename, req.Description)
+	result, err := service.UpdateFile(uid, c.Params("id"), req.Filename, req.Description)
 	if err != nil {
 		return err
 	}
@@ -188,12 +178,7 @@ func updateFile(c fiber.Ctx) error {
 func deleteFile(c fiber.Ctx) error {
 	uid := c.Locals("uid").(uint)
 
-	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
-	if err != nil {
-		return model.NewRequestError("Invalid file ID")
-	}
-
-	if err := service.DeleteFile(uid, uint(id)); err != nil {
+	if err := service.DeleteFile(uid, c.Params("id")); err != nil {
 		return err
 	}
 
@@ -204,12 +189,7 @@ func deleteFile(c fiber.Ctx) error {
 }
 
 func downloadFile(c fiber.Ctx) error {
-	idStr, err := strconv.ParseUint(c.Params("id"), 10, 32)
-	if err != nil {
-		return model.NewRequestError("Invalid file ID")
-	}
-	id := uint(idStr)
-	s, filename, err := service.DownloadFile(id)
+	s, filename, err := service.DownloadFile(c.Params("id"))
 	if err != nil {
 		return err
 	}

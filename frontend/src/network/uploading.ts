@@ -57,7 +57,7 @@ export class UploadingTask extends Listenable {
     this.onFinished = onFinished;
   }
 
-  async upload(id: number) {
+  async upload() {
     let index = 0;
     while (index < this.blocks.length) {
       if (this.blocks[index] || this.uploadingBlocks.includes(index)) {
@@ -67,7 +67,6 @@ export class UploadingTask extends Listenable {
       if (this.status !== UploadingStatus.UPLOADING) {
         return;
       }
-      console.log(`${id}: uploading block ${index}`);
       this.uploadingBlocks.push(index);
       const start = index * this.blockSize;
       const end = Math.min(start + this.blockSize, this.file.size);
@@ -88,7 +87,6 @@ export class UploadingTask extends Listenable {
           break;
         }
       }
-      console.log(`${id}: uploaded block ${index}`);
       this.blocks[index] = true;
       this.finishedBlocksCount++;
       this.uploadingBlocks = this.uploadingBlocks.filter(i => i !== index);
@@ -101,10 +99,10 @@ export class UploadingTask extends Listenable {
     this.status = UploadingStatus.UPLOADING;
     this.notifyListeners();
     await Promise.all([
-      this.upload(0),
-      this.upload(1),
-      this.upload(2),
-      this.upload(3),
+      this.upload(),
+      this.upload(),
+      this.upload(),
+      this.upload(),
     ])
     if (this.status !== UploadingStatus.UPLOADING) {
       return;

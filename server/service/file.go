@@ -71,6 +71,9 @@ func CreateUploadingFile(uid uint, filename string, description string, fileSize
 	if filename == "" {
 		return nil, model.NewRequestError("filename is empty")
 	}
+	if len([]rune(filename)) > 128 {
+		return nil, model.NewRequestError("filename is too long")
+	}
 	canUpload, err := checkUserCanUpload(uid)
 	if err != nil {
 		log.Error("failed to check user permission: ", err)
@@ -214,7 +217,7 @@ func FinishUploadingFile(uid uint, fid uint) (*model.FileView, error) {
 		return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
 	}
 
-	dbFile, err := dao.CreateFile(uploadingFile.Filename, uploadingFile.Description, uploadingFile.TargetResourceID, &uploadingFile.TargetStorageID, "", "")
+	dbFile, err := dao.CreateFile(uploadingFile.Filename, uploadingFile.Description, uploadingFile.TargetResourceID, &uploadingFile.TargetStorageID, "", "", uploadingFile.TotalSize)
 	if err != nil {
 		log.Error("failed to create file in db: ", err)
 		_ = os.Remove(resultFilePath)
@@ -225,14 +228,22 @@ func FinishUploadingFile(uid uint, fid uint) (*model.FileView, error) {
 		defer func() {
 			_ = os.Remove(resultFilePath)
 		}()
-		storageKey, err := iStorage.Upload(resultFilePath)
+		err := dao.AddStorageUsage(uploadingFile.TargetStorageID, uploadingFile.TotalSize)
 		if err != nil {
+			log.Error("failed to add storage usage: ", err)
+			_ = dao.DeleteFile(dbFile.UUID)
+			return
+		}
+		storageKey, err := iStorage.Upload(resultFilePath, uploadingFile.Filename)
+		if err != nil {
+			_ = dao.AddStorageUsage(uploadingFile.TargetStorageID, -uploadingFile.TotalSize)
 			log.Error("failed to upload file to storage: ", err)
 		} else {
-			err = dao.SetFileStorageKey(dbFile.ID, storageKey)
+			err = dao.SetFileStorageKey(dbFile.UUID, storageKey)
 			if err != nil {
+				_ = dao.AddStorageUsage(uploadingFile.TargetStorageID, -uploadingFile.TotalSize)
 				_ = iStorage.Delete(storageKey)
-				_ = dao.DeleteFile(dbFile.ID)
+				_ = dao.DeleteFile(dbFile.UUID)
 				log.Error("failed to set file storage key: ", err)
 			}
 		}
@@ -279,7 +290,7 @@ func CreateRedirectFile(uid uint, filename string, description string, resourceI
 		return nil, model.NewUnAuthorizedError("user cannot upload file")
 	}
 
-	file, err := dao.CreateFile(filename, description, resourceID, nil, "", redirectUrl)
+	file, err := dao.CreateFile(filename, description, resourceID, nil, "", redirectUrl, 0)
 	if err != nil {
 		log.Error("failed to create file in db: ", err)
 		return nil, model.NewInternalServerError("failed to create file in db")
@@ -287,7 +298,7 @@ func CreateRedirectFile(uid uint, filename string, description string, resourceI
 	return file.ToView(), nil
 }
 
-func DeleteFile(uid uint, fid uint) error {
+func DeleteFile(uid uint, fid string) error {
 	file, err := dao.GetFile(fid)
 	if err != nil {
 		log.Error("failed to get file: ", err)
@@ -314,6 +325,7 @@ func DeleteFile(uid uint, fid uint) error {
 		log.Error("failed to delete file from storage: ", err)
 		return model.NewInternalServerError("failed to delete file from storage")
 	}
+	_ = dao.AddStorageUsage(*file.StorageID, -file.Size)
 
 	if err := dao.DeleteFile(fid); err != nil {
 		log.Error("failed to delete file from db: ", err)
@@ -323,7 +335,7 @@ func DeleteFile(uid uint, fid uint) error {
 	return nil
 }
 
-func UpdateFile(uid uint, fid uint, filename string, description string) (*model.FileView, error) {
+func UpdateFile(uid uint, fid string, filename string, description string) (*model.FileView, error) {
 	file, err := dao.GetFile(fid)
 	if err != nil {
 		log.Error("failed to get file: ", err)
@@ -348,7 +360,7 @@ func UpdateFile(uid uint, fid uint, filename string, description string) (*model
 	return file.ToView(), nil
 }
 
-func GetFile(fid uint) (*model.FileView, error) {
+func GetFile(fid string) (*model.FileView, error) {
 	file, err := dao.GetFile(fid)
 	if err != nil {
 		log.Error("failed to get file: ", err)
@@ -358,7 +370,7 @@ func GetFile(fid uint) (*model.FileView, error) {
 	return file.ToView(), nil
 }
 
-func DownloadFile(fid uint) (string, string, error) {
+func DownloadFile(fid string) (string, string, error) {
 	file, err := dao.GetFile(fid)
 	if err != nil {
 		log.Error("failed to get file: ", err)
@@ -382,7 +394,7 @@ func DownloadFile(fid uint) (string, string, error) {
 		return "", "", model.NewRequestError("file is not available, please try again later")
 	}
 
-	path, err := iStorage.Download(file.StorageKey)
+	path, err := iStorage.Download(file.StorageKey, file.Filename)
 
 	return path, file.Filename, err
 }

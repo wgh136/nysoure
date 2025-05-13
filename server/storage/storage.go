@@ -13,9 +13,9 @@ var (
 
 type IStorage interface {
 	// Upload uploads a file to the storage and returns the storage key.
-	Upload(filePath string) (string, error)
+	Upload(filePath string, fileName string) (string, error)
 	// Download return the download url of the file with the given storage key.
-	Download(storageKey string) (string, error)
+	Download(storageKey string, fileName string) (string, error)
 	// Delete deletes the file with the given storage key.
 	Delete(storageKey string) error
 	// ToString returns the storage configuration as a string.

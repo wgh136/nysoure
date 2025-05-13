@@ -488,7 +488,7 @@ class Network {
     }
   }
 
-  async getFile(fileId: number): Promise<Response<RFile>> {
+  async getFile(fileId: string): Promise<Response<RFile>> {
     try {
       const response = await axios.get(`${this.apiBaseUrl}/files/${fileId}`);
       return response.data;
@@ -501,7 +501,7 @@ class Network {
     }
   }
 
-  async updateFile(fileId: number, filename: string, description: string): Promise<Response<RFile>> {
+  async updateFile(fileId: string, filename: string, description: string): Promise<Response<RFile>> {
     try {
       const response = await axios.put(`${this.apiBaseUrl}/files/${fileId}`, {
         filename,
@@ -530,7 +530,7 @@ class Network {
     }
   }
 
-  getFileDownloadLink(fileId: number): string {
+  getFileDownloadLink(fileId: string): string {
     return `${this.apiBaseUrl}/files/download/${fileId}`;
   }
 }

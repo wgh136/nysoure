@@ -2,6 +2,7 @@ package dao
 
 import (
 	"errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"nysoure/server/model"
@@ -73,17 +74,19 @@ func GetUploadingFilesOlderThan(time time.Time) ([]model.UploadingFile, error) {
 	return files, nil
 }
 
-func CreateFile(filename string, description string, resourceID uint, storageID *uint, storageKey string, redirectUrl string) (*model.File, error) {
+func CreateFile(filename string, description string, resourceID uint, storageID *uint, storageKey string, redirectUrl string, size int64) (*model.File, error) {
 	if storageID == nil && redirectUrl == "" {
 		return nil, errors.New("storageID and redirectUrl cannot be both empty")
 	}
 	f := &model.File{
+		UUID:        uuid.NewString(),
 		Filename:    filename,
 		Description: description,
 		ResourceID:  resourceID,
 		StorageID:   storageID,
 		RedirectUrl: redirectUrl,
 		StorageKey:  storageKey,
+		Size:        size,
 	}
 	if err := db.Create(f).Error; err != nil {
 		return nil, err
@@ -91,9 +94,9 @@ func CreateFile(filename string, description string, resourceID uint, storageID 
 	return f, nil
 }
 
-func GetFile(id uint) (*model.File, error) {
+func GetFile(id string) (*model.File, error) {
 	f := &model.File{}
-	if err := db.Preload("Storage").Where("id = ?", id).First(f).Error; err != nil {
+	if err := db.Preload("Storage").Where("uuid = ?", id).First(f).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, model.NewNotFoundError("file not found")
 		}
@@ -102,17 +105,9 @@ func GetFile(id uint) (*model.File, error) {
 	return f, nil
 }
 
-func GetFilesByResourceID(rID uint) ([]model.File, error) {
-	var files []model.File
-	if err := db.Where("resource_id = ?", rID).Find(&files).Error; err != nil {
-		return nil, err
-	}
-	return files, nil
-}
-
-func DeleteFile(id uint) error {
+func DeleteFile(id string) error {
 	f := &model.File{}
-	if err := db.Where("id = ?", id).First(f).Error; err != nil {
+	if err := db.Where("uuid = ?", id).First(f).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return model.NewNotFoundError("file not found")
 		}
@@ -124,9 +119,9 @@ func DeleteFile(id uint) error {
 	return nil
 }
 
-func UpdateFile(id uint, filename string, description string) (*model.File, error) {
+func UpdateFile(id string, filename string, description string) (*model.File, error) {
 	f := &model.File{}
-	if err := db.Where("id = ?", id).First(f).Error; err != nil {
+	if err := db.Where("uuid = ?", id).First(f).Error; err != nil {
 		return nil, err
 	}
 	if filename != "" {
@@ -144,9 +139,9 @@ func UpdateFile(id uint, filename string, description string) (*model.File, erro
 	return f, nil
 }
 
-func SetFileStorageKey(id uint, storageKey string) error {
+func SetFileStorageKey(id string, storageKey string) error {
 	f := &model.File{}
-	if err := db.Where("id = ?", id).First(f).Error; err != nil {
+	if err := db.Where("uuid = ?", id).First(f).Error; err != nil {
 		return err
 	}
 	f.StorageKey = storageKey

@@ -1,8 +1,16 @@
 package storage
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/gofiber/fiber/v3/log"
+	"github.com/google/uuid"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
+	"net/url"
+	"time"
 )
 
 type S3Storage struct {
@@ -12,14 +20,45 @@ type S3Storage struct {
 	BucketName      string
 }
 
-func (s *S3Storage) Upload(filePath string) (string, error) {
-	// TODO: Implement S3 upload logic here
-	return "", nil
+func (s *S3Storage) Upload(filePath string, fileName string) (string, error) {
+	minioClient, err := minio.New(s.EndPoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(s.AccessKeyID, s.SecretAccessKey, ""),
+		Secure: true,
+	})
+	if err != nil {
+		log.Error("Failed to create S3 client: ", err)
+		return "", errors.New("failed to create S3 client")
+	}
+
+	ctx := context.Background()
+	objectKey := uuid.NewString()
+	objectKey += "/" + fileName
+	_, err = minioClient.FPutObject(ctx, s.BucketName, objectKey, filePath, minio.PutObjectOptions{})
+	if err != nil {
+		log.Error("Failed to upload file to S3: ", err)
+		return "", errors.New("failed to upload file to S3")
+	}
+
+	return objectKey, nil
 }
 
-func (s *S3Storage) Download(storageKey string) (string, error) {
-	// TODO: Implement S3 download logic here
-	return "", nil
+func (s *S3Storage) Download(storageKey string, fileName string) (string, error) {
+	minioClient, err := minio.New(s.EndPoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(s.AccessKeyID, s.SecretAccessKey, ""),
+		Secure: true,
+	})
+	if err != nil {
+		log.Error("Failed to create S3 client: ", err)
+		return "", errors.New("failed to create S3 client")
+	}
+	reqParams := make(url.Values)
+	reqParams.Set("response-content-disposition", "attachment; filename=\""+fileName+"\"")
+	presignedURL, err := minioClient.PresignedGetObject(context.Background(), s.BucketName, storageKey, 5*time.Second, reqParams)
+	if err != nil {
+		fmt.Println(err)
+		return "", errors.New("failed to generate presigned URL")
+	}
+	return presignedURL.String(), nil
 }
 
 func (s *S3Storage) Delete(storageKey string) error {
