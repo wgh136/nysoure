@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v3/log"
@@ -19,7 +20,24 @@ const (
 	blockSize = 4 * 1024 * 1024 // 4MB
 )
 
-func getUploadingSize(uid uint) int64 {
+var (
+	ipDownloads = sync.Map{}
+)
+
+func init() {
+	go func() {
+		for {
+			// Clean up old IP download records every 24 hours
+			time.Sleep(24 * time.Hour)
+			ipDownloads.Range(func(key, value interface{}) bool {
+				ipDownloads.Delete(key)
+				return true
+			})
+		}
+	}()
+}
+
+func getUploadingSize() int64 {
 	return dao.GetStatistic("uploading_size")
 }
 
@@ -84,7 +102,7 @@ func CreateUploadingFile(uid uint, filename string, description string, fileSize
 		return nil, model.NewRequestError("file size exceeds the limit")
 	}
 
-	currentUploadingSize := getUploadingSize(uid)
+	currentUploadingSize := getUploadingSize()
 	if currentUploadingSize+fileSize > config.MaxUploadingSize() {
 		log.Info("A new uploading file is rejected due to max uploading size limit")
 		return nil, model.NewRequestError("server is busy, please try again later")
@@ -367,7 +385,17 @@ func GetFile(fid string) (*model.FileView, error) {
 	return file.ToView(), nil
 }
 
-func DownloadFile(fid string) (string, string, error) {
+func DownloadFile(ip string, fid string) (string, string, error) {
+	downloads, _ := ipDownloads.Load(ip)
+	if downloads == nil {
+		ipDownloads.Store(ip, 1)
+	} else {
+		count := downloads.(int)
+		if count >= config.MaxDownloadsPerDayForSingleIP() {
+			return "", "", model.NewRequestError("Too many requests, please try again later")
+		}
+		ipDownloads.Store(ip, count+1)
+	}
 	file, err := dao.GetFile(fid)
 	if err != nil {
 		log.Error("failed to get file: ", err)

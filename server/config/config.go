@@ -74,3 +74,7 @@ func MaxFileSize() int64 {
 func AllowRegister() bool {
 	return config.AllowRegister
 }
+
+func MaxDownloadsPerDayForSingleIP() int {
+	return config.MaxDownloadsPerDayForSingleIP
+}
