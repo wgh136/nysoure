@@ -1,8 +1,9 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Comment struct {
@@ -26,6 +27,24 @@ func (c *Comment) ToView() *CommentView {
 		ID:        c.ID,
 		Content:   c.Content,
 		CreatedAt: c.CreatedAt,
+		User:      c.User.ToView(),
+	}
+}
+
+type CommentWithResourceView struct {
+	ID        uint         `json:"id"`
+	Content   string       `json:"content"`
+	CreatedAt time.Time    `json:"created_at"`
+	Resource  ResourceView `json:"resource"`
+	User      UserView     `json:"user"`
+}
+
+func (c *Comment) ToViewWithResource() *CommentWithResourceView {
+	return &CommentWithResourceView{
+		ID:        c.ID,
+		Content:   c.Content,
+		CreatedAt: c.CreatedAt,
+		Resource:  c.Resource.ToView(),
 		User:      c.User.ToView(),
 	}
 }

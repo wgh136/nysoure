@@ -256,3 +256,11 @@ func DeleteUser(adminID uint, targetUserID uint) error {
 
 	return dao.DeleteUser(targetUserID)
 }
+
+func GetUserByUsername(username string) (model.UserView, error) {
+	user, err := dao.GetUserByUsername(username)
+	if err != nil {
+		return model.UserView{}, err
+	}
+	return user.ToView(), nil
+}

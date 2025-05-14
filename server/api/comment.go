@@ -1,16 +1,18 @@
 package api
 
 import (
-	"github.com/gofiber/fiber/v3"
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"strconv"
+
+	"github.com/gofiber/fiber/v3"
 )
 
 func AddCommentRoutes(router fiber.Router) {
 	api := router.Group("/comments")
 	api.Post("/:resourceID", createComment)
 	api.Get("/:resourceID", listComments)
+	api.Get("/user/:username", listCommentsWithUser)
 }
 
 func createComment(c fiber.Ctx) error {
@@ -54,6 +56,25 @@ func listComments(c fiber.Ctx) error {
 		return err
 	}
 	return c.JSON(model.PageResponse[model.CommentView]{
+		Success:    true,
+		Data:       comments,
+		TotalPages: totalPages,
+		Message:    "Comments retrieved successfully",
+	})
+}
+
+func listCommentsWithUser(c fiber.Ctx) error {
+	username := c.Params("username")
+	pageStr := c.Query("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return model.NewRequestError("Invalid page number")
+	}
+	comments, totalPages, err := service.ListCommentsWithUser(username, page)
+	if err != nil {
+		return err
+	}
+	return c.JSON(model.PageResponse[model.CommentWithResourceView]{
 		Success:    true,
 		Data:       comments,
 		TotalPages: totalPages,

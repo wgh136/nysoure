@@ -72,6 +72,9 @@ export default function ResourcePage() {
         })
       }
       <button
+        onClick={() => {
+          navigate(`/user/${resource.author.username}`)
+        }}
         className="border-b-2 mx-4 py-1 cursor-pointer border-transparent hover:border-primary transition-colors duration-200 ease-in-out">
         <div className="flex items-center ">
           <div className="avatar">

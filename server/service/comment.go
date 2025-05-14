@@ -1,9 +1,10 @@
 package service
 
 import (
-	"github.com/gofiber/fiber/v3/log"
 	"nysoure/server/dao"
 	"nysoure/server/model"
+
+	"github.com/gofiber/fiber/v3/log"
 )
 
 func CreateComment(content string, userID uint, resourceID uint) (*model.CommentView, error) {
@@ -48,6 +49,19 @@ func ListComments(resourceID uint, page int) ([]model.CommentView, int, error) {
 	res := make([]model.CommentView, 0, len(comments))
 	for _, c := range comments {
 		res = append(res, *c.ToView())
+	}
+	return res, totalPages, nil
+}
+
+func ListCommentsWithUser(username string, page int) ([]model.CommentWithResourceView, int, error) {
+	comments, totalPages, err := dao.GetCommentsWithUser(username, page, pageSize)
+	if err != nil {
+		log.Error("Error getting comments:", err)
+		return nil, 0, model.NewInternalServerError("Error getting comments")
+	}
+	res := make([]model.CommentWithResourceView, 0, len(comments))
+	for _, c := range comments {
+		res = append(res, *c.ToViewWithResource())
 	}
 	return res, totalPages, nil
 }

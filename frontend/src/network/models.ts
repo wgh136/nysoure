@@ -100,3 +100,11 @@ export interface Comment {
   created_at: string;
   user: User;
 }
+
+export interface CommentWithResource {
+  id: number;
+  content: string;
+  created_at: string;
+  user: User;
+  resource: Resource;
+}

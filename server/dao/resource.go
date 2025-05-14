@@ -171,9 +171,8 @@ func searchWithKeyword(keyword string) ([]model.Resource, error) {
 
 func GetResourceByTag(tagID uint, page int, pageSize int) ([]model.Resource, int, error) {
 	var tag model.Tag
-	var total int64
 
-	total = db.Model(&model.Tag{}).Where("id = ?", tagID).Association("Resources").Count()
+	total := db.Model(&model.Tag{}).Where("id = ?", tagID).Association("Resources").Count()
 
 	if err := db.Model(&model.Tag{}).Where("id = ?", tagID).Preload("Resources", func(tx *gorm.DB) *gorm.DB {
 		return tx.Offset((page - 1) * pageSize).Limit(pageSize).Preload("Tags").Preload("User").Preload("Images").Order("created_at DESC")
@@ -209,4 +208,28 @@ func AddResourceDownloadCount(id uint) error {
 		return err
 	}
 	return nil
+}
+
+func GetResourcesByUsername(username string, page, pageSize int) ([]model.Resource, int, error) {
+	var user model.User
+	if err := db.Where("username = ?", username).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, 0, model.NewNotFoundError("User not found")
+		}
+		return nil, 0, err
+	}
+	var resources []model.Resource
+	var total int64
+
+	if err := db.Model(&model.Resource{}).Where("user_id = ?", user.ID).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := db.Model(&model.Resource{}).Where("user_id = ?", user.ID).Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Preload("Images").Preload("Tags").Order("created_at DESC").Find(&resources).Error; err != nil {
+		return nil, 0, err
+	}
+
+	totalPages := (total + int64(pageSize) - 1) / int64(pageSize)
+
+	return resources, int(totalPages), nil
 }

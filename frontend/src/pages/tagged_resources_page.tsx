@@ -13,8 +13,8 @@ export default function TaggedResourcesPage() {
   }
 
   return <div>
-    <h1 className={"text-2xl pt-4 pb-2 px-4"}>
-      {tag}
+    <h1 className={"text-2xl pt-6 pb-2 px-4 font-bold"}>
+      Tag: {tag}
     </h1>
     <ResourcesView loader={(page) => {
       return network.getResourcesByTag(tag, page)

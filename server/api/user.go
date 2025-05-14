@@ -261,6 +261,22 @@ func handleDeleteUser(c fiber.Ctx) error {
 	})
 }
 
+func handleGetUserInfo(c fiber.Ctx) error {
+	username := c.Query("username", "")
+	if username == "" {
+		return model.NewRequestError("Username is required")
+	}
+	user, err := service.GetUserByUsername(username)
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(model.Response[model.UserView]{
+		Success: true,
+		Data:    user,
+		Message: "User information retrieved successfully",
+	})
+}
+
 func AddUserRoutes(r fiber.Router) {
 	u := r.Group("user")
 	u.Post("/register", handleUserRegister)
@@ -273,4 +289,5 @@ func AddUserRoutes(r fiber.Router) {
 	u.Get("/list", handleListUsers)
 	u.Get("/search", handleSearchUsers)
 	u.Post("/delete", handleDeleteUser)
+	u.Get("/info", handleGetUserInfo)
 }

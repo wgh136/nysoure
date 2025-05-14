@@ -124,3 +124,15 @@ func GetResourcesWithTag(tag string, page int) ([]model.ResourceView, int, error
 	}
 	return views, totalPages, nil
 }
+
+func GetResourcesWithUser(username string, page int) ([]model.ResourceView, int, error) {
+	resources, totalPages, err := dao.GetResourcesByUsername(username, page, pageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+	var views []model.ResourceView
+	for _, r := range resources {
+		views = append(views, r.ToView())
+	}
+	return views, totalPages, nil
+}

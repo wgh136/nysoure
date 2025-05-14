@@ -74,7 +74,11 @@ function UserButton() {
         id={"navi_dropdown_menu"}
         tabIndex={0}
         className="menu dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-        <li><a onClick={() => navigate(`/user/${app.user?.id}`)}>{t("My Profile")}</a></li>
+        <li><a onClick={() => {
+          navigate(`/user/${app.user?.username}`);
+          const menu = document.getElementById("navi_dropdown_menu") as HTMLUListElement;
+          menu.blur();
+        }}>{t("My Profile")}</a></li>
         <li><a onClick={() => {
           navigate(`/publish`);
           const menu = document.getElementById("navi_dropdown_menu") as HTMLUListElement;

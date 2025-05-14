@@ -155,6 +155,34 @@ func handleSearchResources(c fiber.Ctx) error {
 	})
 }
 
+func handleGetResourcesWithUser(c fiber.Ctx) error {
+	username := c.Params("username")
+	if username == "" {
+		return model.NewRequestError("Username is required")
+	}
+	pageStr := c.Query("page")
+	if pageStr == "" {
+		pageStr = "1"
+	}
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return model.NewRequestError("Invalid page number")
+	}
+	resources, totalPages, err := service.GetResourcesWithUser(username, page)
+	if err != nil {
+		return err
+	}
+	if resources == nil {
+		resources = []model.ResourceView{}
+	}
+	return c.Status(fiber.StatusOK).JSON(model.PageResponse[model.ResourceView]{
+		Success:    true,
+		Data:       resources,
+		TotalPages: totalPages,
+		Message:    "Resources retrieved successfully",
+	})
+}
+
 func AddResourceRoutes(api fiber.Router) {
 	resource := api.Group("/resource")
 	{
@@ -164,5 +192,6 @@ func AddResourceRoutes(api fiber.Router) {
 		resource.Get("/:id", handleGetResource)
 		resource.Delete("/:id", handleDeleteResource)
 		resource.Get("/tag/:tag", handleListResourcesWithTag)
+		resource.Get("/user/:username", handleGetResourcesWithUser)
 	}
 }

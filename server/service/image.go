@@ -3,8 +3,6 @@ package service
 import (
 	"bytes"
 	"errors"
-	"github.com/gofiber/fiber/v3/log"
-	"github.com/google/uuid"
 	"image"
 	"net/http"
 	"nysoure/server/dao"
@@ -12,6 +10,9 @@ import (
 	"nysoure/server/utils"
 	"os"
 	"time"
+
+	"github.com/gofiber/fiber/v3/log"
+	"github.com/google/uuid"
 
 	_ "image/gif"
 	_ "image/jpeg"
@@ -116,7 +117,7 @@ func GetImage(id uint) ([]byte, error) {
 	}
 	data, err := os.ReadFile(imageDir + i.FileName)
 	if err != nil {
-		return nil, errors.New("Failed to read image file")
+		return nil, errors.New("failed to read image file")
 	}
 	return data, nil
 }

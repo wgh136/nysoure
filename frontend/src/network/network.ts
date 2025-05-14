@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {app} from "../app.ts";
+import { app } from "../app.ts";
 import {
   CreateResourceParams,
   RFile,
@@ -12,7 +12,8 @@ import {
   UploadingFile,
   User,
   UserWithToken,
-  Comment
+  Comment,
+  CommentWithResource
 } from "./models.ts";
 
 class Network {
@@ -77,6 +78,23 @@ class Network {
       const response = await axios.postForm(`${this.apiBaseUrl}/user/register`, {
         username,
         password
+      })
+      return response.data
+    } catch (e: any) {
+      console.error(e)
+      return {
+        success: false,
+        message: e.toString(),
+      }
+    }
+  }
+
+  async getUserInfo(username: string): Promise<Response<User>> {
+    try {
+      const response = await axios.get(`${this.apiBaseUrl}/user/info`, {
+        params: {
+          username
+        }
       })
       return response.data
     } catch (e: any) {
@@ -177,7 +195,7 @@ class Network {
   async searchUsers(username: string, page: number): Promise<PageResponse<User>> {
     try {
       const response = await axios.get(`${this.apiBaseUrl}/user/search`, {
-        params: { 
+        params: {
           username,
           page
         }
@@ -325,6 +343,23 @@ class Network {
     }
   }
 
+  async getResourcesByUser(username: string, page: number): Promise<PageResponse<Resource>> {
+    try {
+      const response = await axios.get(`${this.apiBaseUrl}/resource/user/${username}`, {
+        params: {
+          page
+        }
+      })
+      return response.data
+    } catch (e: any) {
+      console.error(e)
+      return {
+        success: false,
+        message: e.toString(),
+      }
+    }
+  }
+
   async searchResources(keyword: string, page: number): Promise<PageResponse<Resource>> {
     try {
       const response = await axios.get(`${this.apiBaseUrl}/resource/search`, {
@@ -357,7 +392,7 @@ class Network {
   }
 
   async createS3Storage(name: string, endPoint: string, accessKeyID: string,
-                        secretAccessKey: string, bucketName: string, maxSizeInMB: number): Promise<Response<any>> {
+    secretAccessKey: string, bucketName: string, maxSizeInMB: number): Promise<Response<any>> {
     try {
       const response = await axios.post(`${this.apiBaseUrl}/storage/s3`, {
         name,
@@ -420,8 +455,8 @@ class Network {
     }
   }
 
-  async initFileUpload(filename: string, description: string, fileSize: number, 
-                      resourceId: number, storageId: number): Promise<Response<UploadingFile>> {
+  async initFileUpload(filename: string, description: string, fileSize: number,
+    resourceId: number, storageId: number): Promise<Response<UploadingFile>> {
     try {
       const response = await axios.post(`${this.apiBaseUrl}/files/upload/init`, {
         filename,
@@ -487,8 +522,8 @@ class Network {
     }
   }
 
-  async createRedirectFile(filename: string, description: string, 
-                          resourceId: number, redirectUrl: string): Promise<Response<RFile>> {
+  async createRedirectFile(filename: string, description: string,
+    resourceId: number, redirectUrl: string): Promise<Response<RFile>> {
     try {
       const response = await axios.post(`${this.apiBaseUrl}/files/redirect`, {
         filename,
@@ -565,6 +600,18 @@ class Network {
   async listComments(resourceID: number, page: number = 1): Promise<PageResponse<Comment>> {
     try {
       const response = await axios.get(`${this.apiBaseUrl}/comments/${resourceID}`, {
+        params: { page }
+      });
+      return response.data;
+    } catch (e: any) {
+      console.error(e);
+      return { success: false, message: e.toString() };
+    }
+  }
+
+  async listCommentsByUser(username: string, page: number = 1): Promise<PageResponse<CommentWithResource>> {
+    try {
+      const response = await axios.get(`${this.apiBaseUrl}/comments/user/${username}`, {
         params: { page }
       });
       return response.data;
