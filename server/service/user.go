@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"nysoure/server/config"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/static"
@@ -18,6 +19,9 @@ const (
 )
 
 func CreateUser(username, password string) (model.UserViewWithToken, error) {
+	if !config.AllowRegister() {
+		return model.UserViewWithToken{}, model.NewRequestError("User registration is not allowed")
+	}
 	if len(username) < 3 || len(username) > 20 {
 		return model.UserViewWithToken{}, model.NewRequestError("Username must be between 3 and 20 characters")
 	}

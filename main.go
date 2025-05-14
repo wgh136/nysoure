@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/cors"
-	"github.com/gofiber/fiber/v3/middleware/logger"
 	"log"
 	"nysoure/server/api"
 	"nysoure/server/middleware"
+
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/fiber/v3/middleware/logger"
 )
 
 func main() {
@@ -33,6 +34,7 @@ func main() {
 		api.AddStorageRoutes(apiG)
 		api.AddFileRoutes(apiG)
 		api.AddCommentRoutes(apiG)
+		api.AddConfigRoutes(apiG)
 	}
 
 	log.Fatal(app.Listen(":3000"))

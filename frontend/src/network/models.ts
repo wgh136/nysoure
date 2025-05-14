@@ -108,3 +108,12 @@ export interface CommentWithResource {
   user: User;
   resource: Resource;
 }
+
+export interface ServerConfig {
+  max_uploading_size_in_mb: number;
+  max_file_size_in_mb: number;
+  max_downloads_per_day_for_single_ip: number;
+  allow_register: boolean;
+  cloudflare_turnstile_site_key: string;
+  cloudflare_turnstile_secret_key: string;
+}

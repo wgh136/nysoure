@@ -1,8 +1,7 @@
 package service
 
 import (
-	"github.com/gofiber/fiber/v3/log"
-	"github.com/google/uuid"
+	"nysoure/server/config"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/storage"
@@ -11,15 +10,13 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/gofiber/fiber/v3/log"
+	"github.com/google/uuid"
 )
 
 const (
 	blockSize = 4 * 1024 * 1024 // 4MB
-)
-
-var (
-	maxUploadingSize = int64(1024 * 1024 * 1024 * 20) // TODO: make this configurable
-	maxFileSize      = int64(1024 * 1024 * 1024 * 8)  // TODO: make this configurable
 )
 
 func getUploadingSize(uid uint) int64 {
@@ -83,12 +80,12 @@ func CreateUploadingFile(uid uint, filename string, description string, fileSize
 		return nil, model.NewUnAuthorizedError("user cannot upload file")
 	}
 
-	if fileSize > maxFileSize {
+	if fileSize > config.MaxFileSize() {
 		return nil, model.NewRequestError("file size exceeds the limit")
 	}
 
 	currentUploadingSize := getUploadingSize(uid)
-	if currentUploadingSize+fileSize > maxUploadingSize {
+	if currentUploadingSize+fileSize > config.MaxUploadingSize() {
 		log.Info("A new uploading file is rejected due to max uploading size limit")
 		return nil, model.NewRequestError("server is busy, please try again later")
 	}
@@ -305,7 +302,7 @@ func DeleteFile(uid uint, fid string) error {
 		return model.NewNotFoundError("file not found")
 	}
 
-	isAdmin, err := checkUserIsAdmin(uid)
+	isAdmin, err := CheckUserIsAdmin(uid)
 	if err != nil {
 		log.Error("failed to check user permission: ", err)
 		return model.NewInternalServerError("failed to check user permission")
@@ -342,7 +339,7 @@ func UpdateFile(uid uint, fid string, filename string, description string) (*mod
 		return nil, model.NewNotFoundError("file not found")
 	}
 
-	isAdmin, err := checkUserIsAdmin(uid)
+	isAdmin, err := CheckUserIsAdmin(uid)
 	if err != nil {
 		log.Error("failed to check user permission: ", err)
 		return nil, model.NewInternalServerError("failed to check user permission")

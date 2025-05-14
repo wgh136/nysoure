@@ -13,7 +13,8 @@ import {
   User,
   UserWithToken,
   Comment,
-  CommentWithResource
+  CommentWithResource,
+  ServerConfig
 } from "./models.ts";
 
 class Network {
@@ -633,6 +634,32 @@ class Network {
     } catch (e: any) {
       console.error(e);
       return { success: false, message: e.toString() };
+    }
+  }
+
+  async getServerConfig(): Promise<Response<ServerConfig>> {
+    try {
+      const response = await axios.get(`${this.apiBaseUrl}/config`);
+      return response.data;
+    } catch (e: any) {
+      console.error(e);
+      return {
+        success: false,
+        message: e.toString(),
+      };
+    }
+  }
+
+  async setServerConfig(config: ServerConfig): Promise<Response<void>> {
+    try {
+      const response = await axios.post(`${this.apiBaseUrl}/config`, config);
+      return response.data;
+    } catch (e: any) {
+      console.error(e);
+      return {
+        success: false,
+        message: e.toString(),
+      };
     }
   }
 }

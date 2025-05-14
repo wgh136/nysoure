@@ -96,7 +96,7 @@ export default function ResourcePage() {
         }
       </p>
       <div className="tabs tabs-box my-4 mx-2 p-4">
-        <label className="tab">
+        <label className="tab transition-all">
           <input type="radio" name="my_tabs" checked={page === 0} onChange={() => {
             setPage(0)
           }}/>
@@ -109,7 +109,7 @@ export default function ResourcePage() {
           <Article article={resource.article}/>
         </div>
 
-        <label className="tab">
+        <label className="tab transition-all">
           <input type="radio" name="my_tabs" checked={page === 1} onChange={() => {
             setPage(1)
           }}/>
@@ -122,7 +122,7 @@ export default function ResourcePage() {
           <Files files={resource.files} resourceID={resource.id}/>
         </div>
 
-        <label className="tab">
+        <label className="tab transition-all">
           <input type="radio" name="my_tabs" checked={page === 2} onChange={() => {
             setPage(2)
           }}/>

@@ -4,6 +4,7 @@ import StorageView from "./manage_storage_page.tsx";
 import UserView from "./manage_user_page.tsx";
 import { useTranslation } from "react-i18next";
 import { ManageMePage } from "./manage_me_page.tsx";
+import ManageServerConfigPage from "./manage_server_config_page.tsx";
 
 export default function ManagePage() {
   const { t } = useTranslation();
@@ -43,13 +44,15 @@ export default function ManagePage() {
   const pageNames = [
     t("My Info"),
     t("Storage"),
-    t("Users")
+    t("Users"),
+    t("Server"),
   ]
 
   const pageComponents = [
     <ManageMePage/>,
     <StorageView/>,
-    <UserView/>
+    <UserView/>,
+    <ManageServerConfigPage/>,
   ]
 
   return <div className="drawer lg:drawer-open">
@@ -80,6 +83,7 @@ export default function ManagePage() {
         {buildItem(t("My Info"), <MdOutlineBadge className={"text-xl"}/>, 0)}
         {buildItem(t("Storage"), <MdOutlineStorage className={"text-xl"}/>, 1)}
         {buildItem(t("Users"), <MdOutlinePerson className={"text-xl"}/>, 2)}
+        {buildItem(t("Server"), <MdOutlineStorage className={"text-xl"}/>, 3)}
       </ul>
     </div>
   </div>

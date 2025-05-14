@@ -89,7 +89,7 @@ func SearchResource(keyword string, page int) ([]model.ResourceView, int, error)
 }
 
 func DeleteResource(uid, id uint) error {
-	isAdmin, err := checkUserIsAdmin(uid)
+	isAdmin, err := CheckUserIsAdmin(uid)
 	if err != nil {
 		return err
 	}

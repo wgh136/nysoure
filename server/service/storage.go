@@ -1,11 +1,12 @@
 package service
 
 import (
-	"github.com/gofiber/fiber/v3/log"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/storage"
 	"os"
+
+	"github.com/gofiber/fiber/v3/log"
 )
 
 type CreateS3StorageParams struct {
@@ -18,7 +19,7 @@ type CreateS3StorageParams struct {
 }
 
 func CreateS3Storage(uid uint, params CreateS3StorageParams) error {
-	isAdmin, err := checkUserIsAdmin(uid)
+	isAdmin, err := CheckUserIsAdmin(uid)
 	if err != nil {
 		log.Errorf("check user is admin failed: %s", err)
 		return model.NewInternalServerError("check user is admin failed")
@@ -49,7 +50,7 @@ type CreateLocalStorageParams struct {
 }
 
 func CreateLocalStorage(uid uint, params CreateLocalStorageParams) error {
-	isAdmin, err := checkUserIsAdmin(uid)
+	isAdmin, err := CheckUserIsAdmin(uid)
 	if err != nil {
 		log.Errorf("check user is admin failed: %s", err)
 		return model.NewInternalServerError("check user is admin failed")
@@ -88,7 +89,7 @@ func ListStorages() ([]model.StorageView, error) {
 }
 
 func DeleteStorage(uid, id uint) error {
-	isAdmin, err := checkUserIsAdmin(uid)
+	isAdmin, err := CheckUserIsAdmin(uid)
 	if err != nil {
 		log.Errorf("check user is admin failed: %s", err)
 		return model.NewInternalServerError("check user is admin failed")

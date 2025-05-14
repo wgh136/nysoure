@@ -2,11 +2,12 @@ package api
 
 import (
 	"fmt"
-	"github.com/gofiber/fiber/v3"
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"strconv"
 	"strings"
+
+	"github.com/gofiber/fiber/v3"
 )
 
 func AddFileRoutes(router fiber.Router) {
