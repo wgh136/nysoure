@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import ResourcesView from "../components/resources_view";
 import Loading from "../components/loading";
 import Pagination from "../components/pagination";
-import { MdOutlineArrowForward, MdOutlineArrowRight } from "react-icons/md";
+import { MdOutlineArrowRight } from "react-icons/md";
 
 export default function UserPage() {
   const [user, setUser] = useState<User | null>(null);

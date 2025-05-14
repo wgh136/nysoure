@@ -1,10 +1,9 @@
-import {app} from "../app.ts";
-import {MdMenu, MdOutlinePerson, MdOutlineStorage} from "react-icons/md";
+import {MdMenu, MdOutlineBadge, MdOutlinePerson, MdOutlineStorage} from "react-icons/md";
 import {ReactNode, useEffect, useState} from "react";
 import StorageView from "./manage_storage_page.tsx";
 import UserView from "./manage_user_page.tsx";
 import { useTranslation } from "react-i18next";
-import {ErrorAlert} from "../components/alert.tsx";
+import { ManageMePage } from "./manage_me_page.tsx";
 
 export default function ManagePage() {
   const { t } = useTranslation();
@@ -24,16 +23,14 @@ export default function ManagePage() {
     };
   }, []);
 
-  if (!app.user) {
-    return <ErrorAlert className={"m-4"} message={t("You are not logged in. Please log in to access this page.")}/>
-  }
-
-  if (!app.user?.is_admin) {
-    return <ErrorAlert className={"m-4"} message={t("You are not authorized to access this page.")}/>
-  }
-
   const buildItem = (title: string, icon: ReactNode, p: number) => {
-    return <li key={title} onClick={() => setPage(p)} className={"my-1"}>
+    return <li key={title} onClick={() => {
+      setPage(p);
+      const checkbox = document.getElementById("my-drawer-2") as HTMLInputElement;
+      if (checkbox) {
+        checkbox.checked = false;
+      }
+    }} className={"my-1"}>
       <a className={`flex items-center h-9 px-4 ${page == p && "bg-primary text-primary-content"}`}>
         {icon}
         <span className={"text"}>
@@ -44,11 +41,13 @@ export default function ManagePage() {
   }
 
   const pageNames = [
+    t("My Info"),
     t("Storage"),
     t("Users")
   ]
 
   const pageComponents = [
+    <ManageMePage/>,
     <StorageView/>,
     <UserView/>
   ]
@@ -78,8 +77,9 @@ export default function ManagePage() {
         <h2 className={"text-lg font-bold p-4"}>
           {t("Manage")}
         </h2>
-        {buildItem(t("Storage"), <MdOutlineStorage className={"text-xl"}/>, 0)}
-        {buildItem(t("Users"), <MdOutlinePerson className={"text-xl"}/>, 1)}
+        {buildItem(t("My Info"), <MdOutlineBadge className={"text-xl"}/>, 0)}
+        {buildItem(t("Storage"), <MdOutlineStorage className={"text-xl"}/>, 1)}
+        {buildItem(t("Users"), <MdOutlinePerson className={"text-xl"}/>, 2)}
       </ul>
     </div>
   </div>

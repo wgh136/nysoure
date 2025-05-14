@@ -264,3 +264,18 @@ func GetUserByUsername(username string) (model.UserView, error) {
 	}
 	return user.ToView(), nil
 }
+
+func ChangeUsername(uid uint, newUsername string) (model.UserView, error) {
+	if len(newUsername) < 3 || len(newUsername) > 20 {
+		return model.UserView{}, model.NewRequestError("Username must be between 3 and 20 characters")
+	}
+	user, err := dao.GetUserByID(uid)
+	if err != nil {
+		return model.UserView{}, err
+	}
+	user.Username = newUsername
+	if err := dao.UpdateUser(user); err != nil {
+		return model.UserView{}, err
+	}
+	return user.ToView(), nil
+}

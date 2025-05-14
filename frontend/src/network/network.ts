@@ -141,6 +141,21 @@ class Network {
     }
   }
 
+  async changeUsername(username: string): Promise<Response<User>> {
+    try {
+      const response = await axios.postForm(`${this.apiBaseUrl}/user/username`, {
+        username
+      })
+      return response.data
+    } catch (e: any) {
+      console.error(e)
+      return {
+        success: false,
+        message: e.toString(),
+      }
+    }
+  }
+
   getUserAvatar(user: User): string {
     return this.baseUrl + user.avatar_path
   }

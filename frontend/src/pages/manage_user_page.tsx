@@ -7,6 +7,8 @@ import { MdMoreHoriz, MdSearch } from "react-icons/md";
 import Pagination from "../components/pagination";
 import showPopup, { PopupMenuItem } from "../components/popup";
 import { useTranslation } from "react-i18next";
+import { app } from "../app";
+import { ErrorAlert } from "../components/alert";
 
 export default function UserView() {
   const { t } = useTranslation();
@@ -15,6 +17,14 @@ export default function UserView() {
   const [page, setPage] = useState(1);
 
   const [totalPages, setTotalPages] = useState(0);
+
+  if (!app.user) {
+    return <ErrorAlert className={"m-4"} message={t("You are not logged in. Please log in to access this page.")} />
+  }
+
+  if (!app.user?.is_admin) {
+    return <ErrorAlert className={"m-4"} message={t("You are not authorized to access this page.")} />
+  }
 
   return <>
     <div className={"flex flex-row justify-between items-center mx-4 my-4"}>

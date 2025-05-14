@@ -6,6 +6,7 @@ import Loading from "../components/loading.tsx";
 import {MdAdd, MdDelete} from "react-icons/md";
 import {ErrorAlert} from "../components/alert.tsx";
 import { useTranslation } from "react-i18next";
+import { app } from "../app.ts";
 
 export default function StorageView() {
   const { t } = useTranslation();
@@ -13,6 +14,9 @@ export default function StorageView() {
   const [loadingId, setLoadingId] = useState<number | null>(null);
 
   useEffect(() => {
+    if (app.user == null || !app.user.is_admin) {
+      return;
+    }
     network.listStorages().then((response) => {
       if (response.success) {
         setStorages(response.data!);
@@ -24,6 +28,14 @@ export default function StorageView() {
       }
     })
   }, []);
+
+  if (!app.user) {
+    return <ErrorAlert className={"m-4"} message={t("You are not logged in. Please log in to access this page.")}/>
+  }
+
+  if (!app.user?.is_admin) {
+    return <ErrorAlert className={"m-4"} message={t("You are not authorized to access this page.")}/>
+  }
 
   if (storages == null) {
     return <Loading/>
