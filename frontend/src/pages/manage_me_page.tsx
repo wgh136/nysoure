@@ -42,6 +42,8 @@ function ChangeAvatarDialog() {
 
   const navigator = useNavigator();
 
+  const { t } = useTranslation();
+
   const selectAvatar = () => {
     const input = document.createElement("input");
     input.type = "file";
@@ -67,7 +69,7 @@ function ChangeAvatarDialog() {
       app.user = res.data!;
       navigator.refresh();
       showToast({
-        message: "Avatar changed successfully",
+        message: t("Avatar changed successfully"),
         type: "success",
       })
       const dialog = document.getElementById("change_avatar_dialog") as HTMLDialogElement;
@@ -78,7 +80,7 @@ function ChangeAvatarDialog() {
   }
 
   return <>
-    <ListTile icon={<MdOutlineAccountCircle />} title="Change Avatar" onClick={() => {
+    <ListTile icon={<MdOutlineAccountCircle />} title={t("Change Avatar")} onClick={() => {
       const dialog = document.getElementById("change_avatar_dialog") as HTMLDialogElement;
       if (dialog) {
         dialog.showModal();
@@ -86,7 +88,7 @@ function ChangeAvatarDialog() {
     }} />
     <dialog id="change_avatar_dialog" className="modal">
       <div className="modal-box">
-        <h3 className="font-bold text-lg">Change Avatar</h3>
+        <h3 className="font-bold text-lg">{t("Change Avatar")}</h3>
         <div className="h-48 flex items-center justify-center">
           <div className="avatar">
             <div className="w-28 rounded-full cursor-pointer" onClick={selectAvatar}>
@@ -97,9 +99,9 @@ function ChangeAvatarDialog() {
         {error && <ErrorAlert message={error} className={"m-4"} />}
         <div className="modal-action">
           <form method="dialog">
-            <Button>Close</Button>
+            <Button>{t("Close")}</Button>
           </form>
-          <Button className="btn-primary" onClick={handleSubmit} isLoading={isLoading} disabled={avatar == null}>Save</Button>
+          <Button className="btn-primary" onClick={handleSubmit} isLoading={isLoading} disabled={avatar == null}>{t("Save")}</Button>
         </div>
       </div>
     </dialog>
@@ -112,9 +114,11 @@ function ChangeUsernameDialog() {
   const [error, setError] = useState<string | null>(null);
   const navigator = useNavigator();
 
+  const { t } = useTranslation();
+
   const handleSubmit = async () => {
     if (!newUsername.trim()) {
-      setError("Username cannot be empty");
+      setError(t("Username cannot be empty"));
       return;
     }
     setIsLoading(true);
@@ -126,7 +130,7 @@ function ChangeUsernameDialog() {
       app.user = res.data!;
       navigator.refresh();
       showToast({
-        message: "Username changed successfully",
+        message: t("Username changed successfully"),
         type: "success",
       });
       const dialog = document.getElementById("change_username_dialog") as HTMLDialogElement;
@@ -139,7 +143,7 @@ function ChangeUsernameDialog() {
   };
 
   return <>
-    <ListTile icon={<MdOutlineEditNote />} title="Change Username" onClick={() => {
+    <ListTile icon={<MdOutlineEditNote />} title={t("Change Username")} onClick={() => {
       const dialog = document.getElementById("change_username_dialog") as HTMLDialogElement;
       if (dialog) {
         dialog.showModal();
@@ -147,14 +151,14 @@ function ChangeUsernameDialog() {
     }} />
     <dialog id="change_username_dialog" className="modal">
       <div className="modal-box">
-        <h3 className="font-bold text-lg">Change Username</h3>
+        <h3 className="font-bold text-lg">{t("Change Username")}</h3>
         <div className="input mt-4 w-full">
           <label className="label">
-            New Username
+            {t("New Username")}
           </label>
           <input 
             type="text" 
-            placeholder="Enter new username" 
+            placeholder={t("Enter new username")} 
             value={newUsername}
             onChange={(e) => setNewUsername(e.target.value)}
           />
@@ -162,7 +166,7 @@ function ChangeUsernameDialog() {
         {error && <ErrorAlert message={error} className={"mt-4"} />}
         <div className="modal-action">
           <form method="dialog">
-            <Button>Close</Button>
+            <Button>{t("Close")}</Button>
           </form>
           <Button 
             className="btn-primary" 
@@ -170,7 +174,7 @@ function ChangeUsernameDialog() {
             isLoading={isLoading} 
             disabled={!newUsername.trim()}
           >
-            Save
+            {t("Save")}
           </Button>
         </div>
       </div>
@@ -185,20 +189,22 @@ function ChangePasswordDialog() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { t } = useTranslation();
+
   const handleSubmit = async () => {
     // Validate input
     if (!oldPassword || !newPassword || !confirmPassword) {
-      setError("All fields are required");
+      setError(t("All fields are required"));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError("New passwords don't match");
+      setError(t("New passwords don't match"));
       return;
     }
 
     if (newPassword.length < 6) {
-      setError("New password must be at least 6 characters long");
+      setError(t("New password must be at least 6 characters long"));
       return;
     }
 
@@ -214,7 +220,7 @@ function ChangePasswordDialog() {
       app.user = res.data!;
       
       showToast({
-        message: "Password changed successfully",
+        message: t("Password changed successfully"),
         type: "success",
       });
       
@@ -232,7 +238,7 @@ function ChangePasswordDialog() {
   };
 
   return <>
-    <ListTile icon={<MdLockOutline />} title="Change Password" onClick={() => {
+    <ListTile icon={<MdLockOutline />} title={t("Change Password")} onClick={() => {
       const dialog = document.getElementById("change_password_dialog") as HTMLDialogElement;
       if (dialog) {
         dialog.showModal();
@@ -240,13 +246,13 @@ function ChangePasswordDialog() {
     }} />
     <dialog id="change_password_dialog" className="modal">
       <div className="modal-box">
-        <h3 className="font-bold text-lg mb-2">Change Password</h3>
+        <h3 className="font-bold text-lg mb-2">{t("Change Password")}</h3>
         
         <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend">Current Password</legend>
+          <legend className="fieldset-legend">{t("Current Password")}</legend>
           <input 
             type="password" 
-            placeholder="Enter current password" 
+            placeholder={t("Enter current password")} 
             value={oldPassword}
             className="input w-full"
             onChange={(e) => setOldPassword(e.target.value)}
@@ -254,10 +260,10 @@ function ChangePasswordDialog() {
         </fieldset>
         
         <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend">New Password</legend>
+          <legend className="fieldset-legend">{t("New Password")}</legend>
           <input 
             type="password" 
-            placeholder="Enter new password" 
+            placeholder={t("Enter new password")} 
             value={newPassword}
             className="input w-full"
             onChange={(e) => setNewPassword(e.target.value)}
@@ -265,10 +271,10 @@ function ChangePasswordDialog() {
         </fieldset>
 
         <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend">Confirm New Password</legend>
+          <legend className="fieldset-legend">{t("Confirm New Password")}</legend>
           <input 
             type="password" 
-            placeholder="Confirm new password" 
+            placeholder={t("Confirm new password")} 
             value={confirmPassword}
             className="input w-full"
             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -279,7 +285,7 @@ function ChangePasswordDialog() {
         
         <div className="modal-action">
           <form method="dialog">
-            <Button>Close</Button>
+            <Button>{t("Close")}</Button>
           </form>
           <Button 
             className="btn-primary" 
@@ -287,7 +293,7 @@ function ChangePasswordDialog() {
             isLoading={isLoading} 
             disabled={!oldPassword || !newPassword || !confirmPassword}
           >
-            Save
+            {t("Save")}
           </Button>
         </div>
       </div>

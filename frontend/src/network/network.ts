@@ -408,6 +408,19 @@ class Network {
     }
   }
 
+  async deleteResource(id: number): Promise<Response<void>> {
+    try {
+      const response = await axios.delete(`${this.apiBaseUrl}/resource/${id}`)
+      return response.data
+    } catch (e: any) {
+      console.error(e)
+      return {
+        success: false,
+        message: e.toString(),
+      }
+    }
+  }
+
   async createS3Storage(name: string, endPoint: string, accessKeyID: string,
     secretAccessKey: string, bucketName: string, maxSizeInMB: number): Promise<Response<any>> {
     try {
@@ -587,7 +600,7 @@ class Network {
     }
   }
 
-  async deleteFile(fileId: number): Promise<Response<void>> {
+  async deleteFile(fileId: string): Promise<Response<void>> {
     try {
       const response = await axios.delete(`${this.apiBaseUrl}/files/${fileId}`);
       return response.data;

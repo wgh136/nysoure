@@ -39,6 +39,8 @@ export const i18nData = {
       "Description cannot be empty": "Description cannot be empty",
       "Loading": "Loading",
       "Enter a search keyword to continue": "Enter a search keyword to continue",
+      "My Info": "My Info",
+      "Server": "Server",
       
       // Management page translations
       "Manage": "Manage",
@@ -106,6 +108,40 @@ export const i18nData = {
       "URL": "URL",
       "Upload a file to server, then the file will be moved to the selected storage.": "Upload a file to server, then the file will be moved to the selected storage.",
       "Select Storage": "Select Storage",
+      "Resource Details": "Resource Details",
+      "Delete Resource": "Delete Resource", 
+      "Are you sure you want to delete the resource": "Are you sure you want to delete the resource",
+      "Delete File": "Delete File",
+      "Are you sure you want to delete the file": "Are you sure you want to delete the file",
+
+      // New translations
+      "Change Avatar": "Change Avatar",
+      "Change Username": "Change Username", 
+      "Change Password": "Change Password",
+      "New Username": "New Username",
+      "Enter new username": "Enter new username",
+      "Save": "Save",
+      "Current Password": "Current Password",
+      "Enter current password": "Enter current password",
+      "New Password": "New Password", 
+      "Enter new password": "Enter new password",
+      "Confirm New Password": "Confirm New Password",
+      "Confirm new password": "Confirm new password",
+      "Avatar changed successfully": "Avatar changed successfully",
+      "Username changed successfully": "Username changed successfully",
+      "Password changed successfully": "Password changed successfully",
+      
+      // Manage server config page translations
+      "Update server config successfully": "Update server config successfully",
+      "Max uploading size (MB)": "Max uploading size (MB)",
+      "Max file size (MB)": "Max file size (MB)",
+      "Max downloads per day for single IP": "Max downloads per day for single IP",
+      "Allow register": "Allow register",
+      "Server name": "Server name",
+      "Server description": "Server description", 
+      "Cloudflare Turnstile Site Key": "Cloudflare Turnstile Site Key",
+      "Cloudflare Turnstile Secret Key": "Cloudflare Turnstile Secret Key",
+      "If the cloudflare turnstile keys are not empty, the turnstile will be used for register and download.": "If the cloudflare turnstile keys are not empty, the turnstile will be used for register and download.",
     }
   },
   "zh-CN": {
@@ -148,6 +184,8 @@ export const i18nData = {
       "Description cannot be empty": "介绍不能为空",
       "Loading": "加载中",
       "Enter a search keyword to continue": "输入搜索关键词以继续",
+      "My Info": "个人信息",
+      "Server": "服务器",
 
       // Management page translations
       "Manage": "管理",
@@ -215,6 +253,40 @@ export const i18nData = {
       "URL": "URL",
       "Upload a file to server, then the file will be moved to the selected storage.": "将文件上传到服务器，然后文件将被移动到选定的存储中。",
       "Select Storage": "选择存储",
+      "Resource Details": "资源详情",
+      "Delete Resource": "删除资源",
+      "Are you sure you want to delete the resource": "您确定要删除此资源吗",
+      "Delete File": "删除文件",
+      "Are you sure you want to delete the file": "您确定要删除此文件吗",
+
+      // New translations
+      "Change Avatar": "更改头像",
+      "Change Username": "更改用户名",
+      "Change Password": "更改密码",
+      "New Username": "新用户名",
+      "Enter new username": "输入新用户名",
+      "Save": "保存",
+      "Current Password": "当前密码",
+      "Enter current password": "输入当前密码", 
+      "New Password": "新密码",
+      "Enter new password": "输入新密码",
+      "Confirm New Password": "确认新密码",
+      "Confirm new password": "确认新密码",
+      "Avatar changed successfully": "头像更改成功",
+      "Username changed successfully": "用户名更改成功", 
+      "Password changed successfully": "密码更改成功",
+      
+      // Manage server config page translations
+      "Update server config successfully": "成功更新服务器配置",
+      "Max uploading size (MB)": "最大上传大小 (MB)",
+      "Max file size (MB)": "最大文件大小 (MB)",
+      "Max downloads per day for single IP": "单个IP每日最大下载次数",
+      "Allow register": "允许注册",
+      "Server name": "服务器名称",
+      "Server description": "服务器描述",
+      "Cloudflare Turnstile Site Key": "Cloudflare Turnstile 站点密钥",
+      "Cloudflare Turnstile Secret Key": "Cloudflare Turnstile 密钥",
+      "If the cloudflare turnstile keys are not empty, the turnstile will be used for register and download.": "如果设置了 Cloudflare Turnstile 密钥，将在注册和下载时启用验证",
     }
   },
   "zh-TW": {
@@ -257,6 +329,8 @@ export const i18nData = {
       "Description cannot be empty": "介紹不能為空",
       "Loading": "載入中",
       "Enter a search keyword to continue": "輸入搜尋關鍵字以繼續",
+      "My Info": "個人信息",
+      "Server": "伺服器",
 
       // Management page translations
       "Manage": "管理",
@@ -324,6 +398,40 @@ export const i18nData = {
       "URL": "URL",
       "Upload a file to server, then the file will be moved to the selected storage.": "將檔案上傳到伺服器，然後檔案將被移動到選定的儲存中。",
       "Select Storage": "選擇儲存",
+      "Resource Details": "資源詳情",
+      "Delete Resource": "刪除資源",
+      "Are you sure you want to delete the resource": "您確定要刪除此資源嗎",
+      "Delete File": "刪除檔案", 
+      "Are you sure you want to delete the file": "您確定要刪除此檔案嗎",
+
+      // New translations
+      "Change Avatar": "更改頭像",
+      "Change Username": "更改用戶名",
+      "Change Password": "更改密碼",
+      "New Username": "新用戶名",
+      "Enter new username": "輸入新用戶名",
+      "Save": "儲存",
+      "Current Password": "當前密碼",
+      "Enter current password": "輸入當前密碼",
+      "New Password": "新密碼",
+      "Enter new password": "輸入新密碼", 
+      "Confirm New Password": "確認新密碼",
+      "Confirm new password": "確認新密碼",
+      "Avatar changed successfully": "頭像更改成功",
+      "Username changed successfully": "用戶名更改成功",
+      "Password changed successfully": "密碼更改成功",
+      
+      // Manage server config page translations
+      "Update server config successfully": "成功更新伺服器配置",
+      "Max uploading size (MB)": "最大上傳大小 (MB)",
+      "Max file size (MB)": "最大檔案大小 (MB)",
+      "Max downloads per day for single IP": "單個IP每日最大下載次數",
+      "Allow register": "允許註冊",
+      "Server name": "伺服器名稱",
+      "Server description": "伺服器描述",
+      "Cloudflare Turnstile Site Key": "Cloudflare Turnstile 網站密鑰",
+      "Cloudflare Turnstile Secret Key": "Cloudflare Turnstile 密鑰",
+      "If the cloudflare turnstile keys are not empty, the turnstile will be used for register and download.": "如果設置了 Cloudflare Turnstile 密鑰，將在註冊和下載時啟用驗證",
     }
   }
 }
