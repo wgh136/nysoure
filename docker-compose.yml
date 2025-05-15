@@ -1,0 +1,36 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - app_data:/var/lib/nysoure
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=nysoure
+      - DB_PASSWORD=nysoure_password
+      - DB_NAME=nysoure
+      - DEBUG_MODE=false
+    restart: unless-stopped
+
+  db:
+    image: mariadb:latest
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=nysoure
+      - MYSQL_USER=nysoure
+      - MYSQL_PASSWORD=nysoure_password
+    ports:
+      - "3306"
+    restart: unless-stopped
+
+volumes:
+  app_data:
+  db_data:

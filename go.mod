@@ -10,7 +10,12 @@ require (
 	gorm.io/gorm v1.26.1
 )
 
-require github.com/chai2010/webp v1.4.0
+require (
+	github.com/chai2010/webp v1.4.0
+	gorm.io/driver/mysql v1.5.7
+)
+
+require github.com/go-sql-driver/mysql v1.7.0 // indirect
 
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect

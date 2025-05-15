@@ -4,17 +4,16 @@ import (
 	"log"
 	"nysoure/server/api"
 	"nysoure/server/middleware"
+	"os"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 )
 
-const (
-	debugMode = true
-)
-
 func main() {
+	debugMode := os.Getenv("DEBUG_MODE") != "false"
+
 	app := fiber.New(fiber.Config{
 		BodyLimit:  8 * 1024 * 1024,
 		TrustProxy: true,

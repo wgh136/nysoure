@@ -27,6 +27,7 @@ class Network {
   }
 
   init() {
+    this.testToken()
     if (import.meta.env.MODE === 'development') {
       this.baseUrl = 'http://localhost:3000';
       this.apiBaseUrl = 'http://localhost:3000/api';
@@ -56,6 +57,19 @@ class Network {
       (error) => {
         return Promise.reject(error);
       })
+  }
+
+  async testToken(): Promise<void> {
+    if (!app.token) {
+      return;
+    }
+    const res = await this.getUserInfo(app.user!.username)
+    if (!res.success) {
+      app.token = null;
+      app.user = null;
+      app.saveData();
+      window.location.reload();
+    }
   }
 
   async login(username: string, password: string): Promise<Response<UserWithToken>> {
