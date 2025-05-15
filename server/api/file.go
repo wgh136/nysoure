@@ -190,7 +190,8 @@ func deleteFile(c fiber.Ctx) error {
 }
 
 func downloadFile(c fiber.Ctx) error {
-	s, filename, err := service.DownloadFile(c.Params("id"))
+	ip := c.IP()
+	s, filename, err := service.DownloadFile(ip, c.Params("id"))
 	if err != nil {
 		return err
 	}

@@ -10,9 +10,14 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/logger"
 )
 
+const (
+	debugMode = true
+)
+
 func main() {
 	app := fiber.New(fiber.Config{
-		BodyLimit: 8 * 1024 * 1024,
+		BodyLimit:  8 * 1024 * 1024,
+		TrustProxy: true,
 	})
 
 	app.Use(logger.New(logger.Config{
@@ -23,7 +28,9 @@ func main() {
 
 	app.Use(middleware.JwtMiddleware)
 
-	app.Use(cors.New(cors.ConfigDefault))
+	if debugMode {
+		app.Use(cors.New(cors.ConfigDefault))
+	}
 
 	apiG := app.Group("/api")
 	{
