@@ -232,7 +232,7 @@ func FinishUploadingFile(uid uint, fid uint) (*model.FileView, error) {
 		return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
 	}
 
-	dbFile, err := dao.CreateFile(uploadingFile.Filename, uploadingFile.Description, uploadingFile.TargetResourceID, &uploadingFile.TargetStorageID, "", "", uploadingFile.TotalSize)
+	dbFile, err := dao.CreateFile(uploadingFile.Filename, uploadingFile.Description, uploadingFile.TargetResourceID, &uploadingFile.TargetStorageID, "", "", uploadingFile.TotalSize, uid)
 	if err != nil {
 		log.Error("failed to create file in db: ", err)
 		_ = os.Remove(resultFilePath)
@@ -305,7 +305,7 @@ func CreateRedirectFile(uid uint, filename string, description string, resourceI
 		return nil, model.NewUnAuthorizedError("user cannot upload file")
 	}
 
-	file, err := dao.CreateFile(filename, description, resourceID, nil, "", redirectUrl, 0)
+	file, err := dao.CreateFile(filename, description, resourceID, nil, "", redirectUrl, 0, uid)
 	if err != nil {
 		log.Error("failed to create file in db: ", err)
 		return nil, model.NewInternalServerError("failed to create file in db")
@@ -397,6 +397,7 @@ func DownloadFile(ip, fid, cfToken string) (string, string, error) {
 		log.Info("cf token verification failed")
 		return "", "", model.NewRequestError("cf token verification failed")
 	}
+	log.Info("File download request from: " + ip)
 	downloads, _ := ipDownloads.Load(ip)
 	if downloads == nil {
 		ipDownloads.Store(ip, 1)

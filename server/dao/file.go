@@ -74,7 +74,7 @@ func GetUploadingFilesOlderThan(time time.Time) ([]model.UploadingFile, error) {
 	return files, nil
 }
 
-func CreateFile(filename string, description string, resourceID uint, storageID *uint, storageKey string, redirectUrl string, size int64) (*model.File, error) {
+func CreateFile(filename string, description string, resourceID uint, storageID *uint, storageKey string, redirectUrl string, size int64, userID uint) (*model.File, error) {
 	if storageID == nil && redirectUrl == "" {
 		return nil, errors.New("storageID and redirectUrl cannot be both empty")
 	}
@@ -87,6 +87,7 @@ func CreateFile(filename string, description string, resourceID uint, storageID 
 		RedirectUrl: redirectUrl,
 		StorageKey:  storageKey,
 		Size:        size,
+		UserID:      userID,
 	}
 	if err := db.Create(f).Error; err != nil {
 		return nil, err

@@ -15,7 +15,9 @@ func SetStatistic(key string, value int64) error {
 
 func GetStatistic(key string) int64 {
 	statistic := &model.Statistic{}
-	if err := db.Where("key = ?", key).First(statistic).Error; err != nil {
+	if err := db.Where(&model.Statistic{
+		Key: key,
+	}).First(statistic).Error; err != nil {
 		return 0
 	}
 	return statistic.Value
