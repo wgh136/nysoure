@@ -13,10 +13,11 @@ import (
 func handleUserRegister(c fiber.Ctx) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
+	cfToken := c.FormValue("cf_token")
 	if username == "" || password == "" {
 		return model.NewRequestError("Username and password are required")
 	}
-	user, err := service.CreateUser(username, password)
+	user, err := service.CreateUser(username, password, cfToken)
 	if err != nil {
 		return err
 	}

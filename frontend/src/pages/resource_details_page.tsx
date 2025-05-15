@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router";
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import {createContext, createRef, useCallback, useContext, useEffect, useRef, useState} from "react";
 import { ResourceDetails, RFile, Storage, Comment } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import showToast from "../components/toast.ts";
@@ -12,6 +12,8 @@ import { uploadingManager } from "../network/uploading.ts";
 import { ErrorAlert } from "../components/alert.tsx";
 import { useTranslation } from "react-i18next";
 import Pagination from "../components/pagination.tsx";
+import showPopup, {useClosePopup} from "../components/popup.tsx";
+import {Turnstile} from "@marsidev/react-turnstile";
 
 export default function ResourcePage() {
   const params = useParams()
@@ -39,7 +41,7 @@ export default function ResourcePage() {
 
   useEffect(() => {
     document.title = t("Resource Details");
-  }, [])
+  }, [t])
 
   useEffect(() => {
     if (!isNaN(id)) {
@@ -155,6 +157,8 @@ function Article({ article }: { article: string }) {
 }
 
 function FileTile({ file }: { file: RFile }) {
+  const buttonRef = createRef<HTMLButtonElement>()
+
   return <div className={"card card-border border-base-300 my-2"}>
     <div className={"p-4 flex flex-row items-center"}>
       <div className={"grow"}>
@@ -162,14 +166,30 @@ function FileTile({ file }: { file: RFile }) {
         <p className={"text-sm"}>{file.description}</p>
       </div>
       <div>
-        <button className={"btn btn-primary btn-soft btn-square"} onClick={() => {
-          const link = network.getFileDownloadLink(file.id);
-          window.open(link, "_blank");
+        <button ref={buttonRef} className={"btn btn-primary btn-soft btn-square"} onClick={() => {
+          if (!app.cloudflareTurnstileSiteKey) {
+            const link = network.getFileDownloadLink(file.id, "");
+            window.open(link, "_blank");
+          } else {
+            showPopup(<CloudflarePopup file={file}/>, buttonRef.current!)
+          }
         }}>
           <MdOutlineDownload size={24} />
         </button>
       </div>
     </div>
+  </div>
+}
+
+function CloudflarePopup({ file }: { file: RFile }) {
+  const closePopup = useClosePopup()
+
+  return <div className={"menu bg-base-100 rounded-box z-1 w-80 p-2 shadow-sm h-20"}>
+    <Turnstile siteKey={app.cloudflareTurnstileSiteKey!} onSuccess={(token) => {
+      closePopup();
+      const link = network.getFileDownloadLink(file.id, token);
+      window.open(link, "_blank");
+    }}></Turnstile>
   </div>
 }
 

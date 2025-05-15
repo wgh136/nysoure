@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"github.com/gofiber/fiber/v3/log"
 	"nysoure/server/config"
 	"nysoure/server/dao"
 	"nysoure/server/model"
@@ -18,7 +19,7 @@ const (
 	embedAvatarCount = 1
 )
 
-func CreateUser(username, password string) (model.UserViewWithToken, error) {
+func CreateUser(username, password, cfToken string) (model.UserViewWithToken, error) {
 	if !config.AllowRegister() {
 		return model.UserViewWithToken{}, model.NewRequestError("User registration is not allowed")
 	}
@@ -27,6 +28,14 @@ func CreateUser(username, password string) (model.UserViewWithToken, error) {
 	}
 	if len(password) < 6 || len(password) > 20 {
 		return model.UserViewWithToken{}, model.NewRequestError("Password must be between 6 and 20 characters")
+	}
+	passed, err := verifyCfToken(cfToken)
+	if err != nil {
+		log.Error("Error verifying Cloudflare token:", err)
+		return model.UserViewWithToken{}, model.NewInternalServerError("Failed to verify Cloudflare token")
+	}
+	if !passed {
+		return model.UserViewWithToken{}, model.NewRequestError("invalid Cloudflare token")
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {

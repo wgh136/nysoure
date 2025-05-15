@@ -385,7 +385,16 @@ func GetFile(fid string) (*model.FileView, error) {
 	return file.ToView(), nil
 }
 
-func DownloadFile(ip string, fid string) (string, string, error) {
+func DownloadFile(ip, fid, cfToken string) (string, string, error) {
+	passed, err := verifyCfToken(cfToken)
+	if err != nil {
+		log.Error("failed to verify cf token: ", err)
+		return "", "", model.NewRequestError("failed to verify cf token")
+	}
+	if !passed {
+		log.Info("cf token verification failed")
+		return "", "", model.NewRequestError("cf token verification failed")
+	}
 	downloads, _ := ipDownloads.Load(ip)
 	if downloads == nil {
 		ipDownloads.Store(ip, 1)

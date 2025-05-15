@@ -29,8 +29,8 @@ type ServerConfig struct {
 }
 
 func init() {
-	filepath := filepath.Join(utils.GetStoragePath(), "config.json")
-	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+	p := filepath.Join(utils.GetStoragePath(), "config.json")
+	if _, err := os.Stat(p); os.IsNotExist(err) {
 		config = &ServerConfig{
 			MaxUploadingSizeInMB:          20 * 1024, // 20GB
 			MaxFileSizeInMB:               8 * 1024,  // 8GB
@@ -42,7 +42,7 @@ func init() {
 			ServerDescription:             "Nysoure is a file sharing service.",
 		}
 	} else {
-		data, err := os.ReadFile(filepath)
+		data, err := os.ReadFile(p)
 		if err != nil {
 			panic(err)
 		}
@@ -95,4 +95,8 @@ func ServerName() string {
 
 func ServerDescription() string {
 	return config.ServerDescription
+}
+
+func CloudflareTurnstileSecretKey() string {
+	return config.CloudflareTurnstileSecretKey
 }

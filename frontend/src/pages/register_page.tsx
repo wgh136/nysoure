@@ -3,6 +3,7 @@ import {network} from "../network/network.ts";
 import {app} from "../app.ts";
 import {useNavigate} from "react-router";
 import {useTranslation} from "react-i18next";
+import {Turnstile} from "@marsidev/react-turnstile";
 
 export default function RegisterPage() {
   const {t} = useTranslation();
@@ -11,11 +12,17 @@ export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [cfToken, setCfToken] = useState("");
 
   const navigate = useNavigate();
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
+    if (app.cloudflareTurnstileSiteKey && !cfToken) {
+      setError(t("Please complete the captcha"));
+      return;
+    }
     if (!username || !password) {
       setError(t("Username and password cannot be empty"));
       return;
@@ -25,7 +32,7 @@ export default function RegisterPage() {
       return;
     }
     setLoading(true);
-    const res = await network.register(username, password);
+    const res = await network.register(username, password, cfToken);
     if (res.success) {
       app.user = res.data!;
       app.token = res.data!.token;
@@ -37,9 +44,9 @@ export default function RegisterPage() {
     }
   };
 
-    useEffect(() => {
-      document.title = t("Register");
-    }, [])
+  useEffect(() => {
+    document.title = t("Register");
+  }, [t])
 
   return <div className={"flex items-center justify-center w-full h-full bg-base-200"} id={"register-page"}>
     <div className={"w-96 card card-border bg-base-100 border-base-300"}>
@@ -60,12 +67,21 @@ export default function RegisterPage() {
           </fieldset>
           <fieldset className="fieldset w-full">
             <legend className="fieldset-legend">{t("Password")}</legend>
-            <input type="password" className="input w-full" value={password} onChange={(e) => setPassword(e.target.value)}/>
+            <input type="password" className="input w-full" value={password}
+                   onChange={(e) => setPassword(e.target.value)}/>
           </fieldset>
           <fieldset className="fieldset w-full">
             <legend className="fieldset-legend">{t("Confirm Password")}</legend>
-            <input type="password" className="input w-full" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}/>
+            <input type="password" className="input w-full" value={confirmPassword}
+                   onChange={(e) => setConfirmPassword(e.target.value)}/>
           </fieldset>
+          {
+            app.cloudflareTurnstileSiteKey && <Turnstile
+              siteKey={app.cloudflareTurnstileSiteKey}
+              onSuccess={setCfToken}
+              onExpire={() => setCfToken("")}
+            />
+          }
           <button className={"btn my-4 btn-primary"} type={"submit"}>
             {isLoading && <span className="loading loading-spinner"></span>}
             {t("Continue")}

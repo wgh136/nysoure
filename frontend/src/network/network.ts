@@ -74,11 +74,12 @@ class Network {
     }
   }
 
-  async register(username: string, password: string): Promise<Response<UserWithToken>> {
+  async register(username: string, password: string, cfToken: string): Promise<Response<UserWithToken>> {
     try {
       const response = await axios.postForm(`${this.apiBaseUrl}/user/register`, {
         username,
-        password
+        password,
+        cf_token: cfToken
       })
       return response.data
     } catch (e: any) {
@@ -599,8 +600,8 @@ class Network {
     }
   }
 
-  getFileDownloadLink(fileId: string): string {
-    return `${this.apiBaseUrl}/files/download/${fileId}`;
+  getFileDownloadLink(fileId: string, cfToken: string): string {
+    return `${this.apiBaseUrl}/files/download/${fileId}?cf_token=${cfToken}`;
   }
 
   async createComment(resourceID: number, content: string): Promise<Response<any>> {
