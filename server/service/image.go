@@ -14,6 +14,7 @@ import (
 	"github.com/gofiber/fiber/v3/log"
 	"github.com/google/uuid"
 
+	_ "golang.org/x/image/bmp"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
