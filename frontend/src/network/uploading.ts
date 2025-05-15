@@ -188,3 +188,10 @@ class UploadingManager extends Listenable {
 }
 
 export const uploadingManager = new UploadingManager();
+
+window.addEventListener("beforeunload", () => {
+  if (uploadingManager.hasTasks()) {
+    return "Uploading files, are you sure you want to leave?";
+  }
+  return undefined;
+})
