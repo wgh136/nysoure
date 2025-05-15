@@ -32,7 +32,7 @@ export default function Navigator() {
           <SearchBar />
           <UploadingSideBar />
           {
-            app.isAdmin() && <button className={"btn btn-circle btn-ghost"} onClick={() => {
+            app.isLoggedIn() && <button className={"btn btn-circle btn-ghost"} onClick={() => {
               navigate("/manage");
             }}>
               <MdSettings size={24} />

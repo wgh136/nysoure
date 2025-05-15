@@ -28,6 +28,10 @@ export default function UserPage() {
     });
   }, [username]);
 
+  useEffect(() => {
+    document.title = username || "User";
+  }, [username]);
+
   if (!user) {
     return <div className="w-full">
       <Loading />

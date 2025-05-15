@@ -62,7 +62,7 @@ export default function ManageServerConfigPage() {
     setIsLoading(false);
   };
 
-  return <form className="px-4" onSubmit={handleSubmit}>
+  return <form className="px-4 pb-4" onSubmit={handleSubmit}>
     <Input type="number" value={config.max_uploading_size_in_mb.toString()} label="Max uploading size (MB)" onChange={(e) => {
       setConfig({...config, max_uploading_size_in_mb: parseInt(e.target.value) })
     }}></Input>
@@ -78,6 +78,12 @@ export default function ManageServerConfigPage() {
         setConfig({ ...config, allow_register: e.target.checked })
       }} />
     </fieldset>
+    <Input type="text" value={config.server_name} label="Server name" onChange={(e) => {
+      setConfig({...config, server_name: e.target.value })
+    }}></Input>
+    <Input type="text" value={config.server_description} label="Server description" onChange={(e) => {
+      setConfig({...config, server_description: e.target.value })
+    }}></Input>
     <Input type="text" value={config.cloudflare_turnstile_site_key} label="Cloudflare Turnstile Site Key" onChange={(e) => {
       setConfig({...config, cloudflare_turnstile_site_key: e.target.value })
     }}></Input>

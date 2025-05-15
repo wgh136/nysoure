@@ -116,4 +116,6 @@ export interface ServerConfig {
   allow_register: boolean;
   cloudflare_turnstile_site_key: string;
   cloudflare_turnstile_secret_key: string;
+  server_name: string;
+  server_description: string;
 }

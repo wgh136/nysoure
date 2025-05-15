@@ -1,11 +1,18 @@
 import {User} from "./network/models.ts";
 
+interface MyWindow extends Window {
+  serverName?: string;
+  cloudflareTurnstileSiteKey?: string;
+}
+
 class App {
-  appName = "资源库"
+  appName = "Nysoure"
 
   user: User | null = null;
 
   token: string | null = null;
+
+  cloudflareTurnstileSiteKey: string | null = null;
 
   constructor() {
     this.init();
@@ -20,6 +27,8 @@ class App {
     if (tokenJson) {
       this.token = JSON.parse(tokenJson);
     }
+    this.appName = (window as MyWindow).serverName || this.appName;
+    this.cloudflareTurnstileSiteKey = (window as MyWindow).cloudflareTurnstileSiteKey || null;
   }
 
   saveData() {

@@ -1,11 +1,41 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <base href="/">
+
+    <meta charset="UTF-8">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+    <meta name="description" content="{{Description}}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
+
+    <!-- SEO meta -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{Title}}">
+    <meta name="twitter:description" content="{{Description}}">
+    <meta name="twitter:image" content="{{Preview}}">
+    <meta property="og:title" content="{{Title}}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{Url}}">
+    <meta property="og:image" content="{{Preview}}">
+    <meta property="og:description" content="{{Description}}">
+    <meta property="og:site_name" content={{SiteName}}>
+
+    <!-- iOS meta tags & icons -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Nysoure">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <title>{{Title}}</title>
   </head>
   <body>
+    <script>
+      window.serverName = "{{SiteName}}";
+      window.cloudflareTurnstileSiteKey = "{{CFTurnstileSiteKey}}";
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

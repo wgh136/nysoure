@@ -28,6 +28,8 @@ func main() {
 
 	app.Use(middleware.JwtMiddleware)
 
+	app.Use(middleware.FrontendMiddleware)
+
 	if debugMode {
 		app.Use(cors.New(cors.ConfigDefault))
 	}

@@ -1,5 +1,5 @@
-import {MdMenu, MdOutlineBadge, MdOutlinePerson, MdOutlineStorage} from "react-icons/md";
-import {ReactNode, useEffect, useState} from "react";
+import { MdMenu, MdOutlineBadge, MdOutlinePerson, MdOutlineStorage } from "react-icons/md";
+import { ReactNode, useEffect, useState } from "react";
 import StorageView from "./manage_storage_page.tsx";
 import UserView from "./manage_user_page.tsx";
 import { useTranslation } from "react-i18next";
@@ -23,6 +23,10 @@ export default function ManagePage() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  useEffect(() => {
+    document.title = t("Manage");
+  }, [])
 
   const buildItem = (title: string, icon: ReactNode, p: number) => {
     return <li key={title} onClick={() => {
@@ -49,20 +53,20 @@ export default function ManagePage() {
   ]
 
   const pageComponents = [
-    <ManageMePage/>,
-    <StorageView/>,
-    <UserView/>,
-    <ManageServerConfigPage/>,
+    <ManageMePage />,
+    <StorageView />,
+    <UserView />,
+    <ManageServerConfigPage />,
   ]
 
   return <div className="drawer lg:drawer-open">
-    <input id="my-drawer-2" type="checkbox" className="drawer-toggle"/>
+    <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
     <div className="drawer-content" style={{
       height: "calc(100vh - 64px)",
     }}>
       <div className={"flex w-full h-14 items-center gap-2 px-3"}>
         <label className={"btn btn-square btn-ghost lg:hidden"} htmlFor="my-drawer-2">
-          <MdMenu size={24}/>
+          <MdMenu size={24} />
         </label>
         <h1 className={"text-xl font-bold"}>
           {pageNames[page]}
@@ -80,10 +84,10 @@ export default function ManagePage() {
         <h2 className={"text-lg font-bold p-4"}>
           {t("Manage")}
         </h2>
-        {buildItem(t("My Info"), <MdOutlineBadge className={"text-xl"}/>, 0)}
-        {buildItem(t("Storage"), <MdOutlineStorage className={"text-xl"}/>, 1)}
-        {buildItem(t("Users"), <MdOutlinePerson className={"text-xl"}/>, 2)}
-        {buildItem(t("Server"), <MdOutlineStorage className={"text-xl"}/>, 3)}
+        {buildItem(t("My Info"), <MdOutlineBadge className={"text-xl"} />, 0)}
+        {buildItem(t("Storage"), <MdOutlineStorage className={"text-xl"} />, 1)}
+        {buildItem(t("Users"), <MdOutlinePerson className={"text-xl"} />, 2)}
+        {buildItem(t("Server"), <MdOutlineStorage className={"text-xl"} />, 3)}
       </ul>
     </div>
   </div>

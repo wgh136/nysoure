@@ -22,6 +22,10 @@ type ServerConfig struct {
 	CloudflareTurnstileSiteKey string `json:"cloudflare_turnstile_site_key"`
 	// CloudflareTurnstileSecretKey is the secret key for Cloudflare Turnstile.
 	CloudflareTurnstileSecretKey string `json:"cloudflare_turnstile_secret_key"`
+
+	ServerName string `json:"server_name"`
+
+	ServerDescription string `json:"server_description"`
 }
 
 func init() {
@@ -34,6 +38,8 @@ func init() {
 			AllowRegister:                 true,
 			CloudflareTurnstileSiteKey:    "",
 			CloudflareTurnstileSecretKey:  "",
+			ServerName:                    "Nysoure",
+			ServerDescription:             "Nysoure is a file sharing service.",
 		}
 	} else {
 		data, err := os.ReadFile(filepath)
@@ -77,4 +83,16 @@ func AllowRegister() bool {
 
 func MaxDownloadsPerDayForSingleIP() int {
 	return config.MaxDownloadsPerDayForSingleIP
+}
+
+func CloudflareTurnstileSiteKey() string {
+	return config.CloudflareTurnstileSiteKey
+}
+
+func ServerName() string {
+	return config.ServerName
+}
+
+func ServerDescription() string {
+	return config.ServerDescription
 }

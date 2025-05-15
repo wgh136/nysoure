@@ -10,7 +10,9 @@ export default function SearchPage() {
 
   const keyword = params.get("keyword")
 
-  useEffect(() => {}, [])
+  useEffect(() => {
+    document.title = t("Search") + ": " + (keyword || "");
+  }, [])
 
   if (keyword === null || keyword === "") {
     return <div role="alert" className="alert alert-info alert-dash">

@@ -1,4 +1,4 @@
-import {FormEvent, useState} from "react";
+import {FormEvent, useEffect, useState} from "react";
 import {network} from "../network/network.ts";
 import {app} from "../app.ts";
 import {useNavigate} from "react-router";
@@ -31,6 +31,10 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    document.title = t("Login");
+  }, [])
 
   return <div className={"flex items-center justify-center w-full h-full bg-base-200"} id={"login-page"}>
     <div className={"w-96 card card-border bg-base-100 border-base-300"}>
