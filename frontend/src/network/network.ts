@@ -27,7 +27,6 @@ class Network {
   }
 
   init() {
-    this.testToken()
     if (import.meta.env.MODE === 'development') {
       this.baseUrl = 'http://localhost:3000';
       this.apiBaseUrl = 'http://localhost:3000/api';
@@ -57,6 +56,7 @@ class Network {
       (error) => {
         return Promise.reject(error);
       })
+    this.testToken()
   }
 
   async testToken(): Promise<void> {
