@@ -340,6 +340,19 @@ class Network {
     }
   }
 
+  async editResource(id: number, params: CreateResourceParams): Promise<Response<void>> {
+    try {
+      const response = await axios.post(`${this.apiBaseUrl}/resource/${id}`, params)
+      return response.data
+    } catch (e: any) {
+      console.error(e)
+      return {
+        success: false,
+        message: e.toString(),
+      }
+    }
+  }
+
   async getResources(page: number): Promise<PageResponse<Resource>> {
     try {
       const response = await axios.get(`${this.apiBaseUrl}/resource`, {

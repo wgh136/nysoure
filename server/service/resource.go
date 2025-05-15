@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/gofiber/fiber/v3/log"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 
@@ -135,4 +136,47 @@ func GetResourcesWithUser(username string, page int) ([]model.ResourceView, int,
 		views = append(views, r.ToView())
 	}
 	return views, totalPages, nil
+}
+
+func EditResource(uid, rid uint, params *ResourceCreateParams) error {
+	isAdmin, err := checkUserCanUpload(uid)
+	if err != nil {
+		log.Error("checkUserCanUpload error: ", err)
+		return model.NewInternalServerError("Failed to check user permission")
+	}
+	r, err := dao.GetResourceByID(rid)
+	if err != nil {
+		return err
+	}
+	if r.UserID != uid && !isAdmin {
+		return model.NewUnAuthorizedError("You have not permission to edit this resource")
+	}
+
+	r.Title = params.Title
+	r.AlternativeTitles = params.AlternativeTitles
+	r.Article = params.Article
+
+	images := make([]model.Image, len(params.Images))
+	for i, id := range params.Images {
+		images[i] = model.Image{
+			Model: gorm.Model{
+				ID: id,
+			},
+		}
+	}
+	tags := make([]model.Tag, len(params.Tags))
+	for i, id := range params.Tags {
+		tags[i] = model.Tag{
+			Model: gorm.Model{
+				ID: id,
+			},
+		}
+	}
+	r.Images = images
+	r.Tags = tags
+	if err := dao.UpdateResource(r); err != nil {
+		log.Error("UpdateResource error: ", err)
+		return model.NewInternalServerError("Failed to update resource")
+	}
+	return nil
 }

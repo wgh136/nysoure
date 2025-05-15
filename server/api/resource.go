@@ -183,6 +183,36 @@ func handleGetResourcesWithUser(c fiber.Ctx) error {
 	})
 }
 
+func handleUpdateResource(c fiber.Ctx) error {
+	idStr := c.Params("id")
+	if idStr == "" {
+		return model.NewRequestError("Resource ID is required")
+	}
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return model.NewRequestError("Invalid resource ID")
+	}
+	var params service.ResourceCreateParams
+	body := c.Body()
+	err = json.Unmarshal(body, &params)
+	if err != nil {
+		return model.NewRequestError("Invalid request body")
+	}
+	uid, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewUnAuthorizedError("You must be logged in to update a resource")
+	}
+	err = service.EditResource(uid, uint(id), &params)
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(model.Response[any]{
+		Success: true,
+		Data:    nil,
+		Message: "Resource updated successfully",
+	})
+}
+
 func AddResourceRoutes(api fiber.Router) {
 	resource := api.Group("/resource")
 	{
@@ -193,5 +223,6 @@ func AddResourceRoutes(api fiber.Router) {
 		resource.Delete("/:id", handleDeleteResource)
 		resource.Get("/tag/:tag", handleListResourcesWithTag)
 		resource.Get("/user/:username", handleGetResourcesWithUser)
+		resource.Post("/:id", handleUpdateResource)
 	}
 }

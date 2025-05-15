@@ -12,7 +12,7 @@ import {
   MdOutlineComment,
   MdOutlineDataset,
   MdOutlineDelete,
-  MdOutlineDownload
+  MdOutlineDownload, MdOutlineEdit
 } from "react-icons/md";
 import {app} from "../app.ts";
 import {uploadingManager} from "../network/uploading.ts";
@@ -151,6 +151,13 @@ export default function ResourcePage() {
         </div>
 
         <div className={"grow"}></div>
+        {
+          app.isAdmin() || app.user?.id === resource.id ? <Button className={"btn-ghost btn-circle"} onClick={() => {
+            navigate(`/resource/edit/${resource.id}`, {replace: true})
+          }}>
+            <MdOutlineEdit size={20}/>
+          </Button> : null
+        }
         <DeleteResourceDialog resourceId={resource.id} uploaderId={resource.author.id}/>
       </div>
       <div className="h-4"></div>
@@ -187,7 +194,7 @@ function DeleteResourceDialog({resourceId, uploaderId}: { resourceId: number, up
   }
 
   return <>
-    <Button className={"btn-error btn-ghost"} onClick={() => {
+    <Button className={"btn-error btn-ghost btn-circle"} onClick={() => {
       const dialog = document.getElementById("delete_resource_dialog") as HTMLDialogElement
       dialog.showModal()
     }}>

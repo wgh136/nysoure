@@ -147,6 +147,7 @@ export const i18nData = {
       "Searching...": "Searching...",
       "Create Tag": "Create Tag",
       "Search Tags": "Search Tags",
+      "Edit Resource": "Edit Resource",
     }
   },
   "zh-CN": {
@@ -297,6 +298,7 @@ export const i18nData = {
       "Searching...": "搜索中...",
       "Create Tag": "创建标签",
       "Search Tags": "搜索标签",
+      "Edit Resource": "编辑资源",
     }
   },
   "zh-TW": {
@@ -447,6 +449,7 @@ export const i18nData = {
       "Searching...": "搜尋中...",
       "Create Tag": "創建標籤",
       "Search Tags": "搜尋標籤",
+      "Edit Resource": "編輯資源",
     }
   }
 }
