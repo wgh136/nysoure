@@ -19,7 +19,7 @@ export const i18nData = {
       "Don't have an account? Register": "Don't have an account? Register",
       "Already have an account? Login": "Already have an account? Login",
       "Publish Resource": "Publish Resource",
-      "All information, images, and files can be modified after publishing": "All information, images, and files can be modified after publishing",
+      "All information can be modified after publishing": "All information can be modified after publishing",
       "Title": "Title",
       "Alternative Titles": "Alternative Titles",
       "Add Alternative Title": "Add Alternative Title",
@@ -41,14 +41,14 @@ export const i18nData = {
       "Enter a search keyword to continue": "Enter a search keyword to continue",
       "My Info": "My Info",
       "Server": "Server",
-      
+
       // Management page translations
       "Manage": "Manage",
       "Storage": "Storage",
       "Users": "Users",
       "You are not logged in. Please log in to access this page.": "You are not logged in. Please log in to access this page.",
       "You are not authorized to access this page.": "You are not authorized to access this page.",
-      
+
       // Storage management
       "No storage found. Please create a new storage.": "No storage found. Please create a new storage.",
       "Name": "Name",
@@ -72,7 +72,7 @@ export const i18nData = {
       "Storage created successfully": "Storage created successfully",
       "Close": "Close",
       "Submit": "Submit",
-      
+
       // User management
       "Admin": "Admin",
       "Can Upload": "Can Upload",
@@ -109,28 +109,28 @@ export const i18nData = {
       "Upload a file to server, then the file will be moved to the selected storage.": "Upload a file to server, then the file will be moved to the selected storage.",
       "Select Storage": "Select Storage",
       "Resource Details": "Resource Details",
-      "Delete Resource": "Delete Resource", 
+      "Delete Resource": "Delete Resource",
       "Are you sure you want to delete the resource": "Are you sure you want to delete the resource",
       "Delete File": "Delete File",
       "Are you sure you want to delete the file": "Are you sure you want to delete the file",
 
       // New translations
       "Change Avatar": "Change Avatar",
-      "Change Username": "Change Username", 
+      "Change Username": "Change Username",
       "Change Password": "Change Password",
       "New Username": "New Username",
       "Enter new username": "Enter new username",
       "Save": "Save",
       "Current Password": "Current Password",
       "Enter current password": "Enter current password",
-      "New Password": "New Password", 
+      "New Password": "New Password",
       "Enter new password": "Enter new password",
       "Confirm New Password": "Confirm New Password",
       "Confirm new password": "Confirm new password",
       "Avatar changed successfully": "Avatar changed successfully",
       "Username changed successfully": "Username changed successfully",
       "Password changed successfully": "Password changed successfully",
-      
+
       // Manage server config page translations
       "Update server config successfully": "Update server config successfully",
       "Max uploading size (MB)": "Max uploading size (MB)",
@@ -138,10 +138,15 @@ export const i18nData = {
       "Max downloads per day for single IP": "Max downloads per day for single IP",
       "Allow register": "Allow register",
       "Server name": "Server name",
-      "Server description": "Server description", 
+      "Server description": "Server description",
       "Cloudflare Turnstile Site Key": "Cloudflare Turnstile Site Key",
       "Cloudflare Turnstile Secret Key": "Cloudflare Turnstile Secret Key",
       "If the cloudflare turnstile keys are not empty, the turnstile will be used for register and download.": "If the cloudflare turnstile keys are not empty, the turnstile will be used for register and download.",
+      "The first image will be used as the cover image": "The first image will be used as the cover image",
+      "Please enter a search keyword": "Please enter a search keyword",
+      "Searching...": "Searching...",
+      "Create Tag": "Create Tag",
+      "Search Tags": "Search Tags",
     }
   },
   "zh-CN": {
@@ -164,7 +169,7 @@ export const i18nData = {
       "Don't have an account? Register": "没有账号？注册",
       "Already have an account? Login": "已有账号？登录",
       "Publish Resource": "发布资源",
-      "All information, images, and files can be modified after publishing": "所有的信息, 图片, 文件均可在发布后修改",
+      "All information can be modified after publishing": "所有的信息均可在发布后修改",
       "Title": "标题",
       "Alternative Titles": "其他标题",
       "Add Alternative Title": "新增标题",
@@ -267,15 +272,15 @@ export const i18nData = {
       "Enter new username": "输入新用户名",
       "Save": "保存",
       "Current Password": "当前密码",
-      "Enter current password": "输入当前密码", 
+      "Enter current password": "输入当前密码",
       "New Password": "新密码",
       "Enter new password": "输入新密码",
       "Confirm New Password": "确认新密码",
       "Confirm new password": "确认新密码",
       "Avatar changed successfully": "头像更改成功",
-      "Username changed successfully": "用户名更改成功", 
+      "Username changed successfully": "用户名更改成功",
       "Password changed successfully": "密码更改成功",
-      
+
       // Manage server config page translations
       "Update server config successfully": "成功更新服务器配置",
       "Max uploading size (MB)": "最大上传大小 (MB)",
@@ -287,6 +292,11 @@ export const i18nData = {
       "Cloudflare Turnstile Site Key": "Cloudflare Turnstile 站点密钥",
       "Cloudflare Turnstile Secret Key": "Cloudflare Turnstile 密钥",
       "If the cloudflare turnstile keys are not empty, the turnstile will be used for register and download.": "如果设置了 Cloudflare Turnstile 密钥，将在注册和下载时启用验证",
+      "The first image will be used as the cover image": "第一张图片将用作封面图片",
+      "Please enter a search keyword": "请输入搜索关键词",
+      "Searching...": "搜索中...",
+      "Create Tag": "创建标签",
+      "Search Tags": "搜索标签",
     }
   },
   "zh-TW": {
@@ -309,7 +319,7 @@ export const i18nData = {
       "Don't have an account? Register": "沒有賬號？註冊",
       "Already have an account? Login": "已有賬號？登入",
       "Publish Resource": "發布資源",
-      "All information, images, and files can be modified after publishing": "所有資訊、圖片、檔案均可於發布後修改",
+      "All information can be modified after publishing": "所有資訊均可於發布後修改",
       "Title": "標題",
       "Alternative Titles": "其他標題",
       "Add Alternative Title": "新增標題",
@@ -401,7 +411,7 @@ export const i18nData = {
       "Resource Details": "資源詳情",
       "Delete Resource": "刪除資源",
       "Are you sure you want to delete the resource": "您確定要刪除此資源嗎",
-      "Delete File": "刪除檔案", 
+      "Delete File": "刪除檔案",
       "Are you sure you want to delete the file": "您確定要刪除此檔案嗎",
 
       // New translations
@@ -414,13 +424,13 @@ export const i18nData = {
       "Current Password": "當前密碼",
       "Enter current password": "輸入當前密碼",
       "New Password": "新密碼",
-      "Enter new password": "輸入新密碼", 
+      "Enter new password": "輸入新密碼",
       "Confirm New Password": "確認新密碼",
       "Confirm new password": "確認新密碼",
       "Avatar changed successfully": "頭像更改成功",
       "Username changed successfully": "用戶名更改成功",
       "Password changed successfully": "密碼更改成功",
-      
+
       // Manage server config page translations
       "Update server config successfully": "成功更新伺服器配置",
       "Max uploading size (MB)": "最大上傳大小 (MB)",
@@ -432,6 +442,11 @@ export const i18nData = {
       "Cloudflare Turnstile Site Key": "Cloudflare Turnstile 網站密鑰",
       "Cloudflare Turnstile Secret Key": "Cloudflare Turnstile 密鑰",
       "If the cloudflare turnstile keys are not empty, the turnstile will be used for register and download.": "如果設置了 Cloudflare Turnstile 密鑰，將在註冊和下載時啟用驗證",
+      "The first image will be used as the cover image": "第一張圖片將用作封面圖片",
+      "Please enter a search keyword": "請輸入搜尋關鍵字",
+      "Searching...": "搜尋中...",
+      "Create Tag": "創建標籤",
+      "Search Tags": "搜尋標籤",
     }
   }
 }

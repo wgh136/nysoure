@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MdAdd, MdDelete, MdOutlineInfo } from "react-icons/md";
+import {MdAdd, MdClose, MdDelete, MdOutlineInfo, MdSearch} from "react-icons/md";
 import { Tag } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import { LuInfo } from "react-icons/lu";
@@ -24,7 +24,7 @@ export default function PublishPage() {
 
   useEffect(() => {
     document.title = t("Publish Resource");
-  }, [])
+  }, [t])
 
   const handleSubmit = async () => {
     if (isSubmitting) {
@@ -102,7 +102,7 @@ export default function PublishPage() {
     <h1 className={"text-2xl font-bold my-4"}>{t("Publish Resource")}</h1>
     <div role="alert" className="alert alert-info mb-2 alert-dash">
       <MdOutlineInfo size={24} />
-      <span>{t("All information, images, and files can be modified after publishing")}</span>
+      <span>{t("All information can be modified after publishing")}</span>
     </div>
     <p className={"my-1"}>{t("Title")}</p>
     <input type="text" className="input w-full" value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -137,7 +137,16 @@ export default function PublishPage() {
     <p className={"my-1 pb-1"}>
       {
         tags.map((tag, index) => {
-          return <span key={index} className={"badge badge-primary mr-2"}>{tag.name}</span>
+          return <span key={index} className={"badge badge-primary mr-2 text-sm"}>
+            {tag.name}
+            <span onClick={() => {
+              const newTags = [...tags]
+              newTags.splice(index, 1)
+              setTags(newTags)
+            }}>
+              <MdClose size={18}/>
+            </span>
+          </span>
         })
       }
     </p>
@@ -155,7 +164,10 @@ export default function PublishPage() {
     <p className={"my-1"}>{t("Images")}</p>
     <div role="alert" className="alert alert-info alert-soft my-2">
       <MdOutlineInfo size={24} />
-      <span>{t("Images will not be displayed automatically, you need to reference them in the description")}</span>
+      <div>
+        <p>{t("Images will not be displayed automatically, you need to reference them in the description")}</p>
+        <p>{t("The first image will be used as the cover image")}</p>
+      </div>
     </div>
     <div className={`rounded-box border border-base-content/5 bg-base-100 ${images.length === 0 ? "hidden" : ""}`}>
       <table className={"table"}>
@@ -273,7 +285,7 @@ function TagInput({ onAdd }: { onAdd: (tag: Tag) => void }) {
     input.blur()
   }
 
-  let dropdownContent = <></>
+  let dropdownContent
   if (error) {
     dropdownContent = <div className="alert alert-error my-2">
       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 shrink-0 stroke-current" fill="none"
@@ -319,18 +331,7 @@ function TagInput({ onAdd }: { onAdd: (tag: Tag) => void }) {
 
   return <div className={"dropdown dropdown-end"}>
     <label className="input">
-      <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <g
-          stroke-linejoin="round"
-          stroke-linecap="round"
-          stroke-width="2.5"
-          fill="none"
-          stroke="currentColor"
-        >
-          <circle cx="11" cy="11" r="8"></circle>
-          <path d="m21 21-4.3-4.3"></path>
-        </g>
-      </svg>
+      <MdSearch size={18}/>
       <input autoComplete={"off"} id={"search_tags_input"} tabIndex={0} type="text" className="grow" placeholder={t("Search Tags")} value={keyword} onChange={(e) => handleChange(e.target.value)} />
     </label>
     <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow mt-2 border border-base-300">
