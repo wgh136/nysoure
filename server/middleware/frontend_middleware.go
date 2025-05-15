@@ -41,7 +41,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 
 	siteName := config.ServerName()
 	description := config.ServerDescription()
-	preview := serverBaseURL + "/api/icon-192.png"
+	preview := serverBaseURL + "/icon-192.png"
 	title := siteName
 	url := c.OriginalURL()
 	cfTurnstileSiteKey := config.CloudflareTurnstileSiteKey()
@@ -53,7 +53,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 			r, err := service.GetResource(uint(id))
 			if err == nil {
 				if len(r.Images) > 0 {
-					preview = fmt.Sprintf("%s/api/images/%d", serverBaseURL, r.Images[0].ID)
+					preview = fmt.Sprintf("%s/api/image/%d", serverBaseURL, r.Images[0].ID)
 				}
 				title = r.Title
 				description = getResourceDescription(r.Article)
