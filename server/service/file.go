@@ -330,17 +330,19 @@ func DeleteFile(uid uint, fid string) error {
 		return model.NewUnAuthorizedError("user cannot delete file")
 	}
 
-	iStorage := storage.NewStorage(file.Storage)
-	if iStorage == nil {
-		log.Error("failed to find storage: ", err)
-		return model.NewInternalServerError("failed to find storage")
-	}
+	if file.StorageID != nil {
+		iStorage := storage.NewStorage(file.Storage)
+		if iStorage == nil {
+			log.Error("failed to find storage: ", err)
+			return model.NewInternalServerError("failed to find storage")
+		}
 
-	if err := iStorage.Delete(file.StorageKey); err != nil {
-		log.Error("failed to delete file from storage: ", err)
-		return model.NewInternalServerError("failed to delete file from storage")
+		if err := iStorage.Delete(file.StorageKey); err != nil {
+			log.Error("failed to delete file from storage: ", err)
+			return model.NewInternalServerError("failed to delete file from storage")
+		}
+		_ = dao.AddStorageUsage(*file.StorageID, -file.Size)
 	}
-	_ = dao.AddStorageUsage(*file.StorageID, -file.Size)
 
 	if err := dao.DeleteFile(fid); err != nil {
 		log.Error("failed to delete file from db: ", err)
