@@ -64,7 +64,7 @@ class Network {
       return;
     }
     const res = await this.getUserInfo(app.user!.username)
-    if (!res.success) {
+    if (!res.success && res.message.includes("Invalid token")) {
       app.token = null;
       app.user = null;
       app.saveData();
