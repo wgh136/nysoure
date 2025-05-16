@@ -1,6 +1,6 @@
-import {useEffect, useState} from "react";
-import {uploadingManager, UploadingTask} from "../network/uploading.ts";
-import {MdArrowUpward} from "react-icons/md";
+import { useEffect, useState } from "react";
+import { uploadingManager, UploadingTask } from "../network/uploading.ts";
+import { MdArrowUpward } from "react-icons/md";
 
 export default function UploadingSideBar() {
   const [showUploading, setShowUploading] = useState(false);
@@ -25,7 +25,7 @@ export default function UploadingSideBar() {
   return <>
     <label htmlFor={"uploading-drawer"} className={"btn btn-square btn-ghost relative btn-accent text-primary"}>
       <div className={"w-6 h-6 overflow-hidden relative"}>
-        <MdArrowUpward className={"move-up-animation pb-0.5"} size={24}/>
+        <MdArrowUpward className={"move-up-animation pb-0.5"} size={24} />
         <div className={"absolute border-b-2 w-5 bottom-1 left-0.5"}></div>
       </div>
     </label>
@@ -36,7 +36,7 @@ export default function UploadingSideBar() {
         <div className="menu bg-base-200 text-base-content h-full w-80 p-4 overflow-y-auto ">
           <div className={"grid grid-cols-1"}>
             <h2 className={"text-xl mb-2"}>Uploading</h2>
-            <UploadingList/>
+            <UploadingList />
           </div>
         </div>
       </div>
@@ -62,13 +62,13 @@ function UploadingList() {
   return <>
     {
       tasks.map((task) => {
-        return <TaskTile key={task.id} task={task}/>
+        return <TaskTile key={task.id} task={task} />
       })
     }
   </>
 }
 
-function TaskTile({task}: {task: UploadingTask}) {
+function TaskTile({ task }: { task: UploadingTask }) {
   const [progress, setProgress] = useState(task.progress);
 
   const [error, setError] = useState<string | null>(null);
@@ -88,9 +88,16 @@ function TaskTile({task}: {task: UploadingTask}) {
 
   return <div className={"card card-border border-base-300 p-2 my-2 w-full"}>
     <p className={"p-1 mb-2 w-full break-all line-clamp-2"}>{task.filename}</p>
-    <progress className="progress progress-primary my-2" value={100 * progress} max={100}/>
+    <progress className="progress progress-primary my-2" value={100 * progress} max={100} />
     {error && <p className={"text-error p-1"}>{error}</p>}
     <div className={"my-2 flex flex-row-reverse"}>
+      {
+        error && <button className={"btn h-7 mr-1"} onClick={() => {
+          task.start();
+        }}>
+          Retry
+        </button>
+      }
       <button className={"btn btn-error h-7"} onClick={() => {
         const dialog = document.getElementById(`cancel_task_${task.id}`) as HTMLDialogElement;
         dialog.showModal();
