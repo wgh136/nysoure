@@ -448,8 +448,14 @@ class Network {
     }
   }
 
-  async createS3Storage(name: string, endPoint: string, accessKeyID: string,
-    secretAccessKey: string, bucketName: string, maxSizeInMB: number): Promise<Response<any>> {
+  async createS3Storage(
+    name: string, 
+    endPoint: string, 
+    accessKeyID: string,
+    secretAccessKey: string, 
+    bucketName: string, 
+    maxSizeInMB: number,
+    domain: string): Promise<Response<any>> {
     try {
       const response = await axios.post(`${this.apiBaseUrl}/storage/s3`, {
         name,
@@ -457,7 +463,8 @@ class Network {
         accessKeyID,
         secretAccessKey,
         bucketName,
-        maxSizeInMB
+        maxSizeInMB,
+        domain
       });
       return response.data;
     } catch (e: any) {

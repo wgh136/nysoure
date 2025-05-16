@@ -14,6 +14,7 @@ type CreateS3StorageParams struct {
 	EndPoint        string `json:"endPoint"`
 	AccessKeyID     string `json:"accessKeyID"`
 	SecretAccessKey string `json:"secretAccessKey"`
+	Domain          string `json:"domain"`
 	BucketName      string `json:"bucketName"`
 	MaxSizeInMB     uint   `json:"maxSizeInMB"`
 }
@@ -32,6 +33,7 @@ func CreateS3Storage(uid uint, params CreateS3StorageParams) error {
 		AccessKeyID:     params.AccessKeyID,
 		SecretAccessKey: params.SecretAccessKey,
 		BucketName:      params.BucketName,
+		Domain:          params.Domain,
 	}
 	s := model.Storage{
 		Name:    params.Name,

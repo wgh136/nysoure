@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
+	"time"
+
 	"github.com/gofiber/fiber/v3/log"
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	"net/url"
-	"time"
 )
 
 type S3Storage struct {
@@ -18,6 +19,7 @@ type S3Storage struct {
 	AccessKeyID     string
 	SecretAccessKey string
 	BucketName      string
+	Domain          string
 }
 
 func (s *S3Storage) Upload(filePath string, fileName string) (string, error) {
@@ -43,6 +45,10 @@ func (s *S3Storage) Upload(filePath string, fileName string) (string, error) {
 }
 
 func (s *S3Storage) Download(storageKey string, fileName string) (string, error) {
+	if s.Domain != "" {
+		return s.Domain + "/" + storageKey, nil
+	}
+
 	minioClient, err := minio.New(s.EndPoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(s.AccessKeyID, s.SecretAccessKey, ""),
 		Secure: true,
@@ -80,6 +86,7 @@ func (s *S3Storage) FromString(config string) error {
 	s.AccessKeyID = s3Config.AccessKeyID
 	s.SecretAccessKey = s3Config.SecretAccessKey
 	s.BucketName = s3Config.BucketName
+	s.Domain = s3Config.Domain
 	if s.EndPoint == "" || s.AccessKeyID == "" || s.SecretAccessKey == "" || s.BucketName == "" {
 		return errors.New("invalid S3 configuration")
 	}
