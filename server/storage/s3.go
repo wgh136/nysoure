@@ -46,7 +46,7 @@ func (s *S3Storage) Upload(filePath string, fileName string) (string, error) {
 
 func (s *S3Storage) Download(storageKey string, fileName string) (string, error) {
 	if s.Domain != "" {
-		return s.Domain + "/" + storageKey, nil
+		return "https://" + s.Domain + "/" + storageKey, nil
 	}
 
 	minioClient, err := minio.New(s.EndPoint, &minio.Options{
