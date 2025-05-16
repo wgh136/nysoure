@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func CreateUploadingFile(filename string, description string, fileSize int64, blockSize int64, tempPath string, resourceID, storageID, userID uint, sha1 string) (*model.UploadingFile, error) {
+func CreateUploadingFile(filename string, description string, fileSize int64, blockSize int64, tempPath string, resourceID, storageID, userID uint, md5 string) (*model.UploadingFile, error) {
 	blocksCount := (fileSize + blockSize - 1) / blockSize
 	uf := &model.UploadingFile{
 		Filename:         filename,
@@ -22,7 +22,7 @@ func CreateUploadingFile(filename string, description string, fileSize int64, bl
 		TargetResourceID: resourceID,
 		TargetStorageID:  storageID,
 		UserID:           userID,
-		Sha1:             sha1,
+		Md5:              md5,
 	}
 	if err := db.Create(uf).Error; err != nil {
 		return nil, err
