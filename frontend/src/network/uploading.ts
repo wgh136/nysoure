@@ -1,4 +1,4 @@
-import { Sha1 } from "@aws-crypto/sha1-browser";
+import SparkMD5 from "spark-md5";
 import { Response } from "./models.ts";
 import { network } from "./network.ts";
 
@@ -150,27 +150,35 @@ class UploadingManager extends Listenable {
   }
 
   async addTask(file: File, resourceID: number, storageID: number, description: string, onFinished: () => void): Promise<Response<void>> {
-    // Calculate SHA-1 hash of the file
-    async function calculateSHA1(file: File): Promise<string> {
-      const hash = new Sha1();
-      const chunkSize = 4 * 1024 * 1024;
-      const totalChunks = Math.ceil(file.size / chunkSize);
-      for (let i = 0; i < totalChunks; i++) {
-        const start = i * chunkSize;
-        const end = Math.min(start + chunkSize, file.size);
-        const chunk = file.slice(start, end);
-        const arrayBuffer = await chunk.arrayBuffer();
-        hash.update(arrayBuffer);
-      }
-      const hashBuffer = await hash.digest();
-      const hashArray = new Uint8Array(hashBuffer);
-      const hashHex = Array.from(hashArray)
-        .map(byte => byte.toString(16).padStart(2, "0"))
-        .join("");
-      return hashHex;
+    // Calculate hash of the file
+    async function calculateMd5(file: File): Promise<string> {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        const spark = new SparkMD5.ArrayBuffer();
+        const chunkSize = 4 * 1024 * 1024;
+        let offset = 0;
+        reader.onload = (e) => {
+          spark.append(e.target!.result as ArrayBuffer);
+          offset += chunkSize;
+          if (offset < file.size) {
+            readSlice(offset);
+          } else {
+            resolve(spark.end());
+          }
+        };
+        reader.onerror = (e) => {
+          reject(e);
+        };
+        const readSlice = (o: number) => {
+          const end = o + chunkSize >= file.size ? file.size : o + chunkSize;
+          const slice = file.slice(o, end);
+          reader.readAsArrayBuffer(slice);
+        };
+        readSlice(0);
+      });
     }
 
-    const sha1 = await calculateSHA1(file);
+    const md5 = await calculateMd5(file);
 
     const res = await network.initFileUpload(
       file.name,
@@ -178,7 +186,7 @@ class UploadingManager extends Listenable {
       file.size,
       resourceID,
       storageID,
-      sha1,
+      md5,
     )
     if (!res.success) {
       return {

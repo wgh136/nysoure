@@ -1,7 +1,7 @@
 package service
 
 import (
-	"crypto/sha1"
+	"crypto/md5"
 	"encoding/hex"
 	"nysoure/server/config"
 	"nysoure/server/dao"
@@ -84,12 +84,12 @@ func init() {
 	}()
 }
 
-func CreateUploadingFile(uid uint, filename string, description string, fileSize int64, resourceID, storageID uint, sha1Str string) (*model.UploadingFileView, error) {
+func CreateUploadingFile(uid uint, filename string, description string, fileSize int64, resourceID, storageID uint, md5Str string) (*model.UploadingFileView, error) {
 	if filename == "" {
 		return nil, model.NewRequestError("filename is empty")
 	}
-	if sha1Str == "" {
-		return nil, model.NewRequestError("sha1 is empty")
+	if md5Str == "" {
+		return nil, model.NewRequestError("md5 is empty")
 	}
 	if len([]rune(filename)) > 128 {
 		return nil, model.NewRequestError("filename is too long")
@@ -118,7 +118,7 @@ func CreateUploadingFile(uid uint, filename string, description string, fileSize
 		log.Error("failed to create temp dir: ", err)
 		return nil, model.NewInternalServerError("failed to create temp dir")
 	}
-	uploadingFile, err := dao.CreateUploadingFile(filename, description, fileSize, blockSize, tempPath, resourceID, storageID, uid, sha1Str)
+	uploadingFile, err := dao.CreateUploadingFile(filename, description, fileSize, blockSize, tempPath, resourceID, storageID, uid, md5Str)
 	if err != nil {
 		log.Error("failed to create uploading file: ", err)
 		_ = os.Remove(tempPath)
@@ -202,7 +202,7 @@ func FinishUploadingFile(uid uint, fid uint) (*model.FileView, error) {
 		return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
 	}
 
-	h := sha1.New()
+	h := md5.New()
 
 	for i := 0; i < uploadingFile.BlocksCount(); i++ {
 		blockPath := filepath.Join(uploadingFile.TempPath, strconv.Itoa(i))
@@ -234,9 +234,9 @@ func FinishUploadingFile(uid uint, fid uint) (*model.FileView, error) {
 
 	sum := h.Sum(nil)
 	sumStr := hex.EncodeToString(sum)
-	if sumStr != uploadingFile.Sha1 {
+	if sumStr != uploadingFile.Md5 {
 		_ = os.Remove(resultFilePath)
-		return nil, model.NewRequestError("sha1 checksum is not correct")
+		return nil, model.NewRequestError("md5 checksum is not correct")
 	}
 
 	s, err := dao.GetStorage(uploadingFile.TargetStorageID)

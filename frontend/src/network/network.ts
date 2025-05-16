@@ -520,7 +520,7 @@ class Network {
   }
 
   async initFileUpload(filename: string, description: string, fileSize: number,
-    resourceId: number, storageId: number, sha1: string): Promise<Response<UploadingFile>> {
+    resourceId: number, storageId: number, md5: string): Promise<Response<UploadingFile>> {
     try {
       const response = await axios.post(`${this.apiBaseUrl}/files/upload/init`, {
         filename,
@@ -528,7 +528,7 @@ class Network {
         file_size: fileSize,
         resource_id: resourceId,
         storage_id: storageId,
-        sha1
+        md5
       });
       return response.data;
     } catch (e: any) {
