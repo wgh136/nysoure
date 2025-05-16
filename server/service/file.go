@@ -253,6 +253,7 @@ func FinishUploadingFile(uid uint, fid uint) (*model.FileView, error) {
 		if err != nil {
 			_ = dao.AddStorageUsage(uploadingFile.TargetStorageID, -uploadingFile.TotalSize)
 			log.Error("failed to upload file to storage: ", err)
+			_ = dao.DeleteFile(dbFile.UUID)
 		} else {
 			err = dao.SetFileStorageKey(dbFile.UUID, storageKey)
 			if err != nil {
