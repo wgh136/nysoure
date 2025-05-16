@@ -91,7 +91,7 @@ export default function StorageView() {
         <tr>
           <td>{t("Name")}</td>
           <td>{t("Created At")}</td>
-          <td>{t("Size")}</td>
+          <td>{t("Space")}</td>
           <td>{t("Action")}</td>
         </tr>
         </thead>

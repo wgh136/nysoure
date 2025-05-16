@@ -250,7 +250,7 @@ function UserRow({ user, onChanged }: { user: User, onChanged: () => void }) {
               <a>{t("Delete")}</a>
             </PopupMenuItem>
             {user.is_admin ? <PopupMenuItem onClick={handleSetUser}><a>{t("Set as user")}</a></PopupMenuItem> : <PopupMenuItem onClick={handleSetAdmin}><a>{t("Set as admin")}</a></PopupMenuItem>}
-            {user.is_admin ? (
+            {app.user?.is_admin ? (
               user.can_upload ? <PopupMenuItem onClick={handleRemoveUploadPermission}><a>{t("Remove upload permission")}</a></PopupMenuItem> : <PopupMenuItem onClick={handleSetUploadPermission}><a>{t("Grant upload permission")}</a></PopupMenuItem>
             ) : null}
           </ul>, buttonRef.current!);

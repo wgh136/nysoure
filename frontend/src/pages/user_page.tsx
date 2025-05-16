@@ -87,9 +87,9 @@ function UserComments({ user }: { user: User }) {
 
   return <div className="px-2">
     <CommentsList username={user.username} page={page} maxPageCallback={setMaxPage} />
-    {maxPage && <div className={"w-full flex justify-center"}>
+    {maxPage ? <div className={"w-full flex justify-center"}>
       <Pagination page={page} setPage={setPage} totalPages={maxPage} />
-    </div>}
+    </div> : null}
   </div>
 }
 
