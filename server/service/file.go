@@ -84,12 +84,9 @@ func init() {
 	}()
 }
 
-func CreateUploadingFile(uid uint, filename string, description string, fileSize int64, resourceID, storageID uint, md5Str string) (*model.UploadingFileView, error) {
+func CreateUploadingFile(uid uint, filename string, description string, fileSize int64, resourceID, storageID uint) (*model.UploadingFileView, error) {
 	if filename == "" {
 		return nil, model.NewRequestError("filename is empty")
-	}
-	if md5Str == "" {
-		return nil, model.NewRequestError("md5 is empty")
 	}
 	if len([]rune(filename)) > 128 {
 		return nil, model.NewRequestError("filename is too long")
@@ -118,7 +115,7 @@ func CreateUploadingFile(uid uint, filename string, description string, fileSize
 		log.Error("failed to create temp dir: ", err)
 		return nil, model.NewInternalServerError("failed to create temp dir")
 	}
-	uploadingFile, err := dao.CreateUploadingFile(filename, description, fileSize, blockSize, tempPath, resourceID, storageID, uid, md5Str)
+	uploadingFile, err := dao.CreateUploadingFile(filename, description, fileSize, blockSize, tempPath, resourceID, storageID, uid)
 	if err != nil {
 		log.Error("failed to create uploading file: ", err)
 		_ = os.Remove(tempPath)
@@ -165,7 +162,7 @@ func UploadBlock(uid uint, fid uint, index int, data []byte) error {
 	return nil
 }
 
-func FinishUploadingFile(uid uint, fid uint) (*model.FileView, error) {
+func FinishUploadingFile(uid uint, fid uint, md5Str string) (*model.FileView, error) {
 	uploadingFile, err := dao.GetUploadingFile(fid)
 	if err != nil {
 		log.Error("failed to get uploading file: ", err)
@@ -234,7 +231,7 @@ func FinishUploadingFile(uid uint, fid uint) (*model.FileView, error) {
 
 	sum := h.Sum(nil)
 	sumStr := hex.EncodeToString(sum)
-	if sumStr != uploadingFile.Md5 {
+	if sumStr != md5Str {
 		_ = os.Remove(resultFilePath)
 		return nil, model.NewRequestError("md5 checksum is not correct")
 	}

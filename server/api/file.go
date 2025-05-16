@@ -34,7 +34,6 @@ func initUpload(c fiber.Ctx) error {
 		FileSize    int64  `json:"file_size"`
 		ResourceID  uint   `json:"resource_id"`
 		StorageID   uint   `json:"storage_id"`
-		Md5         string `json:"md5"`
 	}
 
 	var req InitUploadRequest
@@ -42,7 +41,7 @@ func initUpload(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid request parameters")
 	}
 
-	result, err := service.CreateUploadingFile(uid, req.Filename, req.Description, req.FileSize, req.ResourceID, req.StorageID, req.Md5)
+	result, err := service.CreateUploadingFile(uid, req.Filename, req.Description, req.FileSize, req.ResourceID, req.StorageID)
 	if err != nil {
 		return err
 	}
@@ -86,7 +85,12 @@ func finishUpload(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid file ID")
 	}
 
-	result, err := service.FinishUploadingFile(uid, uint(id))
+	md5 := c.Query("md5")
+	if md5 == "" {
+		return model.NewRequestError("MD5 checksum is required")
+	}
+
+	result, err := service.FinishUploadingFile(uid, uint(id), md5)
 	if err != nil {
 		return err
 	}

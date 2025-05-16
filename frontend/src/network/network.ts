@@ -520,7 +520,7 @@ class Network {
   }
 
   async initFileUpload(filename: string, description: string, fileSize: number,
-    resourceId: number, storageId: number, md5: string): Promise<Response<UploadingFile>> {
+    resourceId: number, storageId: number): Promise<Response<UploadingFile>> {
     try {
       const response = await axios.post(`${this.apiBaseUrl}/files/upload/init`, {
         filename,
@@ -528,7 +528,6 @@ class Network {
         file_size: fileSize,
         resource_id: resourceId,
         storage_id: storageId,
-        md5
       });
       return response.data;
     } catch (e: any) {
@@ -561,9 +560,9 @@ class Network {
     }
   }
 
-  async finishFileUpload(fileId: number): Promise<Response<RFile>> {
+  async finishFileUpload(fileId: number, md5: string): Promise<Response<RFile>> {
     try {
-      const response = await axios.post(`${this.apiBaseUrl}/files/upload/finish/${fileId}`);
+      const response = await axios.post(`${this.apiBaseUrl}/files/upload/finish/${fileId}?md5=${md5}`);
       return response.data;
     } catch (e: any) {
       console.error(e);

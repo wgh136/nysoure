@@ -58,6 +58,33 @@ export class UploadingTask extends Listenable {
     this.onFinished = onFinished;
   }
 
+  async calculateMd5(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      const spark = new SparkMD5.ArrayBuffer();
+      const chunkSize = 4 * 1024 * 1024;
+      let offset = 0;
+      reader.onload = (e) => {
+        spark.append(e.target!.result as ArrayBuffer);
+        offset += chunkSize;
+        if (offset < file.size) {
+          readSlice(offset);
+        } else {
+          resolve(spark.end());
+        }
+      };
+      reader.onerror = (e) => {
+        reject(e);
+      };
+      const readSlice = (o: number) => {
+        const end = o + chunkSize >= file.size ? file.size : o + chunkSize;
+        const slice = file.slice(o, end);
+        reader.readAsArrayBuffer(slice);
+      };
+      readSlice(0);
+    });
+  }
+
   async upload() {
     let index = 0;
     while (index < this.blocks.length) {
@@ -108,7 +135,17 @@ export class UploadingTask extends Listenable {
     if (this.status !== UploadingStatus.UPLOADING) {
       return;
     }
-    const res = await network.finishFileUpload(this.id);
+    let md5 = "";
+    try {
+      md5 = await this.calculateMd5(this.file);
+    }
+    catch (e) {
+      this.status = UploadingStatus.ERROR;
+      this.errorMessage = "Failed to calculate md5";
+      this.notifyListeners();
+      return;
+    }
+    const res = await network.finishFileUpload(this.id, md5);
     if (res.success) {
       this.status = UploadingStatus.DONE;
       this.notifyListeners();
@@ -150,43 +187,12 @@ class UploadingManager extends Listenable {
   }
 
   async addTask(file: File, resourceID: number, storageID: number, description: string, onFinished: () => void): Promise<Response<void>> {
-    // Calculate hash of the file
-    async function calculateMd5(file: File): Promise<string> {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        const spark = new SparkMD5.ArrayBuffer();
-        const chunkSize = 4 * 1024 * 1024;
-        let offset = 0;
-        reader.onload = (e) => {
-          spark.append(e.target!.result as ArrayBuffer);
-          offset += chunkSize;
-          if (offset < file.size) {
-            readSlice(offset);
-          } else {
-            resolve(spark.end());
-          }
-        };
-        reader.onerror = (e) => {
-          reject(e);
-        };
-        const readSlice = (o: number) => {
-          const end = o + chunkSize >= file.size ? file.size : o + chunkSize;
-          const slice = file.slice(o, end);
-          reader.readAsArrayBuffer(slice);
-        };
-        readSlice(0);
-      });
-    }
-
-    const md5 = await calculateMd5(file);
-
     const res = await network.initFileUpload(
       file.name,
       description,
       file.size,
       resourceID,
       storageID,
-      md5,
     )
     if (!res.success) {
       return {

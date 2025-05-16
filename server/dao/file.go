@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func CreateUploadingFile(filename string, description string, fileSize int64, blockSize int64, tempPath string, resourceID, storageID, userID uint, md5 string) (*model.UploadingFile, error) {
+func CreateUploadingFile(filename string, description string, fileSize int64, blockSize int64, tempPath string, resourceID, storageID, userID uint) (*model.UploadingFile, error) {
 	blocksCount := (fileSize + blockSize - 1) / blockSize
 	uf := &model.UploadingFile{
 		Filename:         filename,
@@ -22,7 +22,6 @@ func CreateUploadingFile(filename string, description string, fileSize int64, bl
 		TargetResourceID: resourceID,
 		TargetStorageID:  storageID,
 		UserID:           userID,
-		Md5:              md5,
 	}
 	if err := db.Create(uf).Error; err != nil {
 		return nil, err
@@ -40,7 +39,6 @@ func GetUploadingFile(id uint) (*model.UploadingFile, error) {
 
 func UpdateUploadingBlock(id uint, blockIndex int) error {
 	return db.Transaction(func(tx *gorm.DB) error {
-		// 使用 FOR UPDATE 锁获取记录
 		uf := &model.UploadingFile{}
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", id).First(uf).Error; err != nil {
 			return err
@@ -52,7 +50,6 @@ func UpdateUploadingBlock(id uint, blockIndex int) error {
 
 		uf.Blocks[blockIndex] = true
 
-		// 在事务中立即保存更改
 		return tx.Save(uf).Error
 	})
 }

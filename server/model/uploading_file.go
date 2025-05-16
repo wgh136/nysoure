@@ -21,7 +21,6 @@ type UploadingFile struct {
 	TempPath         string
 	Resource         Resource `gorm:"foreignKey:TargetResourceID"`
 	Storage          Storage  `gorm:"foreignKey:TargetStorageID"`
-	Md5              string
 }
 
 func (uf *UploadingFile) BlocksCount() int {
@@ -86,7 +85,6 @@ type UploadingFileView struct {
 	BlocksCount int    `json:"blocksCount"`
 	StorageID   uint   `json:"storageId"`
 	ResourceID  uint   `json:"resourceId"`
-	Md5         string `json:"md5"`
 }
 
 func (uf *UploadingFile) ToView() *UploadingFileView {
@@ -99,6 +97,5 @@ func (uf *UploadingFile) ToView() *UploadingFileView {
 		BlocksCount: uf.BlocksCount(),
 		StorageID:   uf.TargetStorageID,
 		ResourceID:  uf.TargetResourceID,
-		Md5:         uf.Md5,
 	}
 }
