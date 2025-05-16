@@ -127,6 +127,7 @@ export class UploadingTask extends Listenable {
     this.errorMessage = null;
     this.status = UploadingStatus.UPLOADING;
     this.notifyListeners();
+    this.uploadingBlocks = [];
     await Promise.all([
       this.upload(),
       this.upload(),
