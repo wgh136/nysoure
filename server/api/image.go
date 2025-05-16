@@ -45,6 +45,7 @@ func handleGetImage(c fiber.Ctx) error {
 	}
 	contentType := http.DetectContentType(image)
 	c.Set("Content-Type", contentType)
+	c.Set("Cache-Control", "public, max-age=31536000")
 	return c.Send(image)
 }
 
