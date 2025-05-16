@@ -1,6 +1,8 @@
 package service
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"nysoure/server/config"
 	"nysoure/server/dao"
 	"nysoure/server/model"
@@ -82,9 +84,12 @@ func init() {
 	}()
 }
 
-func CreateUploadingFile(uid uint, filename string, description string, fileSize int64, resourceID, storageID uint) (*model.UploadingFileView, error) {
+func CreateUploadingFile(uid uint, filename string, description string, fileSize int64, resourceID, storageID uint, sha1Str string) (*model.UploadingFileView, error) {
 	if filename == "" {
 		return nil, model.NewRequestError("filename is empty")
+	}
+	if sha1Str == "" {
+		return nil, model.NewRequestError("sha1 is empty")
 	}
 	if len([]rune(filename)) > 128 {
 		return nil, model.NewRequestError("filename is too long")
@@ -113,7 +118,7 @@ func CreateUploadingFile(uid uint, filename string, description string, fileSize
 		log.Error("failed to create temp dir: ", err)
 		return nil, model.NewInternalServerError("failed to create temp dir")
 	}
-	uploadingFile, err := dao.CreateUploadingFile(filename, description, fileSize, blockSize, tempPath, resourceID, storageID, uid)
+	uploadingFile, err := dao.CreateUploadingFile(filename, description, fileSize, blockSize, tempPath, resourceID, storageID, uid, sha1Str)
 	if err != nil {
 		log.Error("failed to create uploading file: ", err)
 		_ = os.Remove(tempPath)
@@ -197,11 +202,20 @@ func FinishUploadingFile(uid uint, fid uint) (*model.FileView, error) {
 		return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
 	}
 
+	h := sha1.New()
+
 	for i := 0; i < uploadingFile.BlocksCount(); i++ {
 		blockPath := filepath.Join(uploadingFile.TempPath, strconv.Itoa(i))
 		data, err := os.ReadFile(blockPath)
 		if err != nil {
 			log.Error("failed to read block file: ", err)
+			_ = file.Close()
+			_ = os.Remove(resultFilePath)
+			return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
+		}
+		_, err = h.Write(data)
+		if err != nil {
+			log.Error("failed to write block data to sha1: ", err)
 			_ = file.Close()
 			_ = os.Remove(resultFilePath)
 			return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
@@ -217,6 +231,13 @@ func FinishUploadingFile(uid uint, fid uint) (*model.FileView, error) {
 	_ = file.Close()
 	_ = os.RemoveAll(uploadingFile.TempPath)
 	tempRemoved = true
+
+	sum := h.Sum(nil)
+	sumStr := hex.EncodeToString(sum)
+	if sumStr != uploadingFile.Sha1 {
+		_ = os.Remove(resultFilePath)
+		return nil, model.NewRequestError("sha1 checksum is not correct")
+	}
 
 	s, err := dao.GetStorage(uploadingFile.TargetStorageID)
 	if err != nil {

@@ -2,14 +2,15 @@ package dao
 
 import (
 	"errors"
+	"nysoure/server/model"
+	"time"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"nysoure/server/model"
-	"time"
 )
 
-func CreateUploadingFile(filename string, description string, fileSize int64, blockSize int64, tempPath string, resourceID, storageID, userID uint) (*model.UploadingFile, error) {
+func CreateUploadingFile(filename string, description string, fileSize int64, blockSize int64, tempPath string, resourceID, storageID, userID uint, sha1 string) (*model.UploadingFile, error) {
 	blocksCount := (fileSize + blockSize - 1) / blockSize
 	uf := &model.UploadingFile{
 		Filename:         filename,
@@ -21,6 +22,7 @@ func CreateUploadingFile(filename string, description string, fileSize int64, bl
 		TargetResourceID: resourceID,
 		TargetStorageID:  storageID,
 		UserID:           userID,
+		Sha1:             sha1,
 	}
 	if err := db.Create(uf).Error; err != nil {
 		return nil, err

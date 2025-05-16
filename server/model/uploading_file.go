@@ -2,9 +2,10 @@ package model
 
 import (
 	"context"
+	"reflect"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"reflect"
 )
 
 type UploadingFile struct {
@@ -20,6 +21,7 @@ type UploadingFile struct {
 	TempPath         string
 	Resource         Resource `gorm:"foreignKey:TargetResourceID"`
 	Storage          Storage  `gorm:"foreignKey:TargetStorageID"`
+	Sha1             string
 }
 
 func (uf *UploadingFile) BlocksCount() int {
@@ -84,6 +86,7 @@ type UploadingFileView struct {
 	BlocksCount int    `json:"blocksCount"`
 	StorageID   uint   `json:"storageId"`
 	ResourceID  uint   `json:"resourceId"`
+	Sha1        string `json:"sha1"`
 }
 
 func (uf *UploadingFile) ToView() *UploadingFileView {
@@ -96,5 +99,6 @@ func (uf *UploadingFile) ToView() *UploadingFileView {
 		BlocksCount: uf.BlocksCount(),
 		StorageID:   uf.TargetStorageID,
 		ResourceID:  uf.TargetResourceID,
+		Sha1:        uf.Sha1,
 	}
 }

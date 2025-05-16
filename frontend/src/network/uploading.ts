@@ -1,5 +1,6 @@
-import {Response} from "./models.ts";
-import {network} from "./network.ts";
+import { Sha1 } from "@aws-crypto/sha1-browser";
+import { Response } from "./models.ts";
+import { network } from "./network.ts";
 
 enum UploadingStatus {
   PENDING = "pending",
@@ -130,7 +131,7 @@ export class UploadingTask extends Listenable {
 class UploadingManager extends Listenable {
   tasks: UploadingTask[] = [];
 
-  onTaskStatusChanged = () =>  {
+  onTaskStatusChanged = () => {
     if (this.tasks.length === 0) {
       return;
     }
@@ -149,12 +150,35 @@ class UploadingManager extends Listenable {
   }
 
   async addTask(file: File, resourceID: number, storageID: number, description: string, onFinished: () => void): Promise<Response<void>> {
+    // Calculate SHA-1 hash of the file
+    async function calculateSHA1(file: File): Promise<string> {
+      const hash = new Sha1();
+      const chunkSize = 4 * 1024 * 1024;
+      const totalChunks = Math.ceil(file.size / chunkSize);
+      for (let i = 0; i < totalChunks; i++) {
+        const start = i * chunkSize;
+        const end = Math.min(start + chunkSize, file.size);
+        const chunk = file.slice(start, end);
+        const arrayBuffer = await chunk.arrayBuffer();
+        hash.update(arrayBuffer);
+      }
+      const hashBuffer = await hash.digest();
+      const hashArray = new Uint8Array(hashBuffer);
+      const hashHex = Array.from(hashArray)
+        .map(byte => byte.toString(16).padStart(2, "0"))
+        .join("");
+      return hashHex;
+    }
+
+    const sha1 = await calculateSHA1(file);
+
     const res = await network.initFileUpload(
       file.name,
       description,
       file.size,
       resourceID,
-      storageID
+      storageID,
+      sha1,
     )
     if (!res.success) {
       return {
@@ -166,7 +190,7 @@ class UploadingManager extends Listenable {
     task.addListener(this.onTaskStatusChanged);
     this.tasks.push(task);
     this.onTaskStatusChanged();
-    return  {
+    return {
       success: true,
       message: "ok",
     }

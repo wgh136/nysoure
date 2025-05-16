@@ -34,6 +34,7 @@ func initUpload(c fiber.Ctx) error {
 		FileSize    int64  `json:"file_size"`
 		ResourceID  uint   `json:"resource_id"`
 		StorageID   uint   `json:"storage_id"`
+		Sha1        string `json:"sha1"`
 	}
 
 	var req InitUploadRequest
@@ -41,7 +42,7 @@ func initUpload(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid request parameters")
 	}
 
-	result, err := service.CreateUploadingFile(uid, req.Filename, req.Description, req.FileSize, req.ResourceID, req.StorageID)
+	result, err := service.CreateUploadingFile(uid, req.Filename, req.Description, req.FileSize, req.ResourceID, req.StorageID, req.Sha1)
 	if err != nil {
 		return err
 	}

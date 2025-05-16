@@ -449,11 +449,11 @@ class Network {
   }
 
   async createS3Storage(
-    name: string, 
-    endPoint: string, 
+    name: string,
+    endPoint: string,
     accessKeyID: string,
-    secretAccessKey: string, 
-    bucketName: string, 
+    secretAccessKey: string,
+    bucketName: string,
     maxSizeInMB: number,
     domain: string): Promise<Response<any>> {
     try {
@@ -520,14 +520,15 @@ class Network {
   }
 
   async initFileUpload(filename: string, description: string, fileSize: number,
-    resourceId: number, storageId: number): Promise<Response<UploadingFile>> {
+    resourceId: number, storageId: number, sha1: string): Promise<Response<UploadingFile>> {
     try {
       const response = await axios.post(`${this.apiBaseUrl}/files/upload/init`, {
         filename,
         description,
         file_size: fileSize,
         resource_id: resourceId,
-        storage_id: storageId
+        storage_id: storageId,
+        sha1
       });
       return response.data;
     } catch (e: any) {
