@@ -24,6 +24,9 @@ type FileView struct {
 	ID          string `json:"id"`
 	Filename    string `json:"filename"`
 	Description string `json:"description"`
+	Size        int64  `json:"size"`
+	IsRedirect  bool   `json:"is_redirect"`
+	UserID      uint   `json:"user_id"`
 }
 
 func (f *File) ToView() *FileView {
@@ -31,5 +34,8 @@ func (f *File) ToView() *FileView {
 		ID:          f.UUID,
 		Filename:    f.Filename,
 		Description: f.Description,
+		Size:        f.Size,
+		IsRedirect:  f.RedirectUrl != "",
+		UserID:      f.UserID,
 	}
 }

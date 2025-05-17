@@ -22,7 +22,7 @@ import Pagination from "../components/pagination.tsx";
 import showPopup, {useClosePopup} from "../components/popup.tsx";
 import {Turnstile} from "@marsidev/react-turnstile";
 import Button from "../components/button.tsx";
-import Badge from "../components/badge.tsx";
+import Badge, {BadgeAccent} from "../components/badge.tsx";
 
 export default function ResourcePage() {
   const params = useParams()
@@ -226,16 +226,33 @@ function Article({article}: { article: string }) {
   </article>
 }
 
+function fileSizeToString(size: number) {
+  if (size < 1024) {
+    return size + "B"
+  } else if (size < 1024 * 1024) {
+    return (size / 1024).toFixed(2) + "KB"
+  } else if (size < 1024 * 1024 * 1024) {
+    return (size / 1024 / 1024).toFixed(2) + "MB"
+  } else {
+    return (size / 1024 / 1024 / 1024).toFixed(2) + "GB"
+  }
+}
+
 function FileTile({file}: { file: RFile }) {
   const buttonRef = createRef<HTMLButtonElement>()
+
+  const {t} = useTranslation()
 
   return <div className={"card card-border border-base-300 my-2"}>
     <div className={"p-4 flex flex-row items-center"}>
       <div className={"grow"}>
         <h4 className={"font-bold py-1"}>{file.filename}</h4>
         <p className={"text-sm"}>{file.description}</p>
+        <p>
+          <BadgeAccent className={"mt-1"}>{file.is_redirect ? t("Redirect") : fileSizeToString(file.size)}</BadgeAccent>
+        </p>
       </div>
-      <div>
+      <div className={"flex flex-row items-center"}>
         <button ref={buttonRef} className={"btn btn-primary btn-soft btn-square"} onClick={() => {
           if (!app.cloudflareTurnstileSiteKey) {
             const link = network.getFileDownloadLink(file.id, "");
@@ -246,7 +263,7 @@ function FileTile({file}: { file: RFile }) {
         }}>
           <MdOutlineDownload size={24}/>
         </button>
-        <DeleteFileDialog fileId={file.id}/>
+        <DeleteFileDialog fileId={file.id} uploaderId={file.user_id}/>
       </div>
     </div>
   </div>
@@ -591,7 +608,7 @@ function CommentTile({comment}: { comment: Comment }) {
   </div>
 }
 
-function DeleteFileDialog({fileId}: { fileId: string }) {
+function DeleteFileDialog({fileId, uploaderId}: { fileId: string, uploaderId: number }) {
   const [isLoading, setLoading] = useState(false)
 
   const id = `delete_file_dialog_${fileId}`
@@ -617,7 +634,7 @@ function DeleteFileDialog({fileId}: { fileId: string }) {
     setLoading(false)
   }
 
-  if (!app.isAdmin()) {
+  if (!app.isAdmin() && app.user?.id !== uploaderId) {
     return <></>
   }
 

@@ -82,6 +82,9 @@ export interface RFile {
   id: string;
   filename: string;
   description: string;
+  size: number;
+  is_redirect: boolean;
+  user_id: number;
 }
 
 export interface UploadingFile {
