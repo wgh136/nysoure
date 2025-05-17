@@ -1,6 +1,7 @@
 import { Resource } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import { useNavigate } from "react-router";
+import Badge from "./badge.tsx";
 
 export default function ResourceCard({ resource }: { resource: Resource }) {
   const navigate = useNavigate()
@@ -25,7 +26,7 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
         <p>
           {
             resource.tags.map((tag) => {
-              return <span key={tag.id} className={"badge badge-primary mr-2"}>{tag.name}</span>
+              return <Badge key={tag.id} className={"m-0.5"}>{tag.name}</Badge>
             })
           }
         </p>

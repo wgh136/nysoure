@@ -22,6 +22,7 @@ import Pagination from "../components/pagination.tsx";
 import showPopup, {useClosePopup} from "../components/popup.tsx";
 import {Turnstile} from "@marsidev/react-turnstile";
 import Button from "../components/button.tsx";
+import Badge from "../components/badge.tsx";
 
 export default function ResourcePage() {
   const params = useParams()
@@ -104,9 +105,9 @@ export default function ResourcePage() {
       <p className={"px-4 pt-2"}>
         {
           resource.tags.map((e) => {
-            return <span key={e.id} className="badge badge-primary mr-2 text-sm cursor-pointer" onClick={() => {
+            return <Badge key={e.id} className="cursor-pointer m-1" onClick={() => {
               navigate(`/tag/${e.name}`);
-            }}>{e.name}</span>
+            }}>{e.name}</Badge>
           })
         }
       </p>
