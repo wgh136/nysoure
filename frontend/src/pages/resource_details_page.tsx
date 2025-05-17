@@ -153,7 +153,7 @@ export default function ResourcePage() {
 
         <div className={"grow"}></div>
         {
-          app.isAdmin() || app.user?.id === resource.id ? <Button className={"btn-ghost btn-circle"} onClick={() => {
+          app.isAdmin() || app.user?.id === resource.author.id ? <Button className={"btn-ghost btn-circle"} onClick={() => {
             navigate(`/resource/edit/${resource.id}`, {replace: true})
           }}>
             <MdOutlineEdit size={20}/>
