@@ -216,12 +216,6 @@ class UploadingManager extends Listenable {
     return this.tasks
   }
 
-  removeTask(task: UploadingTask) {
-    task.cancel();
-    task.removeListener(this.onTaskStatusChanged);
-    this.tasks = this.tasks.filter(t => t !== task);
-  }
-
   hasTasks() {
     return this.tasks.length > 0;
   }

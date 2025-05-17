@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"net/url"
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"strconv"
@@ -103,6 +104,10 @@ func handleListResourcesWithTag(c fiber.Ctx) error {
 	tag := c.Params("tag")
 	if tag == "" {
 		return model.NewRequestError("Tag is required")
+	}
+	tag, err := url.PathUnescape(tag)
+	if err != nil {
+		return model.NewRequestError("Invalid tag")
 	}
 	pageStr := c.Query("page")
 	if pageStr == "" {
