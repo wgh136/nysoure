@@ -7,6 +7,7 @@ export interface User {
   can_upload: boolean;
   uploads_count: number;
   comments_count: number;
+  bio: string;
 }
 
 export interface UserWithToken extends User {

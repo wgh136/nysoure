@@ -7,6 +7,7 @@ import { MdOutlineAccountCircle, MdLockOutline, MdOutlineEditNote } from "react-
 import Button from "../components/button";
 import showToast from "../components/toast";
 import { useNavigator } from "../components/navigator";
+import Input from "../components/input.tsx";
 
 export function ManageMePage() {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ export function ManageMePage() {
     <ChangeAvatarDialog />
     <ChangeUsernameDialog />
     <ChangePasswordDialog />
+    <ChangeBioDialog />
   </div>;
 }
 
@@ -92,7 +94,7 @@ function ChangeAvatarDialog() {
         <div className="h-48 flex items-center justify-center">
           <div className="avatar">
             <div className="w-28 rounded-full cursor-pointer" onClick={selectAvatar}>
-              <img src={avatar ? URL.createObjectURL(avatar) : network.getUserAvatar(app.user!)} />
+              <img src={avatar ? URL.createObjectURL(avatar) : network.getUserAvatar(app.user!)} alt={"avatar"} />
             </div>
           </div>
         </div>
@@ -292,6 +294,71 @@ function ChangePasswordDialog() {
             onClick={handleSubmit} 
             isLoading={isLoading} 
             disabled={!oldPassword || !newPassword || !confirmPassword}
+          >
+            {t("Save")}
+          </Button>
+        </div>
+      </div>
+    </dialog>
+  </>;
+}
+
+function ChangeBioDialog() {
+  const [bio, setBio] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { t } = useTranslation();
+
+  const handleSubmit = async () => {
+    if (!bio.trim()) {
+      setError(t("Bio cannot be empty"));
+      return;
+    } else if (bio.length > 200) {
+      setError(t("Bio cannot be longer than 200 characters"));
+      return;
+    }
+    setIsLoading(true);
+    const res = await network.changeBio(bio);
+    setIsLoading(false);
+    if (!res.success) {
+      setError(res.message);
+    } else {
+      app.user = res.data!;
+      showToast({
+        message: t("Bio changed successfully"),
+        type: "success",
+      });
+      const dialog = document.getElementById("change_bio_dialog") as HTMLDialogElement;
+      if (dialog) {
+        dialog.close();
+      }
+      setBio("");
+      setError(null);
+    }
+  };
+
+  return <>
+    <ListTile icon={<MdOutlineEditNote />} title={t("Change Bio")} onClick={() => {
+      const dialog = document.getElementById("change_bio_dialog") as HTMLDialogElement;
+      if (dialog) {
+        dialog.showModal();
+      }
+    }} />
+    <dialog id="change_bio_dialog" className="modal">
+      <div className="modal-box">
+        <h3 className="font-bold text-lg">{t("Change Bio")}</h3>
+        <Input value={bio} onChange={(e) => setBio(e.target.value)} label={"bio"} />
+        {error && <ErrorAlert message={error} className={"mt-4"} />}
+        <div className="modal-action">
+          <form method="dialog">
+            <Button>{t("Close")}</Button>
+          </form>
+          <Button
+            className="btn-primary"
+            onClick={handleSubmit}
+            isLoading={isLoading}
+            disabled={!bio.trim()}
           >
             {t("Save")}
           </Button>

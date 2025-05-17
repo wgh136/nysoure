@@ -292,3 +292,18 @@ func ChangeUsername(uid uint, newUsername string) (model.UserView, error) {
 	}
 	return user.ToView(), nil
 }
+
+func SetUserBio(uid uint, bio string) (model.UserView, error) {
+	if len(bio) > 200 {
+		return model.UserView{}, model.NewRequestError("Bio must be less than 200 characters")
+	}
+	user, err := dao.GetUserByID(uid)
+	if err != nil {
+		return model.UserView{}, err
+	}
+	user.Bio = bio
+	if err := dao.UpdateUser(user); err != nil {
+		return model.UserView{}, err
+	}
+	return user.ToView(), nil
+}

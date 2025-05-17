@@ -298,6 +298,26 @@ func handleChangeUsername(c fiber.Ctx) error {
 	})
 }
 
+func handleSetUserBio(c fiber.Ctx) error {
+	uid, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewUnAuthorizedError("Unauthorized")
+	}
+	bio := c.FormValue("bio")
+	if bio == "" {
+		return model.NewRequestError("Bio is required")
+	}
+	user, err := service.SetUserBio(uid, bio)
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(model.Response[model.UserView]{
+		Success: true,
+		Data:    user,
+		Message: "Bio updated successfully",
+	})
+}
+
 func AddUserRoutes(r fiber.Router) {
 	u := r.Group("user")
 	u.Post("/register", handleUserRegister)
@@ -312,4 +332,5 @@ func AddUserRoutes(r fiber.Router) {
 	u.Post("/delete", handleDeleteUser)
 	u.Get("/info", handleGetUserInfo)
 	u.Post("/username", handleChangeUsername)
+	u.Post("/bio", handleSetUserBio)
 }

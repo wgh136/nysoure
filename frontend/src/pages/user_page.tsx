@@ -63,13 +63,16 @@ function UserCard({ user }: { user: User }) {
     <div>
       <h1 className="text-2xl font-bold">{user.username}</h1>
       <div className="h-4"></div>
-      <p>
-        <span className="text-sm font-bold mr-1"> {user.uploads_count}</span>
-        <span className="text-sm">Resources</span>
-        <span className="mx-2"></span>
-        <span className="text-sm font-bold mr-1"> {user.comments_count}</span>
-        <span className="text-base-content text-sm">Comments</span>
-      </p>
+      {user.bio.trim() !== ""
+        ? <p className="text-sm text-base-content/80">{user.bio.trim()}</p>
+        : <p>
+          <span className="text-sm font-bold mr-1"> {user.uploads_count}</span>
+          <span className="text-sm">Resources</span>
+          <span className="mx-2"></span>
+          <span className="text-sm font-bold mr-1"> {user.comments_count}</span>
+          <span className="text-base-content text-sm">Comments</span>
+        </p>
+      }
     </div>
   </div>
 }

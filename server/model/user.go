@@ -16,6 +16,7 @@ type User struct {
 	UploadsCount  int
 	CommentsCount int
 	Resources     []Resource `gorm:"foreignKey:UserID"`
+	Bio           string
 }
 
 type UserView struct {
@@ -27,6 +28,7 @@ type UserView struct {
 	CanUpload     bool      `json:"can_upload"`
 	UploadsCount  int       `json:"uploads_count"`
 	CommentsCount int       `json:"comments_count"`
+	Bio           string    `json:"bio"`
 }
 
 type UserViewWithToken struct {
@@ -44,6 +46,7 @@ func (u User) ToView() UserView {
 		CanUpload:     u.CanUpload || u.IsAdmin,
 		UploadsCount:  u.UploadsCount,
 		CommentsCount: u.CommentsCount,
+		Bio:           u.Bio,
 	}
 }
 
