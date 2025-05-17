@@ -43,6 +43,10 @@ class App {
   isLoggedIn() {
     return this.user != null && this.token != null;
   }
+
+  canUpload() {
+    return this.isLoggedIn() && (this.user?.can_upload || this.isAdmin());
+  }
 }
 
 export const app = new App();

@@ -94,7 +94,7 @@ export default function PublishPage() {
     return <ErrorAlert className={"m-4"} message={t("You are not logged in. Please log in to access this page.")} />
   }
 
-  if (!app.user?.is_admin) {
+  if (!app.canUpload()) {
     return <ErrorAlert className={"m-4"} message={t("You are not authorized to access this page.")} />
   }
 

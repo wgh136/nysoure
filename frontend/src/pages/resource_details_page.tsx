@@ -272,7 +272,7 @@ function Files({files, resourceID}: { files: RFile[], resourceID: number }) {
     }
     <div className={"h-2"}></div>
     {
-      app.isAdmin() && <div className={"flex flex-row-reverse"}>
+      app.canUpload() && <div className={"flex flex-row-reverse"}>
         <CreateFileDialog resourceId={resourceID}></CreateFileDialog>
       </div>
     }
