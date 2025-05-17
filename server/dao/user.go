@@ -33,7 +33,7 @@ func CreateUser(username string, hashedPassword []byte) (model.User, error) {
 
 func ExistsUser(username string) (bool, error) {
 	var count int64
-	if err := db.Model(&model.User{}).Where("username = ?", username).Count(&count).Error; err != nil {
+	if err := db.Unscoped().Model(&model.User{}).Where("username = ?", username).Count(&count).Error; err != nil {
 		return false, err
 	}
 	return count > 0, nil
@@ -120,5 +120,15 @@ func SearchUsersByUsername(username string, page, pageSize int) ([]model.User, i
 }
 
 func DeleteUser(id uint) error {
+	var user model.User
+	if err := db.First(&user, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil
+		}
+		return err
+	}
+	if err := db.Model(&user).Update("username", "_deleted_").Error; err != nil {
+		return err
+	}
 	return db.Delete(&model.User{}, id).Error
 }
