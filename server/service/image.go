@@ -71,7 +71,7 @@ func CreateImage(uid uint, data []byte) (uint, error) {
 	}
 
 	contentType := http.DetectContentType(data)
-	if contentType != "image/jpeg" && contentType != "image/png" && contentType != "image/gif" && contentType != "image/webp" {
+	if contentType != "image/jpeg" && contentType != "image/png" && contentType != "image/gif" && contentType != "image/webp" && contentType != "image/bmp" {
 		return 0, model.NewRequestError("Invalid image format")
 	}
 
