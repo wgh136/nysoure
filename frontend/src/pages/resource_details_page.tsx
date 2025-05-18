@@ -282,7 +282,7 @@ function CloudflarePopup({file}: { file: RFile }) {
         <span className={"loading loading-spinner loading-lg"}></span>
       </div> : null
     }
-    <Turnstile siteKey={app.cloudflareTurnstileSiteKey!} onLoad={() => {
+    <Turnstile siteKey={app.cloudflareTurnstileSiteKey!} onWidgetLoad={() => {
       setLoading(false)
     }} onSuccess={(token) => {
       closePopup();
