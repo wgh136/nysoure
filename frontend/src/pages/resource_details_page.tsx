@@ -23,6 +23,7 @@ import showPopup, {useClosePopup} from "../components/popup.tsx";
 import {Turnstile} from "@marsidev/react-turnstile";
 import Button from "../components/button.tsx";
 import Badge, {BadgeAccent} from "../components/badge.tsx";
+import Input from "../components/input.tsx";
 
 export default function ResourcePage() {
   const params = useParams()
@@ -264,6 +265,7 @@ function FileTile({file}: { file: RFile }) {
           <MdOutlineDownload size={24}/>
         </button>
         <DeleteFileDialog fileId={file.id} uploaderId={file.user_id}/>
+        <UpdateFileInfoDialog file={file}/>
       </div>
     </div>
   </div>
@@ -489,6 +491,61 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
             {isSubmitting ? <span className={"loading loading-spinner loading-sm"}></span> : null}
             {t("Submit")}
           </button>
+        </div>
+      </div>
+    </dialog>
+  </>
+}
+
+function UpdateFileInfoDialog({file}: { file: RFile }) {
+  const [isLoading, setLoading] = useState(false)
+
+  const [filename, setFilename] = useState(file.filename)
+
+  const [description, setDescription] = useState(file.description)
+
+  const {t} = useTranslation()
+
+  const reload = useContext(context)
+
+  const handleUpdate = async () => {
+    if (isLoading) {
+      return
+    }
+    setLoading(true)
+    const res = await network.updateFile(file.id, filename, description);
+    const dialog = document.getElementById(`update_file_info_dialog_${file.id}`) as HTMLDialogElement
+    dialog.close()
+    if (res.success){
+      showToast({message: t("File info updated successfully"), type: "success"})
+      reload()
+    } else {
+      showToast({message: res.message, type: "error"})
+    }
+    setLoading(false)
+  }
+
+  if (!app.isAdmin() && app.user?.id !== file.user_id) {
+    return <></>
+  }
+
+  return <>
+    <button className={"btn btn-primary btn-ghost btn-circle ml-1"} onClick={() => {
+      const dialog = document.getElementById(`update_file_info_dialog_${file.id}`) as HTMLDialogElement
+      dialog.showModal()
+    }}>
+      <MdOutlineEdit size={20} className={"inline-block"}/>
+    </button>
+    <dialog id={`update_file_info_dialog_${file.id}`} className="modal">
+      <div className="modal-box">
+        <h3 className="font-bold text-lg">{t("Update File Info")}</h3>
+        <Input type={"text"} label={t("File Name")} value={filename} onChange={(e) => setFilename(e.target.value)}/>
+        <Input type={"text"} label={t("Description")} value={description} onChange={(e) => setDescription(e.target.value)}/>
+        <div className="modal-action">
+          <form method="dialog">
+            <button className="btn btn-ghost">{t("Close")}</button>
+          </form>
+          <button className="btn btn-primary" onClick={handleUpdate}>{t("Update")}</button>
         </div>
       </div>
     </dialog>
