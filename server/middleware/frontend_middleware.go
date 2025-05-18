@@ -83,16 +83,32 @@ func serveIndexHtml(c fiber.Ctx) error {
 	return c.SendString(content)
 }
 
+func mergeSpaces(str string) string {
+	// Replace multiple spaces with a single space
+	builder := strings.Builder{}
+	for i, r := range str {
+		if r == '\t' || r == '\r' {
+			continue
+		}
+		if r == ' ' || r == '\n' {
+			if i > 0 && str[i-1] != ' ' && str[i-1] != '\n' {
+				builder.WriteRune(' ')
+			}
+		} else {
+			builder.WriteRune(r)
+		}
+	}
+	return builder.String()
+}
+
 func getResourceDescription(article string) string {
 	htmlContent := mdToHTML([]byte(article))
 	plain := html2text.HTML2Text(string(htmlContent))
+	plain = strings.TrimSpace(plain)
+	plain = mergeSpaces(plain)
 	if len([]rune(plain)) > 100 {
 		plain = string([]rune(plain)[:100])
 	}
-	plain = strings.ReplaceAll(plain, "\n", " ")
-	plain = strings.ReplaceAll(plain, "\r", "")
-	plain = strings.ReplaceAll(plain, "\t", "")
-	plain = strings.TrimSpace(plain)
 	return plain
 }
 
