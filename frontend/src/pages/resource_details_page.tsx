@@ -274,7 +274,7 @@ function FileTile({file}: { file: RFile }) {
 function CloudflarePopup({file}: { file: RFile }) {
   const closePopup = useClosePopup()
 
-  const [isLoading, setLoading] = useState(false)
+  const [isLoading, setLoading] = useState(true)
 
   return <div className={"menu bg-base-100 rounded-box z-1 w-80 p-2 shadow-sm h-20 relative"}>
     {
