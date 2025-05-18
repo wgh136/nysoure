@@ -46,9 +46,10 @@ func serveIndexHtml(c fiber.Ctx) error {
 	url := serverBaseURL + c.Path()
 	cfTurnstileSiteKey := config.CloudflareTurnstileSiteKey()
 	siteInfo := config.SiteInfo()
+	path := c.Path()
 
-	if strings.HasPrefix(url, "/resources/") {
-		idStr := strings.TrimPrefix(url, "/resources/")
+	if strings.HasPrefix(path, "/resources/") {
+		idStr := strings.TrimPrefix(path, "/resources/")
 		id, err := strconv.Atoi(idStr)
 		if err == nil {
 			r, err := service.GetResource(uint(id))
@@ -60,8 +61,8 @@ func serveIndexHtml(c fiber.Ctx) error {
 				description = getResourceDescription(r.Article)
 			}
 		}
-	} else if strings.HasPrefix(url, "/user/") {
-		username := strings.TrimPrefix(url, "/user/")
+	} else if strings.HasPrefix(path, "/user/") {
+		username := strings.TrimPrefix(path, "/user/")
 		u, err := service.GetUserByUsername(username)
 		if err == nil {
 			preview = fmt.Sprintf("/avatar/%d", u.ID)
