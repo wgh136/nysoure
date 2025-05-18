@@ -307,3 +307,15 @@ func SetUserBio(uid uint, bio string) (model.UserView, error) {
 	}
 	return user.ToView(), nil
 }
+
+func GetMe(uid uint) (model.UserViewWithToken, error) {
+	user, err := dao.GetUserByID(uid)
+	if err != nil {
+		return model.UserViewWithToken{}, err
+	}
+	token, err := utils.GenerateToken(user.ID)
+	if err != nil {
+		return model.UserViewWithToken{}, err
+	}
+	return user.ToView().WithToken(token), nil
+}

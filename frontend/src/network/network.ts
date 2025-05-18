@@ -63,12 +63,16 @@ class Network {
     if (!app.token) {
       return;
     }
-    const res = await this.getUserInfo(app.user!.username)
+    const res = await this.getMe()
     if (!res.success && res.message.includes("Invalid token")) {
       app.token = null;
       app.user = null;
       app.saveData();
       window.location.reload();
+    } else {
+      app.user = res.data!;
+      app.token = res.data!.token;
+      app.saveData();
     }
   }
 
@@ -95,6 +99,19 @@ class Network {
         password,
         cf_token: cfToken
       })
+      return response.data
+    } catch (e: any) {
+      console.error(e)
+      return {
+        success: false,
+        message: e.toString(),
+      }
+    }
+  }
+
+  async getMe(): Promise<Response<UserWithToken>> {
+    try {
+      const response = await axios.get(`${this.apiBaseUrl}/user/me`)
       return response.data
     } catch (e: any) {
       console.error(e)

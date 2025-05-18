@@ -318,6 +318,23 @@ func handleSetUserBio(c fiber.Ctx) error {
 	})
 }
 
+// handleGetMe retrieves the current user's information and refreshes the token
+func handleGetMe(c fiber.Ctx) error {
+	uid, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewUnAuthorizedError("Unauthorized")
+	}
+	user, err := service.GetMe(uid)
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(model.Response[model.UserViewWithToken]{
+		Success: true,
+		Data:    user,
+		Message: "User information retrieved successfully",
+	})
+}
+
 func AddUserRoutes(r fiber.Router) {
 	u := r.Group("user")
 	u.Post("/register", handleUserRegister)
@@ -333,4 +350,5 @@ func AddUserRoutes(r fiber.Router) {
 	u.Get("/info", handleGetUserInfo)
 	u.Post("/username", handleChangeUsername)
 	u.Post("/bio", handleSetUserBio)
+	u.Get("/me", handleGetMe)
 }
