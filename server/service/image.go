@@ -59,7 +59,7 @@ func CreateImage(uid uint, data []byte) (uint, error) {
 
 	if len(data) == 0 {
 		return 0, model.NewRequestError("Image data is empty")
-	} else if len(data) > 1024*1024*5 {
+	} else if len(data) > 1024*1024*8 {
 		return 0, model.NewRequestError("Image data is too large")
 	}
 
@@ -90,6 +90,11 @@ func CreateImage(uid uint, data []byte) (uint, error) {
 		}
 		data = buf.Bytes()
 		contentType = "image/webp"
+	}
+
+	// If the image is still too large after conversion, return an error
+	if len(data) > 1024*1024*4 {
+		return 0, model.NewRequestError("Image data is too large after conversion")
 	}
 
 	filename := uuid.New().String()
