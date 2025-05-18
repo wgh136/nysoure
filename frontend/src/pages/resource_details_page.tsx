@@ -274,8 +274,17 @@ function FileTile({file}: { file: RFile }) {
 function CloudflarePopup({file}: { file: RFile }) {
   const closePopup = useClosePopup()
 
-  return <div className={"menu bg-base-100 rounded-box z-1 w-80 p-2 shadow-sm h-20"}>
-    <Turnstile siteKey={app.cloudflareTurnstileSiteKey!} onSuccess={(token) => {
+  const [isLoading, setLoading] = useState(false)
+
+  return <div className={"menu bg-base-100 rounded-box z-1 w-80 p-2 shadow-sm h-20 relative"}>
+    {
+      isLoading ? <div className={"absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center"}>
+        <span className={"loading loading-spinner loading-lg"}></span>
+      </div> : null
+    }
+    <Turnstile siteKey={app.cloudflareTurnstileSiteKey!} onLoad={() => {
+      setLoading(false)
+    }} onSuccess={(token) => {
       closePopup();
       const link = network.getFileDownloadLink(file.id, token);
       window.open(link, "_blank");
