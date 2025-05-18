@@ -15,8 +15,8 @@ func main() {
 	debugMode := os.Getenv("DEBUG_MODE") != "false"
 
 	app := fiber.New(fiber.Config{
-		BodyLimit:  8 * 1024 * 1024,
-		TrustProxy: true,
+		BodyLimit:   8 * 1024 * 1024,
+		ProxyHeader: "X-Real-IP",
 	})
 
 	app.Use(logger.New(logger.Config{
