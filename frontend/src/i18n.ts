@@ -149,6 +149,7 @@ export const i18nData = {
       "Search Tags": "Search Tags",
       "Edit Resource": "Edit Resource",
       "Change Bio": "Change Bio",
+      "About this site": "About this site",
     }
   },
   "zh-CN": {
@@ -301,6 +302,7 @@ export const i18nData = {
       "Search Tags": "搜索标签",
       "Edit Resource": "编辑资源",
       "Change Bio": "更改个人简介",
+      "About this site": "关于此网站",
     }
   },
   "zh-TW": {
@@ -453,6 +455,7 @@ export const i18nData = {
       "Search Tags": "搜尋標籤",
       "Edit Resource": "編輯資源",
       "Change Bio": "更改個人簡介",
+      "About this site": "關於此網站",
     }
   }
 }

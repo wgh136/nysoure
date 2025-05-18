@@ -3,6 +3,7 @@ import {User} from "./network/models.ts";
 interface MyWindow extends Window {
   serverName?: string;
   cloudflareTurnstileSiteKey?: string;
+  siteInfo?: string;
 }
 
 class App {
@@ -13,6 +14,8 @@ class App {
   token: string | null = null;
 
   cloudflareTurnstileSiteKey: string | null = null;
+
+  siteInfo = ""
 
   constructor() {
     this.init();
@@ -29,6 +32,7 @@ class App {
     }
     this.appName = (window as MyWindow).serverName || this.appName;
     this.cloudflareTurnstileSiteKey = (window as MyWindow).cloudflareTurnstileSiteKey || null;
+    this.siteInfo = (window as MyWindow).siteInfo || "";
   }
 
   saveData() {

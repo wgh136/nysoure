@@ -4,7 +4,7 @@ import { ErrorAlert, InfoAlert } from "../components/alert"
 import { useEffect, useState } from "react";
 import { ServerConfig } from "../network/models";
 import Loading from "../components/loading";
-import Input from "../components/input";
+import Input, {TextArea} from "../components/input";
 import { network } from "../network/network";
 import showToast from "../components/toast";
 import Button from "../components/button";
@@ -90,6 +90,9 @@ export default function ManageServerConfigPage() {
     <Input type="text" value={config.cloudflare_turnstile_secret_key} label="Cloudflare Turnstile Secret Key" onChange={(e) => {
       setConfig({...config, cloudflare_turnstile_secret_key: e.target.value })
     }}></Input>
+    <TextArea value={config.site_info} onChange={(e) => {
+      setConfig({...config, site_info: e.target.value })
+    }} label="Site info (Markdown)" height={180} />
     <InfoAlert className="my-2" message="If the cloudflare turnstile keys are not empty, the turnstile will be used for register and download." />
     <div className="flex justify-end">
       <Button className="btn-accent shadow" isLoading={isLoading}>{t("Submit")}</Button>

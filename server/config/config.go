@@ -22,10 +22,12 @@ type ServerConfig struct {
 	CloudflareTurnstileSiteKey string `json:"cloudflare_turnstile_site_key"`
 	// CloudflareTurnstileSecretKey is the secret key for Cloudflare Turnstile.
 	CloudflareTurnstileSecretKey string `json:"cloudflare_turnstile_secret_key"`
-
+	// ServerName is the name of the server. It will be used as the title of the web page.
 	ServerName string `json:"server_name"`
-
+	// ServerDescription is the description of the server. It will be used as the description of html meta tag.
 	ServerDescription string `json:"server_description"`
+	// SiteInfo is an article that describes the site. It will be displayed on the home page. Markdown format.
+	SiteInfo string `json:"site_info"`
 }
 
 func init() {
@@ -63,8 +65,8 @@ func SetConfig(newConfig ServerConfig) {
 	if err != nil {
 		panic(err)
 	}
-	filepath := filepath.Join(utils.GetStoragePath(), "config.json")
-	if err := os.WriteFile(filepath, data, 0644); err != nil {
+	p := filepath.Join(utils.GetStoragePath(), "config.json")
+	if err := os.WriteFile(p, data, 0644); err != nil {
 		panic(err)
 	}
 }
@@ -99,4 +101,8 @@ func ServerDescription() string {
 
 func CloudflareTurnstileSecretKey() string {
 	return config.CloudflareTurnstileSecretKey
+}
+
+func SiteInfo() string {
+	return config.SiteInfo
 }

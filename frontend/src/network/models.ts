@@ -122,4 +122,5 @@ export interface ServerConfig {
   cloudflare_turnstile_secret_key: string;
   server_name: string;
   server_description: string;
+  site_info: string;
 }

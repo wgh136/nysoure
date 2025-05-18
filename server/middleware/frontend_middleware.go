@@ -43,8 +43,9 @@ func serveIndexHtml(c fiber.Ctx) error {
 	description := config.ServerDescription()
 	preview := serverBaseURL + "/icon-192.png"
 	title := siteName
-	url := c.OriginalURL()
+	url := serverBaseURL + c.Path()
 	cfTurnstileSiteKey := config.CloudflareTurnstileSiteKey()
+	siteInfo := config.SiteInfo()
 
 	if strings.HasPrefix(url, "/resources/") {
 		idStr := strings.TrimPrefix(url, "/resources/")
@@ -75,6 +76,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 	content = strings.ReplaceAll(content, "{{Title}}", title)
 	content = strings.ReplaceAll(content, "{{Url}}", url)
 	content = strings.ReplaceAll(content, "{{CFTurnstileSiteKey}}", cfTurnstileSiteKey)
+	content = strings.ReplaceAll(content, "{{SiteInfo}}", siteInfo)
 
 	c.Set("Content-Type", "text/html; charset=utf-8")
 	return c.SendString(content)
