@@ -590,15 +590,21 @@ function CommentsList({resourceId, page, maxPageCallback}: {
 }
 
 function CommentTile({comment}: { comment: Comment }) {
+  const navigate = useNavigate();
   return <div className={"card card-border border-base-300 p-2 my-3"}>
     <div className={"flex flex-row items-center my-1 mx-1"}>
-      <div className="avatar">
+      <div className="avatar cursor-pointer" onClick={() => navigate(`/user/${comment.user.username}`)}>
         <div className="w-8 rounded-full">
           <img src={network.getUserAvatar(comment.user)} alt={"avatar"}/>
         </div>
       </div>
       <div className={"w-2"}></div>
-      <div className={"text-sm font-bold"}>{comment.user.username}</div>
+      <div
+        className={"text-sm font-bold cursor-pointer"}
+        onClick={() => navigate(`/user/${comment.user.username}`)}
+      >
+        {comment.user.username}
+      </div>
       <div className={"grow"}></div>
       <div className={"text-sm text-gray-500"}>{new Date(comment.created_at).toLocaleString()}</div>
     </div>
