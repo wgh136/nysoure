@@ -17,10 +17,14 @@ export default function HomePage() {
   return <>
     {
       app.siteInfo && <div className={"mt-4 px-4"}>
-        <div className="collapse collapse-arrow bg-base-100 border border-base-300 cursor-pointer" onClick={() => setIsCollapsed(!isCollapsed)}>
-          <input type="radio" name="my-accordion-2" checked={isCollapsed}/>
-          <div className="collapse-title font-semibold">{t("About this site")}</div>
-          <article className="collapse-content text-sm">
+        <div className="collapse collapse-arrow bg-base-100 border border-base-300" onClick={() => setIsCollapsed(!isCollapsed)}>
+          <input type="radio" name="my-accordion-2" checked={isCollapsed} style={{
+            "cursor": "pointer",
+          }}/>
+          <div className="collapse-title font-semibold cursor-pointer">{t("About this site")}</div>
+          <article className="collapse-content text-sm cursor-auto" onClick={(e) => {
+            e.stopPropagation();
+          }}>
             <Markdown>
               {app.siteInfo}
             </Markdown>
