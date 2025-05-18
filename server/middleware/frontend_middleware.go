@@ -106,8 +106,8 @@ func getResourceDescription(article string) string {
 	plain := html2text.HTML2Text(string(htmlContent))
 	plain = strings.TrimSpace(plain)
 	plain = mergeSpaces(plain)
-	if len([]rune(plain)) > 100 {
-		plain = string([]rune(plain)[:100])
+	if len([]rune(plain)) > 200 {
+		plain = string([]rune(plain)[:197]) + "..."
 	}
 	return plain
 }
