@@ -4,15 +4,13 @@ import (
 	"fmt"
 	"nysoure/server/config"
 	"nysoure/server/service"
+	"nysoure/server/utils"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/html"
-	"github.com/gomarkdown/markdown/parser"
-	"github.com/k3a/html2text"
 )
 
 func FrontendMiddleware(c fiber.Ctx) error {
@@ -23,11 +21,36 @@ func FrontendMiddleware(c fiber.Ctx) error {
 	path := c.Path()
 	file := "static" + path
 
+	if path == "/robots.txt" {
+		return handleRobotsTxt(c)
+	} else if path == "/sitemap.xml" {
+		return handleSiteMap(c)
+	} else if path == "/rss.xml" {
+		return handleRss(c)
+	}
+
 	if _, err := os.Stat(file); path == "/" || os.IsNotExist(err) {
 		return serveIndexHtml(c)
 	} else {
 		return c.SendFile(file)
 	}
+}
+
+func handleRobotsTxt(c fiber.Ctx) error {
+	c.Set("Content-Type", "text/plain; charset=utf-8")
+	c.Set("Cache-Control", "no-cache")
+	c.Set("X-Robots-Tag", "noindex")
+	return c.SendString("User-agent: *\nDisallow: /api/\nDisallow: /admin/\n")
+}
+
+func handleSiteMap(c fiber.Ctx) error {
+	path := filepath.Join(utils.GetStoragePath(), utils.SiteMapFileName)
+	return c.SendFile(path)
+}
+
+func handleRss(c fiber.Ctx) error {
+	path := filepath.Join(utils.GetStoragePath(), utils.RssFileName)
+	return c.SendFile(path)
 }
 
 func serveIndexHtml(c fiber.Ctx) error {
@@ -58,7 +81,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 					preview = fmt.Sprintf("%s/api/image/%d", serverBaseURL, r.Images[0].ID)
 				}
 				title = r.Title
-				description = getResourceDescription(r.Article)
+				description = utils.ArticleToDescription(r.Article, 200)
 			}
 		}
 	} else if strings.HasPrefix(path, "/user/") {
@@ -81,47 +104,4 @@ func serveIndexHtml(c fiber.Ctx) error {
 
 	c.Set("Content-Type", "text/html; charset=utf-8")
 	return c.SendString(content)
-}
-
-func mergeSpaces(str string) string {
-	// Replace multiple spaces with a single space
-	builder := strings.Builder{}
-	for i, r := range str {
-		if r == '\t' || r == '\r' {
-			continue
-		}
-		if r == ' ' || r == '\n' {
-			if i > 0 && str[i-1] != ' ' && str[i-1] != '\n' {
-				builder.WriteRune(' ')
-			}
-		} else {
-			builder.WriteRune(r)
-		}
-	}
-	return builder.String()
-}
-
-func getResourceDescription(article string) string {
-	htmlContent := mdToHTML([]byte(article))
-	plain := html2text.HTML2Text(string(htmlContent))
-	plain = strings.TrimSpace(plain)
-	plain = mergeSpaces(plain)
-	if len([]rune(plain)) > 200 {
-		plain = string([]rune(plain)[:197]) + "..."
-	}
-	return plain
-}
-
-func mdToHTML(md []byte) []byte {
-	// create Markdown parser with extensions
-	extensions := parser.CommonExtensions | parser.NoEmptyLineBeforeBlock | parser.MathJax
-	p := parser.NewWithExtensions(extensions)
-	doc := p.Parse(md)
-
-	// create HTML renderer with extensions
-	htmlFlags := html.CommonFlags | html.HrefTargetBlank
-	opts := html.RendererOptions{Flags: htmlFlags}
-	renderer := html.NewRenderer(opts)
-
-	return markdown.Render(doc, renderer)
 }

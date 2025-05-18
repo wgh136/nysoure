@@ -2,13 +2,25 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/gofiber/fiber/v3/log"
 	"net/url"
+	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/service"
+	"nysoure/server/utils"
 	"strconv"
 
 	"github.com/gofiber/fiber/v3"
 )
+
+func updateSiteMapAndRss(baseURL string) {
+	resources, err := dao.GetAllResources()
+	if err != nil {
+		log.Error("Error getting resources: ", err)
+	}
+	utils.GenerateSiteMap(baseURL, resources)
+	utils.GenerateRss(baseURL, resources)
+}
 
 func handleCreateResource(c fiber.Ctx) error {
 	var params service.ResourceCreateParams
@@ -25,6 +37,7 @@ func handleCreateResource(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+	updateSiteMapAndRss(c.BaseURL())
 	return c.Status(fiber.StatusOK).JSON(model.Response[uint]{
 		Success: true,
 		Data:    id,
@@ -69,6 +82,7 @@ func handleDeleteResource(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+	updateSiteMapAndRss(c.BaseURL())
 	return c.Status(fiber.StatusOK).JSON(model.Response[any]{
 		Success: true,
 		Data:    nil,
@@ -211,6 +225,7 @@ func handleUpdateResource(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+	updateSiteMapAndRss(c.BaseURL())
 	return c.Status(fiber.StatusOK).JSON(model.Response[any]{
 		Success: true,
 		Data:    nil,

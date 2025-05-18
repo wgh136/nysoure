@@ -233,3 +233,13 @@ func GetResourcesByUsername(username string, page, pageSize int) ([]model.Resour
 
 	return resources, int(totalPages), nil
 }
+
+// GetAllResources retrieves all resources from the database without all related data.
+// It is used to generate a sitemap and rss feed.
+func GetAllResources() ([]model.Resource, error) {
+	var resources []model.Resource
+	if err := db.Find(&resources).Error; err != nil {
+		return nil, err
+	}
+	return resources, nil
+}
