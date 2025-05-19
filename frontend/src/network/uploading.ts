@@ -213,7 +213,7 @@ class UploadingManager extends Listenable {
   }
 
   getTasks() {
-    return this.tasks
+    return Array.from(this.tasks)
   }
 
   hasTasks() {
