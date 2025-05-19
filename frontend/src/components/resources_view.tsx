@@ -2,7 +2,7 @@ import {PageResponse, Resource} from "../network/models.ts";
 import {useCallback, useEffect, useRef, useState} from "react";
 import showToast from "./toast.ts";
 import ResourceCard from "./resource_card.tsx";
-import {Masonry} from "masonic";
+import {Masonry, useInfiniteLoader} from "masonic";
 import Loading from "./loading.tsx";
 
 export default function ResourcesView({loader}: {loader: (page: number) => Promise<PageResponse<Resource>>}) {
@@ -30,11 +30,10 @@ export default function ResourcesView({loader}: {loader: (page: number) => Promi
     loadPage()
   }, [loadPage]);
 
+  const maybeLoadMore = useInfiniteLoader(loadPage)
+
   return <div className={"px-2 pt-2"}>
-    <Masonry columnWidth={300} items={data} render={(e) => {
-      if (e.index === data.length - 1) {
-        loadPage()
-      }
+    <Masonry onRender={maybeLoadMore} columnWidth={300} items={data} render={(e) => {
       return <ResourceCard resource={e.data} key={e.data.id}/>
     } }></Masonry>
     {
