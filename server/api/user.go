@@ -3,6 +3,7 @@ package api
 import (
 	"io"
 	"net/http"
+	"net/url"
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"strconv"
@@ -266,6 +267,10 @@ func handleGetUserInfo(c fiber.Ctx) error {
 	username := c.Query("username", "")
 	if username == "" {
 		return model.NewRequestError("Username is required")
+	}
+	username, err := url.QueryUnescape(username)
+	if err != nil {
+		return model.NewRequestError("Invalid username")
 	}
 	user, err := service.GetUserByUsername(username)
 	if err != nil {
