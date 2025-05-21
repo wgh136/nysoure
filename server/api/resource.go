@@ -179,6 +179,10 @@ func handleGetResourcesWithUser(c fiber.Ctx) error {
 	if username == "" {
 		return model.NewRequestError("Username is required")
 	}
+	username, err := url.PathUnescape(username)
+	if err != nil {
+		return model.NewRequestError("Invalid username")
+	}
 	pageStr := c.Query("page")
 	if pageStr == "" {
 		pageStr = "1"

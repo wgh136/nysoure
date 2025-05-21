@@ -1,6 +1,7 @@
 package api
 
 import (
+	"net/url"
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"strconv"
@@ -65,6 +66,13 @@ func listComments(c fiber.Ctx) error {
 
 func listCommentsWithUser(c fiber.Ctx) error {
 	username := c.Params("username")
+	if username == "" {
+		return model.NewRequestError("Username is required")
+	}
+	username, err := url.PathUnescape(username)
+	if err != nil {
+		return model.NewRequestError("Invalid username")
+	}
 	pageStr := c.Query("page", "1")
 	page, err := strconv.Atoi(pageStr)
 	if err != nil {
