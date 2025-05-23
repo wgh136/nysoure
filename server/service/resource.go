@@ -91,7 +91,7 @@ func parseResourceIfPresent(line string, host string) *model.ResourceView {
 	if err != nil {
 		return nil
 	}
-	if parsed.Hostname() != host {
+	if parsed.IsAbs() && parsed.Hostname() != host {
 		return nil
 	}
 	path := parsed.Path

@@ -67,6 +67,7 @@ export interface ResourceDetails {
   author: User;
   views: number;
   downloads: number;
+  related: Resource[];
 }
 
 export interface Storage {

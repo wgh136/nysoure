@@ -1,7 +1,7 @@
-import {useNavigate, useParams} from "react-router";
-import {createContext, createRef, useCallback, useContext, useEffect, useRef, useState} from "react";
-import {ResourceDetails, RFile, Storage, Comment} from "../network/models.ts";
-import {network} from "../network/network.ts";
+import { useNavigate, useParams } from "react-router";
+import { createContext, createRef, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { ResourceDetails, RFile, Storage, Comment } from "../network/models.ts";
+import { network } from "../network/network.ts";
 import showToast from "../components/toast.ts";
 import Markdown from "react-markdown";
 import "../markdown.css";
@@ -14,20 +14,20 @@ import {
   MdOutlineDelete,
   MdOutlineDownload, MdOutlineEdit
 } from "react-icons/md";
-import {app} from "../app.ts";
-import {uploadingManager} from "../network/uploading.ts";
-import {ErrorAlert} from "../components/alert.tsx";
-import {useTranslation} from "react-i18next";
+import { app } from "../app.ts";
+import { uploadingManager } from "../network/uploading.ts";
+import { ErrorAlert } from "../components/alert.tsx";
+import { useTranslation } from "react-i18next";
 import Pagination from "../components/pagination.tsx";
-import showPopup, {useClosePopup} from "../components/popup.tsx";
-import {Turnstile} from "@marsidev/react-turnstile";
+import showPopup, { useClosePopup } from "../components/popup.tsx";
+import { Turnstile } from "@marsidev/react-turnstile";
 import Button from "../components/button.tsx";
-import Badge, {BadgeAccent} from "../components/badge.tsx";
+import Badge, { BadgeAccent } from "../components/badge.tsx";
 import Input from "../components/input.tsx";
 
 export default function ResourcePage() {
   const params = useParams()
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const idStr = params.id
 
@@ -44,7 +44,7 @@ export default function ResourcePage() {
       if (res.success) {
         setResource(res.data!)
       } else {
-        showToast({message: res.message, type: "error"})
+        showToast({ message: res.message, type: "error" })
       }
     }
   }, [id])
@@ -60,7 +60,7 @@ export default function ResourcePage() {
           setResource(res.data!)
           document.title = res.data!.title
         } else {
-          showToast({message: res.message, type: "error"})
+          showToast({ message: res.message, type: "error" })
         }
       })
     }
@@ -77,7 +77,7 @@ export default function ResourcePage() {
   }
 
   if (!resource) {
-    return <Loading/>
+    return <Loading />
   }
 
   return <context.Provider value={reload}>
@@ -96,7 +96,7 @@ export default function ResourcePage() {
         <div className="flex items-center ">
           <div className="avatar">
             <div className="w-6 rounded-full">
-              <img src={network.getUserAvatar(resource.author)} alt={"avatar"}/>
+              <img src={network.getUserAvatar(resource.author)} alt={"avatar"} />
             </div>
           </div>
           <div className="w-2"></div>
@@ -116,63 +116,63 @@ export default function ResourcePage() {
         <label className="tab transition-all">
           <input type="radio" name="my_tabs" checked={page === 0} onChange={() => {
             setPage(0)
-          }}/>
-          <MdOutlineArticle className="text-xl mr-2"/>
+          }} />
+          <MdOutlineArticle className="text-xl mr-2" />
           <span className="text-sm">
             {t("Description")}
           </span>
         </label>
         <div key={"article"} className="tab-content p-2">
-          <Article article={resource.article}/>
+          <Article resource={resource} />
         </div>
 
         <label className="tab transition-all">
           <input type="radio" name="my_tabs" checked={page === 1} onChange={() => {
             setPage(1)
-          }}/>
-          <MdOutlineDataset className="text-xl mr-2"/>
+          }} />
+          <MdOutlineDataset className="text-xl mr-2" />
           <span className="text-sm">
             {t("Files")}
           </span>
         </label>
         <div key={"files"} className="tab-content p-2">
-          <Files files={resource.files} resourceID={resource.id}/>
+          <Files files={resource.files} resourceID={resource.id} />
         </div>
 
         <label className="tab transition-all">
           <input type="radio" name="my_tabs" checked={page === 2} onChange={() => {
             setPage(2)
-          }}/>
-          <MdOutlineComment className="text-xl mr-2"/>
+          }} />
+          <MdOutlineComment className="text-xl mr-2" />
           <span className="text-sm">
             {t("Comments")}
           </span>
         </label>
         <div key={"comments"} className="tab-content p-2">
-          <Comments resourceId={resource.id}/>
+          <Comments resourceId={resource.id} />
         </div>
 
         <div className={"grow"}></div>
         {
           app.isAdmin() || app.user?.id === resource.author.id ? <Button className={"btn-ghost btn-circle"} onClick={() => {
-            navigate(`/resource/edit/${resource.id}`, {replace: true})
+            navigate(`/resource/edit/${resource.id}`, { replace: true })
           }}>
-            <MdOutlineEdit size={20}/>
+            <MdOutlineEdit size={20} />
           </Button> : null
         }
-        <DeleteResourceDialog resourceId={resource.id} uploaderId={resource.author.id}/>
+        <DeleteResourceDialog resourceId={resource.id} uploaderId={resource.author.id} />
       </div>
       <div className="h-4"></div>
     </div>
   </context.Provider>
 }
 
-function DeleteResourceDialog({resourceId, uploaderId}: { resourceId: number, uploaderId?: number }) {
+function DeleteResourceDialog({ resourceId, uploaderId }: { resourceId: number, uploaderId?: number }) {
   const [isLoading, setLoading] = useState(false)
 
   const navigate = useNavigate()
 
-  const {t} = useTranslation()
+  const { t } = useTranslation()
 
   const handleDelete = async () => {
     if (isLoading) {
@@ -183,10 +183,10 @@ function DeleteResourceDialog({resourceId, uploaderId}: { resourceId: number, up
     const dialog = document.getElementById("delete_resource_dialog") as HTMLDialogElement
     dialog.close()
     if (res.success) {
-      showToast({message: t("Resource deleted successfully"), type: "success"})
-      navigate("/", {replace: true})
+      showToast({ message: t("Resource deleted successfully"), type: "success" })
+      navigate("/", { replace: true })
     } else {
-      showToast({message: res.message, type: "error"})
+      showToast({ message: res.message, type: "error" })
     }
     setLoading(false)
   }
@@ -200,7 +200,7 @@ function DeleteResourceDialog({resourceId, uploaderId}: { resourceId: number, up
       const dialog = document.getElementById("delete_resource_dialog") as HTMLDialogElement
       dialog.showModal()
     }}>
-      <MdOutlineDelete size={20} className={"inline-block"}/>
+      <MdOutlineDelete size={20} className={"inline-block"} />
     </Button>
     <dialog id={`delete_resource_dialog`} className="modal">
       <div className="modal-box">
@@ -221,9 +221,67 @@ function DeleteResourceDialog({resourceId, uploaderId}: { resourceId: number, up
 const context = createContext<() => void>(() => {
 })
 
-function Article({article}: { article: string }) {
-  return <article>
-    <Markdown>{article}</Markdown>
+function Article({ resource }: { resource: ResourceDetails }) {
+  const articleRef = useRef<HTMLDivElement>(null)
+
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (articleRef.current) {
+      console.log("render")
+      for (let child of articleRef.current.children) {
+        console.log("child", child)
+        if (child.tagName === "P" && child.children.length === 1 && child.children[0].tagName === "A") {
+          const href = (child.children[0] as HTMLAnchorElement).href as string
+          console.log("href", href)
+          console.log("origin", window.location.origin)
+          if (href.startsWith(window.location.origin) || href.startsWith("/")) {
+            console.log("href starts with origin")
+            let path = href
+            if (path.startsWith(window.location.origin)) {
+              path = path.substring(window.location.origin.length)
+            }
+            if (path.startsWith("/resources/")) {
+              const content = child.children[0].innerHTML
+              const id = path.substring("/resources/".length)
+              for (let r of resource.related) {
+                if (r.id.toString() === id) {
+                  child.children[0].classList.add("hidden")
+                  let div = document.createElement("div")
+                  div.innerHTML = `
+                    ${child.innerHTML}
+                    <div class="card card-border max-w-72 sm:max-w-full border-base-300 my-2 sm:card-side">
+                      ${r.image ? `
+                        <figure>
+                          <img
+                            class="w-full h-40 sm:h-full sm:w-32 object-cover"
+                            src="${network.getImageUrl(r.image!.id)}"
+                            alt="Cover" />
+                        </figure>
+                      ` : ""}
+                      <div class="card-body" style="padding: 1rem">
+                        <h3>${r.title}</h4>
+                        <p class="text-sm">${content}</p>
+                      </div>
+                    </div>
+                  `
+                  child.appendChild(div)
+                }
+                (child as HTMLParagraphElement).onclick = (e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  navigate(`/resources/${r.id}`)
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }, [resource])
+
+  return <article ref={articleRef}>
+    <Markdown>{resource.article}</Markdown>
   </article>
 }
 
@@ -239,10 +297,10 @@ function fileSizeToString(size: number) {
   }
 }
 
-function FileTile({file}: { file: RFile }) {
+function FileTile({ file }: { file: RFile }) {
   const buttonRef = createRef<HTMLButtonElement>()
 
-  const {t} = useTranslation()
+  const { t } = useTranslation()
 
   return <div className={"card card-border border-base-300 my-2"}>
     <div className={"p-4 flex flex-row items-center"}>
@@ -259,19 +317,19 @@ function FileTile({file}: { file: RFile }) {
             const link = network.getFileDownloadLink(file.id, "");
             window.open(link, "_blank");
           } else {
-            showPopup(<CloudflarePopup file={file}/>, buttonRef.current!)
+            showPopup(<CloudflarePopup file={file} />, buttonRef.current!)
           }
         }}>
-          <MdOutlineDownload size={24}/>
+          <MdOutlineDownload size={24} />
         </button>
-        <DeleteFileDialog fileId={file.id} uploaderId={file.user_id}/>
-        <UpdateFileInfoDialog file={file}/>
+        <DeleteFileDialog fileId={file.id} uploaderId={file.user_id} />
+        <UpdateFileInfoDialog file={file} />
       </div>
     </div>
   </div>
 }
 
-function CloudflarePopup({file}: { file: RFile }) {
+function CloudflarePopup({ file }: { file: RFile }) {
   const closePopup = useClosePopup()
 
   const [isLoading, setLoading] = useState(true)
@@ -292,7 +350,7 @@ function CloudflarePopup({file}: { file: RFile }) {
   </div>
 }
 
-function Files({files, resourceID}: { files: RFile[], resourceID: number }) {
+function Files({ files, resourceID }: { files: RFile[], resourceID: number }) {
   return <div>
     {
       files.map((file) => {
@@ -313,8 +371,8 @@ enum FileType {
   upload = "upload",
 }
 
-function CreateFileDialog({resourceId}: { resourceId: number }) {
-  const {t} = useTranslation();
+function CreateFileDialog({ resourceId }: { resourceId: number }) {
+  const { t } = useTranslation();
   const [isLoading, setLoading] = useState(false)
   const storages = useRef<Storage[] | null>(null)
   const mounted = useRef(true)
@@ -360,7 +418,7 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
         setSubmitting(false)
         const dialog = document.getElementById("upload_dialog") as HTMLDialogElement
         dialog.close()
-        showToast({message: t("File created successfully"), type: "success"})
+        showToast({ message: t("File created successfully"), type: "success" })
         reload()
       } else {
         setError(res.message)
@@ -381,7 +439,7 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
         setSubmitting(false)
         const dialog = document.getElementById("upload_dialog") as HTMLDialogElement
         dialog.close()
-        showToast({message: t("Successfully create uploading task."), type: "success"})
+        showToast({ message: t("Successfully create uploading task."), type: "success" })
       } else {
         setError(res.message)
         setSubmitting(false)
@@ -401,7 +459,7 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
             return;
           }
           if (!res.success) {
-            showToast({message: res.message, type: "error"})
+            showToast({ message: res.message, type: "error" })
           } else {
             storages.current = res.data!
             setLoading(false)
@@ -415,7 +473,7 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
       dialog.showModal()
     }}>
       {
-        isLoading ? <span className={"loading loading-spinner loading-sm"}></span> : <MdAdd size={24}/>
+        isLoading ? <span className={"loading loading-spinner loading-sm"}></span> : <MdAdd size={24} />
       }
       <span className={"text-sm"}>
         {t("Upload")}
@@ -429,13 +487,13 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
         <form className="filter mb-2">
           <input className="btn btn-square" type="reset" value="×" onClick={() => {
             setFileType(null);
-          }}/>
+          }} />
           <input className="btn text-sm" type="radio" name="type" aria-label={t("Redirect")} onInput={() => {
             setFileType(FileType.redirect);
-          }}/>
+          }} />
           <input className="btn text-sm" type="radio" name="type" aria-label={t("Upload")} onInput={() => {
             setFileType(FileType.upload);
-          }}/>
+          }} />
         </form>
 
         {
@@ -443,13 +501,13 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
             <p className={"text-sm p-2"}>{t("User who click the file will be redirected to the URL")}</p>
             <input type="text" className="input w-full my-2" placeholder={t("File Name")} onChange={(e) => {
               setFilename(e.target.value)
-            }}/>
+            }} />
             <input type="text" className="input w-full my-2" placeholder={t("URL")} onChange={(e) => {
               setRedirectUrl(e.target.value)
-            }}/>
+            }} />
             <input type="text" className="input w-full my-2" placeholder={t("Description")} onChange={(e) => {
               setDescription(e.target.value)
-            }}/>
+            }} />
           </>
         }
 
@@ -472,25 +530,25 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
               {
                 storages.current?.map((s) => {
                   return <option key={s.id}
-                                 value={s.id}>{s.name}({(s.currentSize / 1024 / 1024).toFixed(2)}/{s.maxSize / 1024 / 1024}MB)</option>
+                    value={s.id}>{s.name}({(s.currentSize / 1024 / 1024).toFixed(2)}/{s.maxSize / 1024 / 1024}MB)</option>
                 })
               }
             </select>
 
             <input
               type="file" className="file-input w-full my-2" onChange={(e) => {
-              if (e.target.files) {
-                setFile(e.target.files[0])
-              }
-            }}/>
+                if (e.target.files) {
+                  setFile(e.target.files[0])
+                }
+              }} />
 
             <input type="text" className="input w-full my-2" placeholder={t("Description")} onChange={(e) => {
               setDescription(e.target.value)
-            }}/>
+            }} />
           </>
         }
 
-        {error && <ErrorAlert className={"my-2"} message={error}/>}
+        {error && <ErrorAlert className={"my-2"} message={error} />}
 
         <div className="modal-action">
           <form method="dialog">
@@ -506,14 +564,14 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
   </>
 }
 
-function UpdateFileInfoDialog({file}: { file: RFile }) {
+function UpdateFileInfoDialog({ file }: { file: RFile }) {
   const [isLoading, setLoading] = useState(false)
 
   const [filename, setFilename] = useState(file.filename)
 
   const [description, setDescription] = useState(file.description)
 
-  const {t} = useTranslation()
+  const { t } = useTranslation()
 
   const reload = useContext(context)
 
@@ -525,11 +583,11 @@ function UpdateFileInfoDialog({file}: { file: RFile }) {
     const res = await network.updateFile(file.id, filename, description);
     const dialog = document.getElementById(`update_file_info_dialog_${file.id}`) as HTMLDialogElement
     dialog.close()
-    if (res.success){
-      showToast({message: t("File info updated successfully"), type: "success"})
+    if (res.success) {
+      showToast({ message: t("File info updated successfully"), type: "success" })
       reload()
     } else {
-      showToast({message: res.message, type: "error"})
+      showToast({ message: res.message, type: "error" })
     }
     setLoading(false)
   }
@@ -543,13 +601,13 @@ function UpdateFileInfoDialog({file}: { file: RFile }) {
       const dialog = document.getElementById(`update_file_info_dialog_${file.id}`) as HTMLDialogElement
       dialog.showModal()
     }}>
-      <MdOutlineEdit size={20} className={"inline-block"}/>
+      <MdOutlineEdit size={20} className={"inline-block"} />
     </button>
     <dialog id={`update_file_info_dialog_${file.id}`} className="modal">
       <div className="modal-box">
         <h3 className="font-bold text-lg">{t("Update File Info")}</h3>
-        <Input type={"text"} label={t("File Name")} value={filename} onChange={(e) => setFilename(e.target.value)}/>
-        <Input type={"text"} label={t("Description")} value={description} onChange={(e) => setDescription(e.target.value)}/>
+        <Input type={"text"} label={t("File Name")} value={filename} onChange={(e) => setFilename(e.target.value)} />
+        <Input type={"text"} label={t("Description")} value={description} onChange={(e) => setDescription(e.target.value)} />
         <div className="modal-action">
           <form method="dialog">
             <button className="btn btn-ghost">{t("Close")}</button>
@@ -561,7 +619,7 @@ function UpdateFileInfoDialog({file}: { file: RFile }) {
   </>
 }
 
-function Comments({resourceId}: { resourceId: number }) {
+function Comments({ resourceId }: { resourceId: number }) {
   const [page, setPage] = useState(1);
 
   const [maxPage, setMaxPage] = useState(0);
@@ -572,7 +630,7 @@ function Comments({resourceId}: { resourceId: number }) {
 
   const [isLoading, setLoading] = useState(false);
 
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const reload = useCallback(() => {
     setPage(1);
@@ -585,17 +643,17 @@ function Comments({resourceId}: { resourceId: number }) {
       return;
     }
     if (commentContent === "") {
-      showToast({message: t("Comment content cannot be empty"), type: "error"});
+      showToast({ message: t("Comment content cannot be empty"), type: "error" });
       return;
     }
     setLoading(true);
     const res = await network.createComment(resourceId, commentContent);
     if (res.success) {
       setCommentContent("");
-      showToast({message: t("Comment created successfully"), type: "success"});
+      showToast({ message: t("Comment created successfully"), type: "success" });
       reload();
     } else {
-      showToast({message: res.message, type: "error"});
+      showToast({ message: res.message, type: "error" });
     }
     setLoading(false);
   }
@@ -603,23 +661,23 @@ function Comments({resourceId}: { resourceId: number }) {
   return <div>
     <div className={"mt-4 mb-6 textarea w-full p-4 h-28 flex flex-col"}>
       <textarea placeholder={t("Write down your comment")} className={"w-full resize-none grow"} value={commentContent}
-                onChange={(e) => setCommentContent(e.target.value)}/>
+        onChange={(e) => setCommentContent(e.target.value)} />
       <div className={"flex flex-row-reverse"}>
         <button onClick={sendComment}
-                className={`btn btn-primary h-8 text-sm mx-2 ${commentContent === "" && "btn-disabled"}`}>
+          className={`btn btn-primary h-8 text-sm mx-2 ${commentContent === "" && "btn-disabled"}`}>
           {isLoading ? <span className={"loading loading-spinner loading-sm"}></span> : null}
           Submit
         </button>
       </div>
     </div>
-    <CommentsList resourceId={resourceId} page={page} maxPageCallback={setMaxPage} key={listKey}/>
+    <CommentsList resourceId={resourceId} page={page} maxPageCallback={setMaxPage} key={listKey} />
     {maxPage && <div className={"w-full flex justify-center"}>
-      <Pagination page={page} setPage={setPage} totalPages={maxPage}/>
+      <Pagination page={page} setPage={setPage} totalPages={maxPage} />
     </div>}
   </div>
 }
 
-function CommentsList({resourceId, page, maxPageCallback}: {
+function CommentsList({ resourceId, page, maxPageCallback }: {
   resourceId: number,
   page: number,
   maxPageCallback: (maxPage: number) => void
@@ -642,26 +700,26 @@ function CommentsList({resourceId, page, maxPageCallback}: {
 
   if (comments == null) {
     return <div className={"w-full"}>
-      <Loading/>
+      <Loading />
     </div>
   }
 
   return <>
     {
       comments.map((comment) => {
-        return <CommentTile comment={comment} key={comment.id}/>
+        return <CommentTile comment={comment} key={comment.id} />
       })
     }
   </>
 }
 
-function CommentTile({comment}: { comment: Comment }) {
+function CommentTile({ comment }: { comment: Comment }) {
   const navigate = useNavigate();
   return <div className={"card card-border border-base-300 p-2 my-3"}>
     <div className={"flex flex-row items-center my-1 mx-1"}>
       <div className="avatar cursor-pointer" onClick={() => navigate(`/user/${comment.user.username}`)}>
         <div className="w-8 rounded-full">
-          <img src={network.getUserAvatar(comment.user)} alt={"avatar"}/>
+          <img src={network.getUserAvatar(comment.user)} alt={"avatar"} />
         </div>
       </div>
       <div className={"w-2"}></div>
@@ -680,14 +738,14 @@ function CommentTile({comment}: { comment: Comment }) {
   </div>
 }
 
-function DeleteFileDialog({fileId, uploaderId}: { fileId: string, uploaderId: number }) {
+function DeleteFileDialog({ fileId, uploaderId }: { fileId: string, uploaderId: number }) {
   const [isLoading, setLoading] = useState(false)
 
   const id = `delete_file_dialog_${fileId}`
 
   const reload = useContext(context)
 
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const handleDelete = async () => {
     if (isLoading) {
@@ -698,10 +756,10 @@ function DeleteFileDialog({fileId, uploaderId}: { fileId: string, uploaderId: nu
     const dialog = document.getElementById(id) as HTMLDialogElement
     dialog.close()
     if (res.success) {
-      showToast({message: t("File deleted successfully"), type: "success"})
+      showToast({ message: t("File deleted successfully"), type: "success" })
       reload()
     } else {
-      showToast({message: res.message, type: "error"})
+      showToast({ message: res.message, type: "error" })
     }
     setLoading(false)
   }
@@ -715,7 +773,7 @@ function DeleteFileDialog({fileId, uploaderId}: { fileId: string, uploaderId: nu
       const dialog = document.getElementById(id) as HTMLDialogElement
       dialog.showModal()
     }}>
-      <MdOutlineDelete size={20} className={"inline-block"}/>
+      <MdOutlineDelete size={20} className={"inline-block"} />
     </button>
     <dialog id={id} className="modal">
       <div className="modal-box">

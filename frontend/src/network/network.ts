@@ -27,10 +27,6 @@ class Network {
   }
 
   init() {
-    if (import.meta.env.MODE === 'development') {
-      this.baseUrl = 'http://localhost:3000';
-      this.apiBaseUrl = 'http://localhost:3000/api';
-    }
     axios.defaults.validateStatus = _ => true
     axios.interceptors.request.use((config) => {
       if (app.token) {
