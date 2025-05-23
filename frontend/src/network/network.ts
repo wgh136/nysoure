@@ -453,7 +453,11 @@ class Network {
   async getResourceDetails(id: number): Promise<Response<ResourceDetails>> {
     try {
       const response = await axios.get(`${this.apiBaseUrl}/resource/${id}`)
-      return response.data
+      let data = response.data
+      if (!data.related) {
+        data.related = []
+      }
+      return data
     } catch (e: any) {
       console.error(e)
       return {

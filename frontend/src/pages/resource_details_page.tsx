@@ -229,15 +229,13 @@ function Article({ resource }: { resource: ResourceDetails }) {
 
   useEffect(() => {
     if (articleRef.current) {
-      console.log("render")
+      if (!resource.related) {
+        return;
+      }
       for (let child of articleRef.current.children) {
-        console.log("child", child)
         if (child.tagName === "P" && child.children.length === 1 && child.children[0].tagName === "A") {
           const href = (child.children[0] as HTMLAnchorElement).href as string
-          console.log("href", href)
-          console.log("origin", window.location.origin)
           if (href.startsWith(window.location.origin) || href.startsWith("/")) {
-            console.log("href starts with origin")
             let path = href
             if (path.startsWith(window.location.origin)) {
               path = path.substring(window.location.origin.length)
