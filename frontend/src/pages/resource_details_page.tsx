@@ -250,7 +250,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
                   let div = document.createElement("div")
                   div.innerHTML = `
                     ${child.innerHTML}
-                    <div class="card card-border max-w-72 sm:max-w-full border-base-300 my-2 sm:card-side">
+                    <div class="card card-border w-full border-base-300 my-3 sm:card-side">
                       ${r.image ? `
                         <figure>
                           <img
