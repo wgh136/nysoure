@@ -32,6 +32,6 @@ export default function HomePage() {
         </div>
       </div>
     }
-    <ResourcesView loader={(page) => network.getResources(page)}></ResourcesView>
+    <ResourcesView storageKey={"home_page"} loader={(page) => network.getResources(page)}></ResourcesView>
   </>
 }

@@ -232,7 +232,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
       if (!resource.related) {
         return;
       }
-      for (let child of articleRef.current.children) {
+      for (const child of articleRef.current.children) {
         if (child.tagName === "P" && child.children.length === 1 && child.children[0].tagName === "A") {
           const href = (child.children[0] as HTMLAnchorElement).href as string
           if (href.startsWith(window.location.origin) || href.startsWith("/")) {
@@ -279,7 +279,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
         }
       }
     }
-  }, [resource])
+  }, [navigate, resource])
 
   return <article ref={articleRef}>
     <Markdown>{resource.article}</Markdown>
