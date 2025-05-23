@@ -265,12 +265,14 @@ function Article({ resource }: { resource: ResourceDetails }) {
                       </div>
                     </div>
                   `
-                  child.appendChild(div)
-                }
-                (child as HTMLParagraphElement).onclick = (e) => {
-                  e.stopPropagation()
-                  e.preventDefault()
-                  navigate(`/resources/${r.id}`)
+                  child.appendChild(div);
+
+                  (child as HTMLParagraphElement).onclick = (e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                    navigate(`/resources/${r.id}`)
+                    div.remove();
+                  }
                 }
               }
             }
