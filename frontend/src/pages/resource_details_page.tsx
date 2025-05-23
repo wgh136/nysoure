@@ -54,6 +54,7 @@ export default function ResourcePage() {
   }, [t])
 
   useEffect(() => {
+    setResource(null);
     if (!isNaN(id)) {
       network.getResourceDetails(id).then((res) => {
         if (res.success) {
