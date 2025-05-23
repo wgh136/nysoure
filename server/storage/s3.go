@@ -58,7 +58,7 @@ func (s *S3Storage) Download(storageKey string, fileName string) (string, error)
 		return "", errors.New("failed to create S3 client")
 	}
 	reqParams := make(url.Values)
-	reqParams.Set("response-content-disposition", "attachment; filename=\""+fileName+"\"")
+	reqParams.Set("response-content-disposition", "attachment; filename=\""+url.QueryEscape(fileName)+"\"")
 	presignedURL, err := minioClient.PresignedGetObject(context.Background(), s.BucketName, storageKey, 10*time.Second, reqParams)
 	if err != nil {
 		fmt.Println(err)
