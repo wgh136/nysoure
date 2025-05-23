@@ -30,17 +30,18 @@ type ResourceView struct {
 }
 
 type ResourceDetailView struct {
-	ID                uint        `json:"id"`
-	Title             string      `json:"title"`
-	AlternativeTitles []string    `json:"alternativeTitles"`
-	Article           string      `json:"article"`
-	CreatedAt         time.Time   `json:"createdAt"`
-	Tags              []TagView   `json:"tags"`
-	Images            []ImageView `json:"images"`
-	Files             []FileView  `json:"files"`
-	Author            UserView    `json:"author"`
-	Views             uint        `json:"views"`
-	Downloads         uint        `json:"downloads"`
+	ID                uint           `json:"id"`
+	Title             string         `json:"title"`
+	AlternativeTitles []string       `json:"alternativeTitles"`
+	Article           string         `json:"article"`
+	CreatedAt         time.Time      `json:"createdAt"`
+	Tags              []TagView      `json:"tags"`
+	Images            []ImageView    `json:"images"`
+	Files             []FileView     `json:"files"`
+	Author            UserView       `json:"author"`
+	Views             uint           `json:"views"`
+	Downloads         uint           `json:"downloads"`
+	Related           []ResourceView `json:"related"`
 }
 
 func (r *Resource) ToView() ResourceView {

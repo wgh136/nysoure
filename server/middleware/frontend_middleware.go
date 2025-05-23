@@ -75,7 +75,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 		idStr := strings.TrimPrefix(path, "/resources/")
 		id, err := strconv.Atoi(idStr)
 		if err == nil {
-			r, err := service.GetResource(uint(id))
+			r, err := service.GetResource(uint(id), "")
 			if err == nil {
 				if len(r.Images) > 0 {
 					preview = fmt.Sprintf("%s/api/image/%d", serverBaseURL, r.Images[0].ID)

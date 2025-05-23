@@ -2,13 +2,14 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/gofiber/fiber/v3/log"
 	"net/url"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"nysoure/server/utils"
 	"strconv"
+
+	"github.com/gofiber/fiber/v3/log"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -54,7 +55,8 @@ func handleGetResource(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid resource ID")
 	}
-	resource, err := service.GetResource(uint(id))
+	host := c.Hostname()
+	resource, err := service.GetResource(uint(id), host)
 	if err != nil {
 		return err
 	}

@@ -1,9 +1,13 @@
 package service
 
 import (
-	"github.com/gofiber/fiber/v3/log"
+	"net/url"
 	"nysoure/server/dao"
 	"nysoure/server/model"
+	"strconv"
+	"strings"
+
+	"github.com/gofiber/fiber/v3/log"
 
 	"gorm.io/gorm"
 )
@@ -55,13 +59,69 @@ func CreateResource(uid uint, params *ResourceCreateParams) (uint, error) {
 	return r.ID, nil
 }
 
-func GetResource(id uint) (*model.ResourceDetailView, error) {
+func findRelatedResources(r model.Resource, host string) []model.ResourceView {
+	lines := strings.Split(r.Article, "\n")
+	var relatedResources []model.ResourceView
+	for _, line := range lines {
+		r := parseResourceIfPresent(line, host)
+		if r != nil {
+			relatedResources = append(relatedResources, *r)
+		}
+	}
+	return relatedResources
+}
+
+func parseResourceIfPresent(line string, host string) *model.ResourceView {
+	if len(line) < 4 {
+		return nil
+	}
+	if !strings.HasPrefix(line, "[") || !strings.HasSuffix(line, ")") {
+		return nil
+	}
+	if !strings.Contains(line, "](") {
+		return nil
+	}
+	splites := strings.Split(line, "(")
+	if len(splites) != 2 {
+		return nil
+	}
+	u := strings.TrimSuffix(splites[1], ")")
+	u = strings.TrimSpace(u)
+	parsed, err := url.Parse(u)
+	if err != nil {
+		return nil
+	}
+	if parsed.Hostname() != host {
+		return nil
+	}
+	path := parsed.Path
+	if !strings.HasPrefix(path, "/resources/") {
+		return nil
+	}
+	idStr := strings.TrimPrefix(path, "/resources/")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return nil
+	}
+	r, err := dao.GetResourceByID(uint(id))
+	if err != nil {
+		return nil
+	}
+	v := r.ToView()
+	return &v
+}
+
+func GetResource(id uint, host string) (*model.ResourceDetailView, error) {
 	r, err := dao.GetResourceByID(id)
 	_ = dao.AddResourceViewCount(id)
 	if err != nil {
 		return nil, err
 	}
 	v := r.ToDetailView()
+	if host != "" {
+		related := findRelatedResources(r, host)
+		v.Related = related
+	}
 	return &v, nil
 }
 
