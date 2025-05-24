@@ -8,6 +8,7 @@ import showToast from "../components/toast.ts";
 import { useTranslation } from "react-i18next";
 import { app } from "../app.ts";
 import { ErrorAlert } from "../components/alert.tsx";
+import {useAppContext} from "../components/AppContext.tsx";
 
 export default function PublishPage() {
   const [title, setTitle] = useState<string>("")
@@ -21,6 +22,8 @@ export default function PublishPage() {
 
   const navigate = useNavigate()
   const { t } = useTranslation();
+
+  const appContext = useAppContext()
 
   useEffect(() => {
     document.title = t("Publish Resource");
@@ -57,6 +60,7 @@ export default function PublishPage() {
     })
     if (res.success) {
       setSubmitting(false)
+      appContext.clear();
       navigate("/resources/" + res.data!, { replace: true })
     } else {
       setSubmitting(false)
