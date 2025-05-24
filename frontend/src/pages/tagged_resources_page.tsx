@@ -17,7 +17,7 @@ export default function TaggedResourcesPage() {
   const [tag, setTag] = useState<Tag | null>(null);
 
   useEffect(() => {
-    document.title = t("Tag: " + tagName);
+    document.title = t("Tag: ") + tagName;
   }, [t, tagName])
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function TaggedResourcesPage() {
 
   if (!tagName) {
     return <div className={"m-4"}>
-      <ErrorAlert message={"Tag not found"} />
+      <ErrorAlert message={t("Tag not found")} />
     </div>
   }
 
@@ -63,10 +63,9 @@ export default function TaggedResourcesPage() {
 
 function EditTagButton({tag, onEdited}: { tag: Tag, onEdited: (t: Tag) => void }) {
   const [description, setDescription] = useState(tag.description);
-
   const [isLoading, setIsLoading] = useState(false);
-
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setDescription(tag.description)
@@ -77,7 +76,7 @@ function EditTagButton({tag, onEdited}: { tag: Tag, onEdited: (t: Tag) => void }
       return;
     }
     if (description && description.length > 256) {
-      setError("Description is too long");
+      setError(t("Description is too long"));
       return;
     }
     setIsLoading(true);
@@ -89,7 +88,7 @@ function EditTagButton({tag, onEdited}: { tag: Tag, onEdited: (t: Tag) => void }
       dialog.close();
       onEdited(res.data!);
     } else {
-      setError(res.message || "Unknown error");
+      setError(res.message || t("Unknown error"));
     }
   };
 
@@ -97,20 +96,20 @@ function EditTagButton({tag, onEdited}: { tag: Tag, onEdited: (t: Tag) => void }
     <Button onClick={()=> {
     const dialog = document.getElementById("edit_tag_dialog") as HTMLDialogElement;
     dialog.showModal();
-    }}>Edit</Button>
+    }}>{t("Edit")}</Button>
     <dialog id="edit_tag_dialog" className="modal">
       <div className="modal-box">
-        <h3 className="font-bold text-lg">Edit Tag</h3>
-        <p className="py-2 text-sm">Set the description of the tag.</p>
-        <p className="pb-3 text-sm">Use markdown format.</p>
+        <h3 className="font-bold text-lg">{t("Edit Tag")}</h3>
+        <p className="py-2 text-sm">{t("Set the description of the tag.")}</p>
+        <p className="pb-3 text-sm">{t("Use markdown format.")}</p>
         <textarea className="textarea h-24 w-full resize-none" value={description} onChange={(e) => setDescription(e.target.value)}/>
         {error && <ErrorAlert className={"mt-2"} message={error} />}
         <div className="modal-action">
           <form method="dialog">
-            <Button className="btn">Close</Button>
+            <Button className="btn">{t("Close")}</Button>
           </form>
           <Button isLoading={isLoading} className={"btn-primary"} onClick={submit}>
-            Save
+            {t("Save")}
           </Button>
         </div>
       </div>

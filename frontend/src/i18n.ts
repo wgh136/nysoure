@@ -150,6 +150,14 @@ export const i18nData = {
       "Edit Resource": "Edit Resource",
       "Change Bio": "Change Bio",
       "About this site": "About this site",
+      "Tag not found": "Tag not found",
+      "Description is too long": "Description is too long",
+      "Unknown error": "Unknown error",
+      "Edit": "Edit",
+      "Edit Tag": "Edit Tag",
+      "Set the description of the tag.": "Set the description of the tag.",
+      "Use markdown format.": "Use markdown format.",
+      "Tag: ": "Tag: ",
     }
   },
   "zh-CN": {
@@ -303,6 +311,14 @@ export const i18nData = {
       "Edit Resource": "编辑资源",
       "Change Bio": "更改个人简介",
       "About this site": "关于此网站",
+      "Tag not found": "标签未找到",
+      "Description is too long": "描述太长",
+      "Unknown error": "未知错误",
+      "Edit": "编辑",
+      "Edit Tag": "编辑标签",
+      "Set the description of the tag.": "设置标签的描述。",
+      "Use markdown format.": "使用Markdown格式。",
+      "Tag: ": "标签: ",
     }
   },
   "zh-TW": {
@@ -456,6 +472,14 @@ export const i18nData = {
       "Edit Resource": "編輯資源",
       "Change Bio": "更改個人簡介",
       "About this site": "關於此網站",
+      "Tag not found": "標籤未找到",
+      "Description is too long": "描述太長",
+      "Unknown error": "未知錯誤",
+      "Edit": "編輯",
+      "Edit Tag": "編輯標籤",
+      "Set the description of the tag.": "設置標籤的描述。",
+      "Use markdown format.": "使用Markdown格式。",
+      "Tag: ": "標籤: ",
     }
   }
 }
