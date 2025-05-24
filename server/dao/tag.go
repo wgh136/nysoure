@@ -58,3 +58,10 @@ func GetTagByName(name string) (model.Tag, error) {
 	}
 	return t, nil
 }
+
+func SetTagDescription(id uint, description string) error {
+	if err := db.Model(model.Tag{}).Where("id = ?", id).Update("description", description).Error; err != nil {
+		return err
+	}
+	return nil
+}

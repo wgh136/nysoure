@@ -40,7 +40,7 @@ func handleRobotsTxt(c fiber.Ctx) error {
 	c.Set("Content-Type", "text/plain; charset=utf-8")
 	c.Set("Cache-Control", "no-cache")
 	c.Set("X-Robots-Tag", "noindex")
-	return c.SendString("User-agent: *\nDisallow: /api/\nDisallow: /admin/\n")
+	return c.SendString("User-agent: *\nDisallow: /api/\n\nSitemap: " + c.BaseURL() + "/sitemap.xml\n")
 }
 
 func handleSiteMap(c fiber.Ctx) error {
@@ -91,6 +91,13 @@ func serveIndexHtml(c fiber.Ctx) error {
 			preview = fmt.Sprintf("/avatar/%d", u.ID)
 			title = u.Username
 			description = "User " + u.Username + "'s profile"
+		}
+	} else if strings.HasPrefix(path, "/tag/") {
+		tagName := strings.TrimPrefix(path, "/tag/")
+		t, err := service.GetTagByName(tagName)
+		if err == nil {
+			title = "Tag: " + t.Name
+			description = utils.ArticleToDescription(t.Description, 256)
 		}
 	}
 

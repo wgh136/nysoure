@@ -30,6 +30,7 @@ export interface PageResponse<T> {
 export interface Tag {
   id: number;
   name: string;
+  description: string;
 }
 
 export interface CreateResourceParams {

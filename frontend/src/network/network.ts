@@ -316,6 +316,34 @@ class Network {
     }
   }
 
+  async getTagByName(name: string): Promise<Response<Tag>> {
+    try {
+      const response = await axios.get(`${this.apiBaseUrl}/tag/${name}`)
+      return response.data
+    } catch (e: any) {
+      console.error(e)
+      return {
+        success: false,
+        message: e.toString(),
+      }
+    }
+  }
+
+  async setTagDescription(tagId: number, description: string): Promise<Response<Tag>> {
+    try {
+      const response = await axios.putForm(`${this.apiBaseUrl}/tag/${tagId}/description`, {
+        description
+      })
+      return response.data
+    } catch (e: any) {
+      console.error(e)
+      return {
+        success: false,
+        message: e.toString(),
+      }
+    }
+  }
+
   /**
    * Upload image and return the image id
    */
@@ -453,7 +481,7 @@ class Network {
   async getResourceDetails(id: number): Promise<Response<ResourceDetails>> {
     try {
       const response = await axios.get(`${this.apiBaseUrl}/resource/${id}`)
-      let data = response.data
+      const data = response.data
       if (!data.related) {
         data.related = []
       }
