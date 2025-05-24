@@ -5,6 +5,7 @@ import (
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"strconv"
+	"strings"
 )
 
 func handleCreateTag(c fiber.Ctx) error {
@@ -12,6 +13,7 @@ func handleCreateTag(c fiber.Ctx) error {
 	if tag == "" {
 		return model.NewRequestError("name is required")
 	}
+	tag = strings.TrimSpace(tag)
 	uid, ok := c.Locals("uid").(uint)
 	if !ok {
 		return model.NewUnAuthorizedError("You must be logged in to create a tag")
@@ -32,6 +34,7 @@ func handleSearchTag(c fiber.Ctx) error {
 	if keyword == "" {
 		return model.NewRequestError("Keyword is required")
 	}
+	keyword = strings.TrimSpace(keyword)
 	tags, err := service.SearchTag(keyword)
 	if tags == nil {
 		tags = []model.TagView{}
