@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	url2 "net/url"
 	"nysoure/server/config"
 	"nysoure/server/service"
 	"nysoure/server/utils"
@@ -94,10 +95,14 @@ func serveIndexHtml(c fiber.Ctx) error {
 		}
 	} else if strings.HasPrefix(path, "/tag/") {
 		tagName := strings.TrimPrefix(path, "/tag/")
-		t, err := service.GetTagByName(tagName)
+		tagName, err := url2.PathUnescape(tagName)
+		tagName = strings.TrimSpace(tagName)
 		if err == nil {
-			title = "Tag: " + t.Name
-			description = utils.ArticleToDescription(t.Description, 256)
+			t, err := service.GetTagByName(tagName)
+			if err == nil {
+				title = "Tag: " + t.Name
+				description = utils.ArticleToDescription(t.Description, 256)
+			}
 		}
 	}
 
