@@ -1,19 +1,14 @@
 package main
 
 import (
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/logger"
 	"log"
 	"nysoure/server/api"
 	"nysoure/server/middleware"
-	"os"
-
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/cors"
-	"github.com/gofiber/fiber/v3/middleware/logger"
 )
 
 func main() {
-	debugMode := os.Getenv("DEBUG_MODE") != "false"
-
 	app := fiber.New(fiber.Config{
 		BodyLimit:   8 * 1024 * 1024,
 		ProxyHeader: "X-Real-IP",
@@ -28,10 +23,6 @@ func main() {
 	app.Use(middleware.JwtMiddleware)
 
 	app.Use(middleware.FrontendMiddleware)
-
-	if debugMode {
-		app.Use(cors.New(cors.ConfigDefault))
-	}
 
 	apiG := app.Group("/api")
 	{

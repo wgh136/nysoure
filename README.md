@@ -34,4 +34,3 @@ Environment variables:
 - DB_USER
 - DB_PASSWORD
 - DB_NAME
-- DEBUG_MODE
