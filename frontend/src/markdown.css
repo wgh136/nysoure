@@ -79,3 +79,10 @@ article {
         max-height: 400px;
     }
 }
+
+a.no-underline {
+    text-decoration: none;
+    &:hover {
+        text-decoration: none;
+    }
+}

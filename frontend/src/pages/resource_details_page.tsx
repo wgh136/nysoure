@@ -24,6 +24,7 @@ import { Turnstile } from "@marsidev/react-turnstile";
 import Button from "../components/button.tsx";
 import Badge, { BadgeAccent } from "../components/badge.tsx";
 import Input from "../components/input.tsx";
+import {FaSteam} from "react-icons/fa";
 
 export default function ResourcePage() {
   const params = useParams()
@@ -240,16 +241,16 @@ function Article({ resource }: { resource: ResourceDetails }) {
             if (path.startsWith(window.location.origin)) {
               path = path.substring(window.location.origin.length)
             }
+            const content = child.children[0].innerHTML
             if (path.startsWith("/resources/")) {
-              const content = child.children[0].innerHTML
               const id = path.substring("/resources/".length)
-              for (let r of resource.related) {
+              for (const r of resource.related) {
                 if (r.id.toString() === id) {
                   child.children[0].classList.add("hidden")
-                  let div = document.createElement("div")
+                  const div = document.createElement("div")
                   div.innerHTML = `
                     ${child.innerHTML}
-                    <div class="card card-border w-full border-base-300 my-3 sm:card-side">
+                    <div class="card card-border w-full border-base-300 my-3 sm:card-side cursor-pointer">
                       ${r.image ? `
                         <figure>
                           <img
@@ -282,7 +283,20 @@ function Article({ resource }: { resource: ResourceDetails }) {
   }, [navigate, resource])
 
   return <article ref={articleRef}>
-    <Markdown>{resource.article}</Markdown>
+    <Markdown components={{
+      "a": ({ node, ...props }) => {
+        const href = props.href as string
+        if (href.startsWith("https://store.steampowered.com/app/")) {
+          return <a href={href} target={"_blank"} className={"inline-block no-underline"}>
+            <div className={"flex items-center border border-base-300 py-2 px-4 rounded-full hover:bg-base-100 duration-200 text-base-content"}>
+              <FaSteam size={20}/>
+              <span className={"ml-2"}>{props.children}</span>
+            </div>
+          </a>
+        }
+        return <a href={href} target={"_blank"}>{props.children}</a>
+      }
+    }}>{resource.article}</Markdown>
   </article>
 }
 
