@@ -172,7 +172,11 @@ func searchWithKeyword(keyword string) ([]model.Resource, error) {
 func GetResourceByTag(tagID uint, page int, pageSize int) ([]model.Resource, int, error) {
 	var tag model.Tag
 
-	total := db.Model(&model.Tag{}).Where("id = ?", tagID).Association("Resources").Count()
+	total := db.Model(&model.Tag{
+		Model: gorm.Model{
+			ID: tagID,
+		},
+	}).Association("Resources").Count()
 
 	if err := db.Model(&model.Tag{}).Where("id = ?", tagID).Preload("Resources", func(tx *gorm.DB) *gorm.DB {
 		return tx.Offset((page - 1) * pageSize).Limit(pageSize).Preload("Tags").Preload("User").Preload("Images").Order("created_at DESC")
