@@ -6,6 +6,7 @@ import { MdOutlinePerson, MdSearch, MdSettings } from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import UploadingSideBar from "./uploading_side_bar.tsx";
 import { IoLogoGithub } from "react-icons/io";
+import {useAppContext} from "./AppContext.tsx";
 
 export default function Navigator() {
   const outlet = useOutlet()
@@ -13,6 +14,8 @@ export default function Navigator() {
   const navigate = useNavigate()
 
   const [key, setKey] = useState(0);
+
+  const appContext = useAppContext();
 
   const [naviContext, _] = useState<NavigatorContext>({
     refresh: () => {
@@ -25,6 +28,7 @@ export default function Navigator() {
       <div className={"flex-1 max-w-7xl mx-auto flex"}>
         <div className="flex-1">
           <button className="btn btn-ghost text-xl" onClick={() => {
+            appContext.clear()
             navigate(`/`);
           }}>{app.appName}</button>
         </div>
