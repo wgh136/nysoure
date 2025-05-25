@@ -277,7 +277,6 @@ function Article({resource}: { resource: ResourceDetails }) {
             }
           }
         }
-        console.log(props.children)
         // @ts-ignore
         if (props.children?.length === 2) {
           // @ts-ignore
