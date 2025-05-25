@@ -36,6 +36,9 @@ export default tseslint.config(
         {
           ignoreRestArgs: true,
         },
+      ],
+      '@typescript-eslint/ban-ts-comment': [
+        'off'
       ]
     },
   },

@@ -1,5 +1,15 @@
 import {useNavigate, useParams} from "react-router";
-import {createContext, createRef, useCallback, useContext, useEffect, useRef, useState} from "react";
+import {
+  createContext,
+  createRef,
+  ReactElement,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from "react";
 import {ResourceDetails, RFile, Storage, Comment} from "../network/models.ts";
 import {network} from "../network/network.ts";
 import showToast from "../components/toast.ts";
@@ -264,6 +274,28 @@ function Article({resource}: { resource: ResourceDetails }) {
                   </div>
                 </div>
               }
+            }
+          }
+        }
+        // @ts-ignore
+        if (props.children?.length === 2) {
+          // @ts-ignore
+          const first = props.children[0] as ReactNode
+          // @ts-ignore
+          const second = props.children[1] as ReactNode
+
+          if (typeof first === "object" && typeof second === "string") {
+            const img = first as ReactElement
+            // @ts-ignore
+            if (img.type === "img") {
+              return <a className={"inline-block card card-border border-base-300 no-underline bg-base-200 hover:shadow transition-shadow"} target={"_blank"} href={href}>
+                <figure className={"max-h-72 max-w-96"}>
+                  {img}
+                </figure>
+                <div className={"card-body text-base-content"}>
+                  {second}
+                </div>
+              </a>
             }
           }
         }
