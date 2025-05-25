@@ -11,6 +11,8 @@ import (
 	"nysoure/server/utils"
 	"os"
 	"strconv"
+	"sync"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -18,6 +20,46 @@ import (
 const (
 	embedAvatarCount = 1
 )
+
+type UserLoginAttempt struct {
+	Attempts    uint
+	LockedUntil *time.Time
+	mu          sync.Mutex
+}
+
+var loginAttempts = sync.Map{}
+
+func addLoginAttempt(username string) {
+	val, _ := loginAttempts.LoadOrStore(username, &UserLoginAttempt{})
+	attempt := val.(*UserLoginAttempt)
+	attempt.mu.Lock()
+	defer attempt.mu.Unlock()
+	attempt.Attempts++
+	if attempt.Attempts >= 5 {
+		lockDuration := time.Duration(5*(1+attempt.Attempts/5)) * time.Minute
+		until := time.Now().Add(lockDuration)
+		attempt.LockedUntil = &until
+	}
+}
+
+func resetLoginAttempts(username string) {
+	loginAttempts.Delete(username)
+}
+
+func isUserLocked(username string) bool {
+	attempts, ok := loginAttempts.Load(username)
+	if !ok {
+		return false
+	}
+	if attempts.(*UserLoginAttempt).LockedUntil == nil {
+		return false
+	}
+	if time.Now().After(*attempts.(*UserLoginAttempt).LockedUntil) {
+		loginAttempts.Delete(username)
+		return false
+	}
+	return true
+}
 
 func CreateUser(username, password, cfToken string) (model.UserViewWithToken, error) {
 	if !config.AllowRegister() {
@@ -53,6 +95,9 @@ func CreateUser(username, password, cfToken string) (model.UserViewWithToken, er
 }
 
 func Login(username, password string) (model.UserViewWithToken, error) {
+	if isUserLocked(username) {
+		return model.UserViewWithToken{}, model.NewRequestError("User is temporarily locked due to too many failed login attempts")
+	}
 	user, err := dao.GetUserByUsername(username)
 	if err != nil {
 		if model.IsNotFoundError(err) {
@@ -61,8 +106,10 @@ func Login(username, password string) (model.UserViewWithToken, error) {
 		return model.UserViewWithToken{}, err
 	}
 	if err := bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(password)); err != nil {
+		addLoginAttempt(username)
 		return model.UserViewWithToken{}, model.NewRequestError("Invalid password")
 	}
+	resetLoginAttempts(username)
 	token, err := utils.GenerateToken(user.ID)
 	if err != nil {
 		return model.UserViewWithToken{}, err
