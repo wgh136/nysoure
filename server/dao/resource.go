@@ -2,8 +2,12 @@ package dao
 
 import (
 	"errors"
+	"github.com/gofiber/fiber/v3/log"
 	"nysoure/server/model"
 	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -228,20 +232,6 @@ func ExistsResource(id uint) (bool, error) {
 	return true, nil
 }
 
-func AddResourceViewCount(id uint) error {
-	if err := db.Model(&model.Resource{}).Where("id = ?", id).Update("views", gorm.Expr("views + ?", 1)).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func AddResourceDownloadCount(id uint) error {
-	if err := db.Model(&model.Resource{}).Where("id = ?", id).Update("downloads", gorm.Expr("downloads + ?", 1)).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
 func GetResourcesByUsername(username string, page, pageSize int) ([]model.Resource, int, error) {
 	var user model.User
 	if err := db.Where("username = ?", username).First(&user).Error; err != nil {
@@ -274,4 +264,115 @@ func GetAllResources() ([]model.Resource, error) {
 		return nil, err
 	}
 	return resources, nil
+}
+
+type CachedResourceStats struct {
+	id        uint
+	views     atomic.Int64
+	downloads atomic.Int64
+}
+
+var (
+	cachedResourcesStats = make(map[uint]*CachedResourceStats)
+	cacheMutex           = sync.RWMutex{}
+)
+
+func init() {
+	go func() {
+		ticker := time.NewTicker(10 * time.Minute)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			cacheMutex.Lock()
+			if len(cachedResourcesStats) == 0 {
+				cacheMutex.Unlock()
+				continue
+			}
+
+			err := db.Transaction(func(tx *gorm.DB) error {
+				for id, stats := range cachedResourcesStats {
+					var count int64
+					if err := tx.Model(&model.Resource{}).Where("id = ?", id).Count(&count).Error; err != nil {
+						return err
+					}
+					if count == 0 {
+						continue
+					}
+
+					if views := stats.views.Swap(0); views > 0 {
+						if err := tx.Model(&model.Resource{}).Where("id = ?", id).Update("views", gorm.Expr("views + ?", views)).Error; err != nil {
+							return err
+						}
+					}
+					if downloads := stats.downloads.Swap(0); downloads > 0 {
+						if err := tx.Model(&model.Resource{}).Where("id = ?", id).Update("downloads", gorm.Expr("downloads + ?", downloads)).Error; err != nil {
+							return err
+						}
+					}
+				}
+				return nil
+			})
+			if err != nil {
+				log.Error("Failed to update resource stats cache: ", err)
+			}
+			clear(cachedResourcesStats)
+			cacheMutex.Unlock()
+		}
+	}()
+}
+
+func AddResourceViewCount(id uint) error {
+	// 检查资源是否存在
+	exists, err := ExistsResource(id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return model.NewNotFoundError("Resource not found")
+	}
+
+	cacheMutex.RLock()
+	stats, exists := cachedResourcesStats[id]
+	cacheMutex.RUnlock()
+
+	if !exists {
+		cacheMutex.Lock()
+		stats, exists = cachedResourcesStats[id]
+		if !exists {
+			stats = &CachedResourceStats{id: id}
+			cachedResourcesStats[id] = stats
+		}
+		cacheMutex.Unlock()
+	}
+
+	stats.views.Add(1)
+	return nil
+}
+
+func AddResourceDownloadCount(id uint) error {
+	// 检查资源是否存在
+	exists, err := ExistsResource(id)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return model.NewNotFoundError("Resource not found")
+	}
+
+	cacheMutex.RLock()
+	stats, exists := cachedResourcesStats[id]
+	cacheMutex.RUnlock()
+
+	if !exists {
+		cacheMutex.Lock()
+		stats, exists = cachedResourcesStats[id]
+		if !exists {
+			stats = &CachedResourceStats{id: id}
+			cachedResourcesStats[id] = stats
+		}
+		cacheMutex.Unlock()
+	}
+
+	stats.downloads.Add(1)
+	return nil
 }
