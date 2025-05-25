@@ -277,6 +277,7 @@ function Article({resource}: { resource: ResourceDetails }) {
             }
           }
         }
+        console.log(props.children)
         // @ts-ignore
         if (props.children?.length === 2) {
           // @ts-ignore
@@ -284,7 +285,7 @@ function Article({resource}: { resource: ResourceDetails }) {
           // @ts-ignore
           const second = props.children[1] as ReactNode
 
-          if (typeof first === "object" && typeof second === "string") {
+          if (typeof first === "object" && (typeof second === "string" || typeof second === "object")) {
             const img = first as ReactElement
             // @ts-ignore
             if (img.type === "img") {
@@ -292,7 +293,7 @@ function Article({resource}: { resource: ResourceDetails }) {
                 <figure className={"max-h-72 max-w-96"}>
                   {img}
                 </figure>
-                <div className={"card-body text-base-content"}>
+                <div className={"card-body text-base-content text-lg"}>
                   {second}
                 </div>
               </a>
