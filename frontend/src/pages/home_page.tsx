@@ -2,36 +2,63 @@ import {useEffect, useState} from "react";
 import ResourcesView from "../components/resources_view.tsx";
 import {network} from "../network/network.ts";
 import { app } from "../app.ts";
-import Markdown from "react-markdown";
+import {RSort} from "../network/models.ts";
+import Button from "../components/button.tsx";
+import {MdInfoOutline} from "react-icons/md";
 import {useTranslation} from "react-i18next";
+import {useNavigate} from "react-router";
 
 export default function HomePage() {
   useEffect(() => {
     document.title = app.appName;
   }, [])
 
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [order, setOrder] = useState(RSort.TimeAsc)
 
   const {t} = useTranslation()
 
+  const navigate = useNavigate()
+
   return <>
-    {
-      app.siteInfo && <div className={"mt-4 px-4"}>
-        <div className="collapse collapse-arrow bg-base-100 border border-base-300" onClick={() => setIsCollapsed(!isCollapsed)}>
-          <input type="radio" name="my-accordion-2" checked={isCollapsed} style={{
-            "cursor": "pointer",
-          }}/>
-          <div className="collapse-title font-semibold cursor-pointer">{t("About this site")}</div>
-          <article className="collapse-content text-sm cursor-auto" onClick={(e) => {
-            e.stopPropagation();
-          }}>
-            <Markdown>
-              {app.siteInfo}
-            </Markdown>
-          </article>
+    <div className={"flex p-4 items-center"}>
+      <select value={order} className="select w-52 select-info" onInput={(e) => {
+        const value = e.currentTarget.value;
+        if (value === "0") {
+          setOrder(RSort.TimeAsc);
+        } else if (value === "1") {
+          setOrder(RSort.TimeDesc);
+        } else if (value === "2") {
+          setOrder(RSort.ViewsDesc);
+        } else if (value === "3") {
+          setOrder(RSort.ViewsAsc);
+        } else if (value === "4") {
+          setOrder(RSort.DownloadsDesc);
+        } else if (value === "5") {
+          setOrder(RSort.DownloadsAsc);
+        }
+      }}>
+        <option disabled>{t("Select a Order")}</option>
+        <option value={0}>{t("Latest")}</option>
+        <option value={1}>{t("Oldest")}</option>
+        <option value={2}>{t("Most Viewed")}</option>
+        <option value={3}>{t("Least Viewed")}</option>
+        <option value={4}>{t("Most Downloaded")}</option>
+        <option value={5}>{t("Least Downloaded")}</option>
+      </select>
+      <span className={"flex-1"}/>
+      <Button onClick={() => {
+        navigate("/about");
+      }}>
+        <div className={"flex items-center"}>
+          <MdInfoOutline size={24} className={"inline-block mr-2"}/>
+          <span>{t("About this site")}</span>
         </div>
-      </div>
-    }
-    <ResourcesView storageKey={"home_page"} loader={(page) => network.getResources(page)}></ResourcesView>
+      </Button>
+    </div>
+    <ResourcesView
+      key={`home_page_${order}`}
+      storageKey={`home_page_${order}`}
+      loader={(page) => network.getResources(page, order)}
+    />
   </>
 }

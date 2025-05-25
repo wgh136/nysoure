@@ -37,7 +37,7 @@ func GetResourceByID(id uint) (model.Resource, error) {
 	return r, nil
 }
 
-func GetResourceList(page, pageSize int) ([]model.Resource, int, error) {
+func GetResourceList(page, pageSize int, sort model.RSort) ([]model.Resource, int, error) {
 	// Retrieve a list of resources with pagination
 	var resources []model.Resource
 	var total int64
@@ -46,7 +46,25 @@ func GetResourceList(page, pageSize int) ([]model.Resource, int, error) {
 		return nil, 0, err
 	}
 
-	if err := db.Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Preload("Images").Preload("Tags").Order("created_at DESC").Find(&resources).Error; err != nil {
+	order := ""
+	switch sort {
+	case model.RSortTimeAsc:
+		order = "created_at ASC"
+	case model.RSortTimeDesc:
+		order = "created_at DESC"
+	case model.RSortViewsAsc:
+		order = "views ASC"
+	case model.RSortViewsDesc:
+		order = "views DESC"
+	case model.RSortDownloadsAsc:
+		order = "downloads ASC"
+	case model.RSortDownloadsDesc:
+		order = "downloads DESC"
+	default:
+		order = "created_at DESC" // Default sort order
+	}
+
+	if err := db.Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Preload("Images").Preload("Tags").Order(order).Find(&resources).Error; err != nil {
 		return nil, 0, err
 	}
 

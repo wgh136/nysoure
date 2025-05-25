@@ -10,6 +10,7 @@ import ManagePage from "./pages/manage_page.tsx";
 import TaggedResourcesPage from "./pages/tagged_resources_page.tsx";
 import UserPage from "./pages/user_page.tsx";
 import EditResourcePage from "./pages/edit_resource_page.tsx";
+import AboutPage from "./pages/about_page.tsx";
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
           <Route path={"/tag/:tag"} element={<TaggedResourcesPage/>}/>
           <Route path={"/user/:username"} element={<UserPage/>}/>
           <Route path={"/resource/edit/:rid"} element={<EditResourcePage/>}/>
+          <Route path={"/about"} element={<AboutPage/>}/>
         </Route>
       </Routes>
     </BrowserRouter>

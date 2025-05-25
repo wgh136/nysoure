@@ -14,7 +14,7 @@ import {
   UserWithToken,
   Comment,
   CommentWithResource,
-  ServerConfig
+  ServerConfig, RSort
 } from "./models.ts";
 
 class Network {
@@ -409,11 +409,12 @@ class Network {
     }
   }
 
-  async getResources(page: number): Promise<PageResponse<Resource>> {
+  async getResources(page: number, sort: RSort): Promise<PageResponse<Resource>> {
     try {
       const response = await axios.get(`${this.apiBaseUrl}/resource`, {
         params: {
-          page
+          page,
+          sort,
         }
       })
       return response.data

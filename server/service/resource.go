@@ -125,8 +125,8 @@ func GetResource(id uint, host string) (*model.ResourceDetailView, error) {
 	return &v, nil
 }
 
-func GetResourceList(page int) ([]model.ResourceView, int, error) {
-	resources, totalPages, err := dao.GetResourceList(page, pageSize)
+func GetResourceList(page int, sort model.RSort) ([]model.ResourceView, int, error) {
+	resources, totalPages, err := dao.GetResourceList(page, pageSize, sort)
 	if err != nil {
 		return nil, 0, err
 	}

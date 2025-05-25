@@ -319,6 +319,15 @@ export const i18nData = {
       "Set the description of the tag.": "设置标签的描述。",
       "Use markdown format.": "使用Markdown格式。",
       "Tag: ": "标签: ",
+
+      // 添加排序选项翻译
+      "Select a Order": "选择排序方式",
+      "Latest": "最新",
+      "Oldest": "最早",
+      "Most Viewed": "浏览最多",
+      "Least Viewed": "浏览最少",
+      "Most Downloaded": "下载最多",
+      "Least Downloaded": "下载最少",
     }
   },
   "zh-TW": {
@@ -480,6 +489,15 @@ export const i18nData = {
       "Set the description of the tag.": "設置標籤的描述。",
       "Use markdown format.": "使用Markdown格式。",
       "Tag: ": "標籤: ",
+
+      // 添加排序选项翻译
+      "Select a Order": "選擇排序方式",
+      "Latest": "最新",
+      "Oldest": "最早",
+      "Most Viewed": "瀏覽最多",
+      "Least Viewed": "瀏覽最少",
+      "Most Downloaded": "下載最多",
+      "Least Downloaded": "下載最少",
     }
   }
 }

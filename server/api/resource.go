@@ -101,7 +101,19 @@ func handleListResources(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid page number")
 	}
-	resources, maxPage, err := service.GetResourceList(page)
+	sortStr := c.Query("sort")
+	if sortStr == "" {
+		sortStr = "0"
+	}
+	sortInt, err := strconv.Atoi(sortStr)
+	if err != nil {
+		return model.NewRequestError("Invalid sort parameter")
+	}
+	if sortInt < 0 || sortInt > 5 {
+		return model.NewRequestError("Sort parameter out of range")
+	}
+	sort := model.RSort(sortInt)
+	resources, maxPage, err := service.GetResourceList(page, sort)
 	if err != nil {
 		return err
 	}

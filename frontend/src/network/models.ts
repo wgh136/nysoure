@@ -126,3 +126,12 @@ export interface ServerConfig {
   server_description: string;
   site_info: string;
 }
+
+export enum RSort {
+  TimeAsc = 0,
+  TimeDesc = 1,
+  ViewsAsc = 2,
+  ViewsDesc = 3,
+  DownloadsAsc = 4,
+  DownloadsDesc = 5,
+}

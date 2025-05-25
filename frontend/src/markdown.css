@@ -84,6 +84,9 @@ article {
         border-radius: 4px;
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, system-ui;
     }
+    .line-break {
+        white-space: pre-wrap;
+    }
 }
 
 a.no-underline {
