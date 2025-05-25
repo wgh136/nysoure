@@ -75,16 +75,17 @@ func GetResourceList(page, pageSize int, sort model.RSort) ([]model.Resource, in
 
 func UpdateResource(r model.Resource) error {
 	// Update a resource in the database
-	r1 := r
+	images := r.Images
+	tags := r.Tags
 	r.Images = nil
 	r.Tags = nil
 	if err := db.Save(&r).Error; err != nil {
 		return err
 	}
-	if err := db.Model(&r1).Association("Images").Replace(r.Images); err != nil {
+	if err := db.Model(&r).Association("Images").Replace(images); err != nil {
 		return err
 	}
-	if err := db.Model(&r1).Association("Tags").Replace(r.Tags); err != nil {
+	if err := db.Model(&r).Association("Tags").Replace(tags); err != nil {
 		return err
 	}
 	return nil
