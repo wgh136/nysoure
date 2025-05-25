@@ -7,17 +7,31 @@ import Button from "../components/button.tsx";
 import {MdInfoOutline} from "react-icons/md";
 import {useTranslation} from "react-i18next";
 import {useNavigate} from "react-router";
+import {useAppContext} from "../components/AppContext.tsx";
 
 export default function HomePage() {
   useEffect(() => {
     document.title = app.appName;
   }, [])
 
-  const [order, setOrder] = useState(RSort.TimeDesc)
-
   const {t} = useTranslation()
 
   const navigate = useNavigate()
+  
+  const appContext = useAppContext()
+
+  const [order, setOrder] = useState(() => {
+    if (appContext && appContext.get("home_page_order") !== undefined) {
+      return appContext.get("home_page_order");
+    }
+    return RSort.TimeDesc;
+  })
+
+  useEffect(() => {
+    if (appContext && order !== RSort.TimeDesc) {
+      appContext.set("home_page_order", order);
+    }
+  }, [appContext, order]);
 
   return <>
     <div className={"flex p-4 items-center"}>
