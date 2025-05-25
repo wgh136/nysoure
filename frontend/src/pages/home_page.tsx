@@ -24,26 +24,26 @@ export default function HomePage() {
       <select value={order} className="select w-52 select-info" onInput={(e) => {
         const value = e.currentTarget.value;
         if (value === "0") {
-          setOrder(RSort.TimeDesc);
-        } else if (value === "1") {
           setOrder(RSort.TimeAsc);
+        } else if (value === "1") {
+          setOrder(RSort.TimeDesc);
         } else if (value === "2") {
-          setOrder(RSort.ViewsDesc);
-        } else if (value === "3") {
           setOrder(RSort.ViewsAsc);
+        } else if (value === "3") {
+          setOrder(RSort.ViewsDesc);
         } else if (value === "4") {
-          setOrder(RSort.DownloadsDesc);
-        } else if (value === "5") {
           setOrder(RSort.DownloadsAsc);
+        } else if (value === "5") {
+          setOrder(RSort.DownloadsDesc);
         }
       }}>
         <option disabled>{t("Select a Order")}</option>
-        <option value={0}>{t("Latest")}</option>
-        <option value={1}>{t("Oldest")}</option>
-        <option value={2}>{t("Most Viewed")}</option>
-        <option value={3}>{t("Least Viewed")}</option>
-        <option value={4}>{t("Most Downloaded")}</option>
-        <option value={5}>{t("Least Downloaded")}</option>
+        <option value="0">{t("Time Ascending")}</option>
+        <option value="1">{t("Time Descending")}</option>
+        <option value="2">{t("Views Ascending")}</option>
+        <option value="3">{t("Views Descending")}</option>
+        <option value="4">{t("Downloads Ascending")}</option>
+        <option value="5">{t("Downloads Descending")}</option>
       </select>
       <span className={"flex-1"}/>
       <Button onClick={() => {

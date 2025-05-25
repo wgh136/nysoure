@@ -158,6 +158,13 @@ export const i18nData = {
       "Set the description of the tag.": "Set the description of the tag.",
       "Use markdown format.": "Use markdown format.",
       "Tag: ": "Tag: ",
+      "Select a Order": "Select a Order",
+      "Time Ascending": "Time Ascending",
+      "Time Descending": "Time Descending",
+      "Views Ascending": "Views Ascending",
+      "Views Descending": "Views Descending",
+      "Downloads Ascending": "Downloads Ascending",
+      "Downloads Descending": "Downloads Descending",
     }
   },
   "zh-CN": {
@@ -319,15 +326,13 @@ export const i18nData = {
       "Set the description of the tag.": "设置标签的描述。",
       "Use markdown format.": "使用Markdown格式。",
       "Tag: ": "标签: ",
-
-      // 添加排序选项翻译
       "Select a Order": "选择排序方式",
-      "Latest": "最新",
-      "Oldest": "最早",
-      "Most Viewed": "浏览最多",
-      "Least Viewed": "浏览最少",
-      "Most Downloaded": "下载最多",
-      "Least Downloaded": "下载最少",
+      "Time Ascending": "时间升序",
+      "Time Descending": "时间降序",
+      "Views Ascending": "浏览量升序",
+      "Views Descending": "浏览量降序",
+      "Downloads Ascending": "下载量升序",
+      "Downloads Descending": "下载量降序",
     }
   },
   "zh-TW": {
@@ -489,15 +494,13 @@ export const i18nData = {
       "Set the description of the tag.": "設置標籤的描述。",
       "Use markdown format.": "使用Markdown格式。",
       "Tag: ": "標籤: ",
-
-      // 添加排序选项翻译
       "Select a Order": "選擇排序方式",
-      "Latest": "最新",
-      "Oldest": "最早",
-      "Most Viewed": "瀏覽最多",
-      "Least Viewed": "瀏覽最少",
-      "Most Downloaded": "下載最多",
-      "Least Downloaded": "下載最少",
+      "Time Ascending": "時間升序",
+      "Time Descending": "時間降序",
+      "Views Ascending": "瀏覽量升序",
+      "Views Descending": "瀏覽量降序",
+      "Downloads Ascending": "下載量升序",
+      "Downloads Descending": "下載量降序",
     }
   }
 }
