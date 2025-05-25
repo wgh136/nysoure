@@ -239,6 +239,19 @@ function Article({resource}: { resource: ResourceDetails }) {
 
   return <article>
     <Markdown components={{
+      "p": ({node, ...props}) => {
+        if (typeof props.children === "object" && (props.children as ReactElement).type === "strong") {
+          // @ts-ignore
+          const child = (props.children as ReactElement).props.children.toString()
+          if (child.startsWith("<iframe")) {
+            return <div dangerouslySetInnerHTML={{
+              // @ts-ignore
+              __html: (props.children as ReactElement).props.children
+            }}></div>
+          }
+        }
+        return <p {...props}>{props.children}</p>
+      },
       "a": ({node, ...props}) => {
         const href = props.href as string
         if (href.startsWith("https://store.steampowered.com/app/")) {
@@ -289,7 +302,7 @@ function Article({resource}: { resource: ResourceDetails }) {
             // @ts-ignore
             if (img.type === "img") {
               return <a className={"inline-block card card-border border-base-300 no-underline bg-base-200 hover:shadow transition-shadow"} target={"_blank"} href={href}>
-                <figure className={"max-h-72 max-w-96"}>
+                <figure className={"max-h-96"}>
                   {img}
                 </figure>
                 <div className={"card-body text-base-content text-lg"}>
