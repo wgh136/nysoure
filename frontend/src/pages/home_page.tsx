@@ -13,7 +13,7 @@ export default function HomePage() {
     document.title = app.appName;
   }, [])
 
-  const [order, setOrder] = useState(RSort.TimeAsc)
+  const [order, setOrder] = useState(RSort.TimeDesc)
 
   const {t} = useTranslation()
 
@@ -24,9 +24,9 @@ export default function HomePage() {
       <select value={order} className="select w-52 select-info" onInput={(e) => {
         const value = e.currentTarget.value;
         if (value === "0") {
-          setOrder(RSort.TimeAsc);
-        } else if (value === "1") {
           setOrder(RSort.TimeDesc);
+        } else if (value === "1") {
+          setOrder(RSort.TimeAsc);
         } else if (value === "2") {
           setOrder(RSort.ViewsDesc);
         } else if (value === "3") {
