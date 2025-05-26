@@ -569,6 +569,9 @@ func CreateServerDownloadTask(uid uint, url, filename, description string, resou
 				log.Info("Retrying download... Attempt: ", i+1)
 				time.Sleep(2 * time.Second) // Wait before retrying
 				continue
+			} else {
+				log.Info("File downloaded successfully: ", tempPath)
+				break
 			}
 		}
 
