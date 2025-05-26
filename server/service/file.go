@@ -489,6 +489,34 @@ func testFileUrl(url string) (int64, error) {
 	return contentLength, nil
 }
 
+func downloadFile(url string, path string) error {
+	if _, err := os.Stat(path); err == nil {
+		_ = os.Remove(path) // Remove the file if it already exists
+	}
+	client := http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return model.NewRequestError("failed to create HTTP request")
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return model.NewRequestError("failed to send HTTP request")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return model.NewRequestError("URL is not accessible, status code: " + resp.Status)
+	}
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		return model.NewInternalServerError("failed to open file for writing")
+	}
+	defer file.Close()
+	if _, err := io.Copy(file, resp.Body); err != nil {
+		return model.NewInternalServerError("failed to copy response body to file")
+	}
+	return nil
+}
+
 func CreateServerDownloadTask(uid uint, url, filename, description string, resourceID, storageID uint) (*model.FileView, error) {
 	canUpload, err := checkUserCanUpload(uid)
 	if err != nil {
@@ -522,48 +550,28 @@ func CreateServerDownloadTask(uid uint, url, filename, description string, resou
 		defer func() {
 			updateUploadingSize(-contentLength)
 		}()
-		client := http.Client{}
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			log.Error("failed to create HTTP request: ", err)
-			_ = dao.DeleteFile(file.UUID)
-			return
-		}
-		resp, err := client.Do(req)
-		if err != nil {
-			log.Error("failed to send HTTP request: ", err)
-			_ = dao.DeleteFile(file.UUID)
-			return
-		}
-		if err != nil {
-			log.Error("failed to parse Content-Length header: ", err)
-			_ = dao.DeleteFile(file.UUID)
-			return
-		}
 		tempPath := filepath.Join(utils.GetStoragePath(), uuid.NewString())
-		tempFile, err := os.OpenFile(tempPath, os.O_CREATE|os.O_WRONLY, os.ModePerm)
-		if err != nil {
-			log.Error("failed to open temp file: ", err)
-			_ = dao.DeleteFile(file.UUID)
-			return
-		}
+
 		defer func() {
-			_ = tempFile.Close()
 			if err := os.Remove(tempPath); err != nil {
 				log.Error("failed to remove temp file: ", err)
 			}
 		}()
-		if _, err := io.Copy(tempFile, resp.Body); err != nil {
-			log.Error("failed to copy and hash response body: ", err)
-			_ = dao.DeleteFile(file.UUID)
-			return
+
+		for i := 0; i < 3; i++ {
+			if err := downloadFile(url, tempPath); err != nil {
+				log.Error("failed to download file: ", err)
+				if i == 2 {
+					_ = dao.DeleteFile(file.UUID)
+					log.Error("Failed to download file after retries, deleting file record: ", file.UUID)
+					return
+				}
+				log.Info("Retrying download... Attempt: ", i+1)
+				time.Sleep(2 * time.Second) // Wait before retrying
+				continue
+			}
 		}
-		_ = resp.Body.Close()
-		if err := tempFile.Close(); err != nil {
-			log.Error("failed to close temp file: ", err)
-			_ = dao.DeleteFile(file.UUID)
-			return
-		}
+
 		stat, err := os.Stat(tempPath)
 		if err != nil {
 			log.Error("failed to get temp file info: ", err)
