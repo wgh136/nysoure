@@ -505,16 +505,16 @@ func CreateServerDownloadTask(uid uint, url, filename, description string, resou
 		return nil, model.NewRequestError("failed to test file URL: " + err.Error())
 	}
 
-	file, err := dao.CreateFile(filename, description, resourceID, &storageID, storageKeyUnavailable, "", 0, uid)
-	if err != nil {
-		log.Error("failed to create file in db: ", err)
-		return nil, model.NewInternalServerError("failed to create file in db")
-	}
-
 	if contentLength+getUploadingSize() > config.MaxUploadingSize() {
 		log.Info("A new downloading file is rejected due to max uploading size limit")
 		_ = dao.DeleteFile(file.UUID)
 		return nil, model.NewRequestError("server is busy, please try again later")
+	}
+
+	file, err := dao.CreateFile(filename, description, resourceID, &storageID, storageKeyUnavailable, "", 0, uid)
+	if err != nil {
+		log.Error("failed to create file in db: ", err)
+		return nil, model.NewInternalServerError("failed to create file in db")
 	}
 
 	updateUploadingSize(contentLength)
