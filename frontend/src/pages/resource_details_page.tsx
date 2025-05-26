@@ -402,6 +402,7 @@ function Files({files, resourceID}: { files: RFile[], resourceID: number }) {
 enum FileType {
   redirect = "redirect",
   upload = "upload",
+  serverTask = "server_task"
 }
 
 function CreateFileDialog({resourceId}: { resourceId: number }) {
@@ -417,6 +418,8 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
   const [storage, setStorage] = useState<Storage | null>(null)
   const [file, setFile] = useState<File | null>(null)
   const [description, setDescription] = useState<string>("")
+
+  const [fileUrl, setFileUrl] = useState<string>("")
 
   const reload = useContext(context)
 
@@ -457,7 +460,7 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
         setError(res.message)
         setSubmitting(false)
       }
-    } else {
+    } else if (fileType === FileType.upload) {
       if (!file || !storage) {
         setError(t("Please select a file and storage"))
         setSubmitting(false)
@@ -473,6 +476,23 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
         const dialog = document.getElementById("upload_dialog") as HTMLDialogElement
         dialog.close()
         showToast({message: t("Successfully create uploading task."), type: "success"})
+      } else {
+        setError(res.message)
+        setSubmitting(false)
+      }
+    } else if (fileType === FileType.serverTask) {
+      if (!fileUrl || !filename || !storage) {
+        setError(t("Please fill in all fields"));
+        setSubmitting(false);
+        return;
+      }
+      const res = await network.createServerDownloadTask(fileUrl, filename, description, resourceId, storage.id);
+      if (res.success) {
+        setSubmitting(false)
+        const dialog = document.getElementById("upload_dialog") as HTMLDialogElement
+        dialog.close()
+        showToast({message: t("File created successfully"), type: "success"})
+        reload()
       } else {
         setError(res.message)
         setSubmitting(false)
@@ -527,6 +547,9 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
           <input className="btn text-sm" type="radio" name="type" aria-label={t("Upload")} onInput={() => {
             setFileType(FileType.upload);
           }}/>
+          <input className="btn text-sm" type="radio" name="type" aria-label={t("File Url")} onInput={() => {
+            setFileType(FileType.serverTask);
+          }}/>
         </form>
 
         {
@@ -573,6 +596,44 @@ function CreateFileDialog({resourceId}: { resourceId: number }) {
               if (e.target.files) {
                 setFile(e.target.files[0])
               }
+            }}/>
+
+            <input type="text" className="input w-full my-2" placeholder={t("Description")} onChange={(e) => {
+              setDescription(e.target.value)
+            }}/>
+          </>
+        }
+
+        {
+          fileType === FileType.serverTask && <>
+            <p
+              className={"text-sm p-2"}>{t("Provide a file url for the server to download, and the file will be moved to the selected storage.")}</p>
+            <select className="select select-primary w-full my-2" defaultValue={""} onChange={(e) => {
+              const id = parseInt(e.target.value)
+              if (isNaN(id)) {
+                setStorage(null)
+              } else {
+                const s = storages.current?.find((s) => s.id == id)
+                if (s) {
+                  setStorage(s)
+                }
+              }
+            }}>
+              <option value={""} disabled>{t("Select Storage")}</option>
+              {
+                storages.current?.map((s) => {
+                  return <option key={s.id}
+                                 value={s.id}>{s.name}({(s.currentSize / 1024 / 1024).toFixed(2)}/{s.maxSize / 1024 / 1024}MB)</option>
+                })
+              }
+            </select>
+
+            <input type="text" className="input w-full my-2" placeholder={t("File Name")} onChange={(e) => {
+              setFilename(e.target.value)
+            }}/>
+
+            <input type="text" className="input w-full my-2" placeholder={t("File URL")} onChange={(e) => {
+              setFileUrl(e.target.value)
             }}/>
 
             <input type="text" className="input w-full my-2" placeholder={t("Description")} onChange={(e) => {

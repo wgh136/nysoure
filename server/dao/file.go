@@ -153,3 +153,19 @@ func SetFileStorageKey(id string, storageKey string) error {
 	}
 	return nil
 }
+
+func SetFileStorageKeyAndSize(id string, storageKey string, size int64) error {
+	f := &model.File{}
+	if err := db.Where("uuid = ?", id).First(f).Error; err != nil {
+		return err
+	}
+	f.StorageKey = storageKey
+	f.Size = size
+	if err := db.Save(f).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.NewNotFoundError("file not found")
+		}
+		return err
+	}
+	return nil
+}

@@ -666,6 +666,27 @@ class Network {
     }
   }
 
+  async createServerDownloadTask(url: string, filename: string, description: string,
+                                 resourceId: number, storageId: number): Promise<Response<RFile>> {
+    try {
+      const response = await axios.post(`${this.apiBaseUrl}/files/upload/url`, {
+        url,
+        filename,
+        description,
+        resource_id: resourceId,
+        storage_id: storageId
+      });
+      return response.data;
+    }
+    catch (e: any) {
+      console.error(e);
+      return {
+        success: false,
+        message: e.toString(),
+      };
+    }
+  }
+
   async getFile(fileId: string): Promise<Response<RFile>> {
     try {
       const response = await axios.get(`${this.apiBaseUrl}/files/${fileId}`);

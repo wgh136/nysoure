@@ -165,6 +165,8 @@ export const i18nData = {
       "Views Descending": "Views Descending",
       "Downloads Ascending": "Downloads Ascending",
       "Downloads Descending": "Downloads Descending",
+      "File Url": "File Url",
+      "Provide a file url for the server to download, and the file will be moved to the selected storage.": "Provide a file url for the server to download, and the file will be moved to the selected storage.",
     }
   },
   "zh-CN": {
@@ -333,6 +335,8 @@ export const i18nData = {
       "Views Descending": "浏览量降序",
       "Downloads Ascending": "下载量升序",
       "Downloads Descending": "下载量降序",
+      "File Url": "文件链接",
+      "Provide a file url for the server to download, and the file will be moved to the selected storage.": "提供一个文件链接供服务器下载，文件将被移动到选定的存储中。",
     }
   },
   "zh-TW": {
@@ -501,6 +505,8 @@ export const i18nData = {
       "Views Descending": "瀏覽量降序",
       "Downloads Ascending": "下載量升序",
       "Downloads Descending": "下載量降序",
+      "File Url": "檔案連結",
+      "Provide a file url for the server to download, and the file will be moved to the selected storage.": "提供一個檔案連結供伺服器下載，檔案將被移動到選定的儲存中。",
     }
   }
 }

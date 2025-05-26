@@ -21,6 +21,7 @@ func AddFileRoutes(router fiber.Router) {
 		fileGroup.Post("/upload/finish/:id", finishUpload)
 		fileGroup.Post("/upload/cancel/:id", cancelUpload)
 		fileGroup.Post("/redirect", createRedirectFile)
+		fileGroup.Post("/upload/url", createServerDownloadTask)
 		fileGroup.Get("/:id", getFile)
 		fileGroup.Put("/:id", updateFile)
 		fileGroup.Delete("/:id", deleteFile)
@@ -243,5 +244,30 @@ func downloadLocalFile(c fiber.Ctx) error {
 
 	return c.SendFile(path, fiber.SendFile{
 		ByteRange: true,
+	})
+}
+
+func createServerDownloadTask(c fiber.Ctx) error {
+	uid := c.Locals("uid").(uint)
+
+	type InitUploadRequest struct {
+		Url         string `json:"url"`
+		Filename    string `json:"filename"`
+		Description string `json:"description"`
+		ResourceID  uint   `json:"resource_id"`
+		StorageID   uint   `json:"storage_id"`
+	}
+
+	var req InitUploadRequest
+	if err := c.Bind().Body(&req); err != nil {
+		return model.NewRequestError("Invalid request parameters")
+	}
+	result, err := service.CreateServerDownloadTask(uid, req.Url, req.Filename, req.Description, req.ResourceID, req.StorageID)
+	if err != nil {
+		return err
+	}
+	return c.JSON(model.Response[*model.FileView]{
+		Success: true,
+		Data:    result,
 	})
 }

@@ -3,6 +3,8 @@ package service
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"io"
+	"net/http"
 	"nysoure/server/config"
 	"nysoure/server/dao"
 	"nysoure/server/model"
@@ -19,7 +21,8 @@ import (
 )
 
 const (
-	blockSize = 4 * 1024 * 1024 // 4MB
+	blockSize             = 4 * 1024 * 1024           // 4MB
+	storageKeyUnavailable = "storage_key_unavailable" // Placeholder for unavailable storage key
 )
 
 var (
@@ -44,9 +47,7 @@ func getUploadingSize() int64 {
 }
 
 func updateUploadingSize(offset int64) {
-	c := dao.GetStatistic("uploading_size")
-	c += offset
-	_ = dao.SetStatistic("uploading_size", c)
+	_ = dao.UpdateStatistic("uploading_size", offset)
 }
 
 func getTempDir() (string, error) {
@@ -250,7 +251,7 @@ func FinishUploadingFile(uid uint, fid uint, md5Str string) (*model.FileView, er
 		return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
 	}
 
-	dbFile, err := dao.CreateFile(uploadingFile.Filename, uploadingFile.Description, uploadingFile.TargetResourceID, &uploadingFile.TargetStorageID, "", "", uploadingFile.TotalSize, uid)
+	dbFile, err := dao.CreateFile(uploadingFile.Filename, uploadingFile.Description, uploadingFile.TargetResourceID, &uploadingFile.TargetStorageID, storageKeyUnavailable, "", uploadingFile.TotalSize, uid)
 	if err != nil {
 		log.Error("failed to create file in db: ", err)
 		_ = os.Remove(resultFilePath)
@@ -430,6 +431,9 @@ func DownloadFile(ip, fid, cfToken string) (string, string, error) {
 		log.Error("failed to get file: ", err)
 		return "", "", model.NewNotFoundError("file not found")
 	}
+	if file.StorageKey == storageKeyUnavailable {
+		return "", "", model.NewRequestError("file is not available, please try again later")
+	}
 
 	if file.StorageID == nil {
 		if file.RedirectUrl != "" {
@@ -454,4 +458,165 @@ func DownloadFile(ip, fid, cfToken string) (string, string, error) {
 	_ = dao.AddResourceDownloadCount(file.ResourceID)
 
 	return path, file.Filename, err
+}
+
+func testFileUrl(url string) (int64, error) {
+	client := http.Client{
+		Timeout: 10 * time.Second,
+	}
+	req, err := http.NewRequest("HEAD", url, nil)
+	if err != nil {
+		return 0, model.NewRequestError("failed to create HTTP request")
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, model.NewRequestError("failed to send HTTP request")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return 0, model.NewRequestError("URL is not accessible, status code: " + resp.Status)
+	}
+	if resp.Header.Get("Content-Length") == "" {
+		return 0, model.NewRequestError("URL does not provide content length")
+	}
+	contentLength, err := strconv.ParseInt(resp.Header.Get("Content-Length"), 10, 64)
+	if err != nil {
+		return 0, model.NewRequestError("failed to parse Content-Length header")
+	}
+	if contentLength <= 0 {
+		return 0, model.NewRequestError("Content-Length is not valid")
+	}
+	return contentLength, nil
+}
+
+func CreateServerDownloadTask(uid uint, url, filename, description string, resourceID, storageID uint) (*model.FileView, error) {
+	canUpload, err := checkUserCanUpload(uid)
+	if err != nil {
+		log.Error("failed to check user permission: ", err)
+		return nil, model.NewInternalServerError("failed to check user permission")
+	}
+	if !canUpload {
+		return nil, model.NewUnAuthorizedError("user cannot upload file")
+	}
+
+	contentLength, err := testFileUrl(url)
+	if err != nil {
+		log.Error("failed to test file URL: ", err)
+		return nil, model.NewRequestError("failed to test file URL: " + err.Error())
+	}
+
+	file, err := dao.CreateFile(filename, description, resourceID, &storageID, storageKeyUnavailable, "", 0, uid)
+	if err != nil {
+		log.Error("failed to create file in db: ", err)
+		return nil, model.NewInternalServerError("failed to create file in db")
+	}
+
+	updateUploadingSize(contentLength)
+
+	go func() {
+		defer func() {
+			updateUploadingSize(-contentLength)
+		}()
+		client := http.Client{
+			Timeout: 10 * time.Second,
+		}
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			log.Error("failed to create HTTP request: ", err)
+			_ = dao.DeleteFile(file.UUID)
+			return
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Error("failed to send HTTP request: ", err)
+			_ = dao.DeleteFile(file.UUID)
+			return
+		}
+		if err != nil {
+			log.Error("failed to parse Content-Length header: ", err)
+			_ = dao.DeleteFile(file.UUID)
+			return
+		}
+		tempPath := filepath.Join(utils.GetStoragePath(), uuid.NewString())
+		tempFile, err := os.OpenFile(tempPath, os.O_CREATE|os.O_WRONLY, os.ModePerm)
+		if err != nil {
+			log.Error("failed to open temp file: ", err)
+			_ = dao.DeleteFile(file.UUID)
+			return
+		}
+		defer func() {
+			_ = tempFile.Close()
+			if err := os.Remove(tempPath); err != nil {
+				log.Error("failed to remove temp file: ", err)
+			}
+		}()
+		if _, err := io.Copy(tempFile, resp.Body); err != nil {
+			log.Error("failed to copy and hash response body: ", err)
+			_ = dao.DeleteFile(file.UUID)
+			return
+		}
+		_ = resp.Body.Close()
+		if err := tempFile.Close(); err != nil {
+			log.Error("failed to close temp file: ", err)
+			_ = dao.DeleteFile(file.UUID)
+			return
+		}
+		stat, err := os.Stat(tempPath)
+		if err != nil {
+			log.Error("failed to get temp file info: ", err)
+			_ = dao.DeleteFile(file.UUID)
+			_ = os.Remove(tempPath)
+			return
+		}
+		size := stat.Size()
+		if size == 0 {
+			log.Error("downloaded file is empty")
+			_ = dao.DeleteFile(file.UUID)
+			_ = os.Remove(tempPath)
+			return
+		}
+		if size != contentLength {
+			log.Error("downloaded file size does not match expected size: ", size, " != ", contentLength)
+			_ = dao.DeleteFile(file.UUID)
+			_ = os.Remove(tempPath)
+			return
+		}
+		s, err := dao.GetStorage(storageID)
+		if err != nil {
+			log.Error("failed to get storage: ", err)
+			_ = dao.DeleteFile(file.UUID)
+			_ = os.Remove(tempPath)
+			return
+		}
+		iStorage := storage.NewStorage(s)
+		if iStorage == nil {
+			log.Error("failed to find storage: ", err)
+			_ = dao.DeleteFile(file.UUID)
+			_ = os.Remove(tempPath)
+			return
+		}
+		storageKey, err := iStorage.Upload(tempPath, filename)
+		if err != nil {
+			log.Error("failed to upload file to storage: ", err)
+			_ = dao.DeleteFile(file.UUID)
+			_ = os.Remove(tempPath)
+			return
+		}
+		if err := dao.SetFileStorageKeyAndSize(file.UUID, storageKey, size); err != nil {
+			log.Error("failed to set file storage key: ", err)
+			_ = dao.DeleteFile(file.UUID)
+			_ = iStorage.Delete(storageKey)
+			_ = os.Remove(tempPath)
+			return
+		}
+		if err := dao.AddStorageUsage(storageID, size); err != nil {
+			log.Error("failed to add storage usage: ", err)
+			_ = dao.DeleteFile(file.UUID)
+			_ = iStorage.Delete(storageKey)
+			_ = os.Remove(tempPath)
+			return
+		}
+	}()
+
+	return file.ToView(), nil
 }
