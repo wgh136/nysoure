@@ -68,7 +68,21 @@ func (s *S3Storage) Download(storageKey string, fileName string) (string, error)
 }
 
 func (s *S3Storage) Delete(storageKey string) error {
-	// TODO: Implement S3 delete logic here
+	minioClient, err := minio.New(s.EndPoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(s.AccessKeyID, s.SecretAccessKey, ""),
+		Secure: true,
+	})
+	if err != nil {
+		log.Error("Failed to create S3 client: ", err)
+		return errors.New("failed to create S3 client")
+	}
+
+	ctx := context.Background()
+	err = minioClient.RemoveObject(ctx, s.BucketName, storageKey, minio.RemoveObjectOptions{})
+	if err != nil {
+		log.Error("Failed to delete file from S3: ", err)
+		return errors.New("failed to delete file from S3")
+	}
 	return nil
 }
 
