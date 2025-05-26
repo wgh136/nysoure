@@ -522,9 +522,7 @@ func CreateServerDownloadTask(uid uint, url, filename, description string, resou
 		defer func() {
 			updateUploadingSize(-contentLength)
 		}()
-		client := http.Client{
-			Timeout: 10 * time.Second,
-		}
+		client := http.Client{}
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			log.Error("failed to create HTTP request: ", err)
