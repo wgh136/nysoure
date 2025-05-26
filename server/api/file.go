@@ -1,9 +1,12 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/url"
 	"nysoure/server/model"
 	"nysoure/server/service"
+	"nysoure/server/utils"
 	"strconv"
 	"strings"
 
@@ -21,6 +24,7 @@ func AddFileRoutes(router fiber.Router) {
 		fileGroup.Get("/:id", getFile)
 		fileGroup.Put("/:id", updateFile)
 		fileGroup.Delete("/:id", deleteFile)
+		fileGroup.Get("/download/local", downloadLocalFile)
 		fileGroup.Get("/download/:id", downloadFile)
 	}
 }
@@ -204,6 +208,40 @@ func downloadFile(c fiber.Ctx) error {
 	if strings.HasPrefix(s, "http") {
 		return c.Redirect().Status(fiber.StatusFound).To(s)
 	}
-	c.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
-	return c.SendFile(s)
+	data := map[string]string{
+		"path":     s,
+		"filename": filename,
+	}
+	j, _ := json.Marshal(data)
+	token, err := utils.GenerateTemporaryToken(string(j))
+	if err != nil {
+		return model.NewInternalServerError("Failed to generate download token")
+	}
+	return c.Redirect().Status(fiber.StatusFound).To(fmt.Sprintf("%s/api/files/download/local?token=%s", c.BaseURL(), token))
+}
+
+func downloadLocalFile(c fiber.Ctx) error {
+	token := c.Query("token")
+	if token == "" {
+		return model.NewRequestError("Download token is required")
+	}
+
+	data, err := utils.ParseTemporaryToken(token)
+	if err != nil {
+		return model.NewRequestError("Invalid or expired download token")
+	}
+
+	var fileData map[string]string
+	if err := json.Unmarshal([]byte(data), &fileData); err != nil {
+		return model.NewInternalServerError("Failed to parse download data")
+	}
+
+	path := fileData["path"]
+	filename := fileData["filename"]
+
+	c.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", url.PathEscape(filename)))
+
+	return c.SendFile(path, fiber.SendFile{
+		ByteRange: true,
+	})
 }

@@ -60,3 +60,37 @@ func ParseToken(token string) (uint, error) {
 	}
 	return 0, errors.New("invalid token")
 }
+
+// GenerateTemporaryToken creates a JWT token that expires in 15 minutes
+func GenerateTemporaryToken(data string) (string, error) {
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		jwt.MapClaims{
+			"data": data,
+			"exp":  time.Now().Add(15 * time.Minute).Unix(),
+		})
+	s, err := t.SignedString(key)
+	if err != nil {
+		return "", err
+	}
+	return s, nil
+}
+
+// ParseTemporaryToken parses a JWT token and returns the data if valid
+func ParseTemporaryToken(token string) (string, error) {
+	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		return key, nil
+	})
+	if err != nil {
+		return "", err
+	}
+	if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {
+		data := claims["data"].(string)
+		expF := claims["exp"].(float64)
+		exp := time.Unix(int64(expF), 0)
+		if time.Now().After(exp) {
+			return "", errors.New("token expired")
+		}
+		return data, nil
+	}
+	return "", errors.New("invalid token")
+}

@@ -403,6 +403,7 @@ func GetFile(fid string) (*model.FileView, error) {
 	return file.ToView(), nil
 }
 
+// DownloadFile handles the file download request. Return a presigned URL or a direct file path.
 func DownloadFile(ip, fid, cfToken string) (string, string, error) {
 	passed, err := verifyCfToken(cfToken)
 	if err != nil {
