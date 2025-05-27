@@ -380,19 +380,25 @@ function CloudflarePopup({file}: { file: RFile }) {
 
   const [isLoading, setLoading] = useState(true)
 
-  return <div className={"menu bg-base-100 rounded-box z-1 w-80 p-2 shadow-sm h-20 relative"}>
+  const {t} = useTranslation()
+
+  return <div className={"menu bg-base-100 rounded-box z-1 w-80 p-2 shadow-sm relative"}>
     {
       isLoading ? <div className={"absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center"}>
         <span className={"loading loading-spinner loading-lg"}></span>
       </div> : null
     }
-    <Turnstile siteKey={app.cloudflareTurnstileSiteKey!} onWidgetLoad={() => {
-      setLoading(false)
-    }} onSuccess={(token) => {
-      closePopup();
-      const link = network.getFileDownloadLink(file.id, token);
-      window.open(link, "_blank");
-    }}></Turnstile>
+    <h3 className={"font-bold m-2"}>{t("Verifying your request")}</h3>
+    <div className={"h-20 w-full"}>
+      <Turnstile siteKey={app.cloudflareTurnstileSiteKey!} onWidgetLoad={() => {
+        setLoading(false)
+      }} onSuccess={(token) => {
+        closePopup();
+        const link = network.getFileDownloadLink(file.id, token);
+        window.open(link, "_blank");
+      }}></Turnstile>
+    </div>
+    <p className={"text-xs text-base-content/80 m-2"}>{t("Please check your network if the verification takes too long or the captcha does not appear.")}</p>
   </div>
 }
 
