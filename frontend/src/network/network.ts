@@ -60,7 +60,7 @@ class Network {
       return;
     }
     const res = await this.getMe()
-    if (!res.success && res.message.includes("Invalid token")) {
+    if (!res.success && (res.message.includes("Invalid token") || res.message.includes("User not found"))) {
       app.token = null;
       app.user = null;
       app.saveData();

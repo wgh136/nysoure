@@ -241,83 +241,92 @@ function Article({resource}: { resource: ResourceDetails }) {
       "p": ({node, ...props}) => {
         if (typeof props.children === "object" && (props.children as ReactElement).type === "strong") {
           // @ts-ignore
-          const child = (props.children as ReactElement).props.children.toString()
+          const child = (props.children as ReactElement).props.children.toString() as string
           if (child.startsWith("<iframe")) {
-            return <div dangerouslySetInnerHTML={{
-              // @ts-ignore
-              __html: (props.children as ReactElement).props.children
+            // @ts-ignore
+            let html = child;
+            let splits = html.split(" ")
+            splits = splits.filter((s: string) => {
+              return !(s.startsWith("width") || s.startsWith("height") || s.startsWith("class") || s.startsWith("style"));
+            })
+            html = splits.join(" ")
+            return <div className={`w-full max-w-xl rounded-xl overflow-clip ${html.includes("youtube") ? "aspect-video" : "h-48 sm:h-64"}`} dangerouslySetInnerHTML={{
+              __html: html
             }}></div>
+          }
+        } else if (typeof props.children === "object" && (props.children as ReactElement).type === "a") {
+          const a = props.children as ReactElement
+          const childProps = a.props as any
+          const href = childProps.href as string
+          if (href.startsWith(window.location.origin) || href.startsWith("/")) {
+            let path = href
+            if (path.startsWith(window.location.origin)) {
+              path = path.substring(window.location.origin.length)
+            }
+            const content = childProps.children?.toString()
+            if (path.startsWith("/resources/")) {
+              const id = path.substring("/resources/".length)
+              for (const r of resource.related) {
+                if (r.id.toString() === id) {
+                  return <div className="card card-border w-full border-base-300 my-3 sm:card-side cursor-pointer"
+                              onClick={() => {
+                                navigate(`/resources/${r.id}`)
+                              }}>
+                    {r.image ? <figure>
+                      <img
+                        className="w-full h-40 max-h-72 sm:h-full sm:w-48 md:w-58 lg:w-72 object-cover"
+                        src={network.getImageUrl(r.image!.id)}
+                        style={{
+                          boxShadow: "0 0 0 rgba(0, 0, 0)",
+                        }}
+                        alt="Cover"/>
+                    </figure> : null}
+                    <div className="card-body" style={{padding: "1rem"}}>
+                      <h3>{r.title}</h3>
+                      <p className="text-sm">{content}</p>
+                    </div>
+                  </div>
+                }
+              }
+            }
+          }
+          // @ts-ignore
+          if (childProps.children?.length === 2) {
+            // @ts-ignore
+            const first = childProps.children[0] as ReactNode
+            // @ts-ignore
+            const second = childProps.children[1] as ReactNode
+
+            if (typeof first === "object" && (typeof second === "string" || typeof second === "object")) {
+              const img = first as ReactElement
+              // @ts-ignore
+              if (img.type === "img") {
+                return <a
+                  className={"inline-block card card-border border-base-300 no-underline bg-base-200 hover:shadow transition-shadow my-2"}
+                  target={"_blank"} href={href}>
+                <figure className={"max-h-96"}>
+                  {img}
+                </figure>
+                  <div className={"card-body text-base-content text-lg"}>
+                  {second}
+                </div>
+                </a>
+              }
+            }
+          }
+          if (href.startsWith("https://store.steampowered.com/app/")) {
+            const appId = href.substring("https://store.steampowered.com/app/".length).split("/")[0]
+            if (!Number.isNaN(Number(appId))) {
+              return <div className={"max-w-xl h-52 sm:h-48 my-2"}>
+                <iframe
+                  src={`https://store.steampowered.com/widget/${appId}/`}
+                ></iframe>
+              </div>
+            }
           }
         }
         return <p {...props}>{props.children}</p>
       },
-      "a": ({node, ...props}) => {
-        const href = props.href as string
-        if (href.startsWith("https://store.steampowered.com/app/")) {
-          const appId = href.substring("https://store.steampowered.com/app/".length).split("/")[0]
-          if (!Number.isNaN(Number(appId))) {
-            return <iframe
-              src={`https://store.steampowered.com/widget/${appId}/`}
-              width="100%"
-              height="190"
-              className={"max-w-xl my-2"}
-            ></iframe>
-          }
-        } else if (href.startsWith(window.location.origin) || href.startsWith("/")) {
-          let path = href
-          if (path.startsWith(window.location.origin)) {
-            path = path.substring(window.location.origin.length)
-          }
-          const content = props.children?.toString()
-          if (path.startsWith("/resources/")) {
-            const id = path.substring("/resources/".length)
-            for (const r of resource.related) {
-              if (r.id.toString() === id) {
-                return <div className="card card-border w-full border-base-300 my-3 sm:card-side cursor-pointer"
-                            onClick={() => {
-                              navigate(`/resources/${r.id}`)
-                            }}>
-                  {r.image ? <figure>
-                    <img
-                      className="w-full h-40 sm:h-full sm:w-48 object-cover"
-                      src={network.getImageUrl(r.image!.id)}
-                      alt="Cover"/>
-                  </figure> : null}
-                  <div className="card-body" style={{padding: "1rem"}}>
-                    <h3>{r.title}</h3>
-                    <p className="text-sm">{content}</p>
-                  </div>
-                </div>
-              }
-            }
-          }
-        }
-        // @ts-ignore
-        if (props.children?.length === 2) {
-          // @ts-ignore
-          const first = props.children[0] as ReactNode
-          // @ts-ignore
-          const second = props.children[1] as ReactNode
-
-          if (typeof first === "object" && (typeof second === "string" || typeof second === "object")) {
-            const img = first as ReactElement
-            // @ts-ignore
-            if (img.type === "img") {
-              return <a
-                className={"inline-block card card-border border-base-300 no-underline bg-base-200 hover:shadow transition-shadow my-2"}
-                target={"_blank"} href={href}>
-                <figure className={"max-h-96"}>
-                  {img}
-                </figure>
-                <div className={"card-body text-base-content text-lg"}>
-                  {second}
-                </div>
-              </a>
-            }
-          }
-        }
-        return <a href={href} target={"_blank"}>{props.children}</a>
-      }
     }}>{resource.article}</Markdown>
   </article>
 }
