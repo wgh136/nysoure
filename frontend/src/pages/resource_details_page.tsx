@@ -34,7 +34,6 @@ import {Turnstile} from "@marsidev/react-turnstile";
 import Button from "../components/button.tsx";
 import Badge, {BadgeAccent} from "../components/badge.tsx";
 import Input from "../components/input.tsx";
-import {FaSteam} from "react-icons/fa";
 
 export default function ResourcePage() {
   const params = useParams()
@@ -255,13 +254,15 @@ function Article({resource}: { resource: ResourceDetails }) {
       "a": ({node, ...props}) => {
         const href = props.href as string
         if (href.startsWith("https://store.steampowered.com/app/")) {
-          return <a href={href} target={"_blank"} className={"inline-block no-underline"}>
-            <div
-              className={"flex items-center border border-base-300 py-2 px-4 rounded-full hover:bg-base-100 duration-200 text-base-content"}>
-              <FaSteam size={20}/>
-              <span className={"ml-2"}>{props.children}</span>
-            </div>
-          </a>
+          const appId = href.substring("https://store.steampowered.com/app/".length).split("/")[0]
+          if (!Number.isNaN(Number(appId))) {
+            return <iframe
+              src={`https://store.steampowered.com/widget/${appId}/`}
+              width="100%"
+              height="190"
+              className={"max-w-xl my-2"}
+            ></iframe>
+          }
         } else if (href.startsWith(window.location.origin) || href.startsWith("/")) {
           let path = href
           if (path.startsWith(window.location.origin)) {
@@ -272,12 +273,13 @@ function Article({resource}: { resource: ResourceDetails }) {
             const id = path.substring("/resources/".length)
             for (const r of resource.related) {
               if (r.id.toString() === id) {
-                return <div className="card card-border w-full border-base-300 my-3 sm:card-side cursor-pointer" onClick={() => {
-                  navigate(`/resources/${r.id}`)
-                }}>
+                return <div className="card card-border w-full border-base-300 my-3 sm:card-side cursor-pointer"
+                            onClick={() => {
+                              navigate(`/resources/${r.id}`)
+                            }}>
                   {r.image ? <figure>
                     <img
-                      className="w-full h-40 sm:h-full sm:w-32 object-cover"
+                      className="w-full h-40 sm:h-full sm:w-48 object-cover"
                       src={network.getImageUrl(r.image!.id)}
                       alt="Cover"/>
                   </figure> : null}
@@ -301,7 +303,9 @@ function Article({resource}: { resource: ResourceDetails }) {
             const img = first as ReactElement
             // @ts-ignore
             if (img.type === "img") {
-              return <a className={"inline-block card card-border border-base-300 no-underline bg-base-200 hover:shadow transition-shadow"} target={"_blank"} href={href}>
+              return <a
+                className={"inline-block card card-border border-base-300 no-underline bg-base-200 hover:shadow transition-shadow my-2"}
+                target={"_blank"} href={href}>
                 <figure className={"max-h-96"}>
                   {img}
                 </figure>

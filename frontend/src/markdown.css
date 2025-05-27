@@ -31,7 +31,7 @@ article {
     }
     p {
         font-size: 14px;
-        line-height: 1.5;
+        line-height: 1.6;
         margin: 8px 0;
     }
     ul {
@@ -77,6 +77,10 @@ article {
     img {
         border-radius: 8px;
         max-height: 400px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    p:has(> img) {
+        margin: 16px 0;
     }
     p code {
         background-color: var(--color-base-200);
