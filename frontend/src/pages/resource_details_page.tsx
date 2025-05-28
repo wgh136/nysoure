@@ -319,6 +319,7 @@ function Article({resource}: { resource: ResourceDetails }) {
             if (!Number.isNaN(Number(appId))) {
               return <div className={"max-w-xl h-52 sm:h-48 my-2"}>
                 <iframe
+                  className={"scheme-light"}
                   src={`https://store.steampowered.com/widget/${appId}/`}
                 ></iframe>
               </div>
