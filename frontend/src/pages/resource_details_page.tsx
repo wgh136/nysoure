@@ -238,7 +238,8 @@ function Article({resource}: { resource: ResourceDetails }) {
 
   return <article>
     <Markdown components={{
-      "p": ({node, ...props}) => {
+      p: ({node, ...props}) => {
+        console.log(props.children)
         if (typeof props.children === "object" && (props.children as ReactElement).type === "strong") {
           // @ts-ignore
           const child = (props.children as ReactElement).props.children.toString() as string
@@ -250,46 +251,17 @@ function Article({resource}: { resource: ResourceDetails }) {
               return !(s.startsWith("width") || s.startsWith("height") || s.startsWith("class") || s.startsWith("style"));
             })
             html = splits.join(" ")
-            return <div className={`w-full max-w-xl rounded-xl overflow-clip ${html.includes("youtube") ? "aspect-video" : "h-48 sm:h-64"}`} dangerouslySetInnerHTML={{
-              __html: html
-            }}></div>
+            return <div
+              className={`w-full max-w-xl rounded-xl overflow-clip ${html.includes("youtube") ? "aspect-video" : "h-48 sm:h-64"}`}
+              dangerouslySetInnerHTML={{
+                __html: html
+              }}></div>
           }
-        } else if (typeof props.children === "object" && (props.children as ReactElement).type === "a") {
+          // @ts-ignore
+        } else if (typeof props.children === "object" && props.children.props && props.children.props.href) {
           const a = props.children as ReactElement
           const childProps = a.props as any
           const href = childProps.href as string
-          if (href.startsWith(window.location.origin) || href.startsWith("/")) {
-            let path = href
-            if (path.startsWith(window.location.origin)) {
-              path = path.substring(window.location.origin.length)
-            }
-            const content = childProps.children?.toString()
-            if (path.startsWith("/resources/")) {
-              const id = path.substring("/resources/".length)
-              for (const r of resource.related) {
-                if (r.id.toString() === id) {
-                  return <div className="card card-border w-full border-base-300 my-3 sm:card-side cursor-pointer"
-                              onClick={() => {
-                                navigate(`/resources/${r.id}`)
-                              }}>
-                    {r.image ? <figure>
-                      <img
-                        className="w-full h-40 max-h-72 sm:h-full sm:w-48 md:w-58 lg:w-72 object-cover"
-                        src={network.getImageUrl(r.image!.id)}
-                        style={{
-                          boxShadow: "0 0 0 rgba(0, 0, 0)",
-                        }}
-                        alt="Cover"/>
-                    </figure> : null}
-                    <div className="card-body" style={{padding: "1rem"}}>
-                      <h3>{r.title}</h3>
-                      <p className="text-sm">{content}</p>
-                    </div>
-                  </div>
-                }
-              }
-            }
-          }
           // @ts-ignore
           if (childProps.children?.length === 2) {
             // @ts-ignore
@@ -304,12 +276,12 @@ function Article({resource}: { resource: ResourceDetails }) {
                 return <a
                   className={"inline-block card card-border border-base-300 no-underline bg-base-200 hover:shadow transition-shadow my-2"}
                   target={"_blank"} href={href}>
-                <figure className={"max-h-96"}>
-                  {img}
-                </figure>
+                  <figure className={"max-h-96"}>
+                    {img}
+                  </figure>
                   <div className={"card-body text-base-content text-lg"}>
-                  {second}
-                </div>
+                    {second}
+                  </div>
                 </a>
               }
             }
@@ -327,6 +299,55 @@ function Article({resource}: { resource: ResourceDetails }) {
           }
         }
         return <p {...props}>{props.children}</p>
+      },
+      a: ({node, ...props}) => {
+        const href = props.href as string
+
+        if (href.startsWith(window.location.origin) || href.startsWith("/")) {
+          let path = href
+          if (path.startsWith(window.location.origin)) {
+            path = path.substring(window.location.origin.length)
+          }
+          const content = props.children?.toString()
+          if (path.startsWith("/resources/")) {
+            const id = path.substring("/resources/".length)
+            for (const r of resource.related ?? []) {
+              if (r.id.toString() === id) {
+                return <span className={"inline-flex max-w-full"}>
+                  <span
+                    className={"m-2 max-w-full cursor-pointer inline-flex min-w-0 flex-col h-80 border border-base-300 rounded-xl no-underline"}
+                    onClick={() => {
+                      navigate(`/resources/${r.id}`, {replace: true})
+                    }}>
+                  {r.image && <img style={{
+                    aspectRatio: r.image.width / r.image.height,
+                    maxHeight: "100%",
+                  }} className={"h-full min-h-0 object-cover min-w-0"} alt={"cover"}
+                                   src={network.getImageUrl(r.image?.id)}/>}
+                    <span className={"inline-flex flex-col p-4"}>
+                    <span style={{
+                      maxWidth: "100%",
+                      textOverflow: "ellipsis",
+                      lineBreak: "anywhere",
+                      fontSize: "1.2rem",
+                      fontWeight: "bold",
+                      lineHeight: "1.5rem",
+                      color: "var(--color-base-content)"
+                    }}>{r.title}</span>
+                    <span className={"h-2"}></span>
+                    <span style={{
+                      color: "var(--color-base-content)",
+                      lineBreak: "anywhere",
+                    }}>{content}</span>
+                  </span>
+                </span>
+                </span>
+              }
+            }
+          }
+        }
+
+        return <a target={"_blank"} {...props}></a>
       },
     }}>{resource.article}</Markdown>
   </article>
@@ -399,7 +420,8 @@ function CloudflarePopup({file}: { file: RFile }) {
         window.open(link, "_blank");
       }}></Turnstile>
     </div>
-    <p className={"text-xs text-base-content/80 m-2"}>{t("Please check your network if the verification takes too long or the captcha does not appear.")}</p>
+    <p
+      className={"text-xs text-base-content/80 m-2"}>{t("Please check your network if the verification takes too long or the captcha does not appear.")}</p>
   </div>
 }
 

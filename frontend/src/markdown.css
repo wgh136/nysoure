@@ -1,6 +1,6 @@
 article {
     & {
-        color: var(--color-base-content)
+        color: var(--color-base-content);
     }
 
     h1 {
@@ -91,9 +91,6 @@ article {
         padding: 2px 4px;
         border-radius: 4px;
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, system-ui;
-    }
-    .line-break {
-        white-space: pre-wrap;
     }
     iframe{
         width: 100%;
