@@ -16,6 +16,7 @@ func ArticleToDescription(article string, maxLength int) string {
 	plain := html2text.HTML2Text(string(htmlContent))
 	plain = strings.TrimSpace(plain)
 	plain = mergeSpaces(plain)
+	plain = removeLinks(plain)
 	if len([]rune(plain)) > maxLength {
 		plain = string([]rune(plain)[:(maxLength-3)]) + "..."
 	}
@@ -52,4 +53,15 @@ func mdToHTML(md []byte) []byte {
 	renderer := html.NewRenderer(opts)
 
 	return markdown.Render(doc, renderer)
+}
+
+func removeLinks(str string) string {
+	parts := strings.Split(str, " ")
+	builder := strings.Builder{}
+	for _, part := range parts {
+		if !strings.HasPrefix(part, "http://") && !strings.HasPrefix(part, "https://") {
+			builder.WriteString(part + " ")
+		}
+	}
+	return strings.TrimSpace(builder.String())
 }
