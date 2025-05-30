@@ -116,7 +116,9 @@ func updateCachedTagList() error {
 		if err != nil {
 			return err
 		}
-		cachedTagList = append(cachedTagList, *tag.ToView().WithCount(int(count)))
+		if count > 0 {
+			cachedTagList = append(cachedTagList, *tag.ToView().WithCount(int(count)))
+		}
 	}
 	return nil
 }
