@@ -182,7 +182,7 @@ func searchWithKeyword(keyword string) ([]model.Resource, error) {
 		var tag model.Tag
 		var err error
 		if tag, err = GetTagByName(keyword); err != nil {
-			if !errors.Is(err, gorm.ErrRecordNotFound) {
+			if !model.IsNotFoundError(err) {
 				return nil, err
 			}
 		} else {
