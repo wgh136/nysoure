@@ -113,9 +113,12 @@ func parseResourceIfPresent(line string, host string) *model.ResourceView {
 
 func GetResource(id uint, host string) (*model.ResourceDetailView, error) {
 	r, err := dao.GetResourceByID(id)
-	_ = dao.AddResourceViewCount(id)
 	if err != nil {
 		return nil, err
+	}
+	err = dao.AddResourceViewCount(id)
+	if err != nil {
+		log.Error("AddResourceViewCount error: ", err)
 	}
 	v := r.ToDetailView()
 	if host != "" {

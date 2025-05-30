@@ -437,7 +437,10 @@ func DownloadFile(ip, fid, cfToken string) (string, string, error) {
 
 	if file.StorageID == nil {
 		if file.RedirectUrl != "" {
-			_ = dao.AddResourceDownloadCount(file.ResourceID)
+			err := dao.AddResourceDownloadCount(file.ResourceID)
+			if err != nil {
+				log.Errorf("failed to add resource download count: %v", err)
+			}
 			return file.RedirectUrl, file.Filename, nil
 		}
 		return "", "", model.NewRequestError("file is not available")
@@ -454,10 +457,17 @@ func DownloadFile(ip, fid, cfToken string) (string, string, error) {
 	}
 
 	path, err := iStorage.Download(file.StorageKey, file.Filename)
+	if err != nil {
+		log.Error("failed to download file from storage: ", err)
+		return "", "", model.NewInternalServerError("failed to download file from storage")
+	}
 
-	_ = dao.AddResourceDownloadCount(file.ResourceID)
+	err = dao.AddResourceDownloadCount(file.ResourceID)
+	if err != nil {
+		log.Errorf("failed to add resource download count: %v", err)
+	}
 
-	return path, file.Filename, err
+	return path, file.Filename, nil
 }
 
 func testFileUrl(url string) (int64, error) {

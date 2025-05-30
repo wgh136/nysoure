@@ -293,6 +293,10 @@ func init() {
 				for id, stats := range cachedResourcesStats {
 					var count int64
 					if err := tx.Model(&model.Resource{}).Where("id = ?", id).Count(&count).Error; err != nil {
+						if errors.Is(err, gorm.ErrRecordNotFound) {
+							log.Warnf("Resource with ID %d not found, skipping stats update", id)
+							continue
+						}
 						return err
 					}
 					if count == 0 {
@@ -322,15 +326,6 @@ func init() {
 }
 
 func AddResourceViewCount(id uint) error {
-	// 检查资源是否存在
-	exists, err := ExistsResource(id)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return model.NewNotFoundError("Resource not found")
-	}
-
 	cacheMutex.RLock()
 	stats, exists := cachedResourcesStats[id]
 	cacheMutex.RUnlock()
@@ -350,15 +345,6 @@ func AddResourceViewCount(id uint) error {
 }
 
 func AddResourceDownloadCount(id uint) error {
-	// 检查资源是否存在
-	exists, err := ExistsResource(id)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return model.NewNotFoundError("Resource not found")
-	}
-
 	cacheMutex.RLock()
 	stats, exists := cachedResourcesStats[id]
 	cacheMutex.RUnlock()
