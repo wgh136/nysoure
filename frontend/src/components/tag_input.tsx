@@ -94,7 +94,10 @@ export default function TagInput({ onAdd, mainTag }: { onAdd: (tag: Tag) => void
             setTags([])
             const input = document.getElementById("search_tags_input") as HTMLInputElement
             input.blur()
-          }}><a>{t.name}</a></li>
+          }}><a>
+            <span>{t.name}</span>
+            {t.type && <span className="badge badge-secondary badge-sm ml-2 text-xs">{t.type}</span>}
+          </a></li>
         })
       }
       {
@@ -106,11 +109,11 @@ export default function TagInput({ onAdd, mainTag }: { onAdd: (tag: Tag) => void
   }
 
   return <div className={"dropdown dropdown-end"}>
-    <label className="input">
+    <label className="input w-64">
       <MdSearch size={18}/>
       <input autoComplete={"off"} id={"search_tags_input"} tabIndex={0} type="text" className="grow" placeholder={t("Search Tags")} value={keyword} onChange={(e) => handleChange(e.target.value)} />
     </label>
-    <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow mt-2 border border-base-300">
+    <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-64 p-2 shadow mt-2 border border-base-300">
       {dropdownContent}
     </ul>
   </div>
