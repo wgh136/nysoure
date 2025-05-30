@@ -83,6 +83,9 @@ func SetTagInfo(uid uint, id uint, description string, aliasOf *uint, tagType st
 	if !canUpload {
 		return nil, model.NewUnAuthorizedError("User cannot set tag description")
 	}
+	if aliasOf != nil && *aliasOf == id {
+		return nil, model.NewRequestError("Tag cannot be an alias of itself")
+	}
 	if err := dao.SetTagInfo(id, description, aliasOf, tagType); err != nil {
 		return nil, err
 	}
