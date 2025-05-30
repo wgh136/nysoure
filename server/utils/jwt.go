@@ -1,9 +1,9 @@
 package utils
 
 import (
+	"crypto/rand"
 	"errors"
 	"github.com/golang-jwt/jwt/v5"
-	"math/rand"
 	"os"
 	"time"
 )
@@ -19,13 +19,12 @@ func init() {
 		key = secret
 	} else {
 		// Initialize the key with a random value
-		chars := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 		key = make([]byte, 32)
-		for i := range key {
-			r := rand.Intn(len(chars))
-			key[i] = byte(chars[r])
+		_, err := rand.Read(key)
+		if err != nil {
+			panic("Failed to generate random key: " + err.Error())
 		}
-		err = os.WriteFile(secretFilePath, key, 0644)
+		_ = os.WriteFile(secretFilePath, key, 0644)
 	}
 }
 
