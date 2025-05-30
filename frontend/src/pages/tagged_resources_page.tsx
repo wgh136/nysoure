@@ -51,7 +51,7 @@ export default function TaggedResourcesPage() {
         }} />
       }
     </div>
-    {tag?.type && <h2 className={"text-base-content/60 ml-2 text-xl pl-2 mb-2"}>{tag.type}</h2>}
+    {tag?.type && <h2 className={"text-base-content/60 ml-2 text-lg pl-2 mb-2"}>{tag.type}</h2>}
     <div className={"px-3"}>
       {
         (tag?.aliases ?? []).map((e) => {

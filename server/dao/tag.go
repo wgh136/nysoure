@@ -64,6 +64,13 @@ func GetTagByName(name string) (model.Tag, error) {
 }
 
 func SetTagInfo(id uint, description string, aliasOf *uint, tagType string) error {
+	old, err := GetTagByID(id)
+	if err != nil {
+		return err
+	}
+	if aliasOf != nil && len(old.Aliases) > 0 {
+		return model.NewRequestError("Tag already has aliases, cannot set alias_of")
+	}
 	t := model.Tag{Model: gorm.Model{
 		ID: id,
 	}, Description: description, Type: tagType, AliasOf: aliasOf}
