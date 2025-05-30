@@ -46,7 +46,7 @@ export default function TaggedResourcesPage() {
         {tag?.name ?? tagName}
       </h1>
       {
-        tag && <EditTagButton tag={tag} onEdited={(t) => {
+        (tag && app.canUpload()) && <EditTagButton tag={tag} onEdited={(t) => {
           setTag(t)
         }} />
       }
@@ -60,7 +60,7 @@ export default function TaggedResourcesPage() {
       }
     </div>
     {
-      (tag?.description && app.canUpload()) && <article className={"px-4 py-2"}>
+      tag?.description && <article className={"px-4 py-2"}>
         <Markdown>
           {tag.description}
         </Markdown>
