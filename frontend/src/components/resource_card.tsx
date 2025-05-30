@@ -6,6 +6,11 @@ import Badge from "./badge.tsx";
 export default function ResourceCard({ resource }: { resource: Resource }) {
   const navigate = useNavigate()
 
+  let tags = resource.tags
+  if (tags.length > 10) {
+    tags = tags.slice(0, 10)
+  }
+
   return <div className={"p-2 cursor-pointer"} onClick={() => {
     navigate(`/resources/${resource.id}`)
   }}>
@@ -25,7 +30,7 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
         <div className="h-2"></div>
         <p>
           {
-            resource.tags.map((tag) => {
+            tags.map((tag) => {
               return <Badge key={tag.id} className={"m-0.5"}>{tag.name}</Badge>
             })
           }
