@@ -31,6 +31,8 @@ export interface Tag {
   id: number;
   name: string;
   description: string;
+  type: string;
+  aliases: string[];
 }
 
 export interface CreateResourceParams {

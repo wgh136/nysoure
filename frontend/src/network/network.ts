@@ -284,11 +284,12 @@ class Network {
     }
   }
 
-  async searchTags(keyword: string): Promise<Response<Tag[]>> {
+  async searchTags(keyword: string, mainTag?: boolean): Promise<Response<Tag[]>> {
     try {
       const response = await axios.get(`${this.apiBaseUrl}/tag/search`, {
         params: {
-          keyword
+          keyword,
+          mainTag
         }
       })
       return response.data
@@ -329,10 +330,12 @@ class Network {
     }
   }
 
-  async setTagDescription(tagId: number, description: string): Promise<Response<Tag>> {
+  async setTagInfo(tagId: number, description: string, aliasOf: number | null, type: string): Promise<Response<Tag>> {
     try {
-      const response = await axios.putForm(`${this.apiBaseUrl}/tag/${tagId}/description`, {
-        description
+      const response = await axios.putForm(`${this.apiBaseUrl}/tag/${tagId}/info`, {
+        description,
+        alias_of: aliasOf,
+        type,
       })
       return response.data
     } catch (e: any) {

@@ -16,10 +16,14 @@ func CreateTag(tag string) (model.Tag, error) {
 	return t, nil
 }
 
-func SearchTag(keyword string) ([]model.Tag, error) {
+func SearchTag(keyword string, mainTag bool) ([]model.Tag, error) {
 	// Search for a tag by its name in the database
 	var t []model.Tag
-	if err := db.Model(&model.Tag{}).Where("name Like ?", "%"+keyword+"%").Limit(10).Find(&t).Error; err != nil {
+	query := db.Model(&model.Tag{}).Where("name Like ?", "%"+keyword+"%")
+	if mainTag {
+		query = query.Where("alias_of IS NULL")
+	}
+	if err := query.Limit(10).Find(&t).Error; err != nil {
 		return nil, err
 	}
 	return t, nil
@@ -38,7 +42,7 @@ func DeleteTag(id uint) error {
 func GetTagByID(id uint) (model.Tag, error) {
 	// Retrieve a tag by its ID from the database
 	var t model.Tag
-	if err := db.First(&t, id).Error; err != nil {
+	if err := db.Preload("Aliases").First(&t, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return model.Tag{}, model.NewNotFoundError("Tag not found")
 		}
@@ -50,7 +54,7 @@ func GetTagByID(id uint) (model.Tag, error) {
 func GetTagByName(name string) (model.Tag, error) {
 	// Retrieve a tag by its name from the database
 	var t model.Tag
-	if err := db.Where("name = ?", name).First(&t).Error; err != nil {
+	if err := db.Preload("Aliases").Where("name = ?", name).First(&t).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return model.Tag{}, model.NewNotFoundError("Tag not found")
 		}
@@ -59,8 +63,14 @@ func GetTagByName(name string) (model.Tag, error) {
 	return t, nil
 }
 
-func SetTagDescription(id uint, description string) error {
-	if err := db.Model(model.Tag{}).Where("id = ?", id).Update("description", description).Error; err != nil {
+func SetTagInfo(id uint, description string, aliasOf *uint, tagType string) error {
+	t := model.Tag{Model: gorm.Model{
+		ID: id,
+	}, Description: description, Type: tagType, AliasOf: aliasOf}
+	if err := db.Model(&t).Updates(t).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.NewNotFoundError("Tag not found")
+		}
 		return err
 	}
 	return nil

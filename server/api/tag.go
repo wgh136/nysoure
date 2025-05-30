@@ -36,7 +36,9 @@ func handleSearchTag(c fiber.Ctx) error {
 		return model.NewRequestError("Keyword is required")
 	}
 	keyword = strings.TrimSpace(keyword)
-	tags, err := service.SearchTag(keyword)
+	mainTagStr := c.Query("main_tag")
+	mainTag := mainTagStr == "true" || mainTagStr == "1"
+	tags, err := service.SearchTag(keyword, mainTag)
 	if tags == nil {
 		tags = []model.TagView{}
 	}
@@ -66,7 +68,7 @@ func handleDeleteTag(c fiber.Ctx) error {
 	})
 }
 
-func handleSetTagDescription(c fiber.Ctx) error {
+func handleSetTagInfo(c fiber.Ctx) error {
 	uid, ok := c.Locals("uid").(uint)
 	if !ok {
 		return model.NewUnAuthorizedError("You must be logged in to set tag description")
@@ -76,11 +78,19 @@ func handleSetTagDescription(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid tag ID")
 	}
 	description := c.FormValue("description")
-	if description == "" {
-		return model.NewRequestError("Description is required")
-	}
 	description = strings.TrimSpace(description)
-	t, err := service.SetTagDescription(uid, uint(id), description)
+	aliasOfStr := c.FormValue("alias_of")
+	var aliasOf *uint
+	if aliasOfStr != "" {
+		aliasID, err := strconv.Atoi(aliasOfStr)
+		if err != nil {
+			return model.NewRequestError("Invalid alias ID")
+		}
+		aliasUint := uint(aliasID)
+		aliasOf = &aliasUint
+	}
+	tagType := c.FormValue("type")
+	t, err := service.SetTagInfo(uid, uint(id), description, aliasOf, tagType)
 	if err != nil {
 		return err
 	}
@@ -118,7 +128,7 @@ func AddTagRoutes(api fiber.Router) {
 		tag.Post("/", handleCreateTag)
 		tag.Get("/search", handleSearchTag)
 		tag.Delete("/:id", handleDeleteTag)
-		tag.Put("/:id/description", handleSetTagDescription)
+		tag.Put("/:id/info", handleSetTagInfo)
 		tag.Get("/:name", handleGetTagByName)
 	}
 }

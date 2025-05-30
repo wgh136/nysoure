@@ -27,6 +27,12 @@ func GetTag(id uint) (*model.TagView, error) {
 	if err != nil {
 		return nil, err
 	}
+	if t.AliasOf != nil {
+		t, err = dao.GetTagByID(*t.AliasOf)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return t.ToView(), nil
 }
 
@@ -35,11 +41,17 @@ func GetTagByName(name string) (*model.TagView, error) {
 	if err != nil {
 		return nil, err
 	}
+	if t.AliasOf != nil {
+		t, err = dao.GetTagByID(*t.AliasOf)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return t.ToView(), nil
 }
 
-func SearchTag(name string) ([]model.TagView, error) {
-	tags, err := dao.SearchTag(name)
+func SearchTag(name string, mainTag bool) ([]model.TagView, error) {
+	tags, err := dao.SearchTag(name, mainTag)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +66,7 @@ func DeleteTag(id uint) error {
 	return dao.DeleteTag(id)
 }
 
-func SetTagDescription(uid uint, id uint, description string) (*model.TagView, error) {
+func SetTagInfo(uid uint, id uint, description string, aliasOf *uint, tagType string) (*model.TagView, error) {
 	canUpload, err := checkUserCanUpload(uid)
 	if err != nil {
 		log.Error("Error checking user permissions:", err)
@@ -63,13 +75,18 @@ func SetTagDescription(uid uint, id uint, description string) (*model.TagView, e
 	if !canUpload {
 		return nil, model.NewUnAuthorizedError("User cannot set tag description")
 	}
+	if err := dao.SetTagInfo(id, description, aliasOf, tagType); err != nil {
+		return nil, err
+	}
 	t, err := dao.GetTagByID(id)
 	if err != nil {
 		return nil, err
 	}
-	t.Description = description
-	if err := dao.SetTagDescription(id, description); err != nil {
-		return nil, err
+	if t.AliasOf != nil {
+		t, err = dao.GetTagByID(*t.AliasOf)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return t.ToView(), nil
 }

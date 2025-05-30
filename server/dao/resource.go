@@ -180,20 +180,37 @@ func searchWithKeyword(keyword string) ([]model.Resource, error) {
 	}
 	if len([]rune(keyword)) < 20 {
 		var tag model.Tag
-		if err := db.Where("name = ?", keyword).First(&tag).Error; err != nil {
+		var err error
+		if tag, err = GetTagByName(keyword); err != nil {
 			if !errors.Is(err, gorm.ErrRecordNotFound) {
 				return nil, err
 			}
 		} else {
-			if err := db.Model(&tag).Preload("Resources").Find(&tag).Error; err != nil {
+			if tag.AliasOf != nil {
+				tag, err = GetTagByID(*tag.AliasOf)
+				if err != nil {
+					return nil, err
+				}
+			}
+			var tagIds []uint
+			tagIds = append(tagIds, tag.ID)
+			for _, alias := range tag.Aliases {
+				tagIds = append(tagIds, alias.ID)
+			}
+			var resources []model.Resource
+			subQuery := db.Table("resource_tags").
+				Select("resource_id").
+				Where("tag_id IN ?", tagIds).
+				Group("resource_id")
+			if err := db.Where("id IN (?)", subQuery).Select("id", "title", "alternative_titles").Preload("Tags").Find(&resources).Error; err != nil {
 				return nil, err
 			}
-			return tag.Resources, nil
+			return resources, nil
 		}
 	}
 	if len([]rune(keyword)) < 80 {
 		var resources []model.Resource
-		if err := db.Where("title LIKE ?", "%"+keyword+"%").Or("alternative_titles LIKE ?", "%"+keyword+"%").Find(&resources).Error; err != nil {
+		if err := db.Where("title LIKE ?", "%"+keyword+"%").Or("alternative_titles LIKE ?", "%"+keyword+"%").Select("id", "title", "alternative_titles").Preload("Tags").Find(&resources).Error; err != nil {
 			return nil, err
 		}
 		return resources, nil
@@ -202,23 +219,53 @@ func searchWithKeyword(keyword string) ([]model.Resource, error) {
 }
 
 func GetResourceByTag(tagID uint, page int, pageSize int) ([]model.Resource, int, error) {
-	var tag model.Tag
-
-	total := db.Model(&model.Tag{
-		Model: gorm.Model{
-			ID: tagID,
-		},
-	}).Association("Resources").Count()
-
-	if err := db.Model(&model.Tag{}).Where("id = ?", tagID).Preload("Resources", func(tx *gorm.DB) *gorm.DB {
-		return tx.Offset((page - 1) * pageSize).Limit(pageSize).Preload("Tags").Preload("User").Preload("Images").Order("created_at DESC")
-	}).First(&tag).Error; err != nil {
+	tag, err := GetTagByID(tagID)
+	if err != nil {
 		return nil, 0, err
 	}
 
-	totalPages := (int(total) + pageSize - 1) / pageSize
+	if tag.AliasOf != nil {
+		tag, err = GetTagByID(*tag.AliasOf)
+		if err != nil {
+			return nil, 0, err
+		}
+	}
 
-	return tag.Resources, totalPages, nil
+	var tagIds []uint
+	tagIds = append(tagIds, tag.ID)
+	for _, alias := range tag.Aliases {
+		tagIds = append(tagIds, alias.ID)
+	}
+
+	var resources []model.Resource
+	var total int64
+
+	subQuery := db.Table("resource_tags").
+		Select("resource_id").
+		Where("tag_id IN ?", tagIds).
+		Group("resource_id")
+
+	if err := db.Model(&model.Resource{}).
+		Where("id IN (?)", subQuery).
+		Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := db.Where("id IN (?)", subQuery).
+		Offset((page - 1) * pageSize).
+		Limit(pageSize).
+		Preload("User").
+		Preload("Images").
+		Preload("Tags").
+		Preload("Files").
+		Order("created_at DESC").
+		Find(&resources).Error; err != nil {
+		return nil, 0, err
+	}
+
+	totalPages := (total + int64(pageSize) - 1) / int64(pageSize)
+
+	return resources, int(totalPages), nil
 }
 
 func ExistsResource(id uint) (bool, error) {
