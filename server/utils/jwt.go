@@ -15,7 +15,7 @@ var (
 func init() {
 	secretFilePath := GetStoragePath() + "/jwt_secret.key"
 	secret, err := os.ReadFile(secretFilePath)
-	if err != nil {
+	if err == nil {
 		key = secret
 	} else {
 		// Initialize the key with a random value
