@@ -19,6 +19,10 @@ func CreateTag(uid uint, name string) (*model.TagView, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = updateCachedTagList()
+	if err != nil {
+		log.Error("Error updating cached tag list:", err)
+	}
 	return t.ToView(), nil
 }
 
@@ -63,6 +67,10 @@ func SearchTag(name string, mainTag bool) ([]model.TagView, error) {
 }
 
 func DeleteTag(id uint) error {
+	err := updateCachedTagList()
+	if err != nil {
+		log.Error("Error updating cached tag list:", err)
+	}
 	return dao.DeleteTag(id)
 }
 
@@ -88,5 +96,36 @@ func SetTagInfo(uid uint, id uint, description string, aliasOf *uint, tagType st
 			return nil, err
 		}
 	}
+	err = updateCachedTagList()
+	if err != nil {
+		log.Error("Error updating cached tag list:", err)
+	}
 	return t.ToView(), nil
+}
+
+var cachedTagList []model.TagViewWithCount
+
+func updateCachedTagList() error {
+	tags, err := dao.ListTags()
+	if err != nil {
+		return err
+	}
+	cachedTagList = make([]model.TagViewWithCount, 0, len(tags))
+	for _, tag := range tags {
+		count, err := dao.CountResourcesByTag(tag.ID)
+		if err != nil {
+			return err
+		}
+		cachedTagList = append(cachedTagList, *tag.ToView().WithCount(int(count)))
+	}
+	return nil
+}
+
+func GetTagList() ([]model.TagViewWithCount, error) {
+	if cachedTagList == nil {
+		if err := updateCachedTagList(); err != nil {
+			return nil, err
+		}
+	}
+	return cachedTagList, nil
 }

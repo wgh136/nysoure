@@ -35,6 +35,10 @@ export interface Tag {
   aliases: string[];
 }
 
+export interface TagWithCount extends Tag {
+  resources_count: number;
+}
+
 export interface CreateResourceParams {
   title: string;
   alternative_titles: string[];

@@ -33,3 +33,15 @@ func (t *Tag) ToView() *TagView {
 		Aliases:     aliases,
 	}
 }
+
+type TagViewWithCount struct {
+	TagView
+	ResourceCount int `json:"resources_count"` // Count of resources associated with the tag
+}
+
+func (t *TagView) WithCount(count int) *TagViewWithCount {
+	return &TagViewWithCount{
+		TagView:       *t,
+		ResourceCount: count,
+	}
+}

@@ -122,6 +122,21 @@ func handleGetTagByName(c fiber.Ctx) error {
 	})
 }
 
+func getAllTags(c fiber.Ctx) error {
+	tags, err := service.GetTagList()
+	if err != nil {
+		return err
+	}
+	if tags == nil {
+		tags = []model.TagViewWithCount{}
+	}
+	return c.Status(fiber.StatusOK).JSON(model.Response[*[]model.TagViewWithCount]{
+		Success: true,
+		Data:    &tags,
+		Message: "All tags retrieved successfully",
+	})
+}
+
 func AddTagRoutes(api fiber.Router) {
 	tag := api.Group("/tag")
 	{
@@ -130,5 +145,6 @@ func AddTagRoutes(api fiber.Router) {
 		tag.Delete("/:id", handleDeleteTag)
 		tag.Put("/:id/info", handleSetTagInfo)
 		tag.Get("/:name", handleGetTagByName)
+		tag.Get("/", getAllTags)
 	}
 }

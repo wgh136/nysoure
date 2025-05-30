@@ -55,7 +55,7 @@ export default function TaggedResourcesPage() {
     <div className={"px-3"}>
       {
         (tag?.aliases ?? []).map((e) => {
-          return <Badge className={"m-1 badge-outline badge-soft"}>{e}</Badge>
+          return <Badge className={"m-1 badge-primary badge-soft"}>{e}</Badge>
         })
       }
     </div>

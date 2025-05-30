@@ -82,3 +82,13 @@ func SetTagInfo(id uint, description string, aliasOf *uint, tagType string) erro
 	}
 	return nil
 }
+
+// ListTags retrieves all tags from the database.
+// Only returns the ID, name, and type of each tag.
+func ListTags() ([]model.Tag, error) {
+	var tags []model.Tag
+	if err := db.Select("id", "name", "type").Where("alias_of is null").Find(&tags).Error; err != nil {
+		return nil, err
+	}
+	return tags, nil
+}

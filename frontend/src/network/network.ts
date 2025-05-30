@@ -14,7 +14,7 @@ import {
   UserWithToken,
   Comment,
   CommentWithResource,
-  ServerConfig, RSort
+  ServerConfig, RSort, TagWithCount
 } from "./models.ts";
 
 class Network {
@@ -274,6 +274,19 @@ class Network {
       const response = await axios.postForm(`${this.apiBaseUrl}/user/delete`, {
         user_id: userId
       })
+      return response.data
+    } catch (e: any) {
+      console.error(e)
+      return {
+        success: false,
+        message: e.toString(),
+      }
+    }
+  }
+
+  async getAllTags(): Promise<Response<TagWithCount[]>> {
+    try {
+      const response = await axios.get(`${this.apiBaseUrl}/tag`)
       return response.data
     } catch (e: any) {
       console.error(e)

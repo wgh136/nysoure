@@ -268,6 +268,36 @@ func GetResourceByTag(tagID uint, page int, pageSize int) ([]model.Resource, int
 	return resources, int(totalPages), nil
 }
 
+// CountResourcesByTag counts the number of resources associated with a specific tag.
+func CountResourcesByTag(tagID uint) (int64, error) {
+	tag, err := GetTagByID(tagID)
+	if err != nil {
+		return 0, err
+	}
+	if tag.AliasOf != nil {
+		tag, err = GetTagByID(*tag.AliasOf)
+		if err != nil {
+			return 0, err
+		}
+	}
+	var tagIds []uint
+	tagIds = append(tagIds, tag.ID)
+	for _, alias := range tag.Aliases {
+		tagIds = append(tagIds, alias.ID)
+	}
+	var count int64
+	subQuery := db.Table("resource_tags").
+		Select("resource_id").
+		Where("tag_id IN ?", tagIds).
+		Group("resource_id")
+	if err := db.Model(&model.Resource{}).
+		Where("id IN (?)", subQuery).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 func ExistsResource(id uint) (bool, error) {
 	var r model.Resource
 	if err := db.Model(&model.Resource{}).Where("id = ?", id).First(&r).Error; err != nil {

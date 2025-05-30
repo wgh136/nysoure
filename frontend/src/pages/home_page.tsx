@@ -3,10 +3,7 @@ import ResourcesView from "../components/resources_view.tsx";
 import {network} from "../network/network.ts";
 import { app } from "../app.ts";
 import {RSort} from "../network/models.ts";
-import Button from "../components/button.tsx";
-import {MdInfoOutline} from "react-icons/md";
 import {useTranslation} from "react-i18next";
-import {useNavigate} from "react-router";
 import {useAppContext} from "../components/AppContext.tsx";
 
 export default function HomePage() {
@@ -15,8 +12,6 @@ export default function HomePage() {
   }, [])
 
   const {t} = useTranslation()
-
-  const navigate = useNavigate()
   
   const appContext = useAppContext()
 
@@ -59,15 +54,6 @@ export default function HomePage() {
         <option value="4">{t("Downloads Ascending")}</option>
         <option value="5">{t("Downloads Descending")}</option>
       </select>
-      <span className={"flex-1"}/>
-      <Button onClick={() => {
-        navigate("/about");
-      }}>
-        <div className={"flex items-center"}>
-          <MdInfoOutline size={24} className={"inline-block mr-2"}/>
-          <span>{t("About this site")}</span>
-        </div>
-      </Button>
     </div>
     <ResourcesView
       key={`home_page_${order}`}

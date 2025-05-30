@@ -56,6 +56,10 @@ func CreateResource(uid uint, params *ResourceCreateParams) (uint, error) {
 	if r, err = dao.CreateResource(r); err != nil {
 		return 0, err
 	}
+	err = updateCachedTagList()
+	if err != nil {
+		log.Error("Error updating cached tag list:", err)
+	}
 	return r.ID, nil
 }
 
@@ -169,6 +173,10 @@ func DeleteResource(uid, id uint) error {
 	if err := dao.DeleteResource(id); err != nil {
 		return err
 	}
+	err = updateCachedTagList()
+	if err != nil {
+		log.Error("Error updating cached tag list:", err)
+	}
 	return nil
 }
 
@@ -240,6 +248,10 @@ func EditResource(uid, rid uint, params *ResourceCreateParams) error {
 	if err := dao.UpdateResource(r); err != nil {
 		log.Error("UpdateResource error: ", err)
 		return model.NewInternalServerError("Failed to update resource")
+	}
+	err = updateCachedTagList()
+	if err != nil {
+		log.Error("Error updating cached tag list:", err)
 	}
 	return nil
 }

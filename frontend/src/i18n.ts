@@ -169,6 +169,8 @@ export const i18nData = {
       "Provide a file url for the server to download, and the file will be moved to the selected storage.": "Provide a file url for the server to download, and the file will be moved to the selected storage.",
       "Verifying your request": "Verifying your request",
       "Please check your network if the verification takes too long or the captcha does not appear.": "Please check your network if the verification takes too long or the captcha does not appear.",
+      "About": "About",
+      "Home": "Home",
     }
   },
   "zh-CN": {
@@ -341,6 +343,8 @@ export const i18nData = {
       "Provide a file url for the server to download, and the file will be moved to the selected storage.": "提供一个文件链接供服务器下载，文件将被移动到选定的存储中。",
       "Verifying your request": "正在验证您的请求",
       "Please check your network if the verification takes too long or the captcha does not appear.": "如果验证时间过长或验证码未出现, 请检查您的网络连接",
+      "About": "关于",
+      "Home": "首页",
     }
   },
   "zh-TW": {
@@ -513,6 +517,8 @@ export const i18nData = {
       "Provide a file url for the server to download, and the file will be moved to the selected storage.": "提供一個檔案連結供伺服器下載，檔案將被移動到選定的儲存中。",
       "Verifying your request": "正在驗證您的請求",
       "Please check your network if the verification takes too long or the captcha does not appear.": "如果驗證時間過長或驗證碼未出現，請檢查您的網絡連接。",
+      "About": "關於",
+      "Home": "首頁",
     }
   }
 }
