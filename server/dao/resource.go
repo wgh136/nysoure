@@ -97,6 +97,7 @@ func UpdateResource(r model.Resource) error {
 	tags := r.Tags
 	r.Images = nil
 	r.Tags = nil
+	r.Files = nil
 	if err := db.Save(&r).Error; err != nil {
 		return err
 	}
