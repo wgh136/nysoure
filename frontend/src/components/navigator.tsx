@@ -276,12 +276,14 @@ function FloatingToTopButton() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    let lastScrollY = window.scrollY;
+
     const handleScroll = () => {
-      if (window.scrollY > 200) {
-        setVisible(true);
-      } else {
-        setVisible(false);
-      }
+      const isScrollingUp = window.scrollY < lastScrollY;
+      const isAboveThreshold = window.scrollY > 200;
+
+      setVisible(isScrollingUp && isAboveThreshold);
+      lastScrollY = window.scrollY;
     };
 
     window.addEventListener("scroll", handleScroll);
