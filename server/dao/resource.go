@@ -32,11 +32,25 @@ func CreateResource(r model.Resource) (model.Resource, error) {
 func GetResourceByID(id uint) (model.Resource, error) {
 	// Retrieve a resource by its ID from the database
 	var r model.Resource
-	if err := db.Preload("User").Preload("Images").Preload("Tags").Preload("Files").First(&r, id).Error; err != nil {
+	if err := db.Preload("User").
+		Preload("Images").
+		Preload("Tags").
+		Preload("Files").
+		First(&r, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return model.Resource{}, model.NewNotFoundError("Resource not found")
 		}
 		return model.Resource{}, err
+	}
+	for i, tag := range r.Tags {
+		if tag.AliasOf != nil {
+			t, err := GetTagByID(*tag.AliasOf)
+			if err != nil {
+				return model.Resource{}, err
+			} else {
+				r.Tags[i].Type = t.Type
+			}
+		}
 	}
 	return r, nil
 }
