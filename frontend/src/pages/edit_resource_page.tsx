@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { app } from "../app.ts";
 import { ErrorAlert } from "../components/alert.tsx";
 import Loading from "../components/loading.tsx";
-import TagInput from "../components/tag_input.tsx";
+import TagInput, {QuickAddTagDialog} from "../components/tag_input.tsx";
 
 export default function EditResourcePage() {
   const [title, setTitle] = useState<string>("")
@@ -178,9 +178,30 @@ export default function EditResourcePage() {
         })
       }
     </p>
-    <TagInput onAdd={(tag) => {
-      setTags([...tags, tag])
-    }} />
+    <div className={"flex items-center"}>
+      <TagInput onAdd={(tag) => {
+        setTags((prev) => {
+          const existingTag = prev.find(t => t.id === tag.id);
+          if (existingTag) {
+            return prev; // If the tag already exists, do not add it again
+          }
+          return [...prev, tag];
+        })
+      }} />
+      <span className={"w-4"}/>
+      <QuickAddTagDialog onAdded={(tags) => {
+        setTags((prev) => {
+          const newTags = [...prev];
+          for (const tag of tags) {
+            const existingTag = newTags.find(t => t.id === tag.id);
+            if (!existingTag) {
+              newTags.push(tag);
+            }
+          }
+          return newTags;
+        })
+      }}/>
+    </div>
     <div className={"h-4"}></div>
     <p className={"my-1"}>{t("Description")}</p>
     <textarea className="textarea w-full min-h-80 p-4" value={article} onChange={(e) => setArticle(e.target.value)} />

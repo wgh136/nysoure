@@ -330,6 +330,22 @@ class Network {
     }
   }
 
+  async getOrCreateTags(names: string[], tagType: string): Promise<Response<Tag[]>> {
+    try {
+      const response = await axios.post(`${this.apiBaseUrl}/tag/batch`, {
+        names,
+        type: tagType
+      })
+      return response.data
+    } catch (e: any) {
+      console.error(e)
+      return {
+        success: false,
+        message: e.toString(),
+      }
+    }
+  }
+
   async getTagByName(name: string): Promise<Response<Tag>> {
     try {
       const response = await axios.get(`${this.apiBaseUrl}/tag/${name}`)

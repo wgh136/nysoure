@@ -134,3 +134,30 @@ func GetTagList() ([]model.TagViewWithCount, error) {
 	}
 	return cachedTagList, nil
 }
+
+func GetOrCreateTags(uid uint, names []string, tagType string) ([]model.TagView, error) {
+	canUpload, err := checkUserCanUpload(uid)
+	if err != nil {
+		log.Error("Error checking user permissions:", err)
+		return nil, model.NewInternalServerError("Error checking user permissions")
+	}
+	if !canUpload {
+		return nil, model.NewUnAuthorizedError("User cannot create tags")
+	}
+	tags := make([]model.TagView, 0, len(names))
+	for _, name := range names {
+		t, err := dao.GetTagByName(name)
+		if err != nil {
+			if model.IsNotFoundError(err) {
+				t, err = dao.CreateTagWithType(name, tagType)
+				if err != nil {
+					return nil, err
+				}
+			} else {
+				return nil, err
+			}
+		}
+		tags = append(tags, *t.ToView())
+	}
+	return tags, updateCachedTagList()
+}

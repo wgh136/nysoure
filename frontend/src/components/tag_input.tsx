@@ -4,6 +4,9 @@ import {useTranslation} from "react-i18next";
 import {network} from "../network/network.ts";
 import {LuInfo} from "react-icons/lu";
 import {MdSearch} from "react-icons/md";
+import Button from "./button.tsx";
+import Input, {TextArea} from "./input.tsx";
+import {ErrorAlert} from "./alert.tsx";
 
 export default function TagInput({ onAdd, mainTag }: { onAdd: (tag: Tag) => void, mainTag?: boolean }) {
   const [keyword, setKeyword] = useState<string>("")
@@ -142,4 +145,61 @@ class Debounce {
       this.timer = null
     }
   }
+}
+
+export function QuickAddTagDialog({ onAdded }: { onAdded: (tags: Tag[]) => void }) {
+  const {t} = useTranslation();
+
+  const [text, setText] = useState<string>("")
+
+  const [type, setType] = useState<string>("")
+
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async () => {
+    if (text.trim().length === 0) {
+      return
+    }
+    setError(null)
+    const names = text.split(",").filter((n) => n.length > 0)
+    const res = await network.getOrCreateTags(names, type)
+    if (!res.success) {
+      setError(res.message)
+      return
+    }
+    const tags = res.data!
+    onAdded(tags)
+    setText("")
+    setType("")
+    const dialog = document.getElementById("quick_add_tag_dialog") as HTMLDialogElement
+    dialog.close()
+  }
+
+  return <>
+    <Button className={"btn-soft btn-primary"} onClick={() => {
+      const dialog = document.getElementById("quick_add_tag_dialog") as HTMLDialogElement
+      dialog.showModal()
+    }}>{t("Quick Add")}</Button>
+    <dialog id="quick_add_tag_dialog" className="modal">
+      <div className="modal-box">
+        <h3 className="font-bold text-lg">{t('Add Tags')}</h3>
+        <p className="py-2 text-sm">
+          {t("Input tags separated by commas.")}
+          <br/>
+          {t("If the tag does not exist, it will be created automatically.")}
+          <br/>
+          {t("Optionally, you can specify a type for the new tags.")}
+        </p>
+        <TextArea value={text} onChange={(e) => setText(e.target.value)} label={"Tags"}/>
+        <Input value={type} onChange={(e) => setType(e.target.value)} label={"Type"}/>
+        {error && <ErrorAlert className={"mt-2"} message={error}/>}
+        <div className="modal-action">
+          <form method="dialog">
+            <Button className="btn">{t("Cancel")}</Button>
+          </form>
+          <Button className={"btn-primary"} disabled={text === ""} onClick={handleSubmit}>{t("Submit")}</Button>
+        </div>
+      </div>
+    </dialog>
+  </>
 }

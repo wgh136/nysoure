@@ -137,6 +137,49 @@ func getAllTags(c fiber.Ctx) error {
 	})
 }
 
+func getOrCreateTags(c fiber.Ctx) error {
+	uid, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewUnAuthorizedError("You must be logged in to get or create tags")
+	}
+
+	type GetOrCreateTagsRequest struct {
+		Names   []string `json:"names"`
+		TagType string   `json:"type"`
+	}
+
+	var req GetOrCreateTagsRequest
+	if err := c.Bind().JSON(&req); err != nil {
+		return model.NewRequestError("Invalid request format")
+	}
+
+	names := make([]string, 0, len(req.Names))
+	for _, name := range req.Names {
+		name = strings.TrimSpace(name)
+		if name == "" {
+			continue
+		}
+		names = append(names, name)
+	}
+
+	if len(names) == 0 {
+		return model.NewRequestError("At least one tag name is required")
+	}
+
+	tagType := strings.TrimSpace(req.TagType)
+
+	tags, err := service.GetOrCreateTags(uid, names, tagType)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.Response[*[]model.TagView]{
+		Success: true,
+		Data:    &tags,
+		Message: "Tags retrieved or created successfully",
+	})
+}
+
 func AddTagRoutes(api fiber.Router) {
 	tag := api.Group("/tag")
 	{
@@ -146,5 +189,6 @@ func AddTagRoutes(api fiber.Router) {
 		tag.Put("/:id/info", handleSetTagInfo)
 		tag.Get("/:name", handleGetTagByName)
 		tag.Get("/", getAllTags)
+		tag.Post("/batch", getOrCreateTags)
 	}
 }
