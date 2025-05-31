@@ -10,7 +10,7 @@ import {
   useRef,
   useState
 } from "react";
-import {ResourceDetails, RFile, Storage, Comment} from "../network/models.ts";
+import {ResourceDetails, RFile, Storage, Comment, Tag} from "../network/models.ts";
 import {network} from "../network/network.ts";
 import showToast from "../components/toast.ts";
 import Markdown from "react-markdown";
@@ -114,15 +114,7 @@ export default function ResourcePage() {
           <div className="text-sm">{resource.author.username}</div>
         </div>
       </button>
-      <p className={"px-4 pt-2"}>
-        {
-          resource.tags.map((e) => {
-            return <Badge key={e.id} className="cursor-pointer m-1" onClick={() => {
-              navigate(`/tag/${e.name}`);
-            }}>{e.name}</Badge>
-          })
-        }
-      </p>
+      <Tags tags={resource.tags}/>
       <div className="tabs tabs-box my-4 mx-2 p-4">
         <label className="tab transition-all">
           <input type="radio" name="my_tabs" checked={page === 0} onChange={() => {
@@ -177,6 +169,39 @@ export default function ResourcePage() {
       <div className="h-4"></div>
     </div>
   </context.Provider>
+}
+
+function Tags({tags}: { tags: Tag[] }) {
+  const tagsMap = new Map<string, Tag[]>();
+
+  const navigate = useNavigate()
+
+  for (const tag of tags || []) {
+    const type = tag.type
+    if (!tagsMap.has(type)) {
+      tagsMap.set(type, []);
+    }
+    tagsMap.get(type)?.push(tag);
+  }
+
+  return <>
+  {
+    Array.from(tagsMap.entries()).map(([type, tags]) => (
+      <p key={type} className={"px-4"}>
+        <Badge key={type}>
+          {type}
+        </Badge>
+        {tags.map(tag => (
+          <Badge key={tag.name} className={"m-1 cursor-pointer badge-soft badge-primary"} onClick={() => {
+            navigate(`/tag/${tag.name}`)
+          }}>
+            {tag.name}
+          </Badge>
+        ))}
+      </p>
+    ))
+  }
+  </>
 }
 
 function DeleteResourceDialog({resourceId, uploaderId}: { resourceId: number, uploaderId?: number }) {
