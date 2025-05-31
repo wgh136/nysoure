@@ -177,6 +177,7 @@ export const i18nData = {
       "Input tags separated by separator.": "Input tags separated by separator.",
       "If the tag does not exist, it will be created automatically.": "If the tag does not exist, it will be created automatically.",
       "Optionally, you can specify a type for the new tags.": "Optionally, you can specify a type for the new tags.",
+      "Upload Clipboard Image": "Upload Clipboard Image",
     }
   },
   "zh-CN": {
@@ -357,6 +358,7 @@ export const i18nData = {
       "Input tags separated by separator.": "输入标签, 用分隔符分隔。",
       "If the tag does not exist, it will be created automatically.": "如果标签不存在, 将自动创建。",
       "Optionally, you can specify a type for the new tags.": "您可以选择为新标签指定一个类型。",
+      "Upload Clipboard Image": "上传剪贴板图片",
     }
   },
   "zh-TW": {
@@ -537,6 +539,7 @@ export const i18nData = {
       "Input tags separated by separator.": "輸入標籤, 用分隔符分隔。",
       "If the tag does not exist, it will be created automatically.": "如果標籤不存在, 將自動創建。",
       "Optionally, you can specify a type for the new tags.": "您可以選擇為新標籤指定一個類型。",
+      "Upload Clipboard Image": "上傳剪貼板圖片",
     }
   }
 }
