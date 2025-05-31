@@ -171,6 +171,7 @@ export const i18nData = {
       "Please check your network if the verification takes too long or the captcha does not appear.": "Please check your network if the verification takes too long or the captcha does not appear.",
       "About": "About",
       "Home": "Home",
+      "Other": "Other",
     }
   },
   "zh-CN": {
@@ -345,6 +346,7 @@ export const i18nData = {
       "Please check your network if the verification takes too long or the captcha does not appear.": "如果验证时间过长或验证码未出现, 请检查您的网络连接",
       "About": "关于",
       "Home": "首页",
+      "Other": "其他",
     }
   },
   "zh-TW": {
@@ -519,6 +521,7 @@ export const i18nData = {
       "Please check your network if the verification takes too long or the captcha does not appear.": "如果驗證時間過長或驗證碼未出現，請檢查您的網絡連接。",
       "About": "關於",
       "Home": "首頁",
+      "Other": "其他",
     }
   }
 }

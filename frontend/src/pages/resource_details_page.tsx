@@ -176,6 +176,8 @@ function Tags({tags}: { tags: Tag[] }) {
 
   const navigate = useNavigate()
 
+  const {t} = useTranslation()
+
   for (const tag of tags || []) {
     const type = tag.type
     if (!tagsMap.has(type)) {
@@ -189,7 +191,7 @@ function Tags({tags}: { tags: Tag[] }) {
     Array.from(tagsMap.entries()).map(([type, tags]) => (
       <p key={type} className={"px-4"}>
         <Badge key={type}>
-          {type}
+          {type == "" ? t("Other") : type}
         </Badge>
         {tags.map(tag => (
           <Badge key={tag.name} className={"m-1 cursor-pointer badge-soft badge-primary"} onClick={() => {
