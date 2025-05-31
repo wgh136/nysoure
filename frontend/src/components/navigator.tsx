@@ -2,7 +2,7 @@ import { app } from "../app.ts";
 import { network } from "../network/network.ts";
 import { useNavigate, useOutlet } from "react-router";
 import { createContext, useContext, useEffect, useState } from "react";
-import { MdOutlinePerson, MdSearch, MdSettings } from "react-icons/md";
+import {MdArrowUpward, MdOutlinePerson, MdSearch, MdSettings} from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import UploadingSideBar from "./uploading_side_bar.tsx";
 import { IoLogoGithub } from "react-icons/io";
@@ -26,6 +26,7 @@ export default function Navigator() {
   const { t } = useTranslation();
 
   return <>
+    <FloatingToTopButton/>
     <div className="navbar bg-base-100 shadow-sm fixed top-0 z-1 lg:z-10" key={key}>
       <div className={"flex-1 max-w-7xl mx-auto flex items-center"}>
         <div className="dropdown">
@@ -269,4 +270,30 @@ function SearchBar() {
   }
 
   return searchField
+}
+
+function FloatingToTopButton() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 200) {
+        setVisible(true);
+      } else {
+        setVisible(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  return <button className={`btn btn-circle btn-soft btn-secondary border shadow-lg btn-lg fixed right-4 ${visible ? "bottom-4" : "-bottom-12"} transition-all z-50`} onClick={() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }}>
+    <MdArrowUpward size={20}/>
+  </button>;
 }
