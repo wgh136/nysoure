@@ -156,12 +156,14 @@ export function QuickAddTagDialog({ onAdded }: { onAdded: (tags: Tag[]) => void 
 
   const [error, setError] = useState<string | null>(null)
 
+  const [separator, setSeparator] = useState<string>(",")
+
   const handleSubmit = async () => {
     if (text.trim().length === 0) {
       return
     }
     setError(null)
-    const names = text.split(",").filter((n) => n.length > 0)
+    const names = text.split(separator).filter((n) => n.length > 0)
     const res = await network.getOrCreateTags(names, type)
     if (!res.success) {
       setError(res.message)
@@ -184,11 +186,26 @@ export function QuickAddTagDialog({ onAdded }: { onAdded: (tags: Tag[]) => void 
       <div className="modal-box">
         <h3 className="font-bold text-lg">{t('Add Tags')}</h3>
         <p className="py-2 text-sm">
-          {t("Input tags separated by commas.")}
+          {t("Input tags separated by separator.")}
           <br/>
           {t("If the tag does not exist, it will be created automatically.")}
           <br/>
           {t("Optionally, you can specify a type for the new tags.")}
+        </p>
+        <p className={"flex my-2"}>
+          <span className={"flex-1"}>{t("Separator")}:</span>
+          <label className="label text-sm mx-2">
+            <input type="radio" name="radio-1" className="radio radio-primary" checked={separator == ","} onChange={() => setSeparator(",")}/>
+            Comma
+          </label>
+          <label className="label text-sm mx-2">
+            <input type="radio" name="radio-2" className="radio radio-primary" checked={separator == ";"} onChange={() => setSeparator(";")}/>
+            Semicolon
+          </label>
+          <label className="label text-sm mx-2">
+            <input type="radio" name="radio-3" className="radio radio-primary" checked={separator == " "} onChange={() => setSeparator(" ")}/>
+            Space
+          </label>
         </p>
         <TextArea value={text} onChange={(e) => setText(e.target.value)} label={"Tags"}/>
         <Input value={type} onChange={(e) => setType(e.target.value)} label={"Type"}/>

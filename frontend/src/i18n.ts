@@ -174,7 +174,7 @@ export const i18nData = {
       "Other": "Other",
       "Quick Add": "Quick Add",
       "Add Tags": "Add Tags",
-      "Input tags separated by commas.": "Input tags separated by commas.",
+      "Input tags separated by separator.": "Input tags separated by separator.",
       "If the tag does not exist, it will be created automatically.": "If the tag does not exist, it will be created automatically.",
       "Optionally, you can specify a type for the new tags.": "Optionally, you can specify a type for the new tags.",
     }
@@ -354,7 +354,7 @@ export const i18nData = {
       "Other": "其他",
       "Quick Add": "快速添加",
       "Add Tags": "添加标签",
-      "Input tags separated by commas.": "输入标签, 用逗号分隔。",
+      "Input tags separated by separator.": "输入标签, 用分隔符分隔。",
       "If the tag does not exist, it will be created automatically.": "如果标签不存在, 将自动创建。",
       "Optionally, you can specify a type for the new tags.": "您可以选择为新标签指定一个类型。",
     }
@@ -534,7 +534,7 @@ export const i18nData = {
       "Other": "其他",
       "Quick Add": "快速添加",
       "Add Tags": "添加標籤",
-      "Input tags separated by commas.": "輸入標籤, 用逗號分隔。",
+      "Input tags separated by separator.": "輸入標籤, 用分隔符分隔。",
       "If the tag does not exist, it will be created automatically.": "如果標籤不存在, 將自動創建。",
       "Optionally, you can specify a type for the new tags.": "您可以選擇為新標籤指定一個類型。",
     }
