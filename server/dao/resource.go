@@ -129,9 +129,65 @@ func DeleteResource(id uint) error {
 	})
 }
 
+func splitQuery(query string) []string {
+	var keywords []string
+
+	query = strings.TrimSpace(query)
+	if query == "" {
+		return keywords
+	}
+
+	l, r := 0, 0
+	inQuote := false
+	quoteChar := byte(0)
+
+	for r < len(query) {
+		if (query[r] == '"' || query[r] == '\'') && (r == 0 || query[r-1] != '\\') {
+			if !inQuote {
+				inQuote = true
+				quoteChar = query[r]
+				l = r + 1
+			} else if query[r] == quoteChar {
+				if r > l {
+					keywords = append(keywords, strings.TrimSpace(query[l:r]))
+				}
+				inQuote = false
+				r++
+				l = r
+				continue
+			}
+		} else if !inQuote && query[r] == ' ' {
+			if r > l {
+				keywords = append(keywords, strings.TrimSpace(query[l:r]))
+			}
+			for r < len(query) && query[r] == ' ' {
+				r++
+			}
+			l = r
+			continue
+		}
+
+		r++
+	}
+
+	if l < len(query) {
+		keywords = append(keywords, strings.TrimSpace(query[l:r]))
+	}
+
+	return keywords
+}
+
 func Search(query string, page, pageSize int) ([]model.Resource, int, error) {
 	query = strings.TrimSpace(query)
-	keywords := strings.Split(query, " ")
+
+	if len([]rune(query)) < 20 {
+		tag, err := GetTagByName(query)
+		if err == nil {
+			return GetResourceByTag(tag.ID, page, pageSize)
+		}
+	}
+
+	keywords := splitQuery(query)
 	resource, err := searchWithKeyword(keywords[0])
 	if err != nil {
 		return nil, 0, err
