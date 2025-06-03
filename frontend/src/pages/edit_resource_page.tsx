@@ -72,6 +72,7 @@ export default function EditResourcePage() {
       setError(t("Description cannot be empty"))
       return
     }
+    setSubmitting(true)
     const res = await network.editResource(id, {
       title: title,
       alternative_titles: altTitles,

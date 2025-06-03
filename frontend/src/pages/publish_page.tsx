@@ -50,6 +50,7 @@ export default function PublishPage() {
       setError(t("Description cannot be empty"))
       return
     }
+    setSubmitting(true)
     const res = await network.createResource({
       title: title,
       alternative_titles: altTitles,

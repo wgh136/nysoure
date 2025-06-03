@@ -158,13 +158,20 @@ export function QuickAddTagDialog({ onAdded }: { onAdded: (tags: Tag[]) => void 
 
   const [separator, setSeparator] = useState<string>(",")
 
+  const [isLoading, setLoading] = useState(false)
+
   const handleSubmit = async () => {
+    if (isLoading) {
+      return
+    }
     if (text.trim().length === 0) {
       return
     }
     setError(null)
     const names = text.split(separator).filter((n) => n.length > 0)
+    setLoading(true)
     const res = await network.getOrCreateTags(names, type)
+    setLoading(false)
     if (!res.success) {
       setError(res.message)
       return
@@ -214,7 +221,7 @@ export function QuickAddTagDialog({ onAdded }: { onAdded: (tags: Tag[]) => void 
           <form method="dialog">
             <Button className="btn">{t("Cancel")}</Button>
           </form>
-          <Button className={"btn-primary"} disabled={text === ""} onClick={handleSubmit}>{t("Submit")}</Button>
+          <Button isLoading={isLoading} className={"btn-primary"} disabled={text === ""} onClick={handleSubmit}>{t("Submit")}</Button>
         </div>
       </div>
     </dialog>
