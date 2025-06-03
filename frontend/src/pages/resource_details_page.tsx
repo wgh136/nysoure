@@ -279,7 +279,7 @@ function Article({resource}: { resource: ResourceDetails }) {
             })
             html = splits.join(" ")
             return <div
-              className={`w-full max-w-xl rounded-xl overflow-clip ${html.includes("youtube") ? "aspect-video" : "h-48 sm:h-64"}`}
+              className={`w-full my-3 max-w-xl rounded-xl overflow-clip ${html.includes("youtube") ? "aspect-video" : "h-48 sm:h-64"}`}
               dangerouslySetInnerHTML={{
                 __html: html
               }}></div>

@@ -4,24 +4,28 @@ article {
     }
 
     h1 {
+        font-size: 24px;
+        font-weight: bold;
+        padding: 12px 0;
+        margin: 24px 0 12px;
+    }
+    h2 {
         font-size: 20px;
         font-weight: bold;
         padding: 12px 0;
-    }
-    h2 {
-        font-size: 18px;
-        font-weight: bold;
-        padding: 10px 0;
+        margin: 16px 0 8px;
     }
     h3 {
         font-size: 16px;
         font-weight: bold;
-        padding: 8px 0;
+        padding: 6px 0;
+        margin: 12px 0 4px;
     }
     h4 {
         font-size: 14px;
         font-weight: bold;
         padding: 6px 0;
+        margin: 12px 0 4px;
     }
     h5 {
         font-size: 12px;
@@ -36,7 +40,7 @@ article {
     p {
         font-size: 14px;
         line-height: 1.6;
-        margin: 8px 0;
+        margin: 12px 0;
     }
     ul {
         list-style-type: disc;
