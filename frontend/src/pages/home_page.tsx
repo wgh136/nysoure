@@ -33,7 +33,7 @@ export default function HomePage() {
       <div className={"flex p-4 items-center"}>
         <select
           value={order}
-          className="select w-52 select-info"
+          className="select w-52 select-primary"
           onInput={(e) => {
             const value = Number(e.currentTarget.value);
             setOrder(value as RSort);
