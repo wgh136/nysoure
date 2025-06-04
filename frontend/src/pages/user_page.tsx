@@ -73,7 +73,7 @@ function UserCard({ user }: { user: User }) {
     <div className={"flex m-4 items-center"}>
       <div className={"avatar py-2"}>
         <div className="w-24 rounded-full ring-2 ring-offset-2 ring-primary ring-offset-base-100">
-          <img src={network.getUserAvatar(user)} />
+          <img alt={"avatar"} src={network.getUserAvatar(user)} />
         </div>
       </div>
       <div className="w-6"></div>
@@ -175,6 +175,13 @@ function CommentsList({
   );
 }
 
+function limitArticleLength(content: string, maxLength: number): string {
+  if (content.length <= maxLength) {
+    return content;
+  }
+  return content.slice(0, maxLength) + "...";
+}
+
 function CommentTile({ comment }: { comment: CommentWithResource }) {
   const navigate = useNavigate();
 
@@ -193,7 +200,9 @@ function CommentTile({ comment }: { comment: CommentWithResource }) {
           {new Date(comment.created_at).toLocaleString()}
         </div>
       </div>
-      <div className={"p-2"}>{comment.content}</div>
+      <div className={"p-2 whitespace-pre-wrap text-sm"}>
+        {limitArticleLength(comment.content, 200)}
+      </div>
       <a
         className="text-sm text-base-content/80 p-1 hover:text-primary cursor-pointer transition-all"
         onClick={() => {

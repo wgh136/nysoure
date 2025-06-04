@@ -23,7 +23,7 @@ import Markdown from "react-markdown";
 import "../markdown.css";
 import Loading from "../components/loading.tsx";
 import {
-  MdAdd,
+  MdAdd, MdArrowDownward, MdArrowUpward,
   MdOutlineArticle,
   MdOutlineComment,
   MdOutlineDataset,
@@ -360,11 +360,12 @@ function Article({ resource }: { resource: ResourceDetails }) {
                   ></div>
                 );
               }
-              // @ts-ignore
             } else if (
               typeof props.children === "object" &&
-              props.children.props &&
-              props.children.props.href
+              // @ts-ignore
+              props.children?.props &&
+              // @ts-ignore
+              props.children?.props.href
             ) {
               const a = props.children as ReactElement;
               const childProps = a.props as any;
@@ -1140,11 +1141,11 @@ function Comments({ resourceId }: { resourceId: number }) {
         maxPageCallback={setMaxPage}
         key={listKey}
       />
-      {maxPage && (
+      {maxPage ? (
         <div className={"w-full flex justify-center"}>
           <Pagination page={page} setPage={setPage} totalPages={maxPage} />
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -1193,6 +1194,15 @@ function CommentsList({
 
 function CommentTile({ comment }: { comment: Comment }) {
   const navigate = useNavigate();
+  const [expanded, setExpanded] = useState(false);
+  const { t } = useTranslation();
+
+  const isLongComment = comment.content.length > 300;
+  const displayContent =
+    expanded || !isLongComment
+      ? comment.content
+      : comment.content.substring(0, 300) + "...";
+
   return (
     <div className={"card card-border border-base-300 p-2 my-3"}>
       <div className={"flex flex-row items-center my-1 mx-1"}>
@@ -1216,7 +1226,21 @@ function CommentTile({ comment }: { comment: Comment }) {
           {new Date(comment.created_at).toLocaleString()}
         </div>
       </div>
-      <div className={"text-sm p-2"}>{comment.content}</div>
+      <div className={"text-sm p-2 whitespace-pre-wrap"}>
+        {displayContent}
+        {isLongComment && (
+          <div className={"flex items-center justify-center"}>
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="mt-2 text-primary text-sm cursor-pointer flex items-center"
+            >
+              {expanded ? <MdArrowUpward /> : <MdArrowDownward />}
+              <span className={"w-1"}></span>
+              {expanded ? t("Show less") : t("Show more")}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

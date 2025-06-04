@@ -202,6 +202,8 @@ export const i18nData = {
       "Optionally, you can specify a type for the new tags.":
         "Optionally, you can specify a type for the new tags.",
       "Upload Clipboard Image": "Upload Clipboard Image",
+      "Show more": "Show more",
+      "Show less": "Show less",
     },
   },
   "zh-CN": {
@@ -396,6 +398,8 @@ export const i18nData = {
       "Optionally, you can specify a type for the new tags.":
         "您可以选择为新标签指定一个类型。",
       "Upload Clipboard Image": "上传剪贴板图片",
+      "Show more": "显示更多",
+      "Show less": "显示更少",
     },
   },
   "zh-TW": {
@@ -590,6 +594,8 @@ export const i18nData = {
       "Optionally, you can specify a type for the new tags.":
         "您可以選擇為新標籤指定一個類型。",
       "Upload Clipboard Image": "上傳剪貼板圖片",
+      "Show more": "顯示更多",
+      "Show less": "顯示更少",
     },
   },
 };
