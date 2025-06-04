@@ -1,4 +1,4 @@
-import {User} from "./network/models.ts";
+import { User } from "./network/models.ts";
 
 interface MyWindow extends Window {
   serverName?: string;
@@ -7,7 +7,7 @@ interface MyWindow extends Window {
 }
 
 class App {
-  appName = "Nysoure"
+  appName = "Nysoure";
 
   user: User | null = null;
 
@@ -15,7 +15,7 @@ class App {
 
   cloudflareTurnstileSiteKey: string | null = null;
 
-  siteInfo = ""
+  siteInfo = "";
 
   constructor() {
     this.init();
@@ -31,7 +31,8 @@ class App {
       this.token = JSON.parse(tokenJson);
     }
     this.appName = (window as MyWindow).serverName || this.appName;
-    this.cloudflareTurnstileSiteKey = (window as MyWindow).cloudflareTurnstileSiteKey || null;
+    this.cloudflareTurnstileSiteKey =
+      (window as MyWindow).cloudflareTurnstileSiteKey || null;
     this.siteInfo = (window as MyWindow).siteInfo || "";
   }
 

@@ -3,7 +3,11 @@ import { app } from "../app";
 import { ErrorAlert } from "../components/alert";
 import { network } from "../network/network";
 import { ReactNode, useState } from "react";
-import { MdOutlineAccountCircle, MdLockOutline, MdOutlineEditNote } from "react-icons/md";
+import {
+  MdOutlineAccountCircle,
+  MdLockOutline,
+  MdOutlineEditNote,
+} from "react-icons/md";
 import Button from "../components/button";
 import showToast from "../components/toast";
 import { useNavigator } from "../components/navigator";
@@ -13,26 +17,44 @@ export function ManageMePage() {
   const { t } = useTranslation();
 
   if (!app.user) {
-    return <ErrorAlert className={"m-4"} message={t("You are not logged in. Please log in to access this page.")} />
+    return (
+      <ErrorAlert
+        className={"m-4"}
+        message={t("You are not logged in. Please log in to access this page.")}
+      />
+    );
   }
 
-  return <div className="px-2">
-    <ChangeAvatarDialog />
-    <ChangeUsernameDialog />
-    <ChangePasswordDialog />
-    <ChangeBioDialog />
-  </div>;
+  return (
+    <div className="px-2">
+      <ChangeAvatarDialog />
+      <ChangeUsernameDialog />
+      <ChangePasswordDialog />
+      <ChangeBioDialog />
+    </div>
+  );
 }
 
-function ListTile({ title, icon, onClick }: { title: string, icon: ReactNode, onClick: () => void }) {
-  return <div className="flex flex-row items-center h-12 px-2 bg-base-100 hover:bg-gray-200 cursor-pointer duration-200" onClick={onClick}>
-    <div className="flex flex-row items-center">
-      <span className="text-2xl">
-        {icon}
-      </span>
-      <span className="ml-2">{title}</span>
+function ListTile({
+  title,
+  icon,
+  onClick,
+}: {
+  title: string;
+  icon: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <div
+      className="flex flex-row items-center h-12 px-2 bg-base-100 hover:bg-gray-200 cursor-pointer duration-200"
+      onClick={onClick}
+    >
+      <div className="flex flex-row items-center">
+        <span className="text-2xl">{icon}</span>
+        <span className="ml-2">{title}</span>
+      </div>
     </div>
-  </div>
+  );
 }
 
 function ChangeAvatarDialog() {
@@ -73,41 +95,68 @@ function ChangeAvatarDialog() {
       showToast({
         message: t("Avatar changed successfully"),
         type: "success",
-      })
-      const dialog = document.getElementById("change_avatar_dialog") as HTMLDialogElement;
+      });
+      const dialog = document.getElementById(
+        "change_avatar_dialog",
+      ) as HTMLDialogElement;
       if (dialog) {
         dialog.close();
       }
     }
-  }
+  };
 
-  return <>
-    <ListTile icon={<MdOutlineAccountCircle />} title={t("Change Avatar")} onClick={() => {
-      const dialog = document.getElementById("change_avatar_dialog") as HTMLDialogElement;
-      if (dialog) {
-        dialog.showModal();
-      }
-    }} />
-    <dialog id="change_avatar_dialog" className="modal">
-      <div className="modal-box">
-        <h3 className="font-bold text-lg">{t("Change Avatar")}</h3>
-        <div className="h-48 flex items-center justify-center">
-          <div className="avatar">
-            <div className="w-28 rounded-full cursor-pointer" onClick={selectAvatar}>
-              <img src={avatar ? URL.createObjectURL(avatar) : network.getUserAvatar(app.user!)} alt={"avatar"} />
+  return (
+    <>
+      <ListTile
+        icon={<MdOutlineAccountCircle />}
+        title={t("Change Avatar")}
+        onClick={() => {
+          const dialog = document.getElementById(
+            "change_avatar_dialog",
+          ) as HTMLDialogElement;
+          if (dialog) {
+            dialog.showModal();
+          }
+        }}
+      />
+      <dialog id="change_avatar_dialog" className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">{t("Change Avatar")}</h3>
+          <div className="h-48 flex items-center justify-center">
+            <div className="avatar">
+              <div
+                className="w-28 rounded-full cursor-pointer"
+                onClick={selectAvatar}
+              >
+                <img
+                  src={
+                    avatar
+                      ? URL.createObjectURL(avatar)
+                      : network.getUserAvatar(app.user!)
+                  }
+                  alt={"avatar"}
+                />
+              </div>
             </div>
           </div>
+          {error && <ErrorAlert message={error} className={"m-4"} />}
+          <div className="modal-action">
+            <form method="dialog">
+              <Button>{t("Close")}</Button>
+            </form>
+            <Button
+              className="btn-primary"
+              onClick={handleSubmit}
+              isLoading={isLoading}
+              disabled={avatar == null}
+            >
+              {t("Save")}
+            </Button>
+          </div>
         </div>
-        {error && <ErrorAlert message={error} className={"m-4"} />}
-        <div className="modal-action">
-          <form method="dialog">
-            <Button>{t("Close")}</Button>
-          </form>
-          <Button className="btn-primary" onClick={handleSubmit} isLoading={isLoading} disabled={avatar == null}>{t("Save")}</Button>
-        </div>
-      </div>
-    </dialog>
-  </>
+      </dialog>
+    </>
+  );
 }
 
 function ChangeUsernameDialog() {
@@ -135,7 +184,9 @@ function ChangeUsernameDialog() {
         message: t("Username changed successfully"),
         type: "success",
       });
-      const dialog = document.getElementById("change_username_dialog") as HTMLDialogElement;
+      const dialog = document.getElementById(
+        "change_username_dialog",
+      ) as HTMLDialogElement;
       if (dialog) {
         dialog.close();
       }
@@ -144,44 +195,50 @@ function ChangeUsernameDialog() {
     }
   };
 
-  return <>
-    <ListTile icon={<MdOutlineEditNote />} title={t("Change Username")} onClick={() => {
-      const dialog = document.getElementById("change_username_dialog") as HTMLDialogElement;
-      if (dialog) {
-        dialog.showModal();
-      }
-    }} />
-    <dialog id="change_username_dialog" className="modal">
-      <div className="modal-box">
-        <h3 className="font-bold text-lg">{t("Change Username")}</h3>
-        <div className="input mt-4 w-full">
-          <label className="label">
-            {t("New Username")}
-          </label>
-          <input 
-            type="text" 
-            placeholder={t("Enter new username")} 
-            value={newUsername}
-            onChange={(e) => setNewUsername(e.target.value)}
-          />
+  return (
+    <>
+      <ListTile
+        icon={<MdOutlineEditNote />}
+        title={t("Change Username")}
+        onClick={() => {
+          const dialog = document.getElementById(
+            "change_username_dialog",
+          ) as HTMLDialogElement;
+          if (dialog) {
+            dialog.showModal();
+          }
+        }}
+      />
+      <dialog id="change_username_dialog" className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">{t("Change Username")}</h3>
+          <div className="input mt-4 w-full">
+            <label className="label">{t("New Username")}</label>
+            <input
+              type="text"
+              placeholder={t("Enter new username")}
+              value={newUsername}
+              onChange={(e) => setNewUsername(e.target.value)}
+            />
+          </div>
+          {error && <ErrorAlert message={error} className={"mt-4"} />}
+          <div className="modal-action">
+            <form method="dialog">
+              <Button>{t("Close")}</Button>
+            </form>
+            <Button
+              className="btn-primary"
+              onClick={handleSubmit}
+              isLoading={isLoading}
+              disabled={!newUsername.trim()}
+            >
+              {t("Save")}
+            </Button>
+          </div>
         </div>
-        {error && <ErrorAlert message={error} className={"mt-4"} />}
-        <div className="modal-action">
-          <form method="dialog">
-            <Button>{t("Close")}</Button>
-          </form>
-          <Button 
-            className="btn-primary" 
-            onClick={handleSubmit} 
-            isLoading={isLoading} 
-            disabled={!newUsername.trim()}
-          >
-            {t("Save")}
-          </Button>
-        </div>
-      </div>
-    </dialog>
-  </>;
+      </dialog>
+    </>
+  );
 }
 
 function ChangePasswordDialog() {
@@ -220,17 +277,19 @@ function ChangePasswordDialog() {
       // Update the token as it might have changed
       app.token = res.data!.token;
       app.user = res.data!;
-      
+
       showToast({
         message: t("Password changed successfully"),
         type: "success",
       });
-      
-      const dialog = document.getElementById("change_password_dialog") as HTMLDialogElement;
+
+      const dialog = document.getElementById(
+        "change_password_dialog",
+      ) as HTMLDialogElement;
       if (dialog) {
         dialog.close();
       }
-      
+
       // Reset form
       setOldPassword("");
       setNewPassword("");
@@ -239,68 +298,78 @@ function ChangePasswordDialog() {
     }
   };
 
-  return <>
-    <ListTile icon={<MdLockOutline />} title={t("Change Password")} onClick={() => {
-      const dialog = document.getElementById("change_password_dialog") as HTMLDialogElement;
-      if (dialog) {
-        dialog.showModal();
-      }
-    }} />
-    <dialog id="change_password_dialog" className="modal">
-      <div className="modal-box">
-        <h3 className="font-bold text-lg mb-2">{t("Change Password")}</h3>
-        
-        <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend">{t("Current Password")}</legend>
-          <input 
-            type="password" 
-            placeholder={t("Enter current password")} 
-            value={oldPassword}
-            className="input w-full"
-            onChange={(e) => setOldPassword(e.target.value)}
-          />
-        </fieldset>
-        
-        <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend">{t("New Password")}</legend>
-          <input 
-            type="password" 
-            placeholder={t("Enter new password")} 
-            value={newPassword}
-            className="input w-full"
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
-        </fieldset>
+  return (
+    <>
+      <ListTile
+        icon={<MdLockOutline />}
+        title={t("Change Password")}
+        onClick={() => {
+          const dialog = document.getElementById(
+            "change_password_dialog",
+          ) as HTMLDialogElement;
+          if (dialog) {
+            dialog.showModal();
+          }
+        }}
+      />
+      <dialog id="change_password_dialog" className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg mb-2">{t("Change Password")}</h3>
 
-        <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend">{t("Confirm New Password")}</legend>
-          <input 
-            type="password" 
-            placeholder={t("Confirm new password")} 
-            value={confirmPassword}
-            className="input w-full"
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          /> 
-        </fieldset>
-        
-        {error && <ErrorAlert message={error} className={"mt-4"} />}
-        
-        <div className="modal-action">
-          <form method="dialog">
-            <Button>{t("Close")}</Button>
-          </form>
-          <Button 
-            className="btn-primary" 
-            onClick={handleSubmit} 
-            isLoading={isLoading} 
-            disabled={!oldPassword || !newPassword || !confirmPassword}
-          >
-            {t("Save")}
-          </Button>
+          <fieldset className="fieldset w-full">
+            <legend className="fieldset-legend">{t("Current Password")}</legend>
+            <input
+              type="password"
+              placeholder={t("Enter current password")}
+              value={oldPassword}
+              className="input w-full"
+              onChange={(e) => setOldPassword(e.target.value)}
+            />
+          </fieldset>
+
+          <fieldset className="fieldset w-full">
+            <legend className="fieldset-legend">{t("New Password")}</legend>
+            <input
+              type="password"
+              placeholder={t("Enter new password")}
+              value={newPassword}
+              className="input w-full"
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </fieldset>
+
+          <fieldset className="fieldset w-full">
+            <legend className="fieldset-legend">
+              {t("Confirm New Password")}
+            </legend>
+            <input
+              type="password"
+              placeholder={t("Confirm new password")}
+              value={confirmPassword}
+              className="input w-full"
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </fieldset>
+
+          {error && <ErrorAlert message={error} className={"mt-4"} />}
+
+          <div className="modal-action">
+            <form method="dialog">
+              <Button>{t("Close")}</Button>
+            </form>
+            <Button
+              className="btn-primary"
+              onClick={handleSubmit}
+              isLoading={isLoading}
+              disabled={!oldPassword || !newPassword || !confirmPassword}
+            >
+              {t("Save")}
+            </Button>
+          </div>
         </div>
-      </div>
-    </dialog>
-  </>;
+      </dialog>
+    </>
+  );
 }
 
 function ChangeBioDialog() {
@@ -329,7 +398,9 @@ function ChangeBioDialog() {
         message: t("Bio changed successfully"),
         type: "success",
       });
-      const dialog = document.getElementById("change_bio_dialog") as HTMLDialogElement;
+      const dialog = document.getElementById(
+        "change_bio_dialog",
+      ) as HTMLDialogElement;
       if (dialog) {
         dialog.close();
       }
@@ -338,32 +409,44 @@ function ChangeBioDialog() {
     }
   };
 
-  return <>
-    <ListTile icon={<MdOutlineEditNote />} title={t("Change Bio")} onClick={() => {
-      const dialog = document.getElementById("change_bio_dialog") as HTMLDialogElement;
-      if (dialog) {
-        dialog.showModal();
-      }
-    }} />
-    <dialog id="change_bio_dialog" className="modal">
-      <div className="modal-box">
-        <h3 className="font-bold text-lg">{t("Change Bio")}</h3>
-        <Input value={bio} onChange={(e) => setBio(e.target.value)} label={"bio"} />
-        {error && <ErrorAlert message={error} className={"mt-4"} />}
-        <div className="modal-action">
-          <form method="dialog">
-            <Button>{t("Close")}</Button>
-          </form>
-          <Button
-            className="btn-primary"
-            onClick={handleSubmit}
-            isLoading={isLoading}
-            disabled={!bio.trim()}
-          >
-            {t("Save")}
-          </Button>
+  return (
+    <>
+      <ListTile
+        icon={<MdOutlineEditNote />}
+        title={t("Change Bio")}
+        onClick={() => {
+          const dialog = document.getElementById(
+            "change_bio_dialog",
+          ) as HTMLDialogElement;
+          if (dialog) {
+            dialog.showModal();
+          }
+        }}
+      />
+      <dialog id="change_bio_dialog" className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">{t("Change Bio")}</h3>
+          <Input
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            label={"bio"}
+          />
+          {error && <ErrorAlert message={error} className={"mt-4"} />}
+          <div className="modal-action">
+            <form method="dialog">
+              <Button>{t("Close")}</Button>
+            </form>
+            <Button
+              className="btn-primary"
+              onClick={handleSubmit}
+              isLoading={isLoading}
+              disabled={!bio.trim()}
+            >
+              {t("Save")}
+            </Button>
+          </div>
         </div>
-      </div>
-    </dialog>
-  </>;
+      </dialog>
+    </>
+  );
 }

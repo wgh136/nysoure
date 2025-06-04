@@ -1,4 +1,4 @@
-import {BrowserRouter, Route, Routes} from "react-router";
+import { BrowserRouter, Route, Routes } from "react-router";
 import LoginPage from "./pages/login_page.tsx";
 import RegisterPage from "./pages/register_page.tsx";
 import Navigator from "./components/navigator.tsx";
@@ -17,21 +17,21 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path={"/login"} element={<LoginPage/>}/>
-        <Route path={"/register"} element={<RegisterPage/>}/>
-        <Route element={<Navigator/>}>
-          <Route path={"/"} element={<HomePage/>}/>
-          <Route path={"/publish"} element={<PublishPage/>} />
-          <Route path={"/search"} element={<SearchPage/>} />
-          <Route path={"/resources/:id"} element={<ResourcePage/>}/>
-          <Route path={"/manage"} element={<ManagePage/>}/>
-          <Route path={"/tag/:tag"} element={<TaggedResourcesPage/>}/>
-          <Route path={"/user/:username"} element={<UserPage/>}/>
-          <Route path={"/resource/edit/:rid"} element={<EditResourcePage/>}/>
-          <Route path={"/about"} element={<AboutPage/>}/>
-          <Route path={"/tags"} element={<TagsPage/>}/>
+        <Route path={"/login"} element={<LoginPage />} />
+        <Route path={"/register"} element={<RegisterPage />} />
+        <Route element={<Navigator />}>
+          <Route path={"/"} element={<HomePage />} />
+          <Route path={"/publish"} element={<PublishPage />} />
+          <Route path={"/search"} element={<SearchPage />} />
+          <Route path={"/resources/:id"} element={<ResourcePage />} />
+          <Route path={"/manage"} element={<ManagePage />} />
+          <Route path={"/tag/:tag"} element={<TaggedResourcesPage />} />
+          <Route path={"/user/:username"} element={<UserPage />} />
+          <Route path={"/resource/edit/:rid"} element={<EditResourcePage />} />
+          <Route path={"/about"} element={<AboutPage />} />
+          <Route path={"/tags"} element={<TagsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
-  )
+  );
 }

@@ -17,11 +17,11 @@ class Listenable {
   }
 
   removeListener(listener: () => void) {
-    this.listeners = this.listeners.filter(l => l !== listener);
+    this.listeners = this.listeners.filter((l) => l !== listener);
   }
 
   notifyListeners() {
-    this.listeners.forEach(listener => listener());
+    this.listeners.forEach((listener) => listener());
   }
 }
 
@@ -36,7 +36,7 @@ export class UploadingTask extends Listenable {
   uploadingBlocks: number[] = [];
   finishedBlocksCount: number = 0;
 
-  onFinished: (() => void);
+  onFinished: () => void;
 
   get filename() {
     return this.file.name;
@@ -49,7 +49,13 @@ export class UploadingTask extends Listenable {
     return this.finishedBlocksCount / this.blocks.length;
   }
 
-  constructor(id: number, file: File, blocksCount: number, blockSize: number, onFinished: () => void) {
+  constructor(
+    id: number,
+    file: File,
+    blocksCount: number,
+    blockSize: number,
+    onFinished: () => void,
+  ) {
     super();
     this.id = id;
     this.file = file;
@@ -117,7 +123,7 @@ export class UploadingTask extends Listenable {
       }
       this.blocks[index] = true;
       this.finishedBlocksCount++;
-      this.uploadingBlocks = this.uploadingBlocks.filter(i => i !== index);
+      this.uploadingBlocks = this.uploadingBlocks.filter((i) => i !== index);
       index++;
       this.notifyListeners();
     }
@@ -133,15 +139,14 @@ export class UploadingTask extends Listenable {
       this.upload(),
       this.upload(),
       this.upload(),
-    ])
+    ]);
     if (this.status !== UploadingStatus.UPLOADING) {
       return;
     }
     let md5 = "";
     try {
       md5 = await this.calculateMd5(this.file);
-    }
-    catch (e) {
+    } catch (e) {
       this.status = UploadingStatus.ERROR;
       this.errorMessage = "Failed to calculate md5";
       this.notifyListeners();
@@ -180,40 +185,55 @@ class UploadingManager extends Listenable {
       this.tasks[0].removeListener(this.onTaskStatusChanged);
       this.tasks.shift();
       this.onTaskStatusChanged();
-    } else if (this.tasks[0].status === UploadingStatus.ERROR && this.tasks[0].errorMessage === "Cancelled") {
+    } else if (
+      this.tasks[0].status === UploadingStatus.ERROR &&
+      this.tasks[0].errorMessage === "Cancelled"
+    ) {
       this.tasks[0].removeListener(this.onTaskStatusChanged);
       this.tasks.shift();
       this.onTaskStatusChanged();
     }
     this.notifyListeners();
-  }
+  };
 
-  async addTask(file: File, resourceID: number, storageID: number, description: string, onFinished: () => void): Promise<Response<void>> {
+  async addTask(
+    file: File,
+    resourceID: number,
+    storageID: number,
+    description: string,
+    onFinished: () => void,
+  ): Promise<Response<void>> {
     const res = await network.initFileUpload(
       file.name,
       description,
       file.size,
       resourceID,
       storageID,
-    )
+    );
     if (!res.success) {
       return {
         success: false,
         message: res.message,
       };
     }
-    const task = new UploadingTask(res.data!.id, file, res.data!.blocksCount, res.data!.blockSize, onFinished);
+    const task = new UploadingTask(
+      res.data!.id,
+      file,
+      res.data!.blocksCount,
+      res.data!.blockSize,
+      onFinished,
+    );
     task.addListener(this.onTaskStatusChanged);
     this.tasks.push(task);
     this.onTaskStatusChanged();
     return {
       success: true,
       message: "ok",
-    }
+    };
   }
 
   getTasks() {
-    return Array.from(this.tasks)
+    return Array.from(this.tasks);
   }
 
   hasTasks() {
@@ -228,4 +248,4 @@ window.addEventListener("beforeunload", () => {
     return "Uploading files, are you sure you want to leave?";
   }
   return undefined;
-})
+});

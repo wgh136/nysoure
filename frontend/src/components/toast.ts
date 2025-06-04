@@ -1,14 +1,20 @@
-export default function showToast({message, type}: {message: string, type?: "success" | "error" | "warning" | "info"}) {
-  type = type || "info"
-  const div = document.createElement("div")
+export default function showToast({
+  message,
+  type,
+}: {
+  message: string;
+  type?: "success" | "error" | "warning" | "info";
+}) {
+  type = type || "info";
+  const div = document.createElement("div");
   div.innerHTML = `
         <div class="toast toast-center">
-          <div class="alert shadow ${type === "success" && "alert-success"} ${type === "error" && "alert-error"} ${type === 'warning' && "alert-warning"} ${type === "info" && "alert-info"}">
+          <div class="alert shadow ${type === "success" && "alert-success"} ${type === "error" && "alert-error"} ${type === "warning" && "alert-warning"} ${type === "info" && "alert-info"}">
             <span>${message}</span>
           </div>
-        </div>`
-  document.body.appendChild(div)
+        </div>`;
+  document.body.appendChild(div);
   setTimeout(() => {
-    div.remove()
-  }, 3000)
+    div.remove();
+  }, 3000);
 }

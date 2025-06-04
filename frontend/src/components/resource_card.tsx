@@ -4,48 +4,57 @@ import { useNavigate } from "react-router";
 import Badge from "./badge.tsx";
 
 export default function ResourceCard({ resource }: { resource: Resource }) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  let tags = resource.tags
+  let tags = resource.tags;
   if (tags.length > 10) {
-    tags = tags.slice(0, 10)
+    tags = tags.slice(0, 10);
   }
 
-  return <div className={"p-2 cursor-pointer"} onClick={() => {
-    navigate(`/resources/${resource.id}`)
-  }}>
-    <div className={"card shadow hover:shadow-md transition-shadow"}>
-      {
-        resource.image != null && <figure>
-          <img
-            src={network.getImageUrl(resource.image.id)}
-            alt="cover" style={{
-              width: "100%",
-              aspectRatio: resource.image.width / resource.image.height,
-            }}/>
-        </figure>
-      }
-      <div className="flex flex-col p-4">
-        <h2 className="card-title">{resource.title}</h2>
-        <div className="h-2"></div>
-        <p>
-          {
-            tags.map((tag) => {
-              return <Badge key={tag.id} className={"m-0.5"}>{tag.name}</Badge>
-            })
-          }
-        </p>
-        <div className="h-2"></div>
-        <div className="flex items-center">
-          <div className="avatar">
-            <div className="w-6 rounded-full">
-              <img src={network.getUserAvatar(resource.author)} />
+  return (
+    <div
+      className={"p-2 cursor-pointer"}
+      onClick={() => {
+        navigate(`/resources/${resource.id}`);
+      }}
+    >
+      <div className={"card shadow hover:shadow-md transition-shadow"}>
+        {resource.image != null && (
+          <figure>
+            <img
+              src={network.getImageUrl(resource.image.id)}
+              alt="cover"
+              style={{
+                width: "100%",
+                aspectRatio: resource.image.width / resource.image.height,
+              }}
+            />
+          </figure>
+        )}
+        <div className="flex flex-col p-4">
+          <h2 className="card-title">{resource.title}</h2>
+          <div className="h-2"></div>
+          <p>
+            {tags.map((tag) => {
+              return (
+                <Badge key={tag.id} className={"m-0.5"}>
+                  {tag.name}
+                </Badge>
+              );
+            })}
+          </p>
+          <div className="h-2"></div>
+          <div className="flex items-center">
+            <div className="avatar">
+              <div className="w-6 rounded-full">
+                <img src={network.getUserAvatar(resource.author)} />
+              </div>
             </div>
+            <div className="w-2"></div>
+            <div className="text-sm">{resource.author.username}</div>
           </div>
-          <div className="w-2"></div>
-          <div className="text-sm">{resource.author.username}</div>
         </div>
       </div>
     </div>
-  </div>
+  );
 }

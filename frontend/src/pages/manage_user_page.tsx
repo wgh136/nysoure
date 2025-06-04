@@ -19,35 +19,72 @@ export default function UserView() {
   const [totalPages, setTotalPages] = useState(0);
 
   if (!app.user) {
-    return <ErrorAlert className={"m-4"} message={t("You are not logged in. Please log in to access this page.")} />
+    return (
+      <ErrorAlert
+        className={"m-4"}
+        message={t("You are not logged in. Please log in to access this page.")}
+      />
+    );
   }
 
   if (!app.user?.is_admin) {
-    return <ErrorAlert className={"m-4"} message={t("You are not authorized to access this page.")} />
+    return (
+      <ErrorAlert
+        className={"m-4"}
+        message={t("You are not authorized to access this page.")}
+      />
+    );
   }
 
-  return <>
-    <div className={"flex flex-row justify-between items-center mx-4 my-4"}>
-      <form className={"flex flex-row gap-2 items-center w-64"} onSubmit={(e) => {
-        e.preventDefault();
-        setPage(0);
-        const input = e.currentTarget.querySelector("input[type=search]") as HTMLInputElement;
-        setSearchKeyword(input.value);
-      }}>
-        <label className="input">
-          <MdSearch size={20} className="opacity-50" />
-          <input type="search" className="grow" placeholder={t("Search")} id="search" />
-        </label>
-      </form>
-    </div>
-    <UserTable page={page} searchKeyword={searchKeyword} key={`${page}&${searchKeyword}`} totalPagesCallback={setTotalPages} />
-    <div className={"flex flex-row justify-center items-center my-4"}>
-      {totalPages ? <Pagination page={page} setPage={setPage} totalPages={totalPages} /> : null}
-    </div>
-  </>
+  return (
+    <>
+      <div className={"flex flex-row justify-between items-center mx-4 my-4"}>
+        <form
+          className={"flex flex-row gap-2 items-center w-64"}
+          onSubmit={(e) => {
+            e.preventDefault();
+            setPage(0);
+            const input = e.currentTarget.querySelector(
+              "input[type=search]",
+            ) as HTMLInputElement;
+            setSearchKeyword(input.value);
+          }}
+        >
+          <label className="input">
+            <MdSearch size={20} className="opacity-50" />
+            <input
+              type="search"
+              className="grow"
+              placeholder={t("Search")}
+              id="search"
+            />
+          </label>
+        </form>
+      </div>
+      <UserTable
+        page={page}
+        searchKeyword={searchKeyword}
+        key={`${page}&${searchKeyword}`}
+        totalPagesCallback={setTotalPages}
+      />
+      <div className={"flex flex-row justify-center items-center my-4"}>
+        {totalPages ? (
+          <Pagination page={page} setPage={setPage} totalPages={totalPages} />
+        ) : null}
+      </div>
+    </>
+  );
 }
 
-function UserTable({ page, searchKeyword, totalPagesCallback }: { page: number, searchKeyword: string, totalPagesCallback: (totalPages: number) => void }) {
+function UserTable({
+  page,
+  searchKeyword,
+  totalPagesCallback,
+}: {
+  page: number;
+  searchKeyword: string;
+  totalPagesCallback: (totalPages: number) => void;
+}) {
   const { t } = useTranslation();
   const [users, setUsers] = useState<User[] | null>(null);
 
@@ -61,7 +98,7 @@ function UserTable({ page, searchKeyword, totalPagesCallback }: { page: number, 
           showToast({
             type: "error",
             message: response.message,
-          })
+          });
         }
       });
     } else {
@@ -73,7 +110,7 @@ function UserTable({ page, searchKeyword, totalPagesCallback }: { page: number, 
           showToast({
             type: "error",
             message: response.message,
-          })
+          });
         }
       });
     }
@@ -92,29 +129,31 @@ function UserTable({ page, searchKeyword, totalPagesCallback }: { page: number, 
     return <Loading />;
   }
 
-  return <div className={`rounded-box border border-base-content/10 bg-base-100 mx-4 mb-4 overflow-x-auto`}>
-    <table className={"table"}>
-      <thead>
-        <tr>
-          <td>{t("Username")}</td>
-          <td>{t("Created At")}</td>
-          <td>{t("Admin")}</td>
-          <td>{t("Can Upload")}</td>
-          <td>{t("Actions")}</td>
-        </tr>
-      </thead>
-      <tbody>
-        {
-          users.map((u) => {
-            return <UserRow key={u.id} user={u} onChanged={handleChanged} />
-          })
-        }
-      </tbody>
-    </table>
-  </div>
+  return (
+    <div
+      className={`rounded-box border border-base-content/10 bg-base-100 mx-4 mb-4 overflow-x-auto`}
+    >
+      <table className={"table"}>
+        <thead>
+          <tr>
+            <td>{t("Username")}</td>
+            <td>{t("Created At")}</td>
+            <td>{t("Admin")}</td>
+            <td>{t("Can Upload")}</td>
+            <td>{t("Actions")}</td>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((u) => {
+            return <UserRow key={u.id} user={u} onChanged={handleChanged} />;
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
-function UserRow({ user, onChanged }: { user: User, onChanged: () => void }) {
+function UserRow({ user, onChanged }: { user: User; onChanged: () => void }) {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -139,7 +178,7 @@ function UserRow({ user, onChanged }: { user: User, onChanged: () => void }) {
       });
     }
     setIsLoading(false);
-  }
+  };
 
   const handleSetAdmin = async () => {
     if (isLoading) {
@@ -160,7 +199,7 @@ function UserRow({ user, onChanged }: { user: User, onChanged: () => void }) {
       });
     }
     setIsLoading(false);
-  }
+  };
 
   const handleSetUser = async () => {
     if (isLoading) {
@@ -181,7 +220,7 @@ function UserRow({ user, onChanged }: { user: User, onChanged: () => void }) {
       });
     }
     setIsLoading(false);
-  }
+  };
 
   const handleSetUploadPermission = async () => {
     if (isLoading) {
@@ -202,7 +241,7 @@ function UserRow({ user, onChanged }: { user: User, onChanged: () => void }) {
       });
     }
     setIsLoading(false);
-  }
+  };
 
   const handleRemoveUploadPermission = async () => {
     if (isLoading) {
@@ -223,55 +262,86 @@ function UserRow({ user, onChanged }: { user: User, onChanged: () => void }) {
       });
     }
     setIsLoading(false);
-  }
+  };
 
-  return <tr key={user.id} className={"hover"}>
-    <td>
-      {user.username}
-    </td>
-    <td>
-      {(new Date(user.created_at)).toLocaleDateString()}
-    </td>
-    <td>
-      {user.is_admin ? t("Yes") : t("No")}
-    </td>
-    <td>
-      {user.can_upload ? t("Yes") : t("No")}
-    </td>
-    <td>
-      <div className="dropdown dropdown-bottom dropdown-end">
-        <button ref={buttonRef} className="btn btn-square m-1" onClick={() => {
-          showPopup(<ul className="menu bg-base-100 rounded-box z-1 w-64 p-2 shadow-sm">
-            <h4 className="text-sm font-bold px-3 py-1 text-primary">{t("Actions")}</h4>
-            <PopupMenuItem onClick={() => {
-              const dialog = document.getElementById(`delete_user_dialog_${user.id}`) as HTMLDialogElement;
-              dialog.showModal();
-            }}>
-              <a>{t("Delete")}</a>
-            </PopupMenuItem>
-            {user.is_admin ? <PopupMenuItem onClick={handleSetUser}><a>{t("Set as user")}</a></PopupMenuItem> : <PopupMenuItem onClick={handleSetAdmin}><a>{t("Set as admin")}</a></PopupMenuItem>}
-            {app.user?.is_admin ? (
-              user.can_upload ? <PopupMenuItem onClick={handleRemoveUploadPermission}><a>{t("Remove upload permission")}</a></PopupMenuItem> : <PopupMenuItem onClick={handleSetUploadPermission}><a>{t("Grant upload permission")}</a></PopupMenuItem>
-            ) : null}
-          </ul>, buttonRef.current!);
-        }}>
-          {isLoading
-            ? <span className="loading loading-spinner loading-sm"></span>
-            : <MdMoreHoriz size={20} className="opacity-50" />}
-        </button>
-        <dialog id={`delete_user_dialog_${user.id}`} className="modal">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg">{t("Delete User")}</h3>
-            <p className="py-4">{t("Are you sure you want to delete user")} <span className="font-bold">{user.username}</span>? {t("This action cannot be undone.")}</p>
-            <div className="modal-action">
-              <form method="dialog">
-                <button className="btn btn-ghost">{t("Close")}</button>
-                <button className="btn btn-error" onClick={handleDelete}>{t("Delete")}</button>
-              </form>
+  return (
+    <tr key={user.id} className={"hover"}>
+      <td>{user.username}</td>
+      <td>{new Date(user.created_at).toLocaleDateString()}</td>
+      <td>{user.is_admin ? t("Yes") : t("No")}</td>
+      <td>{user.can_upload ? t("Yes") : t("No")}</td>
+      <td>
+        <div className="dropdown dropdown-bottom dropdown-end">
+          <button
+            ref={buttonRef}
+            className="btn btn-square m-1"
+            onClick={() => {
+              showPopup(
+                <ul className="menu bg-base-100 rounded-box z-1 w-64 p-2 shadow-sm">
+                  <h4 className="text-sm font-bold px-3 py-1 text-primary">
+                    {t("Actions")}
+                  </h4>
+                  <PopupMenuItem
+                    onClick={() => {
+                      const dialog = document.getElementById(
+                        `delete_user_dialog_${user.id}`,
+                      ) as HTMLDialogElement;
+                      dialog.showModal();
+                    }}
+                  >
+                    <a>{t("Delete")}</a>
+                  </PopupMenuItem>
+                  {user.is_admin ? (
+                    <PopupMenuItem onClick={handleSetUser}>
+                      <a>{t("Set as user")}</a>
+                    </PopupMenuItem>
+                  ) : (
+                    <PopupMenuItem onClick={handleSetAdmin}>
+                      <a>{t("Set as admin")}</a>
+                    </PopupMenuItem>
+                  )}
+                  {app.user?.is_admin ? (
+                    user.can_upload ? (
+                      <PopupMenuItem onClick={handleRemoveUploadPermission}>
+                        <a>{t("Remove upload permission")}</a>
+                      </PopupMenuItem>
+                    ) : (
+                      <PopupMenuItem onClick={handleSetUploadPermission}>
+                        <a>{t("Grant upload permission")}</a>
+                      </PopupMenuItem>
+                    )
+                  ) : null}
+                </ul>,
+                buttonRef.current!,
+              );
+            }}
+          >
+            {isLoading ? (
+              <span className="loading loading-spinner loading-sm"></span>
+            ) : (
+              <MdMoreHoriz size={20} className="opacity-50" />
+            )}
+          </button>
+          <dialog id={`delete_user_dialog_${user.id}`} className="modal">
+            <div className="modal-box">
+              <h3 className="font-bold text-lg">{t("Delete User")}</h3>
+              <p className="py-4">
+                {t("Are you sure you want to delete user")}{" "}
+                <span className="font-bold">{user.username}</span>?{" "}
+                {t("This action cannot be undone.")}
+              </p>
+              <div className="modal-action">
+                <form method="dialog">
+                  <button className="btn btn-ghost">{t("Close")}</button>
+                  <button className="btn btn-error" onClick={handleDelete}>
+                    {t("Delete")}
+                  </button>
+                </form>
+              </div>
             </div>
-          </div>
-        </dialog>
-      </div>
-    </td>
-  </tr>
+          </dialog>
+        </div>
+      </td>
+    </tr>
+  );
 }

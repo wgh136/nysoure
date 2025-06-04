@@ -1,7 +1,10 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-export default function showPopup(content: React.ReactNode, element: HTMLElement) {
+export default function showPopup(
+  content: React.ReactNode,
+  element: HTMLElement,
+) {
   const eRect = element.getBoundingClientRect();
 
   const div = document.createElement("div");
@@ -39,23 +42,33 @@ export default function showPopup(content: React.ReactNode, element: HTMLElement
   mask.onclick = close;
   document.body.appendChild(mask);
 
-  createRoot(div).render(<context.Provider value={close}>
-    {content}
-  </context.Provider>)
+  createRoot(div).render(
+    <context.Provider value={close}>{content}</context.Provider>,
+  );
 }
 
-const context = React.createContext<() => void>(() => { });
+const context = React.createContext<() => void>(() => {});
 
 export function useClosePopup() {
   return React.useContext(context);
 }
 
-export function PopupMenuItem({ children, onClick }: { children: React.ReactNode, onClick: () => void }) {
+export function PopupMenuItem({
+  children,
+  onClick,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
   const close = useClosePopup();
-  return <li onClick={() => {
-    close();
-    onClick();
-  }}>
-    {children}
-  </li>
+  return (
+    <li
+      onClick={() => {
+        close();
+        onClick();
+      }}
+    >
+      {children}
+    </li>
+  );
 }
