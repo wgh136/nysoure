@@ -10,6 +10,7 @@ import {
 } from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import UploadingSideBar from "./uploading_side_bar.tsx";
+import { ThemeSwitcher } from "./theme_switcher.tsx";
 import { IoLogoGithub } from "react-icons/io";
 import { useAppContext } from "./AppContext.tsx";
 
@@ -140,6 +141,7 @@ export default function Navigator() {
           <div className="flex gap-2">
             <SearchBar />
             <UploadingSideBar />
+            <ThemeSwitcher />
             {app.isLoggedIn() && (
               <button
                 className={"btn btn-circle btn-ghost"}
