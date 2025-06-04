@@ -205,6 +205,12 @@ export const i18nData = {
       "Show more": "Show more",
       "Show less": "Show less",
       "You need to log in to comment": "You need to log in to comment",
+
+      // Color Scheme Translation
+      "Nyne Pink": "Nyne Pink",
+      "Ocean Breeze": "Ocean Breeze",
+      "Mint Leaf": "Mint Leaf",
+      "Golden Glow": "Golden Glow",
     },
   },
   "zh-CN": {
@@ -402,6 +408,12 @@ export const i18nData = {
       "Show more": "显示更多",
       "Show less": "显示更少",
       "You need to log in to comment": "您需要登录才能评论",
+
+      // Color Scheme Translation
+      "Nyne Pink": "Nyne 粉",
+      "Ocean Breeze": "海蓝",
+      "Mint Leaf": "薄荷",
+      "Golden Glow": "微光",
     },
   },
   "zh-TW": {
@@ -599,6 +611,12 @@ export const i18nData = {
       "Show more": "顯示更多",
       "Show less": "顯示更少",
       "You need to log in to comment": "您需要登入才能評論",
+
+      // Color Scheme Translation
+      "Nyne Pink": "Nyne 粉",
+      "Ocean Breeze": "海藍",
+      "Mint Leaf": "薄荷",
+      "Golden Glow": "微光",
     },
   },
 };

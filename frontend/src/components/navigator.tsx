@@ -10,6 +10,7 @@ import {
 } from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import UploadingSideBar from "./uploading_side_bar.tsx";
+import { ThemeSwitcher } from "./theme_switcher.tsx";
 import { IoLogoGithub } from "react-icons/io";
 import { useAppContext } from "./AppContext.tsx";
 
@@ -140,6 +141,7 @@ export default function Navigator() {
           <div className="flex gap-2">
             <SearchBar />
             <UploadingSideBar />
+            <ThemeSwitcher />
             {app.isLoggedIn() && (
               <button
                 className={"btn btn-circle btn-ghost"}
@@ -150,14 +152,15 @@ export default function Navigator() {
                 <MdSettings size={24} />
               </button>
             )}
-            <button
-              className={"btn btn-circle btn-ghost"}
-              onClick={() => {
-                window.open("https://github.com/wgh136/nysoure", "_blank");
-              }}
+            <a
+              href="https://github.com/wgh136/nysoure"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <IoLogoGithub size={24} />
-            </button>
+              <button className={"btn btn-circle btn-ghost"}>
+                <IoLogoGithub size={24} />
+              </button>
+            </a>
             {app.isLoggedIn() ? (
               <UserButton />
             ) : (
