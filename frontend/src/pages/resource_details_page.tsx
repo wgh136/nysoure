@@ -494,7 +494,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
           },
         }}
       >
-        {resource.article}
+        {resource.article.replaceAll("\n", "  \n")}
       </Markdown>
     </article>
   );
