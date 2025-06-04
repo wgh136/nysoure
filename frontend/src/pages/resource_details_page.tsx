@@ -23,7 +23,9 @@ import Markdown from "react-markdown";
 import "../markdown.css";
 import Loading from "../components/loading.tsx";
 import {
-  MdAdd, MdArrowDownward, MdArrowUpward,
+  MdAdd,
+  MdArrowDownward,
+  MdArrowUpward,
   MdOutlineArticle,
   MdOutlineComment,
   MdOutlineDataset,
@@ -33,7 +35,7 @@ import {
 } from "react-icons/md";
 import { app } from "../app.ts";
 import { uploadingManager } from "../network/uploading.ts";
-import { ErrorAlert } from "../components/alert.tsx";
+import { ErrorAlert, InfoAlert } from "../components/alert.tsx";
 import { useTranslation } from "react-i18next";
 import Pagination from "../components/pagination.tsx";
 import showPopup, { useClosePopup } from "../components/popup.tsx";
@@ -1116,25 +1118,32 @@ function Comments({ resourceId }: { resourceId: number }) {
 
   return (
     <div>
-      <div className={"mt-4 mb-6 textarea w-full p-4 h-28 flex flex-col"}>
-        <textarea
-          placeholder={t("Write down your comment")}
-          className={"w-full resize-none grow"}
-          value={commentContent}
-          onChange={(e) => setCommentContent(e.target.value)}
-        />
-        <div className={"flex flex-row-reverse"}>
-          <button
-            onClick={sendComment}
-            className={`btn btn-primary h-8 text-sm mx-2 ${commentContent === "" && "btn-disabled"}`}
-          >
-            {isLoading ? (
-              <span className={"loading loading-spinner loading-sm"}></span>
-            ) : null}
-            Submit
-          </button>
+      {app.isLoggedIn() ? (
+        <div className={"mt-4 mb-6 textarea w-full p-4 h-40 flex flex-col"}>
+          <textarea
+            placeholder={t("Write down your comment")}
+            className={"w-full resize-none grow"}
+            value={commentContent}
+            onChange={(e) => setCommentContent(e.target.value)}
+          />
+          <div className={"flex flex-row-reverse"}>
+            <button
+              onClick={sendComment}
+              className={`btn btn-primary h-8 text-sm mx-2 ${commentContent === "" && "btn-disabled"}`}
+            >
+              {isLoading ? (
+                <span className={"loading loading-spinner loading-sm"}></span>
+              ) : null}
+              Submit
+            </button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <InfoAlert
+          message={t("You need to log in to comment")}
+          className={"my-4 alert-dash"}
+        />
+      )}
       <CommentsList
         resourceId={resourceId}
         page={page}
