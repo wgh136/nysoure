@@ -152,14 +152,15 @@ export default function Navigator() {
                 <MdSettings size={24} />
               </button>
             )}
-            <button
-              className={"btn btn-circle btn-ghost"}
-              onClick={() => {
-                window.open("https://github.com/wgh136/nysoure", "_blank");
-              }}
+            <a
+              href="https://github.com/wgh136/nysoure"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <IoLogoGithub size={24} />
-            </button>
+              <button className={"btn btn-circle btn-ghost"}>
+                <IoLogoGithub size={24} />
+              </button>
+            </a>
             {app.isLoggedIn() ? (
               <UserButton />
             ) : (
