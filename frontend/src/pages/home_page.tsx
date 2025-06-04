@@ -35,20 +35,8 @@ export default function HomePage() {
           value={order}
           className="select w-52 select-info"
           onInput={(e) => {
-            const value = e.currentTarget.value;
-            if (value === "0") {
-              setOrder(RSort.TimeAsc);
-            } else if (value === "1") {
-              setOrder(RSort.TimeDesc);
-            } else if (value === "2") {
-              setOrder(RSort.ViewsAsc);
-            } else if (value === "3") {
-              setOrder(RSort.ViewsDesc);
-            } else if (value === "4") {
-              setOrder(RSort.DownloadsAsc);
-            } else if (value === "5") {
-              setOrder(RSort.DownloadsDesc);
-            }
+            const value = Number(e.currentTarget.value);
+            setOrder(value as RSort);
           }}
         >
           <option disabled>{t("Select a Order")}</option>
