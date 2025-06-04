@@ -205,10 +205,11 @@ export const i18nData = {
       "Show more": "Show more",
       "Show less": "Show less",
       "You need to log in to comment": "You need to log in to comment",
-      "Light Theme": "Light",
-      "Dark Theme": "Dark",
+
+      // Color Scheme Translation
+      "Nyne Pink": "Nyne Pink",
       "Ocean Breeze": "Ocean Breeze",
-      "Mint": "Mint Leaf",
+      "Mint Leaf": "Mint Leaf",
       "Golden Glow": "Golden Glow",
     },
   },
@@ -407,8 +408,9 @@ export const i18nData = {
       "Show more": "显示更多",
       "Show less": "显示更少",
       "You need to log in to comment": "您需要登录才能评论",
-      "Light Theme": "浅色",
-      "Dark Theme": "深色",
+
+      // Color Scheme Translation
+      "Nyne Pink": "Nyne 粉",
       "Ocean Breeze": "海蓝",
       "Mint Leaf": "薄荷",
       "Golden Glow": "微光",
@@ -609,8 +611,9 @@ export const i18nData = {
       "Show more": "顯示更多",
       "Show less": "顯示更少",
       "You need to log in to comment": "您需要登入才能評論",
-      "Light Theme": "淺色",
-      "Dark Theme": "深色",
+
+      // Color Scheme Translation
+      "Nyne Pink": "Nyne 粉",
       "Ocean Breeze": "海藍",
       "Mint Leaf": "薄荷",
       "Golden Glow": "微光",

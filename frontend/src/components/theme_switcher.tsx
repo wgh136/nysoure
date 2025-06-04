@@ -10,14 +10,9 @@ interface ThemeOption {
 
 const themeOptions: ThemeOption[] = [
   {
-    name: "light",
-    displayName: "Light Theme",
+    name: "pink",
+    displayName: "Nyne Pink",
     displayColor: "oklch(65% 0.241 354.308)",
-  },
-  {
-    name: "dark",
-    displayName: "Dark Theme",
-    displayColor: "oklch(16.678% 0.024 66.558)",
   },
   {
     name: "ocean",
@@ -37,38 +32,14 @@ const themeOptions: ThemeOption[] = [
 ];
 
 export function ThemeSwitcher() {
-  const [currentTheme, setCurrentTheme] = useState("light");
+  const [currentTheme, setCurrentTheme] = useState("pink");
 
   const { t } = useTranslation();
 
   useEffect(() => {
-    const getSystemTheme = () => {
-      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        return "dark";
-      }
-      return "light";
-    };
-
-    const savedTheme = localStorage.getItem("theme");
-    const themeToUse = savedTheme || getSystemTheme();
-
-    setCurrentTheme(themeToUse);
-    applyTheme(themeToUse);
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
-      if (!localStorage.getItem("theme")) {
-        const newTheme = e.matches ? "dark" : "light";
-        setCurrentTheme(newTheme);
-        applyTheme(newTheme);
-      }
-    };
-
-    mediaQuery.addEventListener("change", handleSystemThemeChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleSystemThemeChange);
-    };
+    const savedTheme = localStorage.getItem("theme") || "pink";
+    setCurrentTheme(savedTheme);
+    applyTheme(savedTheme);
   }, []);
 
   const applyTheme = (themeName: string) => {
@@ -93,7 +64,7 @@ export function ThemeSwitcher() {
       </div>
       <ul
         tabIndex={0}
-        className="dropdown-content menu bg-base-100 rounded-box z-[1] w-max p-2 shadow"
+        className="dropdown-content menu bg-base-100 rounded-box z-[1] w-max min-w-35 p-2 shadow"
       >
         {themeOptions.map((theme) => (
           <li key={theme.name}>
