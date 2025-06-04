@@ -22,7 +22,7 @@ export default tseslint.config(
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
-      prettier: eslintPluginPrettier,
+      "prettier": eslintPluginPrettier,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
