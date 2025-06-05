@@ -247,7 +247,7 @@ export default function EditResourcePage() {
             <thead>
               <tr>
                 <td>{t("Preview")}</td>
-                <td>{t("Link")}</td>
+                <td>{"Markdown"}</td>
                 <td>{t("Action")}</td>
               </tr>
             </thead>
@@ -262,7 +262,7 @@ export default function EditResourcePage() {
                         alt={"image"}
                       />
                     </td>
-                    <td>{network.getImageUrl(image)}</td>
+                    <td>{`![](${network.getImageUrl(image)})`}</td>
                     <td>
                       <button
                         className={"btn btn-square"}
