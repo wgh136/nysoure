@@ -11,7 +11,7 @@ interface ThemeOption {
 const themeOptions: ThemeOption[] = [
   {
     name: "pink",
-    displayName: "Nyne Pink",
+    displayName: "Light Pink",
     displayColor: "oklch(65% 0.241 354.308)",
   },
   {

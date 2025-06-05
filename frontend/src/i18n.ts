@@ -207,7 +207,7 @@ export const i18nData = {
       "You need to log in to comment": "You need to log in to comment",
 
       // Color Scheme Translation
-      "Nyne Pink": "Nyne Pink",
+      "Light Pink": "Light Pink",
       "Ocean Breeze": "Ocean Breeze",
       "Mint Leaf": "Mint Leaf",
       "Golden Glow": "Golden Glow",
@@ -410,7 +410,7 @@ export const i18nData = {
       "You need to log in to comment": "您需要登录才能评论",
 
       // Color Scheme Translation
-      "Nyne Pink": "Nyne 粉",
+      "Light Pink": "浅粉",
       "Ocean Breeze": "海蓝",
       "Mint Leaf": "薄荷",
       "Golden Glow": "微光",
@@ -613,7 +613,7 @@ export const i18nData = {
       "You need to log in to comment": "您需要登入才能評論",
 
       // Color Scheme Translation
-      "Nyne Pink": "Nyne 粉",
+      "Light Pink": "淺粉",
       "Ocean Breeze": "海藍",
       "Mint Leaf": "薄荷",
       "Golden Glow": "微光",
