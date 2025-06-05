@@ -28,6 +28,7 @@ export default function SearchPage() {
         {t("Search")}: {keyword}
       </h1>
       <ResourcesView
+        storageKey={`search-${keyword}`}
         loader={(page) => network.searchResources(keyword, page)}
       ></ResourcesView>
     </div>

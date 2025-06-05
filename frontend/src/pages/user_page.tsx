@@ -105,6 +105,7 @@ function UserCard({ user }: { user: User }) {
 function UserResources({ user }: { user: User }) {
   return (
     <ResourcesView
+      storageKey={`user-${user.username}`}
       loader={(page) => {
         return network.getResourcesByUser(user.username, page);
       }}

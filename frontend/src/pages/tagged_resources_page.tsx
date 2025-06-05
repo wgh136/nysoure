@@ -73,6 +73,7 @@ export default function TaggedResourcesPage() {
         </article>
       )}
       <ResourcesView
+        storageKey={`tagged-${tagName}`}
         loader={(page) => {
           return network.getResourcesByTag(tagName, page);
         }}
