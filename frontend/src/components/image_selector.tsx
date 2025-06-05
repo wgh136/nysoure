@@ -173,7 +173,7 @@ export function ImageDrapArea({
 
   return (
     <>
-      <dialog id="uploading_image_dialog" className="modal">
+      <dialog id="uploading_image_dialog" className="modal" open={isUploading}>
         <div className="modal-box">
           <h3 className="font-bold text-lg">Uploading Image</h3>
           <div className={"flex items-center justify-center w-full h-40"}>
