@@ -43,7 +43,7 @@ export default function Navigator() {
             <div
               tabIndex={0}
               role="button"
-              className="btn btn-ghost btn-circle lg:hidden"
+              className="btn btn-ghost btn-circle sm:hidden"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -52,13 +52,12 @@ export default function Navigator() {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                {" "}
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="2"
                   d="M4 6h16M4 12h16M4 18h7"
-                />{" "}
+                />
               </svg>
             </div>
             <ul
@@ -87,6 +86,22 @@ export default function Navigator() {
                 }}
               >
                 <a>{t("Tags")}</a>
+              </li>
+              <li
+                onClick={() => {
+                  const menu = document.getElementById(
+                    "navi_menu",
+                  ) as HTMLElement;
+                  menu.blur();
+                  navigate("/manage");
+                }}
+              >
+                <a>{t("Settings")}</a>
+              </li>
+              <li>
+                <a href={"https://github.com/wgh136/nysoure"} target={"_blank"}>
+                  {"Github"}
+                </a>
               </li>
               <li
                 onClick={() => {
@@ -144,7 +159,7 @@ export default function Navigator() {
             <ThemeSwitcher />
             {app.isLoggedIn() && (
               <button
-                className={"btn btn-circle btn-ghost"}
+                className={"btn btn-circle btn-ghost hidden sm:inline-flex"}
                 onClick={() => {
                   navigate("/manage");
                 }}
@@ -153,6 +168,7 @@ export default function Navigator() {
               </button>
             )}
             <a
+              className={"hidden sm:inline"}
               href="https://github.com/wgh136/nysoure"
               target="_blank"
               rel="noopener noreferrer"
