@@ -5,22 +5,30 @@ import showToast from "../components/toast.ts";
 import Loading from "../components/loading.tsx";
 import Badge from "../components/badge.tsx";
 import { useNavigate } from "react-router";
+import { useAppContext } from "../components/AppContext.tsx";
 
 export default function TagsPage() {
   const [tags, setTags] = useState<TagWithCount[] | null>(null);
+  const context = useAppContext();
 
   useEffect(() => {
-    network.getAllTags().then((res) => {
-      if (res.success) {
-        setTags(res.data!);
-      } else {
-        showToast({
-          type: "error",
-          message: res.message || "Failed to load tags",
-        });
-      }
-    });
-  }, []);
+    const storageKey = "tags_list";
+    if (context.get(storageKey)) {
+      setTags(context.get(storageKey));
+    } else {
+      network.getAllTags().then((res) => {
+        if (res.success) {
+          setTags(res.data!);
+          context.set(storageKey, res.data!);
+        } else {
+          showToast({
+            type: "error",
+            message: res.message || "Failed to load tags",
+          });
+        }
+      });
+    }
+  }, [context]);
 
   const navigate = useNavigate();
 
