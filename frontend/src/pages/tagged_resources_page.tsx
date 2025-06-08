@@ -11,6 +11,7 @@ import { app } from "../app.ts";
 import Input, { TextArea } from "../components/input.tsx";
 import TagInput from "../components/tag_input.tsx";
 import Badge from "../components/badge.tsx";
+import { useAppContext } from "../components/AppContext.tsx";
 
 export default function TaggedResourcesPage() {
   const { tag: tagName } = useParams();
@@ -73,7 +74,8 @@ export default function TaggedResourcesPage() {
         </article>
       )}
       <ResourcesView
-        storageKey={`tagged-${tagName}`}
+        key={tag?.name ?? tagName}
+        storageKey={`tagged-${tag?.name ?? tagName}`}
         loader={(page) => {
           return network.getResourcesByTag(tagName, page);
         }}
@@ -96,6 +98,7 @@ function EditTagButton({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
+  const context = useAppContext();
 
   useEffect(() => {
     setDescription(tag.description);
@@ -120,6 +123,9 @@ function EditTagButton({
         "edit_tag_dialog",
       ) as HTMLDialogElement;
       dialog.close();
+      if (aliasOf) {
+        context.clear();
+      }
       onEdited(res.data!);
     } else {
       setError(res.message || t("Unknown error"));

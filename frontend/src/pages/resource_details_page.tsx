@@ -43,6 +43,7 @@ import { Turnstile } from "@marsidev/react-turnstile";
 import Button from "../components/button.tsx";
 import Badge, { BadgeAccent } from "../components/badge.tsx";
 import Input from "../components/input.tsx";
+import { useAppContext } from "../components/AppContext.tsx";
 
 export default function ResourcePage() {
   const params = useParams();
@@ -257,6 +258,8 @@ function DeleteResourceDialog({
 
   const { t } = useTranslation();
 
+  const context = useAppContext();
+
   const handleDelete = async () => {
     if (isLoading) {
       return;
@@ -272,6 +275,7 @@ function DeleteResourceDialog({
         message: t("Resource deleted successfully"),
         type: "success",
       });
+      context.clear();
       navigate("/", { replace: true });
     } else {
       showToast({ message: res.message, type: "error" });
