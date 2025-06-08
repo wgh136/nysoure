@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { MdAdd, MdClose, MdDelete, MdOutlineInfo } from "react-icons/md";
+import {
+  MdAdd,
+  MdClose,
+  MdContentCopy,
+  MdDelete,
+  MdOutlineInfo,
+} from "react-icons/md";
 import { Tag } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import { useNavigate, useParams } from "react-router";
@@ -262,7 +268,19 @@ export default function EditResourcePage() {
                         alt={"image"}
                       />
                     </td>
-                    <td>{`![](${network.getImageUrl(image)})`}</td>
+                    <td>
+                      <span>{`![](${network.getImageUrl(image)})`}</span>
+                      <button
+                        className={"btn btn-sm btn-circle btn-ghost ml-1"}
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            `![](${network.getImageUrl(image)})`,
+                          );
+                        }}
+                      >
+                        <MdContentCopy />
+                      </button>
+                    </td>
                     <td>
                       <button
                         className={"btn btn-square"}
