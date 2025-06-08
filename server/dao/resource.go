@@ -3,6 +3,7 @@ package dao
 import (
 	"errors"
 	"github.com/gofiber/fiber/v3/log"
+	"math/rand"
 	"nysoure/server/model"
 	"strings"
 	"sync"
@@ -509,4 +510,28 @@ func AddResourceDownloadCount(id uint) error {
 
 	stats.downloads.Add(1)
 	return nil
+}
+
+func RandomResource() (model.Resource, error) {
+	var maxID int64
+	if err := db.Model(&model.Resource{}).Select("MAX(id)").Scan(&maxID).Error; err != nil {
+		return model.Resource{}, err
+	}
+	for {
+		randomID := uint(1 + rand.Int63n(maxID-1))
+		var resource model.Resource
+		if err := db.
+			Preload("User").
+			Preload("Images").
+			Preload("Tags").
+			Preload("Files").
+			Where("id = ?", randomID).
+			First(&resource).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				continue // Try again if the resource does not exist
+			}
+			return model.Resource{}, err // Return error if any other issue occurs
+		}
+		return resource, nil // Return the found resource
+	}
 }

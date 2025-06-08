@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 import {
   createContext,
   createRef,
@@ -57,6 +57,8 @@ export default function ResourcePage() {
 
   const [page, setPage] = useState(0);
 
+  const location = useLocation();
+
   const reload = useCallback(async () => {
     if (!isNaN(id)) {
       setResource(null);
@@ -76,16 +78,20 @@ export default function ResourcePage() {
   useEffect(() => {
     setResource(null);
     if (!isNaN(id)) {
-      network.getResourceDetails(id).then((res) => {
-        if (res.success) {
-          setResource(res.data!);
-          document.title = res.data!.title;
-        } else {
-          showToast({ message: res.message, type: "error" });
-        }
-      });
+      if (location.state) {
+        setResource(location.state.resource);
+      } else {
+        network.getResourceDetails(id).then((res) => {
+          if (res.success) {
+            setResource(res.data!);
+            document.title = res.data!.title;
+          } else {
+            showToast({ message: res.message, type: "error" });
+          }
+        });
+      }
     }
-  }, [id]);
+  }, [id, location.state]);
 
   const navigate = useNavigate();
 

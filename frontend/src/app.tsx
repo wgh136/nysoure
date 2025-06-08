@@ -12,6 +12,7 @@ import UserPage from "./pages/user_page.tsx";
 import EditResourcePage from "./pages/edit_resource_page.tsx";
 import AboutPage from "./pages/about_page.tsx";
 import TagsPage from "./pages/tags_page.tsx";
+import RandomPage from "./pages/random_page.tsx";
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
           <Route path={"/resource/edit/:rid"} element={<EditResourcePage />} />
           <Route path={"/about"} element={<AboutPage />} />
           <Route path={"/tags"} element={<TagsPage />} />
+          <Route path={"/random"} element={<RandomPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

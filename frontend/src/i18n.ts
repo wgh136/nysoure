@@ -211,6 +211,7 @@ export const i18nData = {
       "Ocean Breeze": "Ocean Breeze",
       "Mint Leaf": "Mint Leaf",
       "Golden Glow": "Golden Glow",
+      "Random": "Random",
     },
   },
   "zh-CN": {
@@ -414,6 +415,8 @@ export const i18nData = {
       "Ocean Breeze": "海蓝",
       "Mint Leaf": "薄荷",
       "Golden Glow": "微光",
+
+      "Random": "随机",
     },
   },
   "zh-TW": {
@@ -617,6 +620,8 @@ export const i18nData = {
       "Ocean Breeze": "海藍",
       "Mint Leaf": "薄荷",
       "Golden Glow": "微光",
+
+      "Random": "隨機",
     },
   },
 };

@@ -613,6 +613,19 @@ class Network {
     }
   }
 
+  async getRandomResource(): Promise<Response<Resource>> {
+    try {
+      const response = await axios.get(`${this.apiBaseUrl}/resource/random`);
+      return response.data;
+    } catch (e: any) {
+      console.error(e);
+      return {
+        success: false,
+        message: e.toString(),
+      };
+    }
+  }
+
   async deleteResource(id: number): Promise<Response<void>> {
     try {
       const response = await axios.delete(`${this.apiBaseUrl}/resource/${id}`);

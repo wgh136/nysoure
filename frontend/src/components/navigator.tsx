@@ -109,6 +109,17 @@ export default function Navigator() {
                     "navi_menu",
                   ) as HTMLElement;
                   menu.blur();
+                  navigate("/random");
+                }}
+              >
+                <a>{t("Random")}</a>
+              </li>
+              <li
+                onClick={() => {
+                  const menu = document.getElementById(
+                    "navi_menu",
+                  ) as HTMLElement;
+                  menu.blur();
                   navigate("/about");
                 }}
               >
@@ -142,6 +153,13 @@ export default function Navigator() {
                 }}
               >
                 <a>{t("Tags")}</a>
+              </li>
+              <li
+                onClick={() => {
+                  navigate("/random");
+                }}
+              >
+                <a>{t("Random")}</a>
               </li>
               <li
                 onClick={() => {

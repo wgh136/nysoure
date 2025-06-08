@@ -251,12 +251,28 @@ func handleUpdateResource(c fiber.Ctx) error {
 	})
 }
 
+func handleGetRandomResource(c fiber.Ctx) error {
+	resource, err := service.RandomResource()
+	if err != nil {
+		return err
+	}
+	if resource == nil {
+		return model.NewNotFoundError("No resources found")
+	}
+	return c.Status(fiber.StatusOK).JSON(model.Response[model.ResourceDetailView]{
+		Success: true,
+		Data:    *resource,
+		Message: "Random resource retrieved successfully",
+	})
+}
+
 func AddResourceRoutes(api fiber.Router) {
 	resource := api.Group("/resource")
 	{
 		resource.Post("/", handleCreateResource)
 		resource.Get("/search", handleSearchResources)
 		resource.Get("/", handleListResources)
+		resource.Get("/random", handleGetRandomResource)
 		resource.Get("/:id", handleGetResource)
 		resource.Delete("/:id", handleDeleteResource)
 		resource.Get("/tag/:tag", handleListResourcesWithTag)
