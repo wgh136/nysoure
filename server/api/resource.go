@@ -252,7 +252,8 @@ func handleUpdateResource(c fiber.Ctx) error {
 }
 
 func handleGetRandomResource(c fiber.Ctx) error {
-	resource, err := service.RandomResource()
+	host := c.Hostname()
+	resource, err := service.RandomResource(host)
 	if err != nil {
 		return err
 	}

@@ -256,11 +256,15 @@ func EditResource(uid, rid uint, params *ResourceCreateParams) error {
 	return nil
 }
 
-func RandomResource() (*model.ResourceDetailView, error) {
+func RandomResource(host string) (*model.ResourceDetailView, error) {
 	r, err := dao.RandomResource()
 	if err != nil {
 		return nil, err
 	}
 	v := r.ToDetailView()
+	if host != "" {
+		related := findRelatedResources(r, host)
+		v.Related = related
+	}
 	return &v, nil
 }

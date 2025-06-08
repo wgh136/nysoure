@@ -11,6 +11,7 @@ export default function RandomPage() {
     network.getRandomResource().then((res) => {
       if (res.success) {
         navigate(`/resources/${res.data!.id}`, {
+          replace: true,
           state: {
             resource: res.data,
           },
