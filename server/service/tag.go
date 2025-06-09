@@ -4,6 +4,8 @@ import (
 	"github.com/gofiber/fiber/v3/log"
 	"nysoure/server/dao"
 	"nysoure/server/model"
+	"slices"
+	"strings"
 )
 
 func CreateTag(uid uint, name string) (*model.TagView, error) {
@@ -160,4 +162,69 @@ func GetOrCreateTags(uid uint, names []string, tagType string) ([]model.TagView,
 		tags = append(tags, *t.ToView())
 	}
 	return tags, updateCachedTagList()
+}
+
+func EditTagAlias(uid uint, tagID uint, aliases []string) (*model.TagView, error) {
+	canUpload, err := checkUserCanUpload(uid)
+	if err != nil {
+		log.Error("Error checking user permissions:", err)
+		return nil, model.NewInternalServerError("Error checking user permissions")
+	}
+	if !canUpload {
+		return nil, model.NewUnAuthorizedError("User cannot create tags")
+	}
+
+	tag, err := dao.GetTagByID(tagID)
+	if err != nil {
+		return nil, err
+	}
+
+	if tag.AliasOf != nil {
+		return nil, model.NewRequestError("Cannot edit aliases of a tag that is an alias of another tag")
+	}
+
+	// trim params
+	for i, alias := range aliases {
+		aliases[i] = strings.TrimSpace(alias)
+		if aliases[i] == "" {
+			return nil, model.NewRequestError("Alias cannot be empty")
+		}
+	}
+
+	// new aliases
+	for _, name := range aliases {
+		if name == "" {
+			continue
+		}
+		exists := false
+		for _, alias := range tag.Aliases {
+			if alias.Name == name {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			err := dao.SetTagAlias(tagID, name)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	// remove old aliases
+	for _, alias := range tag.Aliases {
+		if !slices.Contains(aliases, alias.Name) {
+			err := dao.RemoveTagAliasOf(alias.ID)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	t, err := dao.GetTagByID(tagID)
+	if err != nil {
+		return nil, err
+	}
+
+	return t.ToView(), updateCachedTagList()
 }

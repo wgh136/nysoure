@@ -3,12 +3,16 @@ package dao
 import (
 	"errors"
 	"nysoure/server/model"
+	"strings"
 
 	"gorm.io/gorm"
 )
 
 func CreateTag(tag string) (model.Tag, error) {
 	// Create a new tag in the database
+	if strings.Contains(tag, "%") {
+		return model.Tag{}, model.NewRequestError("Tag name cannot contain '%' character")
+	}
 	t := model.Tag{Name: tag}
 	if err := db.Create(&t).Error; err != nil {
 		return model.Tag{}, err
@@ -18,6 +22,9 @@ func CreateTag(tag string) (model.Tag, error) {
 
 func CreateTagWithType(tag string, tagType string) (model.Tag, error) {
 	// Create a new tag with a specific type in the database
+	if strings.Contains(tag, "%") {
+		return model.Tag{}, model.NewRequestError("Tag name cannot contain '%' character")
+	}
 	t := model.Tag{Name: tag, Type: tagType}
 	if err := db.Create(&t).Error; err != nil {
 		return model.Tag{}, err
@@ -100,4 +107,36 @@ func ListTags() ([]model.Tag, error) {
 		return nil, err
 	}
 	return tags, nil
+}
+
+// SetTagAlias sets a tag with the given ID having the given alias.
+func SetTagAlias(tagID uint, alias string) error {
+	// Set a tag as an alias of another tag
+	var t model.Tag
+	if err := db.Where("name = ?", alias).First(&t).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// create
+			newTag, err := CreateTag(alias)
+			if err != nil {
+				return err
+			}
+			t = newTag
+		} else {
+			return err
+		}
+	}
+	if t.ID == tagID {
+		return model.NewRequestError("Tag cannot be an alias of itself")
+	}
+	return db.Model(&t).Update("alias_of", tagID).Error
+}
+
+// RemoveTagAliasOf sets a tag is an independent tag, removing its alias relationship.
+func RemoveTagAliasOf(tagID uint) error {
+	// Remove the alias of a tag
+	return db.Model(&model.Tag{
+		Model: gorm.Model{
+			ID: tagID,
+		},
+	}).Update("alias_of", nil).Error
 }

@@ -435,6 +435,24 @@ class Network {
     }
   }
 
+  async setTagAlias(tagID: number, aliases: string[]): Promise<Response<Tag>> {
+    try {
+      const response = await axios.put(
+        `${this.apiBaseUrl}/tag/${tagID}/alias`,
+        {
+          aliases,
+        },
+      );
+      return response.data;
+    } catch (e: any) {
+      console.error(e);
+      return {
+        success: false,
+        message: e.toString(),
+      };
+    }
+  }
+
   /**
    * Upload image and return the image id
    */

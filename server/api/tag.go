@@ -180,12 +180,44 @@ func getOrCreateTags(c fiber.Ctx) error {
 	})
 }
 
+func editTagAlias(c fiber.Ctx) error {
+	uid, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewUnAuthorizedError("You must be logged in to edit tag aliases")
+	}
+
+	idStr := c.Params("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return model.NewRequestError("Invalid tag ID")
+	}
+
+	var req struct {
+		Aliases []string `json:"aliases"`
+	}
+	if err := c.Bind().JSON(&req); err != nil {
+		return model.NewRequestError("Invalid request format")
+	}
+
+	tag, err := service.EditTagAlias(uid, uint(id), req.Aliases)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.Response[model.TagView]{
+		Success: true,
+		Data:    *tag,
+		Message: "Tag aliases updated successfully",
+	})
+}
+
 func AddTagRoutes(api fiber.Router) {
 	tag := api.Group("/tag")
 	{
 		tag.Post("/", handleCreateTag)
 		tag.Get("/search", handleSearchTag)
 		tag.Delete("/:id", handleDeleteTag)
+		tag.Put("/:id/alias", editTagAlias)
 		tag.Put("/:id/info", handleSetTagInfo)
 		tag.Get("/:name", handleGetTagByName)
 		tag.Get("/", getAllTags)
