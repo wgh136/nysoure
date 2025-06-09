@@ -72,12 +72,12 @@ export default function ResourcePage() {
   }, [id]);
 
   useEffect(() => {
-    if (location.state.resource) {
-      document.title = location.state.resource.title;
+    if (location.state?.resource) {
+      document.title = location.state?.resource.title;
     } else {
       document.title = t("Resource Details");
     }
-  }, [location.state.resource, t]);
+  }, [location.state?.resource, t]);
 
   useEffect(() => {
     setResource(null);
