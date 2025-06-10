@@ -186,6 +186,13 @@ func Search(query string, page, pageSize int) ([]model.Resource, int, error) {
 		if err == nil {
 			return GetResourceByTag(tag.ID, page, pageSize)
 		}
+		if strings.Contains(query, " ") {
+			removeSpace := strings.ReplaceAll(query, " ", "")
+			tag, err = GetTagByName(removeSpace)
+			if err == nil {
+				return GetResourceByTag(tag.ID, page, pageSize)
+			}
+		}
 	}
 
 	keywords := splitQuery(query)
