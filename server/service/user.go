@@ -65,7 +65,8 @@ func CreateUser(username, password, cfToken string) (model.UserViewWithToken, er
 	if !config.AllowRegister() {
 		return model.UserViewWithToken{}, model.NewRequestError("User registration is not allowed")
 	}
-	if len(username) < 3 || len(username) > 20 {
+	usernameLen := len([]rune(username))
+	if usernameLen < 3 || usernameLen > 20 {
 		return model.UserViewWithToken{}, model.NewRequestError("Username must be between 3 and 20 characters")
 	}
 	if len(password) < 6 || len(password) > 20 {
