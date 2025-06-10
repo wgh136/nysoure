@@ -140,6 +140,11 @@ function EditTagButton({
     <>
       <Button
         onClick={() => {
+          setDescription(tag.description);
+          setType(tag.type);
+          setAliasOf(null);
+          setIsAlias(false);
+          setError(null);
           const dialog = document.getElementById(
             "edit_tag_dialog",
           ) as HTMLDialogElement;
