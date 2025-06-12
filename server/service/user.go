@@ -11,7 +11,6 @@ import (
 	"nysoure/server/utils"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 	"unicode"
@@ -376,9 +375,6 @@ func validateUsername(username string) error {
 	usernameLen := len([]rune(username))
 	if usernameLen < 3 || usernameLen > 20 {
 		return model.NewRequestError("Username must be between 3 and 20 characters")
-	}
-	if strings.Contains(username, " ") {
-		return model.NewRequestError("Username cannot contain spaces")
 	}
 	for _, r := range []rune(username) {
 		if r == ' ' || r == '\n' || r == '\r' || r == '\t' || r == '\v' || r == '\f' {
