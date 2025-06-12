@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   MdAdd,
   MdClose,
@@ -28,6 +28,37 @@ export default function PublishPage() {
   const [images, setImages] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
+
+  const isFirstLoad = useRef(true);
+
+  useEffect(() => {
+    if (isFirstLoad.current) {
+      const oldData = localStorage.getItem("publish_data");
+      if (oldData) {
+        try {
+          const data = JSON.parse(oldData);
+          setTitle(data.title || "");
+          setAltTitles(data.alternative_titles || []);
+          setTags(data.tags || []);
+          setArticle(data.article || "");
+          setImages(data.images || []);
+        } catch (e) {
+          console.error("Failed to parse publish_data from localStorage", e);
+        }
+      }
+      isFirstLoad.current = false;
+    } else {
+      const data = {
+        title: title,
+        alternative_titles: altTitles,
+        tags: tags,
+        article: article,
+        images: images,
+      };
+      const dataString = JSON.stringify(data);
+      localStorage.setItem("publish_data", dataString);
+    }
+  }, [altTitles, article, images, tags, title]);
 
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -69,6 +100,7 @@ export default function PublishPage() {
       images: images,
     });
     if (res.success) {
+      localStorage.removeItem("publish_data");
       setSubmitting(false);
       appContext.clear();
       navigate("/resources/" + res.data!, { replace: true });
