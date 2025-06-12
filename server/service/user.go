@@ -14,6 +14,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -66,13 +67,11 @@ func CreateUser(username, password, cfToken string) (model.UserViewWithToken, er
 	if !config.AllowRegister() {
 		return model.UserViewWithToken{}, model.NewRequestError("User registration is not allowed")
 	}
-	usernameLen := len([]rune(username))
-	if usernameLen < 3 || usernameLen > 20 {
-		return model.UserViewWithToken{}, model.NewRequestError("Username must be between 3 and 20 characters")
+
+	if err := validateUsername(username); err != nil {
+		return model.UserViewWithToken{}, err
 	}
-	if strings.Contains(username, " ") {
-		return model.UserViewWithToken{}, model.NewRequestError("Username cannot contain spaces")
-	}
+
 	if len(password) < 6 || len(password) > 20 {
 		return model.UserViewWithToken{}, model.NewRequestError("Password must be between 6 and 20 characters")
 	}
@@ -331,12 +330,8 @@ func GetUserByUsername(username string) (model.UserView, error) {
 }
 
 func ChangeUsername(uid uint, newUsername string) (model.UserView, error) {
-	usernameLen := len([]rune(newUsername))
-	if usernameLen < 3 || usernameLen > 20 {
-		return model.UserView{}, model.NewRequestError("Username must be between 3 and 20 characters")
-	}
-	if strings.Contains(newUsername, " ") {
-		return model.UserView{}, model.NewRequestError("Username cannot contain spaces")
+	if err := validateUsername(newUsername); err != nil {
+		return model.UserView{}, err
 	}
 
 	user, err := dao.GetUserByID(uid)
@@ -375,4 +370,26 @@ func GetMe(uid uint) (model.UserViewWithToken, error) {
 		return model.UserViewWithToken{}, err
 	}
 	return user.ToView().WithToken(token), nil
+}
+
+func validateUsername(username string) error {
+	usernameLen := len([]rune(username))
+	if usernameLen < 3 || usernameLen > 20 {
+		return model.NewRequestError("Username must be between 3 and 20 characters")
+	}
+	if strings.Contains(username, " ") {
+		return model.NewRequestError("Username cannot contain spaces")
+	}
+	for _, r := range []rune(username) {
+		if r == ' ' || r == '\n' || r == '\r' || r == '\t' || r == '\v' || r == '\f' {
+			return model.NewRequestError("Username cannot contain whitespace characters")
+		}
+		if (r >= 0 && r <= 31) || r == 127 {
+			return model.NewRequestError("Username cannot contain control characters")
+		}
+		if unicode.IsControl(r) || unicode.Is(unicode.C, r) {
+			return model.NewRequestError("Username cannot contain invisible Unicode control characters")
+		}
+	}
+	return nil
 }
