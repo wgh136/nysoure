@@ -11,6 +11,7 @@ import (
 	"nysoure/server/utils"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -68,6 +69,9 @@ func CreateUser(username, password, cfToken string) (model.UserViewWithToken, er
 	usernameLen := len([]rune(username))
 	if usernameLen < 3 || usernameLen > 20 {
 		return model.UserViewWithToken{}, model.NewRequestError("Username must be between 3 and 20 characters")
+	}
+	if strings.Contains(username, " ") {
+		return model.UserViewWithToken{}, model.NewRequestError("Username cannot contain spaces")
 	}
 	if len(password) < 6 || len(password) > 20 {
 		return model.UserViewWithToken{}, model.NewRequestError("Password must be between 6 and 20 characters")
@@ -327,9 +331,14 @@ func GetUserByUsername(username string) (model.UserView, error) {
 }
 
 func ChangeUsername(uid uint, newUsername string) (model.UserView, error) {
-	if len(newUsername) < 3 || len(newUsername) > 20 {
+	usernameLen := len([]rune(newUsername))
+	if usernameLen < 3 || usernameLen > 20 {
 		return model.UserView{}, model.NewRequestError("Username must be between 3 and 20 characters")
 	}
+	if strings.Contains(newUsername, " ") {
+		return model.UserView{}, model.NewRequestError("Username cannot contain spaces")
+	}
+
 	user, err := dao.GetUserByID(uid)
 	if err != nil {
 		return model.UserView{}, err
