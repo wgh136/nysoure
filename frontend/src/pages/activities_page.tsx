@@ -123,7 +123,11 @@ function ActivityCard({ activity }: { activity: Activity }) {
     >
       <div className={"flex items-center"}>
         <div className={"avatar w-9 h-9 rounded-full"}>
-          <img alt={"avatar"} src={network.getUserAvatar(activity.user!)} />
+          <img
+            className={"rounded-full"}
+            alt={"avatar"}
+            src={network.getUserAvatar(activity.user!)}
+          />
         </div>
         <span className={"mx-2 font-bold"}>{activity.user?.username}</span>
         <span className={"ml-2 badge badge-primary badge-soft"}>
