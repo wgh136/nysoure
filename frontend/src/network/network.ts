@@ -17,6 +17,7 @@ import {
   ServerConfig,
   RSort,
   TagWithCount,
+  Activity,
 } from "./models.ts";
 
 class Network {
@@ -992,6 +993,18 @@ class Network {
         success: false,
         message: e.toString(),
       };
+    }
+  }
+
+  async getActivities(page: number = 1): Promise<PageResponse<Activity>> {
+    try {
+      const response = await axios.get(`${this.apiBaseUrl}/activity`, {
+        params: { page },
+      });
+      return response.data;
+    } catch (e: any) {
+      console.error(e);
+      return { success: false, message: e.toString() };
     }
   }
 }

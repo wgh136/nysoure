@@ -13,6 +13,7 @@ import EditResourcePage from "./pages/edit_resource_page.tsx";
 import AboutPage from "./pages/about_page.tsx";
 import TagsPage from "./pages/tags_page.tsx";
 import RandomPage from "./pages/random_page.tsx";
+import ActivitiesPage from "./pages/activities_page.tsx";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
           <Route path={"/about"} element={<AboutPage />} />
           <Route path={"/tags"} element={<TagsPage />} />
           <Route path={"/random"} element={<RandomPage />} />
+          <Route path={"/activity"} element={<ActivitiesPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

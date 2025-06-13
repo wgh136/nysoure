@@ -60,6 +60,10 @@ func CreateResource(uid uint, params *ResourceCreateParams) (uint, error) {
 	if err != nil {
 		log.Error("Error updating cached tag list:", err)
 	}
+	err = dao.AddNewResourceActivity(uid, r.ID)
+	if err != nil {
+		log.Error("AddNewResourceActivity error: ", err)
+	}
 	return r.ID, nil
 }
 
@@ -252,6 +256,10 @@ func EditResource(uid, rid uint, params *ResourceCreateParams) error {
 	err = updateCachedTagList()
 	if err != nil {
 		log.Error("Error updating cached tag list:", err)
+	}
+	err = dao.AddUpdateResourceActivity(uid, r.ID)
+	if err != nil {
+		log.Error("AddUpdateResourceActivity error: ", err)
 	}
 	return nil
 }

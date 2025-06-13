@@ -2,12 +2,7 @@ import { app } from "../app.ts";
 import { network } from "../network/network.ts";
 import { useNavigate, useOutlet } from "react-router";
 import { createContext, useContext, useEffect, useState } from "react";
-import {
-  MdArrowUpward,
-  MdOutlinePerson,
-  MdSearch,
-  MdSettings,
-} from "react-icons/md";
+import { MdArrowUpward, MdOutlinePerson, MdSearch } from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import UploadingSideBar from "./uploading_side_bar.tsx";
 import { ThemeSwitcher } from "./theme_switcher.tsx";
@@ -87,20 +82,17 @@ export default function Navigator() {
               >
                 <a>{t("Tags")}</a>
               </li>
-              <li
-                onClick={() => {
-                  const menu = document.getElementById(
-                    "navi_menu",
-                  ) as HTMLElement;
-                  menu.blur();
-                  navigate("/manage");
-                }}
-              >
-                <a>{t("Settings")}</a>
-              </li>
               <li>
-                <a href={"https://github.com/wgh136/nysoure"} target={"_blank"}>
-                  {"Github"}
+                <a
+                  onClick={() => {
+                    const menu = document.getElementById(
+                      "navi_menu",
+                    ) as HTMLElement;
+                    menu.blur();
+                    navigate("/activity");
+                  }}
+                >
+                  {t("Activity")}
                 </a>
               </li>
               <li
@@ -163,6 +155,13 @@ export default function Navigator() {
               </li>
               <li
                 onClick={() => {
+                  navigate("/activity");
+                }}
+              >
+                <a>{t("Activity")}</a>
+              </li>
+              <li
+                onClick={() => {
                   navigate("/about");
                 }}
               >
@@ -175,16 +174,6 @@ export default function Navigator() {
             <SearchBar />
             <UploadingSideBar />
             <ThemeSwitcher />
-            {app.isLoggedIn() && (
-              <button
-                className={"btn btn-circle btn-ghost hidden sm:inline-flex"}
-                onClick={() => {
-                  navigate("/manage");
-                }}
-              >
-                <MdSettings size={24} />
-              </button>
-            )}
             <a
               className={"hidden sm:inline"}
               href="https://github.com/wgh136/nysoure"
@@ -282,6 +271,19 @@ function UserButton() {
               }}
             >
               {t("Publish")}
+            </a>
+          </li>
+          <li>
+            <a
+              onClick={() => {
+                navigate(`/manage`);
+                const menu = document.getElementById(
+                  "navi_dropdown_menu",
+                ) as HTMLUListElement;
+                menu.blur();
+              }}
+            >
+              {t("Settings")}
             </a>
           </li>
           <li>

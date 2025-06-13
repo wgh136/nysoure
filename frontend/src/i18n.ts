@@ -47,6 +47,7 @@ export const i18nData = {
       "Server": "Server",
 
       // Management page translations
+      "Settings": "Settings",
       "Manage": "Manage",
       "Storage": "Storage",
       "Users": "Users",
@@ -212,6 +213,12 @@ export const i18nData = {
       "Mint Leaf": "Mint Leaf",
       "Golden Glow": "Golden Glow",
       "Random": "Random",
+
+      // Activity Page
+      "Activity": "Activity",
+      "Published a resource": "Published a resource",
+      "Updated a resource": "Updated a resource",
+      "Commented on a resource": "Commented on a resource",
     },
   },
   "zh-CN": {
@@ -260,6 +267,7 @@ export const i18nData = {
       "Server": "服务器",
 
       // Management page translations
+      "Settings": "设置",
       "Manage": "管理",
       "Storage": "存储",
       "Users": "用户",
@@ -417,6 +425,12 @@ export const i18nData = {
       "Golden Glow": "微光",
 
       "Random": "随机",
+
+      // Activity Page
+      "Activity": "动态",
+      "Published a resource": "发布了一个资源",
+      "Updated a resource": "更新了一个资源",
+      "Commented on a resource": "评论了一个资源",
     },
   },
   "zh-TW": {
@@ -465,6 +479,7 @@ export const i18nData = {
       "Server": "伺服器",
 
       // Management page translations
+      "Settings": "設置",
       "Manage": "管理",
       "Storage": "儲存",
       "Users": "用戶",
@@ -622,6 +637,12 @@ export const i18nData = {
       "Golden Glow": "微光",
 
       "Random": "隨機",
+
+      // Activity Page
+      "Activity": "動態",
+      "Published a resource": "發布了資源",
+      "Updated a resource": "更新了資源",
+      "Commented on a resource": "評論了資源",
     },
   },
 };

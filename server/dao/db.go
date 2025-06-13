@@ -34,7 +34,18 @@ func init() {
 		}
 	}
 
-	_ = db.AutoMigrate(&model.User{}, &model.Resource{}, &model.Image{}, &model.Tag{}, &model.Storage{}, &model.File{}, &model.UploadingFile{}, &model.Statistic{}, &model.Comment{})
+	_ = db.AutoMigrate(
+		&model.User{},
+		&model.Resource{},
+		&model.Image{},
+		&model.Tag{},
+		&model.Storage{},
+		&model.File{},
+		&model.UploadingFile{},
+		&model.Statistic{},
+		&model.Comment{},
+		&model.Activity{},
+	)
 }
 
 func GetDB() *gorm.DB {

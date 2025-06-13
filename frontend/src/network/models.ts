@@ -141,3 +141,20 @@ export enum RSort {
   DownloadsAsc = 4,
   DownloadsDesc = 5,
 }
+
+export enum ActivityType {
+  Unknown = 0,
+  ResourcePublished = 1,
+  ResourceUpdated = 2,
+  ResourceCommented = 3,
+}
+
+export interface Activity {
+  id: number;
+  type: ActivityType;
+  user_id: number;
+  created_at: string;
+  resource?: Resource;
+  user?: User;
+  comment?: CommentWithResource;
+}

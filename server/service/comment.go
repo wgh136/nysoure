@@ -29,6 +29,10 @@ func CreateComment(content string, userID uint, resourceID uint) (*model.Comment
 		log.Error("Error creating comment:", err)
 		return nil, model.NewInternalServerError("Error creating comment")
 	}
+	err = dao.AddNewCommentActivity(userID, c.ID)
+	if err != nil {
+		log.Error("Error creating comment activity:", err)
+	}
 	return c.ToView(), nil
 }
 

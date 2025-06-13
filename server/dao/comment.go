@@ -62,3 +62,11 @@ func GetCommentsWithUser(username string, page, pageSize int) ([]model.Comment, 
 	totalPages := (int(total) + pageSize - 1) / pageSize
 	return comments, totalPages, nil
 }
+
+func GetCommentByID(commentID uint) (*model.Comment, error) {
+	var comment model.Comment
+	if err := db.Preload("User").Preload("Resource").First(&comment, commentID).Error; err != nil {
+		return nil, err
+	}
+	return &comment, nil
+}
