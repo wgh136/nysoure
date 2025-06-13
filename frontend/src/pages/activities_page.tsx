@@ -117,7 +117,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
         ) {
           navigate(`/resources/${activity.resource?.id}`);
         } else if (activity.type === ActivityType.ResourceCommented) {
-          navigate(`/resources/${activity.comment?.resource.id}`);
+          navigate(`/resources/${activity.comment?.resource.id}#comments`);
         }
       }}
     >

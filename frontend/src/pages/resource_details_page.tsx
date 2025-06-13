@@ -99,6 +99,37 @@ export default function ResourcePage() {
 
   const navigate = useNavigate();
 
+  // 标签页与hash的映射
+  const tabHashList = ["description", "files", "comments"];
+  // 读取hash对应的tab索引
+  function getPageFromHash(hash: string) {
+    const h = hash.replace(/^#/, "");
+    const idx = tabHashList.indexOf(h);
+    return idx === -1 ? 0 : idx;
+  }
+  // 设置hash
+  function setHashByPage(idx: number) {
+    window.location.hash = "#" + tabHashList[idx];
+  }
+
+  // 初始状态读取hash
+  useEffect(() => {
+    setPage(getPageFromHash(window.location.hash));
+    // 监听hash变化
+    const onHashChange = () => {
+      setPage(getPageFromHash(window.location.hash));
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+    // eslint-disable-next-line
+  }, []);
+
+  // 切换标签页时同步hash
+  const handleTabChange = (idx: number) => {
+    setPage(idx);
+    setHashByPage(idx);
+  };
+
   if (isNaN(id)) {
     return (
       <div className="alert alert-error shadow-lg">
@@ -153,9 +184,7 @@ export default function ResourcePage() {
               type="radio"
               name="my_tabs"
               checked={page === 0}
-              onChange={() => {
-                setPage(0);
-              }}
+              onChange={() => handleTabChange(0)}
             />
             <MdOutlineArticle className="text-xl mr-2" />
             <span className="text-sm">{t("Description")}</span>
@@ -169,9 +198,7 @@ export default function ResourcePage() {
               type="radio"
               name="my_tabs"
               checked={page === 1}
-              onChange={() => {
-                setPage(1);
-              }}
+              onChange={() => handleTabChange(1)}
             />
             <MdOutlineDataset className="text-xl mr-2" />
             <span className="text-sm">{t("Files")}</span>
@@ -185,9 +212,7 @@ export default function ResourcePage() {
               type="radio"
               name="my_tabs"
               checked={page === 2}
-              onChange={() => {
-                setPage(2);
-              }}
+              onChange={() => handleTabChange(2)}
             />
             <MdOutlineComment className="text-xl mr-2" />
             <span className="text-sm">{t("Comments")}</span>
