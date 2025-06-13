@@ -38,7 +38,7 @@ export default function Navigator() {
             <div
               tabIndex={0}
               role="button"
-              className="btn btn-ghost btn-circle sm:hidden"
+              className="btn btn-ghost btn-circle lg:hidden"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
