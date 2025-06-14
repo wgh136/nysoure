@@ -156,6 +156,9 @@ func ClearUnusedTags() error {
 			return err
 		}
 		if count == 0 {
+			if err := db.Exec("DELETE FROM resource_tags WHERE tag_id = ?", tag.ID).Error; err != nil {
+				return err
+			}
 			// Use hard delete to remove the tag to ensure the tag can be re-created later
 			if err := db.Unscoped().Delete(&tag).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 				return err
