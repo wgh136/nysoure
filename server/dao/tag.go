@@ -140,3 +140,27 @@ func RemoveTagAliasOf(tagID uint) error {
 		},
 	}).Update("alias_of", nil).Error
 }
+
+// ClearUnusedTags removes tags that are not associated with any resources.
+func ClearUnusedTags() error {
+	var tags []model.Tag
+	if err := db.Where("alias_of IS NULL").Find(&tags).Error; err != nil {
+		return err
+	}
+	for _, tag := range tags {
+		var count int64
+		if err := db.
+			Model(&model.Resource{}).
+			Where("id IN (SELECT resource_id FROM resource_tags WHERE tag_id = ?)", tag.ID).
+			Count(&count).Error; err != nil {
+			return err
+		}
+		if count == 0 {
+			// Use hard delete to remove the tag to ensure the tag can be re-created later
+			if err := db.Unscoped().Delete(&tag).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				return err
+			}
+		}
+	}
+	return nil
+}

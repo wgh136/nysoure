@@ -6,7 +6,23 @@ import (
 	"nysoure/server/model"
 	"slices"
 	"strings"
+	"time"
 )
+
+func init() {
+	// Start a goroutine to delete unused tags every hour
+	go func() {
+		// Wait for 1 minute to ensure the database is ready
+		time.Sleep(time.Minute)
+		for {
+			err := dao.ClearUnusedTags()
+			if err != nil {
+				log.Errorf("Failed to clear unused tags: %v", err)
+			}
+			time.Sleep(time.Hour)
+		}
+	}()
+}
 
 func CreateTag(uid uint, name string) (*model.TagView, error) {
 	canUpload, err := checkUserCanUpload(uid)
