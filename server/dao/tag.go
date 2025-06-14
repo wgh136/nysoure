@@ -159,7 +159,7 @@ func ClearUnusedTags() error {
 				return err
 			}
 			// Remove all aliases of the tag
-			if err := db.Where("alias_of = ?", tag.ID).Update("alias_of", nil).Error; err != nil {
+			if err := db.Model(model.Tag{}).Where("alias_of = ?", tag.ID).Update("alias_of", nil).Error; err != nil {
 				return err
 			}
 			// Use hard delete to remove the tag to ensure the tag can be re-created later
