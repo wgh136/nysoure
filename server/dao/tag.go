@@ -148,15 +148,17 @@ func ClearUnusedTags() error {
 		return err
 	}
 	for _, tag := range tags {
-		var count int64
-		if err := db.
-			Model(&model.Resource{}).
-			Where("id IN (SELECT resource_id FROM resource_tags WHERE tag_id = ?)", tag.ID).
-			Count(&count).Error; err != nil {
+		resources, _, err := GetResourceByTag(tag.ID, 1, 1)
+		if err != nil {
 			return err
 		}
-		if count == 0 {
+		if len(resources) == 0 {
+			// The tag maybe associated with a deleted resource, so we need to remove it from the resource_tags table first
 			if err := db.Exec("DELETE FROM resource_tags WHERE tag_id = ?", tag.ID).Error; err != nil {
+				return err
+			}
+			// Remove all aliases of the tag
+			if err := db.Where("alias_of = ?", tag.ID).Update("alias_of", nil).Error; err != nil {
 				return err
 			}
 			// Use hard delete to remove the tag to ensure the tag can be re-created later
