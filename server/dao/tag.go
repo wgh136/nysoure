@@ -2,6 +2,7 @@ package dao
 
 import (
 	"errors"
+	"github.com/gofiber/fiber/v3/log"
 	"nysoure/server/model"
 	"strings"
 
@@ -165,6 +166,7 @@ func ClearUnusedTags() error {
 			if err := db.Unscoped().Delete(&tag).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 				return err
 			}
+			log.Infof("Removed unused tag: %s", tag.Name)
 		}
 	}
 	return nil
