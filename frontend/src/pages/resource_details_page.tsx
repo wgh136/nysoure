@@ -25,6 +25,7 @@ import Loading from "../components/loading.tsx";
 import {
   MdAdd,
   MdArrowDownward,
+  MdArrowRight,
   MdArrowUpward,
   MdOutlineArticle,
   MdOutlineComment,
@@ -42,7 +43,7 @@ import showPopup, { useClosePopup } from "../components/popup.tsx";
 import { Turnstile } from "@marsidev/react-turnstile";
 import Button from "../components/button.tsx";
 import Badge, { BadgeAccent } from "../components/badge.tsx";
-import Input from "../components/input.tsx";
+import Input, { TextArea } from "../components/input.tsx";
 import { useAppContext } from "../components/AppContext.tsx";
 
 export default function ResourcePage() {
@@ -428,14 +429,21 @@ function Article({ resource }: { resource: ResourceDetails }) {
                     return (
                       <a
                         className={
-                          "inline-block card card-border border-base-300 no-underline bg-base-200 hover:shadow transition-shadow my-2"
+                          "inline-block card shadow bg-base-100 no-underline hover:shadow-md transition-shadow my-2"
                         }
                         target={"_blank"}
                         href={href}
                       >
-                        <figure className={"max-h-96"}>{img}</figure>
+                        <figure className={"max-h-96 min-w-48 min-h-24"}>
+                          {img}
+                        </figure>
                         <div className={"card-body text-base-content text-lg"}>
-                          {second}
+                          <div className={"flex items-center"}>
+                            <span className={"flex-1"}>{second}</span>
+                            <span>
+                              <MdArrowRight size={24} />
+                            </span>
+                          </div>
                         </div>
                       </a>
                     );
@@ -480,7 +488,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
                       <span className={"inline-flex max-w-full"}>
                         <span
                           className={
-                            "m-2 max-w-full cursor-pointer inline-flex min-w-0 flex-col h-80 border border-base-300 rounded-xl no-underline"
+                            "mr-2 mb-2 max-w-full cursor-pointer inline-flex min-w-0 flex-col h-80 bg-base-100 shadow hover:shadow-md transition-shadow rounded-xl no-underline"
                           }
                           onClick={() => {
                             navigate(`/resources/${r.id}`, { replace: true });
@@ -557,11 +565,13 @@ function FileTile({ file }: { file: RFile }) {
   const { t } = useTranslation();
 
   return (
-    <div className={"card card-border border-base-300 my-2"}>
+    <div className={"card shadow bg-base-100 mb-4"}>
       <div className={"p-4 flex flex-row items-center"}>
         <div className={"grow"}>
-          <h4 className={"font-bold py-1"}>{file.filename}</h4>
-          <p className={"text-sm"}>{file.description}</p>
+          <h4 className={"font-bold"}>{file.filename}</h4>
+          <p className={"text-sm my-1 whitespace-pre-wrap"}>
+            {file.description}
+          </p>
           <p>
             <BadgeAccent className={"mt-1"}>
               {file.is_redirect ? t("Redirect") : fileSizeToString(file.size)}
@@ -636,7 +646,7 @@ function CloudflarePopup({ file }: { file: RFile }) {
 
 function Files({ files, resourceID }: { files: RFile[]; resourceID: number }) {
   return (
-    <div>
+    <div className={"pt-3"}>
       {files.map((file) => {
         return <FileTile file={file} key={file.id}></FileTile>;
       })}
@@ -881,9 +891,8 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
                   setRedirectUrl(e.target.value);
                 }}
               />
-              <input
-                type="text"
-                className="input w-full my-2"
+              <textarea
+                className="textarea w-full my-2"
                 placeholder={t("Description")}
                 onChange={(e) => {
                   setDescription(e.target.value);
@@ -937,9 +946,8 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
                 }}
               />
 
-              <input
-                type="text"
-                className="input w-full my-2"
+              <textarea
+                className="textarea w-full my-2"
                 placeholder={t("Description")}
                 onChange={(e) => {
                   setDescription(e.target.value);
@@ -1001,9 +1009,8 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
                 }}
               />
 
-              <input
-                type="text"
-                className="input w-full my-2"
+              <textarea
+                className="textarea w-full my-2"
                 placeholder={t("Description")}
                 onChange={(e) => {
                   setDescription(e.target.value);
@@ -1090,8 +1097,7 @@ function UpdateFileInfoDialog({ file }: { file: RFile }) {
             value={filename}
             onChange={(e) => setFilename(e.target.value)}
           />
-          <Input
-            type={"text"}
+          <TextArea
             label={t("Description")}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
