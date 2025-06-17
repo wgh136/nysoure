@@ -16,7 +16,7 @@ export default function ActivitiesPage() {
   const fetchNextPage = useCallback(async () => {
     if (isLoadingRef.current || pageRef.current >= maxPageRef.current) return;
     isLoadingRef.current = true;
-    const response = await network.getActivities(pageRef.current);
+    const response = await network.getActivities(pageRef.current+1);
     if (response.success) {
       setActivities((prev) => [...prev, ...response.data!]);
       pageRef.current += 1;
@@ -94,7 +94,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
   } else if (activity.type === ActivityType.ResourceCommented) {
     content = (
       <div className={"mt-2"}>
-        <div className={"text-sm mx-1"}>{activity.comment?.content}</div>
+        <div className={"text-sm mx-1 whitespace-pre-wrap"}>{activity.comment?.content}</div>
         <div className={"flex items-center mt-1"}>
           <MdArrowRight />
           <span className={"text-sm text-base-content/80"}>
