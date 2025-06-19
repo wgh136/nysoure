@@ -25,7 +25,6 @@ import Loading from "../components/loading.tsx";
 import {
   MdAdd,
   MdArrowDownward,
-  MdArrowRight,
   MdArrowUpward,
   MdOutlineArticle,
   MdOutlineComment,
@@ -33,6 +32,7 @@ import {
   MdOutlineDelete,
   MdOutlineDownload,
   MdOutlineEdit,
+  MdOutlineOpenInNew,
 } from "react-icons/md";
 import { app } from "../app.ts";
 import { uploadingManager } from "../network/uploading.ts";
@@ -441,7 +441,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
                           <div className={"flex items-center"}>
                             <span className={"flex-1"}>{second}</span>
                             <span>
-                              <MdArrowRight size={24} />
+                              <MdOutlineOpenInNew size={24} />
                             </span>
                           </div>
                         </div>
@@ -484,28 +484,41 @@ function Article({ resource }: { resource: ResourceDetails }) {
                 const id = path.substring("/resources/".length);
                 for (const r of resource.related ?? []) {
                   if (r.id.toString() === id) {
+                    const imgHeight =
+                      r.image && r.image.width > r.image.height ? 320 : 420;
+                    const imgWidth = r.image
+                      ? (r.image.width / r.image.height) * imgHeight
+                      : undefined;
+
                     return (
                       <span className={"inline-flex max-w-full"}>
-                        <span
+                        <a
+                          href={"/resources/" + r.id}
                           className={
-                            "mr-2 mb-2 max-w-full cursor-pointer inline-flex min-w-0 flex-col h-80 bg-base-100 shadow hover:shadow-md transition-shadow rounded-xl no-underline"
+                            "mr-2 mb-2 max-w-full cursor-pointer inline-flex min-w-0 flex-col bg-base-100 shadow hover:shadow-md transition-shadow rounded-xl no-underline"
                           }
-                          onClick={() => {
-                            navigate(`/resources/${r.id}`, { replace: true });
+                          onClick={(e) => {
+                            e.preventDefault();
+                            navigate(`/resources/${r.id}`);
                           }}
                         >
                           {r.image && (
                             <img
                               style={{
-                                aspectRatio: r.image.width / r.image.height,
-                                maxHeight: "100%",
+                                width: imgWidth,
+                                height: imgHeight,
                               }}
                               className={"h-full min-h-0 object-cover min-w-0"}
                               alt={"cover"}
                               src={network.getImageUrl(r.image?.id)}
                             />
                           )}
-                          <span className={"inline-flex flex-col p-4"}>
+                          <span
+                            className={"inline-flex flex-col p-4"}
+                            style={{
+                              width: imgWidth,
+                            }}
+                          >
                             <span
                               style={{
                                 maxWidth: "100%",
@@ -529,7 +542,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
                               {content}
                             </span>
                           </span>
-                        </span>
+                        </a>
                       </span>
                     );
                   }
