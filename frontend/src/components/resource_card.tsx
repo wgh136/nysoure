@@ -12,9 +12,11 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
   }
 
   return (
-    <div
-      className={"p-2 cursor-pointer"}
-      onClick={() => {
+    <a
+      href={`/resources/${resource.id}`}
+      className={"p-2 cursor-pointer block"}
+      onClick={(e) => {
+        e.preventDefault();
         navigate(`/resources/${resource.id}`);
       }}
     >
@@ -55,6 +57,6 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
           </div>
         </div>
       </div>
-    </div>
+    </a>
   );
 }
