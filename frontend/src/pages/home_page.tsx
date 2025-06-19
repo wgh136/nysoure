@@ -5,6 +5,7 @@ import { app } from "../app.ts";
 import { RSort } from "../network/models.ts";
 import { useTranslation } from "react-i18next";
 import { useAppContext } from "../components/AppContext.tsx";
+import Select from "../components/select.tsx";
 
 export default function HomePage() {
   useEffect(() => {
@@ -30,23 +31,24 @@ export default function HomePage() {
 
   return (
     <>
-      <div className={"flex p-4 items-center"}>
-        <select
-          value={order}
-          className="select w-52 select-primary"
-          onInput={(e) => {
-            const value = Number(e.currentTarget.value);
-            setOrder(value as RSort);
+      <div className={"flex pt-4 px-4 items-center"}>
+        <Select
+          values={[
+            t("Time Ascending"),
+            t("Time Descending"),
+            t("Views Ascending"),
+            t("Views Descending"),
+            t("Downloads Ascending"),
+            t("Downloads Descending"),
+          ]}
+          current={order}
+          onSelected={(index) => {
+            setOrder(index);
+            if (appContext) {
+              appContext.set("home_page_order", index);
+            }
           }}
-        >
-          <option disabled>{t("Select a Order")}</option>
-          <option value="0">{t("Time Ascending")}</option>
-          <option value="1">{t("Time Descending")}</option>
-          <option value="2">{t("Views Ascending")}</option>
-          <option value="3">{t("Views Descending")}</option>
-          <option value="4">{t("Downloads Ascending")}</option>
-          <option value="5">{t("Downloads Descending")}</option>
-        </select>
+        />
       </div>
       <ResourcesView
         key={`home_page_${order}`}
