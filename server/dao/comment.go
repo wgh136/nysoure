@@ -70,3 +70,16 @@ func GetCommentByID(commentID uint) (*model.Comment, error) {
 	}
 	return &comment, nil
 }
+
+func UpdateCommentContent(commentID uint, content string) (*model.Comment, error) {
+	var comment model.Comment
+	if err := db.First(&comment, commentID).Error; err != nil {
+		return nil, err
+	}
+	comment.Content = content
+	if err := db.Save(&comment).Error; err != nil {
+		return nil, err
+	}
+	db.Preload("User").First(&comment, commentID)
+	return &comment, nil
+}

@@ -14,6 +14,7 @@ func AddCommentRoutes(router fiber.Router) {
 	api.Post("/:resourceID", createComment)
 	api.Get("/:resourceID", listComments)
 	api.Get("/user/:username", listCommentsWithUser)
+	api.Put("/:commentID", updateComment)
 }
 
 func createComment(c fiber.Ctx) error {
@@ -87,5 +88,30 @@ func listCommentsWithUser(c fiber.Ctx) error {
 		Data:       comments,
 		TotalPages: totalPages,
 		Message:    "Comments retrieved successfully",
+	})
+}
+
+func updateComment(c fiber.Ctx) error {
+	userID, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewRequestError("You must be logged in to update comment")
+	}
+	commentIDStr := c.Params("commentID")
+	commentID, err := strconv.Atoi(commentIDStr)
+	if err != nil {
+		return model.NewRequestError("Invalid comment ID")
+	}
+	content := c.FormValue("content")
+	if content == "" {
+		return model.NewRequestError("Content cannot be empty")
+	}
+	comment, err := service.UpdateComment(uint(commentID), userID, content)
+	if err != nil {
+		return err
+	}
+	return c.JSON(model.Response[model.CommentView]{
+		Success: true,
+		Data:    *comment,
+		Message: "Comment updated successfully",
 	})
 }

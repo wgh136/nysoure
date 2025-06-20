@@ -69,3 +69,18 @@ func ListCommentsWithUser(username string, page int) ([]model.CommentWithResourc
 	}
 	return res, totalPages, nil
 }
+
+func UpdateComment(commentID, userID uint, content string) (*model.CommentView, error) {
+	comment, err := dao.GetCommentByID(commentID)
+	if err != nil {
+		return nil, model.NewNotFoundError("Comment not found")
+	}
+	if comment.UserID != userID {
+		return nil, model.NewRequestError("You can only update your own comments")
+	}
+	updated, err := dao.UpdateCommentContent(commentID, content)
+	if err != nil {
+		return nil, model.NewInternalServerError("Error updating comment")
+	}
+	return updated.ToView(), nil
+}

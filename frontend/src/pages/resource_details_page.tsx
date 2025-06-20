@@ -1199,7 +1199,7 @@ function Comments({ resourceId }: { resourceId: number }) {
       ) : (
         <InfoAlert
           message={t("You need to log in to comment")}
-          className={"my-4 alert-dash"}
+          className={"my-4 alert-info"}
         />
       )}
       <CommentsList
@@ -1270,8 +1270,9 @@ function CommentTile({ comment }: { comment: Comment }) {
       ? comment.content
       : comment.content.substring(0, 300) + "...";
 
+  // @ts-ignore
   return (
-    <div className={"card card-border border-base-300 p-2 my-3"}>
+    <div className={"card bg-base-100 p-2 my-3 shadow-xs"}>
       <div className={"flex flex-row items-center my-1 mx-1"}>
         <div
           className="avatar cursor-pointer"
@@ -1289,9 +1290,9 @@ function CommentTile({ comment }: { comment: Comment }) {
           {comment.user.username}
         </div>
         <div className={"grow"}></div>
-        <div className={"text-sm text-gray-500"}>
+        <Badge className={"badge-soft badge-primary badge-sm"}>
           {new Date(comment.created_at).toLocaleString()}
-        </div>
+        </Badge>
       </div>
       <div className={"text-sm p-2 whitespace-pre-wrap"}>
         {displayContent}
@@ -1308,6 +1309,11 @@ function CommentTile({ comment }: { comment: Comment }) {
           </div>
         )}
       </div>
+      {app.user?.id === comment.user.id && (
+        <div className={"flex flex-row-reverse"}>
+          <EditCommentDialog comment={comment} />
+        </div>
+      )}
     </div>
   );
 }
@@ -1373,6 +1379,77 @@ function DeleteFileDialog({
             </form>
             <button className="btn btn-error" onClick={handleDelete}>
               {t("Delete")}
+            </button>
+          </div>
+        </div>
+      </dialog>
+    </>
+  );
+}
+
+function EditCommentDialog({
+  comment,
+}: {
+  comment: Comment;
+}) {
+  const [isLoading, setLoading] = useState(false);
+  const [content, setContent] = useState(comment.content);
+  const { t } = useTranslation();
+  const reload = useContext(context);
+
+  const handleUpdate = async () => {
+    if (isLoading) {
+      return;
+    }
+    setLoading(true);
+    const res = await network.updateComment(comment.id, content);
+    const dialog = document.getElementById(
+      `edit_comment_dialog_${comment.id}`,
+    ) as HTMLDialogElement;
+    dialog.close();
+    if (res.success) {
+      showToast({
+        message: t("Comment updated successfully"),
+        type: "success",
+      });
+      reload();
+    } else {
+      showToast({ message: res.message, type: "error" });
+    }
+    setLoading(false);
+  };
+
+  return (
+    <>
+      <button
+        className={"btn btn-sm btn-ghost ml-1"}
+        onClick={() => {
+          const dialog = document.getElementById(
+            `edit_comment_dialog_${comment.id}`,
+          ) as HTMLDialogElement;
+          dialog.showModal();
+        }}
+      >
+        <MdOutlineEdit size={16} className={"inline-block"} />
+        {t("Edit")}
+      </button>
+      <dialog id={`edit_comment_dialog_${comment.id}`} className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">{t("Edit Comment")}</h3>
+          <TextArea
+            label={t("Content")}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
+          <div className="modal-action">
+            <form method="dialog">
+              <button className="btn btn-ghost">{t("Close")}</button>
+            </form>
+            <button className="btn btn-primary" onClick={handleUpdate}>
+              {isLoading ? (
+                <span className={"loading loading-spinner loading-sm"}></span>
+              ) : null}
+              {t("Update")}
             </button>
           </div>
         </div>

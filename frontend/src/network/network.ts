@@ -934,6 +934,22 @@ class Network {
     }
   }
 
+  async updateComment(
+    commentID: number,
+    content: string,
+  ): Promise<Response<any>> {
+    try {
+      const response = await axios.putForm(
+        `${this.apiBaseUrl}/comments/${commentID}`,
+        { content },
+      );
+      return response.data;
+    } catch (e: any) {
+      console.error(e);
+      return { success: false, message: e.toString() };
+    }
+  }
+
   async listComments(
     resourceID: number,
     page: number = 1,
