@@ -161,7 +161,7 @@ export default function ResourcePage() {
         })}
         <button
           onClick={() => {
-            navigate(`/user/${resource.author.username}`);
+            navigate(`/user/${encodeURIComponent(resource.author.username)}`);
           }}
           className="border-b-2 mx-4 py-1 cursor-pointer border-transparent hover:border-primary transition-colors duration-200 ease-in-out"
         >
@@ -1276,7 +1276,9 @@ function CommentTile({ comment }: { comment: Comment }) {
       <div className={"flex flex-row items-center my-1 mx-1"}>
         <div
           className="avatar cursor-pointer"
-          onClick={() => navigate(`/user/${comment.user.username}`)}
+          onClick={() =>
+            navigate(`/user/${encodeURIComponent(comment.user.username)}`)
+          }
         >
           <div className="w-8 rounded-full">
             <img src={network.getUserAvatar(comment.user)} alt={"avatar"} />
@@ -1285,7 +1287,9 @@ function CommentTile({ comment }: { comment: Comment }) {
         <div className={"w-2"}></div>
         <div
           className={"text-sm font-bold cursor-pointer"}
-          onClick={() => navigate(`/user/${comment.user.username}`)}
+          onClick={() => {
+            navigate(`/user/${encodeURIComponent(comment.user.username)}`);
+          }}
         >
           {comment.user.username}
         </div>
@@ -1388,11 +1392,7 @@ function DeleteFileDialog({
   );
 }
 
-function EditCommentDialog({
-  comment,
-}: {
-  comment: Comment;
-}) {
+function EditCommentDialog({ comment }: { comment: Comment }) {
   const [isLoading, setLoading] = useState(false);
   const [content, setContent] = useState(comment.content);
   const { t } = useTranslation();
@@ -1474,7 +1474,10 @@ function DeleteCommentDialog({ commentId }: { commentId: number }) {
     const dialog = document.getElementById(id) as HTMLDialogElement;
     dialog.close();
     if (res.success) {
-      showToast({ message: t("Comment deleted successfully"), type: "success" });
+      showToast({
+        message: t("Comment deleted successfully"),
+        type: "success",
+      });
       reload();
     } else {
       showToast({ message: res.message, type: "error" });
@@ -1498,7 +1501,9 @@ function DeleteCommentDialog({ commentId }: { commentId: number }) {
         <div className="modal-box">
           <h3 className="font-bold text-lg">{t("Delete Comment")}</h3>
           <p className="py-4">
-            {t("Are you sure you want to delete this comment? This action cannot be undone.")}
+            {t(
+              "Are you sure you want to delete this comment? This action cannot be undone.",
+            )}
           </p>
           <div className="modal-action">
             <form method="dialog">

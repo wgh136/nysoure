@@ -581,7 +581,7 @@ class Network {
   ): Promise<PageResponse<Resource>> {
     try {
       const response = await axios.get(
-        `${this.apiBaseUrl}/resource/user/${username}`,
+        `${this.apiBaseUrl}/resource/user/${encodeURIComponent(username)}`,
         {
           params: {
             page,
@@ -978,7 +978,7 @@ class Network {
   ): Promise<PageResponse<CommentWithResource>> {
     try {
       const response = await axios.get(
-        `${this.apiBaseUrl}/comments/user/${username}`,
+        `${this.apiBaseUrl}/comments/user/${encodeURIComponent(username)}`,
         {
           params: { page },
         },

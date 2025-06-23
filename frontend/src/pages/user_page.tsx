@@ -11,7 +11,10 @@ import { MdOutlineArrowRight } from "react-icons/md";
 export default function UserPage() {
   const [user, setUser] = useState<User | null>(null);
 
-  const { username } = useParams();
+  const { username: rawUsername } = useParams();
+
+  // 解码用户名，确保特殊字符被还原
+  const username = rawUsername ? decodeURIComponent(rawUsername) : "";
 
   const [page, setPage] = useState(0);
 
