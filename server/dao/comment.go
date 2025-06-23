@@ -83,3 +83,25 @@ func UpdateCommentContent(commentID uint, content string) (*model.Comment, error
 	db.Preload("User").First(&comment, commentID)
 	return &comment, nil
 }
+
+func DeleteCommentByID(commentID uint) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		var comment model.Comment
+		if err := tx.First(&comment, commentID).Error; err != nil {
+			return err
+		}
+		if err := tx.Delete(&comment).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&model.User{}).Where("id = ?", comment.UserID).Update("comments_count", gorm.Expr("comments_count - 1")).Error; err != nil {
+			return err
+		}
+		if err := tx.
+			Where("type = ? and ref_id = ?", model.ActivityTypeNewComment, commentID).
+			Delete(&model.Activity{}).
+			Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}

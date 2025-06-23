@@ -15,6 +15,7 @@ func AddCommentRoutes(router fiber.Router) {
 	api.Get("/:resourceID", listComments)
 	api.Get("/user/:username", listCommentsWithUser)
 	api.Put("/:commentID", updateComment)
+	api.Delete("/:commentID", deleteComment)
 }
 
 func createComment(c fiber.Ctx) error {
@@ -113,5 +114,25 @@ func updateComment(c fiber.Ctx) error {
 		Success: true,
 		Data:    *comment,
 		Message: "Comment updated successfully",
+	})
+}
+
+func deleteComment(c fiber.Ctx) error {
+	userID, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewRequestError("You must be logged in to delete comment")
+	}
+	commentIDStr := c.Params("commentID")
+	commentID, err := strconv.Atoi(commentIDStr)
+	if err != nil {
+		return model.NewRequestError("Invalid comment ID")
+	}
+	err = service.DeleteComment(uint(commentID), userID)
+	if err != nil {
+		return err
+	}
+	return c.JSON(model.Response[any]{
+		Success: true,
+		Message: "Comment deleted successfully",
 	})
 }

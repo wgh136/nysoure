@@ -1311,6 +1311,7 @@ function CommentTile({ comment }: { comment: Comment }) {
       </div>
       {app.user?.id === comment.user.id && (
         <div className={"flex flex-row-reverse"}>
+          <DeleteCommentDialog commentId={comment.id} />
           <EditCommentDialog comment={comment} />
         </div>
       )}
@@ -1450,6 +1451,64 @@ function EditCommentDialog({
                 <span className={"loading loading-spinner loading-sm"}></span>
               ) : null}
               {t("Update")}
+            </button>
+          </div>
+        </div>
+      </dialog>
+    </>
+  );
+}
+
+// 新增：删除评论弹窗组件
+function DeleteCommentDialog({ commentId }: { commentId: number }) {
+  const [isLoading, setLoading] = useState(false);
+  const reload = useContext(context);
+  const { t } = useTranslation();
+
+  const id = `delete_comment_dialog_${commentId}`;
+
+  const handleDelete = async () => {
+    if (isLoading) return;
+    setLoading(true);
+    const res = await network.deleteComment(commentId);
+    const dialog = document.getElementById(id) as HTMLDialogElement;
+    dialog.close();
+    if (res.success) {
+      showToast({ message: t("Comment deleted successfully"), type: "success" });
+      reload();
+    } else {
+      showToast({ message: res.message, type: "error" });
+    }
+    setLoading(false);
+  };
+
+  return (
+    <>
+      <button
+        className={"btn btn-error btn-sm btn-ghost ml-1"}
+        onClick={() => {
+          const dialog = document.getElementById(id) as HTMLDialogElement;
+          dialog.showModal();
+        }}
+      >
+        <MdOutlineDelete size={16} className={"inline-block"} />
+        {t("Delete")}
+      </button>
+      <dialog id={id} className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">{t("Delete Comment")}</h3>
+          <p className="py-4">
+            {t("Are you sure you want to delete this comment? This action cannot be undone.")}
+          </p>
+          <div className="modal-action">
+            <form method="dialog">
+              <button className="btn btn-ghost">{t("Close")}</button>
+            </form>
+            <button className="btn btn-error" onClick={handleDelete}>
+              {isLoading ? (
+                <span className={"loading loading-spinner loading-sm"}></span>
+              ) : null}
+              {t("Delete")}
             </button>
           </div>
         </div>

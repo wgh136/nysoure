@@ -131,6 +131,12 @@ export const i18nData = {
       "Are you sure you want to delete the file":
         "Are you sure you want to delete the file",
 
+      // 评论删除相关
+      "Delete Comment": "Delete Comment",
+      "Are you sure you want to delete this comment? This action cannot be undone.":
+        "Are you sure you want to delete this comment? This action cannot be undone.",
+      "Comment deleted successfully": "Comment deleted successfully",
+
       // New translations
       "Change Avatar": "Change Avatar",
       "Change Username": "Change Username",
@@ -344,6 +350,11 @@ export const i18nData = {
       "Delete File": "删除文件",
       "Are you sure you want to delete the file": "您确定要删除此文件吗",
 
+      "Delete Comment": "删除评论",
+      "Are you sure you want to delete this comment? This action cannot be undone.":
+        "您确定要删除此评论吗？此操作不可撤销。",
+      "Comment deleted successfully": "评论删除成功",
+
       // New translations
       "Change Avatar": "更改头像",
       "Change Username": "更改用户名",
@@ -555,6 +566,11 @@ export const i18nData = {
       "Are you sure you want to delete the resource": "您確定要刪除此資源嗎",
       "Delete File": "刪除檔案",
       "Are you sure you want to delete the file": "您確定要刪除此檔案嗎",
+
+      "Delete Comment": "刪除評論",
+      "Are you sure you want to delete this comment? This action cannot be undone.":
+        "您確定要刪除此評論嗎？此操作不可撤銷。",
+      "Comment deleted successfully": "評論刪除成功",
 
       // New translations
       "Change Avatar": "更改頭像",

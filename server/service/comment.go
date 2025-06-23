@@ -84,3 +84,17 @@ func UpdateComment(commentID, userID uint, content string) (*model.CommentView, 
 	}
 	return updated.ToView(), nil
 }
+
+func DeleteComment(commentID, userID uint) error {
+	comment, err := dao.GetCommentByID(commentID)
+	if err != nil {
+		return model.NewNotFoundError("Comment not found")
+	}
+	if comment.UserID != userID {
+		return model.NewRequestError("You can only delete your own comments")
+	}
+	if err := dao.DeleteCommentByID(commentID); err != nil {
+		return model.NewInternalServerError("Error deleting comment")
+	}
+	return nil
+}

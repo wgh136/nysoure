@@ -986,6 +986,18 @@ class Network {
     }
   }
 
+  async deleteComment(commentID: number): Promise<Response<void>> {
+    try {
+      const response = await axios.delete(
+        `${this.apiBaseUrl}/comments/${commentID}`,
+      );
+      return response.data;
+    } catch (e: any) {
+      console.error(e);
+      return { success: false, message: e.toString() };
+    }
+  }
+
   async getServerConfig(): Promise<Response<ServerConfig>> {
     try {
       const response = await axios.get(`${this.apiBaseUrl}/config`);
