@@ -24,7 +24,7 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
         {resource.image != null && (
           <figure>
             <img
-              src={network.getImageUrl(resource.image.id)}
+              src={network.getResampledImageUrl(resource.image.id)}
               alt="cover"
               style={{
                 width: "100%",

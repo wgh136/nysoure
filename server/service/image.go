@@ -3,12 +3,14 @@ package service
 import (
 	"bytes"
 	"errors"
+	"github.com/disintegration/imaging"
 	"image"
 	"net/http"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/utils"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v3/log"
@@ -22,6 +24,10 @@ import (
 	_ "golang.org/x/image/webp"
 
 	"github.com/chai2010/webp"
+)
+
+const (
+	resampledMaxPixels = 1280 * 720
 )
 
 func init() {
@@ -152,11 +158,83 @@ func deleteImage(id uint) error {
 	}
 
 	imageDir := utils.GetStoragePath() + "/images/"
-
 	_ = os.Remove(imageDir + i.FileName)
+
+	resampledDir := utils.GetStoragePath() + "/resampled/"
+	_ = os.Remove(resampledDir + strconv.Itoa(int(i.ID)) + ".webp")
 
 	if err := dao.DeleteImage(id); err != nil {
 		return err
 	}
 	return nil
+}
+
+func GetResampledImage(id uint) ([]byte, error) {
+	i, err := dao.GetImageByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := getOrCreateResampledImage(i)
+	if err != nil {
+		log.Error("Error getting or creating resampled image:", err)
+		return nil, model.NewInternalServerError("Error processing image")
+	}
+
+	return data, nil
+}
+
+func getOrCreateResampledImage(i model.Image) ([]byte, error) {
+	baseDir := utils.GetStoragePath() + "/resampled/"
+	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(baseDir, 0755); err != nil {
+			return nil, err
+		}
+	}
+
+	resampledFilepath := baseDir + strconv.Itoa(int(i.ID)) + ".webp"
+	if _, err := os.Stat(resampledFilepath); err != nil {
+		if !os.IsNotExist(err) {
+			return nil, err
+		}
+	} else {
+		return os.ReadFile(resampledFilepath)
+	}
+
+	originalFilepath := utils.GetStoragePath() + "/images/" + i.FileName
+	if _, err := os.Stat(originalFilepath); os.IsNotExist(err) {
+		return nil, model.NewNotFoundError("Original image not found")
+	}
+	imgData, err := os.ReadFile(originalFilepath)
+	if err != nil {
+		return nil, errors.New("failed to read original image file")
+	}
+	if i.Width*i.Height <= resampledMaxPixels {
+		return imgData, nil
+	}
+
+	log.Info("Resampling image", "id", i.ID, "original size", i.Width, "x", i.Height)
+	img, _, err := image.Decode(bytes.NewReader(imgData))
+	if err != nil {
+		return nil, errors.New("failed to decode original image data")
+	}
+	pixels := img.Bounds().Dx() * img.Bounds().Dy()
+	if pixels <= resampledMaxPixels {
+		return imgData, nil // No need to resample if the image is small enough
+	}
+
+	scale := float64(resampledMaxPixels) / float64(pixels)
+	dstWidth := int(float64(img.Bounds().Dx()) * scale)
+	dstHeight := int(float64(img.Bounds().Dy()) * scale)
+	dstImg := imaging.Resize(img, dstWidth, dstHeight, imaging.Lanczos)
+
+	buf := new(bytes.Buffer)
+	if err := webp.Encode(buf, dstImg, &webp.Options{Quality: 80}); err != nil {
+		return nil, errors.New("failed to encode resampled image data to webp format")
+	}
+	if err := os.WriteFile(resampledFilepath, buf.Bytes(), 0644); err != nil {
+		return nil, errors.New("failed to save resampled image file")
+	}
+
+	return buf.Bytes(), nil
 }

@@ -71,10 +71,30 @@ func handleDeleteImage(c fiber.Ctx) error {
 	})
 }
 
+func handleGetResampledImage(c fiber.Ctx) error {
+	idStr := c.Params("id")
+	if idStr == "" {
+		return model.NewRequestError("Image ID is required")
+	}
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return model.NewRequestError("Invalid image ID")
+	}
+	image, err := service.GetResampledImage(uint(id))
+	if err != nil {
+		return err
+	}
+	contentType := http.DetectContentType(image)
+	c.Set("Content-Type", contentType)
+	c.Set("Cache-Control", "public, max-age=31536000")
+	return c.Send(image)
+}
+
 func AddImageRoutes(api fiber.Router) {
 	image := api.Group("/image")
 	{
 		image.Put("/", handleUploadImage)
+		image.Get("/resampled/:id", handleGetResampledImage)
 		image.Get("/:id", handleGetImage)
 		image.Delete("/:id", handleDeleteImage)
 	}

@@ -492,6 +492,10 @@ class Network {
     return `${this.apiBaseUrl}/image/${id}`;
   }
 
+  getResampledImageUrl(id: number): string {
+    return `${this.apiBaseUrl}/image/resampled/${id}`;
+  }
+
   async createResource(
     params: CreateResourceParams,
   ): Promise<Response<number>> {
