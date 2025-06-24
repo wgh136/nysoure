@@ -3,12 +3,20 @@ package service
 import (
 	"nysoure/server/dao"
 	"nysoure/server/model"
+	"nysoure/server/utils"
+	"time"
 
 	"github.com/gofiber/fiber/v3/log"
 )
 
 const (
 	maxImagePerComment = 9
+	maxCommentsPerIP   = 512  // Maximum number of comments allowed per IP address per day
+	maxCommentLength   = 1024 // Maximum length of a comment
+)
+
+var (
+	commentsLimiter = utils.NewRequestLimiter(maxCommentsPerIP, 24*time.Hour)
 )
 
 type CommentRequest struct {
@@ -16,7 +24,19 @@ type CommentRequest struct {
 	Images  []uint `json:"images"`
 }
 
-func CreateComment(req CommentRequest, userID uint, resourceID uint) (*model.CommentView, error) {
+func CreateComment(req CommentRequest, userID uint, resourceID uint, ip string) (*model.CommentView, error) {
+	if !commentsLimiter.AllowRequest(ip) {
+		log.Warnf("IP %s has exceeded the comment limit of %d comments per day", ip, maxCommentsPerIP)
+		return nil, model.NewRequestError("Too many comments from this IP address, please try again later")
+	}
+
+	if len(req.Content) == 0 {
+		return nil, model.NewRequestError("Content cannot be empty")
+	}
+	if len([]rune(req.Content)) > maxCommentLength {
+		return nil, model.NewRequestError("Comment content exceeds maximum length of 1024 characters")
+	}
+
 	if len(req.Images) > maxImagePerComment {
 		return nil, model.NewRequestError("Too many images, maximum is 9")
 	}
@@ -83,6 +103,13 @@ func ListCommentsWithUser(username string, page int) ([]model.CommentWithResourc
 }
 
 func UpdateComment(commentID, userID uint, req CommentRequest) (*model.CommentView, error) {
+	if len(req.Content) == 0 {
+		return nil, model.NewRequestError("Content cannot be empty")
+	}
+	if len([]rune(req.Content)) > maxCommentLength {
+		return nil, model.NewRequestError("Comment content exceeds maximum length of 1024 characters")
+	}
+
 	if len(req.Images) > maxImagePerComment {
 		return nil, model.NewRequestError("Too many images, maximum is 9")
 	}

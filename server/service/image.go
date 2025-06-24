@@ -11,7 +11,6 @@ import (
 	"nysoure/server/utils"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v3/log"
@@ -55,38 +54,10 @@ func init() {
 }
 
 var (
-	imageUploadsByIP = make(map[string]uint)
-	imageUploadsLock = sync.RWMutex{}
+	imageLimiter = utils.NewRequestLimiter(maxUploadsPerIP, 24*time.Hour)
 )
 
 const maxUploadsPerIP = 100
-
-func init() {
-	// Initialize the map with a cleanup function to remove old entries
-	go func() {
-		for {
-			time.Sleep(24 * time.Hour) // Cleanup every 24 hours
-			imageUploadsLock.Lock()
-			imageUploadsByIP = make(map[string]uint) // Clear the map
-			imageUploadsLock.Unlock()
-		}
-	}()
-}
-
-func addIpUploadCount(ip string) bool {
-	imageUploadsLock.Lock()
-	defer imageUploadsLock.Unlock()
-
-	count, exists := imageUploadsByIP[ip]
-	if !exists {
-		count = 0
-	}
-	if count >= maxUploadsPerIP {
-		return false // Exceeded upload limit for this IP
-	}
-	imageUploadsByIP[ip] = count + 1
-	return true // Upload count incremented successfully
-}
 
 func CreateImage(uid uint, ip string, data []byte) (uint, error) {
 	canUpload, err := checkUserCanUpload(uid)
@@ -96,7 +67,7 @@ func CreateImage(uid uint, ip string, data []byte) (uint, error) {
 	}
 	if !canUpload {
 		// For a normal user, check the IP upload limit
-		if !addIpUploadCount(ip) {
+		if !imageLimiter.AllowRequest(ip) {
 			return 0, model.NewUnAuthorizedError("You have reached the maximum upload limit")
 		}
 	}

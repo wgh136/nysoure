@@ -38,7 +38,7 @@ func createComment(c fiber.Ctx) error {
 		return model.NewRequestError("Content cannot be empty")
 	}
 
-	comment, err := service.CreateComment(req, userID, uint(resourceID))
+	comment, err := service.CreateComment(req, userID, uint(resourceID), c.IP())
 	if err != nil {
 		return err
 	}
