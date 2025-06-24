@@ -7,7 +7,7 @@ import ResourcesView from "../components/resources_view";
 import Loading from "../components/loading";
 import Pagination from "../components/pagination";
 import { MdOutlineArrowRight } from "react-icons/md";
-import {SquareImage} from "../components/image.tsx";
+import { ImageGrid } from "../components/image.tsx";
 
 export default function UserPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -208,15 +208,7 @@ function CommentTile({ comment }: { comment: CommentWithResource }) {
       <div className={"p-2 whitespace-pre-wrap text-sm"}>
         {limitArticleLength(comment.content, 200)}
       </div>
-      <div
-        className={
-          "grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 p-2"
-        }
-      >
-        {comment.images.map((image) => (
-          <SquareImage key={image.id} image={image} />
-        ))}
-      </div>
+      <ImageGrid images={comment.images} />
       <a
         className="text-sm text-base-content/80 p-1 hover:text-primary cursor-pointer transition-all"
         onClick={() => {

@@ -47,7 +47,7 @@ import Button from "../components/button.tsx";
 import Badge, { BadgeAccent } from "../components/badge.tsx";
 import Input, { TextArea } from "../components/input.tsx";
 import { useAppContext } from "../components/AppContext.tsx";
-import { SquareImage } from "../components/image.tsx";
+import { ImageGrid, SquareImage } from "../components/image.tsx";
 
 export default function ResourcePage() {
   const params = useParams();
@@ -1398,15 +1398,7 @@ function CommentTile({ comment }: { comment: Comment }) {
           </div>
         )}
       </div>
-      <div
-        className={
-          "grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 p-2"
-        }
-      >
-        {comment.images.map((image) => (
-          <SquareImage key={image.id} image={image} />
-        ))}
-      </div>
+      <ImageGrid images={comment.images} />
       {app.user?.id === comment.user.id && (
         <div className={"flex flex-row-reverse"}>
           <DeleteCommentDialog commentId={comment.id} />
