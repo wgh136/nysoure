@@ -188,18 +188,20 @@ export default function ResourcePage() {
           <p className={"px-3 mt-2"}>
             {resource.links.map((l) => {
               return (
-                <span
-                  className={
-                    "py-1 px-3 inline-flex items-center m-1 border border-base-300 rounded-2xl hover:bg-base-200 transition-colors cursor-pointer select-none"
-                  }
-                >
-                  {l.url.includes("steampowered.com") ? (
-                    <BiLogoSteam size={20} />
-                  ) : (
-                    <MdOutlineLink size={20} />
-                  )}
-                  <span className={"ml-2 text-sm"}>{l.label}</span>
-                </span>
+                <a href={l.url} target={"_blank"}>
+                  <span
+                    className={
+                      "py-1 px-3 inline-flex items-center m-1 border border-base-300 rounded-2xl hover:bg-base-200 transition-colors cursor-pointer select-none"
+                    }
+                  >
+                    {l.url.includes("steampowered.com") ? (
+                      <BiLogoSteam size={20} />
+                    ) : (
+                      <MdOutlineLink size={20} />
+                    )}
+                    <span className={"ml-2 text-sm"}>{l.label}</span>
+                  </span>
+                </a>
               );
             })}
           </p>
