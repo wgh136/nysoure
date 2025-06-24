@@ -54,7 +54,7 @@ export default function EditResourcePage() {
         setTags(data.tags);
         setArticle(data.article);
         setImages(data.images.map((i) => i.id));
-        setLinks(data.links);
+        setLinks(data.links ?? []);
         setLoading(false);
       } else {
         showToast({ message: t("Failed to load resource"), type: "error" });
