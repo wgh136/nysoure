@@ -250,7 +250,7 @@ function UserButton() {
           <li>
             <a
               onClick={() => {
-                navigate(`/user/${app.user?.username}`);
+                navigate(`/user/${encodeURIComponent(app.user!.username)}`);
                 const menu = document.getElementById(
                   "navi_dropdown_menu",
                 ) as HTMLUListElement;
