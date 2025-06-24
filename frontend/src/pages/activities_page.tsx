@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { MdArrowRight } from "react-icons/md";
 import { useNavigate } from "react-router";
 import Loading from "../components/loading.tsx";
+import {SquareImage} from "../components/image.tsx";
 
 export default function ActivitiesPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -96,6 +97,15 @@ function ActivityCard({ activity }: { activity: Activity }) {
       <div className={"mt-2"}>
         <div className={"text-sm mx-1 whitespace-pre-wrap"}>
           {activity.comment?.content}
+        </div>
+        <div
+          className={
+            "grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 px-1 py-2"
+          }
+        >
+          {(activity.comment?.images ?? []).map((image) => (
+            <SquareImage key={image.id} image={image} />
+          ))}
         </div>
         <div className={"flex items-center mt-1"}>
           <MdArrowRight />

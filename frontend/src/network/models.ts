@@ -119,6 +119,7 @@ export interface CommentWithResource {
   content: string;
   created_at: string;
   user: User;
+  images: Image[];
   resource: Resource;
 }
 
