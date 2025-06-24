@@ -19,7 +19,8 @@ func handleUploadImage(c fiber.Ctx) error {
 	if !strings.HasPrefix(contentType, "image/") {
 		return model.NewRequestError("Invalid image format")
 	}
-	id, err := service.CreateImage(uid, data)
+	ip := c.IP()
+	id, err := service.CreateImage(uid, ip, data)
 	if err != nil {
 		return err
 	}

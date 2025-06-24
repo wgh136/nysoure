@@ -1,9 +1,11 @@
 export default function showToast({
   message,
   type,
+  parent,
 }: {
   message: string;
   type?: "success" | "error" | "warning" | "info";
+  parent?: HTMLElement | null;
 }) {
   type = type || "info";
   const div = document.createElement("div");
@@ -13,7 +15,11 @@ export default function showToast({
             <span>${message}</span>
           </div>
         </div>`;
-  document.body.appendChild(div);
+  if (parent) {
+    parent.appendChild(div);
+  } else {
+    document.body.appendChild(div);
+  }
   setTimeout(() => {
     div.remove();
   }, 3000);

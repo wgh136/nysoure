@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateComment(content string, userID uint, resourceID uint) (model.Comment, error) {
+func CreateComment(content string, userID uint, resourceID uint, imageIDs []uint) (model.Comment, error) {
 	var comment model.Comment
 	err := db.Transaction(func(tx *gorm.DB) error {
 		comment = model.Comment{
@@ -17,6 +17,20 @@ func CreateComment(content string, userID uint, resourceID uint) (model.Comment,
 		if err := tx.Create(&comment).Error; err != nil {
 			return err
 		}
+
+		// 关联图片
+		if len(imageIDs) > 0 {
+			// 查找所有指定的图片
+			var images []model.Image
+			if err := tx.Where("id IN ?", imageIDs).Find(&images).Error; err != nil {
+				return err
+			}
+			// 建立关联关系
+			if err := tx.Model(&comment).Association("Images").Replace(images); err != nil {
+				return err
+			}
+		}
+
 		if err := tx.Model(&model.User{}).Where("id = ?", userID).Update("comments_count", gorm.Expr("comments_count + 1")).Error; err != nil {
 			return err
 		}
@@ -25,6 +39,9 @@ func CreateComment(content string, userID uint, resourceID uint) (model.Comment,
 	if err != nil {
 		return model.Comment{}, err
 	}
+
+	// 重新加载评论以获取关联的图片
+	db.Preload("Images").Where("id = ?", comment.ID).First(&comment)
 	return comment, nil
 }
 
@@ -36,7 +53,7 @@ func GetCommentByResourceID(resourceID uint, page, pageSize int) ([]model.Commen
 		return nil, 0, err
 	}
 
-	if err := db.Where("resource_id = ?", resourceID).Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Order("created_at DESC").Find(&comments).Error; err != nil {
+	if err := db.Where("resource_id = ?", resourceID).Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Preload("Images").Order("created_at DESC").Find(&comments).Error; err != nil {
 		return nil, 0, err
 	}
 
@@ -56,7 +73,7 @@ func GetCommentsWithUser(username string, page, pageSize int) ([]model.Comment, 
 	if err := db.Model(&model.Comment{}).Where("user_id = ?", user.ID).Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := db.Where("user_id = ?", user.ID).Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Preload("Resource").Order("created_at DESC").Find(&comments).Error; err != nil {
+	if err := db.Where("user_id = ?", user.ID).Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Preload("Resource").Preload("Images").Order("created_at DESC").Find(&comments).Error; err != nil {
 		return nil, 0, err
 	}
 	totalPages := (int(total) + pageSize - 1) / pageSize
@@ -65,22 +82,43 @@ func GetCommentsWithUser(username string, page, pageSize int) ([]model.Comment, 
 
 func GetCommentByID(commentID uint) (*model.Comment, error) {
 	var comment model.Comment
-	if err := db.Preload("User").Preload("Resource").First(&comment, commentID).Error; err != nil {
+	if err := db.Preload("User").Preload("Resource").Preload("Images").First(&comment, commentID).Error; err != nil {
 		return nil, err
 	}
 	return &comment, nil
 }
 
-func UpdateCommentContent(commentID uint, content string) (*model.Comment, error) {
+func UpdateCommentContent(commentID uint, content string, imageIDs []uint) (*model.Comment, error) {
 	var comment model.Comment
-	if err := db.First(&comment, commentID).Error; err != nil {
+	err := db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.First(&comment, commentID).Error; err != nil {
+			return err
+		}
+		comment.Content = content
+		if err := tx.Save(&comment).Error; err != nil {
+			return err
+		}
+
+		// 更新图片关联
+		if imageIDs != nil {
+			// 查找所有指定的图片
+			var images []model.Image
+			if err := tx.Where("id IN ?", imageIDs).Find(&images).Error; err != nil {
+				return err
+			}
+			// 替换关联关系
+			if err := tx.Model(&comment).Association("Images").Replace(images); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
 		return nil, err
 	}
-	comment.Content = content
-	if err := db.Save(&comment).Error; err != nil {
-		return nil, err
-	}
-	db.Preload("User").First(&comment, commentID)
+
+	// 重新加载评论以获取关联的图片和用户信息
+	db.Preload("User").Preload("Images").First(&comment, commentID)
 	return &comment, nil
 }
 
@@ -90,6 +128,12 @@ func DeleteCommentByID(commentID uint) error {
 		if err := tx.First(&comment, commentID).Error; err != nil {
 			return err
 		}
+
+		// 清除图片关联
+		if err := tx.Model(&comment).Association("Images").Clear(); err != nil {
+			return err
+		}
+
 		if err := tx.Delete(&comment).Error; err != nil {
 			return err
 		}

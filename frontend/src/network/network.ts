@@ -925,11 +925,12 @@ class Network {
   async createComment(
     resourceID: number,
     content: string,
+    images: number[],
   ): Promise<Response<any>> {
     try {
-      const response = await axios.postForm(
+      const response = await axios.post(
         `${this.apiBaseUrl}/comments/${resourceID}`,
-        { content },
+        { content, images },
       );
       return response.data;
     } catch (e: any) {
@@ -941,11 +942,12 @@ class Network {
   async updateComment(
     commentID: number,
     content: string,
+    images: number[],
   ): Promise<Response<any>> {
     try {
-      const response = await axios.putForm(
+      const response = await axios.put(
         `${this.apiBaseUrl}/comments/${commentID}`,
-        { content },
+        { content, images },
       );
       return response.data;
     } catch (e: any) {

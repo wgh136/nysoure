@@ -28,11 +28,17 @@ func createComment(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid resource ID")
 	}
-	content := c.FormValue("content")
-	if content == "" {
+
+	var req service.CommentRequest
+	if err := c.Bind().JSON(&req); err != nil {
+		return model.NewRequestError("Invalid request format")
+	}
+
+	if req.Content == "" {
 		return model.NewRequestError("Content cannot be empty")
 	}
-	comment, err := service.CreateComment(content, userID, uint(resourceID))
+
+	comment, err := service.CreateComment(req, userID, uint(resourceID))
 	if err != nil {
 		return err
 	}
@@ -102,11 +108,17 @@ func updateComment(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid comment ID")
 	}
-	content := c.FormValue("content")
-	if content == "" {
+
+	var req service.CommentRequest
+	if err := c.Bind().JSON(&req); err != nil {
+		return model.NewRequestError("Invalid request format")
+	}
+
+	if req.Content == "" {
 		return model.NewRequestError("Content cannot be empty")
 	}
-	comment, err := service.UpdateComment(uint(commentID), userID, content)
+
+	comment, err := service.UpdateComment(uint(commentID), userID, req)
 	if err != nil {
 		return err
 	}

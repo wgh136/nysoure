@@ -26,12 +26,14 @@ import {
   MdAdd,
   MdArrowDownward,
   MdArrowUpward,
+  MdClose,
   MdOutlineArticle,
   MdOutlineComment,
   MdOutlineDataset,
   MdOutlineDelete,
   MdOutlineDownload,
   MdOutlineEdit,
+  MdOutlineImage,
   MdOutlineOpenInNew,
 } from "react-icons/md";
 import { app } from "../app.ts";
@@ -45,6 +47,7 @@ import Button from "../components/button.tsx";
 import Badge, { BadgeAccent } from "../components/badge.tsx";
 import Input, { TextArea } from "../components/input.tsx";
 import { useAppContext } from "../components/AppContext.tsx";
+import { SquareImage } from "../components/image.tsx";
 
 export default function ResourcePage() {
   const params = useParams();
@@ -1131,22 +1134,44 @@ function UpdateFileInfoDialog({ file }: { file: RFile }) {
 
 function Comments({ resourceId }: { resourceId: number }) {
   const [page, setPage] = useState(1);
-
   const [maxPage, setMaxPage] = useState(0);
-
   const [listKey, setListKey] = useState(0);
-
-  const [commentContent, setCommentContent] = useState("");
-
-  const [isLoading, setLoading] = useState(false);
-
-  const { t } = useTranslation();
 
   const reload = useCallback(() => {
     setPage(1);
     setMaxPage(0);
     setListKey((prev) => prev + 1);
   }, []);
+
+  return (
+    <div>
+      <CommentInput resourceId={resourceId} reload={reload} />
+      <CommentsList
+        resourceId={resourceId}
+        page={page}
+        maxPageCallback={setMaxPage}
+        key={listKey}
+      />
+      {maxPage ? (
+        <div className={"w-full flex justify-center"}>
+          <Pagination page={page} setPage={setPage} totalPages={maxPage} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function CommentInput({
+  resourceId,
+  reload,
+}: {
+  resourceId: number;
+  reload: () => void;
+}) {
+  const [commentContent, setCommentContent] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  const [images, setImages] = useState<File[]>([]);
+  const { t } = useTranslation();
 
   const sendComment = async () => {
     if (isLoading) {
@@ -1160,9 +1185,25 @@ function Comments({ resourceId }: { resourceId: number }) {
       return;
     }
     setLoading(true);
-    const res = await network.createComment(resourceId, commentContent);
+    const imageIds: number[] = [];
+    for (const image of images) {
+      const res = await network.uploadImage(image);
+      if (res.success) {
+        imageIds.push(res.data!);
+      } else {
+        showToast({ message: res.message, type: "error" });
+        setLoading(false);
+        return;
+      }
+    }
+    const res = await network.createComment(
+      resourceId,
+      commentContent,
+      imageIds,
+    );
     if (res.success) {
       setCommentContent("");
+      setImages([]);
       showToast({
         message: t("Comment created successfully"),
         type: "success",
@@ -1174,45 +1215,89 @@ function Comments({ resourceId }: { resourceId: number }) {
     setLoading(false);
   };
 
-  return (
-    <div>
-      {app.isLoggedIn() ? (
-        <div className={"mt-4 mb-6 textarea w-full p-4 h-40 flex flex-col"}>
-          <textarea
-            placeholder={t("Write down your comment")}
-            className={"w-full resize-none grow"}
-            value={commentContent}
-            onChange={(e) => setCommentContent(e.target.value)}
-          />
-          <div className={"flex flex-row-reverse"}>
-            <button
-              onClick={sendComment}
-              className={`btn btn-primary h-8 text-sm mx-2 ${commentContent === "" && "btn-disabled"}`}
-            >
-              {isLoading ? (
-                <span className={"loading loading-spinner loading-sm"}></span>
-              ) : null}
-              Submit
-            </button>
-          </div>
-        </div>
-      ) : (
-        <InfoAlert
-          message={t("You need to log in to comment")}
-          className={"my-4 alert-info"}
-        />
-      )}
-      <CommentsList
-        resourceId={resourceId}
-        page={page}
-        maxPageCallback={setMaxPage}
-        key={listKey}
+  const handleAddImage = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.multiple = true;
+    input.onchange = (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if ((files?.length ?? 0) + images.length > 9) {
+        showToast({
+          message: t("You can only upload up to 9 images"),
+          type: "error",
+        });
+        return;
+      }
+      if (files) {
+        setImages((prev) => [...prev, ...Array.from(files)]);
+      }
+    };
+    input.click();
+  };
+
+  if (!app.isLoggedIn()) {
+    return (
+      <InfoAlert
+        message={t("You need to log in to comment")}
+        className={"my-4 alert-info"}
       />
-      {maxPage ? (
-        <div className={"w-full flex justify-center"}>
-          <Pagination page={page} setPage={setPage} totalPages={maxPage} />
+    );
+  }
+
+  return (
+    <div className={"mt-4 mb-6 textarea w-full p-4 flex flex-col"}>
+      <textarea
+        placeholder={t("Write down your comment")}
+        className={"w-full resize-none grow h-40"}
+        value={commentContent}
+        onChange={(e) => setCommentContent(e.target.value)}
+      />
+      {images.length > 0 && (
+        <div
+          className={
+            "grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 my-2"
+          }
+        >
+          {images.map((image, index) => (
+            <div key={index} className={"relative"}>
+              <img
+                src={URL.createObjectURL(image)}
+                alt={`comment-image-${index}`}
+                className={"rounded-lg aspect-square object-cover"}
+              />
+              <button
+                className={
+                  "btn btn-xs btn-circle btn-error absolute top-1 right-1"
+                }
+                onClick={() => {
+                  setImages((prev) => prev.filter((_, i) => i !== index));
+                }}
+              >
+                <MdClose size={14} />
+              </button>
+            </div>
+          ))}
         </div>
-      ) : null}
+      )}
+      <div className={"flex"}>
+        <button
+          className={"btn btn-ghost btn-sm btn-circle"}
+          onClick={handleAddImage}
+        >
+          <MdOutlineImage size={18} />
+        </button>
+        <span className={"grow"} />
+        <button
+          onClick={sendComment}
+          className={`btn btn-primary h-8 text-sm mx-2 ${commentContent === "" && "btn-disabled"}`}
+        >
+          {isLoading ? (
+            <span className={"loading loading-spinner loading-sm"}></span>
+          ) : null}
+          {t("Submit")}
+        </button>
+      </div>
     </div>
   );
 }
@@ -1313,6 +1398,15 @@ function CommentTile({ comment }: { comment: Comment }) {
           </div>
         )}
       </div>
+      <div
+        className={
+          "grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 p-2"
+        }
+      >
+        {comment.images.map((image) => (
+          <SquareImage key={image.id} image={image} />
+        ))}
+      </div>
       {app.user?.id === comment.user.id && (
         <div className={"flex flex-row-reverse"}>
           <DeleteCommentDialog commentId={comment.id} />
@@ -1397,13 +1491,33 @@ function EditCommentDialog({ comment }: { comment: Comment }) {
   const [content, setContent] = useState(comment.content);
   const { t } = useTranslation();
   const reload = useContext(context);
+  const [existingImages, setExistingImages] = useState(comment.images);
+  const [newImages, setNewImages] = useState<File[]>([]);
 
   const handleUpdate = async () => {
     if (isLoading) {
       return;
     }
     setLoading(true);
-    const res = await network.updateComment(comment.id, content);
+    const imageIds: number[] = [];
+    for (const existingImage of existingImages) {
+      imageIds.push(existingImage.id);
+    }
+    for (const newImage of newImages) {
+      const res = await network.uploadImage(newImage);
+      if (res.success) {
+        imageIds.push(res.data!);
+      } else {
+        showToast({
+          message: res.message,
+          type: "error",
+          parent: document.getElementById(`dialog_box`),
+        });
+        setLoading(false);
+        return;
+      }
+    }
+    const res = await network.updateComment(comment.id, content, imageIds);
     const dialog = document.getElementById(
       `edit_comment_dialog_${comment.id}`,
     ) as HTMLDialogElement;
@@ -1415,7 +1529,11 @@ function EditCommentDialog({ comment }: { comment: Comment }) {
       });
       reload();
     } else {
-      showToast({ message: res.message, type: "error" });
+      showToast({
+        message: res.message,
+        type: "error",
+        parent: document.getElementById(`dialog_box`),
+      });
     }
     setLoading(false);
   };
@@ -1435,13 +1553,90 @@ function EditCommentDialog({ comment }: { comment: Comment }) {
         {t("Edit")}
       </button>
       <dialog id={`edit_comment_dialog_${comment.id}`} className="modal">
-        <div className="modal-box">
+        <div className="modal-box" id={"dialog_box"}>
           <h3 className="font-bold text-lg">{t("Edit Comment")}</h3>
           <TextArea
             label={t("Content")}
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
+          <div className={"flex flex-col my-2"}>
+            <p className={"text-sm font-bold mb-2"}>{t("Images")}</p>
+            <div className={"grid grid-cols-4 sm:grid-cols-5 gap-2"}>
+              {existingImages.map((image) => (
+                <div key={image.id} className={"relative"}>
+                  <SquareImage image={image} />
+                  <button
+                    className={
+                      "btn btn-xs btn-circle btn-error absolute top-1 right-1"
+                    }
+                    onClick={() => {
+                      setExistingImages((prev) =>
+                        prev.filter((i) => i.id !== image.id),
+                      );
+                    }}
+                  >
+                    <MdClose size={14} />
+                  </button>
+                </div>
+              ))}
+              {newImages.map((image, index) => (
+                <div key={index} className={"relative"}>
+                  <img
+                    src={URL.createObjectURL(image)}
+                    alt={`comment-image-${index}`}
+                    className={"rounded-lg aspect-square object-cover"}
+                  />
+                  <button
+                    className={
+                      "btn btn-xs btn-circle btn-error absolute top-1 right-1"
+                    }
+                    onClick={() => {
+                      setNewImages((prev) =>
+                        prev.filter((_, i) => i !== index),
+                      );
+                    }}
+                  >
+                    <MdClose size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className={"flex"}>
+              <button
+                className={"btn btn-sm mt-2"}
+                onClick={() => {
+                  const input = document.createElement("input");
+                  input.type = "file";
+                  input.accept = "image/*";
+                  input.multiple = true;
+                  input.onchange = (e) => {
+                    const files = (e.target as HTMLInputElement).files;
+                    if (
+                      (files?.length ?? 0) +
+                        existingImages.length +
+                        newImages.length >
+                      9
+                    ) {
+                      showToast({
+                        message: t("You can only upload up to 9 images"),
+                        type: "error",
+                        parent: document.getElementById(`dialog_box`),
+                      });
+                      return;
+                    }
+                    if (files) {
+                      setNewImages((prev) => [...prev, ...Array.from(files)]);
+                    }
+                  };
+                  input.click();
+                }}
+              >
+                <MdAdd size={18} />
+                {t("Add")}
+              </button>
+            </div>
+          </div>
           <div className="modal-action">
             <form method="dialog">
               <button className="btn btn-ghost">{t("Close")}</button>
@@ -1450,7 +1645,7 @@ function EditCommentDialog({ comment }: { comment: Comment }) {
               {isLoading ? (
                 <span className={"loading loading-spinner loading-sm"}></span>
               ) : null}
-              {t("Update")}
+              {t("Submit")}
             </button>
           </div>
         </div>

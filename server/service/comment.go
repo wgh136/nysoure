@@ -7,7 +7,19 @@ import (
 	"github.com/gofiber/fiber/v3/log"
 )
 
-func CreateComment(content string, userID uint, resourceID uint) (*model.CommentView, error) {
+const (
+	maxImagePerComment = 9
+)
+
+type CommentRequest struct {
+	Content string `json:"content"`
+	Images  []uint `json:"images"`
+}
+
+func CreateComment(req CommentRequest, userID uint, resourceID uint) (*model.CommentView, error) {
+	if len(req.Images) > maxImagePerComment {
+		return nil, model.NewRequestError("Too many images, maximum is 9")
+	}
 	resourceExists, err := dao.ExistsResource(resourceID)
 	if err != nil {
 		log.Error("Error checking resource existence:", err)
@@ -24,7 +36,7 @@ func CreateComment(content string, userID uint, resourceID uint) (*model.Comment
 	if !userExists {
 		return nil, model.NewNotFoundError("User not found")
 	}
-	c, err := dao.CreateComment(content, userID, resourceID)
+	c, err := dao.CreateComment(req.Content, userID, resourceID, req.Images)
 	if err != nil {
 		log.Error("Error creating comment:", err)
 		return nil, model.NewInternalServerError("Error creating comment")
@@ -70,7 +82,10 @@ func ListCommentsWithUser(username string, page int) ([]model.CommentWithResourc
 	return res, totalPages, nil
 }
 
-func UpdateComment(commentID, userID uint, content string) (*model.CommentView, error) {
+func UpdateComment(commentID, userID uint, req CommentRequest) (*model.CommentView, error) {
+	if len(req.Images) > maxImagePerComment {
+		return nil, model.NewRequestError("Too many images, maximum is 9")
+	}
 	comment, err := dao.GetCommentByID(commentID)
 	if err != nil {
 		return nil, model.NewNotFoundError("Comment not found")
@@ -78,7 +93,7 @@ func UpdateComment(commentID, userID uint, content string) (*model.CommentView, 
 	if comment.UserID != userID {
 		return nil, model.NewRequestError("You can only update your own comments")
 	}
-	updated, err := dao.UpdateCommentContent(commentID, content)
+	updated, err := dao.UpdateCommentContent(commentID, req.Content, req.Images)
 	if err != nil {
 		return nil, model.NewInternalServerError("Error updating comment")
 	}
