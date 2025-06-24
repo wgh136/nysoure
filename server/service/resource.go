@@ -12,15 +12,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type ResourceCreateParams struct {
-	Title             string   `json:"title" binding:"required"`
-	AlternativeTitles []string `json:"alternative_titles"`
-	Tags              []uint   `json:"tags"`
-	Article           string   `json:"article"`
-	Images            []uint   `json:"images"`
+type ResourceParams struct {
+	Title             string       `json:"title" binding:"required"`
+	AlternativeTitles []string     `json:"alternative_titles"`
+	Links             []model.Link `json:"links"`
+	Tags              []uint       `json:"tags"`
+	Article           string       `json:"article"`
+	Images            []uint       `json:"images"`
 }
 
-func CreateResource(uid uint, params *ResourceCreateParams) (uint, error) {
+func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 	canUpload, err := checkUserCanUpload(uid)
 	if err != nil {
 		return 0, err
@@ -49,6 +50,7 @@ func CreateResource(uid uint, params *ResourceCreateParams) (uint, error) {
 		Title:             params.Title,
 		AlternativeTitles: params.AlternativeTitles,
 		Article:           params.Article,
+		Links:             params.Links,
 		Images:            images,
 		Tags:              tags,
 		UserID:            uid,
@@ -213,7 +215,7 @@ func GetResourcesWithUser(username string, page int) ([]model.ResourceView, int,
 	return views, totalPages, nil
 }
 
-func EditResource(uid, rid uint, params *ResourceCreateParams) error {
+func EditResource(uid, rid uint, params *ResourceParams) error {
 	isAdmin, err := checkUserCanUpload(uid)
 	if err != nil {
 		log.Error("checkUserCanUpload error: ", err)
@@ -230,6 +232,7 @@ func EditResource(uid, rid uint, params *ResourceCreateParams) error {
 	r.Title = params.Title
 	r.AlternativeTitles = params.AlternativeTitles
 	r.Article = params.Article
+	r.Links = params.Links
 
 	images := make([]model.Image, len(params.Images))
 	for i, id := range params.Images {

@@ -15,7 +15,7 @@ import { ErrorAlert } from "../components/alert.tsx";
 import { useAppContext } from "../components/AppContext.tsx";
 import TagInput, { QuickAddTagDialog } from "../components/tag_input.tsx";
 import {
-  ImageDrapArea,
+  ImageDropArea,
   SelectAndUploadImageButton,
   UploadClipboardImageButton,
 } from "../components/image_selector.tsx";
@@ -26,6 +26,7 @@ export default function PublishPage() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [article, setArticle] = useState<string>("");
   const [images, setImages] = useState<number[]>([]);
+  const [links, setLinks] = useState<{ label: string; url: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
 
@@ -83,6 +84,12 @@ export default function PublishPage() {
         return;
       }
     }
+    for (let i = 0; i < links.length; i++) {
+      if (!links[i].label || !links[i].url) {
+        setError(t("Link cannot be empty"));
+        return;
+      }
+    }
     if (!tags || tags.length === 0) {
       setError(t("At least one tag required"));
       return;
@@ -98,6 +105,7 @@ export default function PublishPage() {
       tags: tags.map((tag) => tag.id),
       article: article,
       images: images,
+      links: links,
     });
     if (res.success) {
       localStorage.removeItem("publish_data");
@@ -129,7 +137,7 @@ export default function PublishPage() {
   }
 
   return (
-    <ImageDrapArea
+    <ImageDropArea
       onUploaded={(images) => {
         setImages((prev) => [...prev, ...images]);
       }}
@@ -186,6 +194,61 @@ export default function PublishPage() {
           <MdAdd />
           {t("Add Alternative Title")}
         </button>
+        <div className={"h-2"}></div>
+        <p className={"my-1"}>{t("Links")}</p>
+        <div className={"flex flex-col"}>
+          {links.map((link, index) => {
+            return (
+              <div key={index} className={"flex items-center my-2"}>
+                <input
+                  type="text"
+                  className="input"
+                  placeholder={t("Label")}
+                  value={link.label}
+                  onChange={(e) => {
+                    const newLinks = [...links];
+                    newLinks[index].label = e.target.value;
+                    setLinks(newLinks);
+                  }}
+                />
+                <input
+                  type="text"
+                  className="input w-full ml-2"
+                  placeholder={t("URL")}
+                  value={link.url}
+                  onChange={(e) => {
+                    const newLinks = [...links];
+                    newLinks[index].url = e.target.value;
+                    setLinks(newLinks);
+                  }}
+                />
+                <button
+                  className={"btn btn-square btn-error ml-2"}
+                  type={"button"}
+                  onClick={() => {
+                    const newLinks = [...links];
+                    newLinks.splice(index, 1);
+                    setLinks(newLinks);
+                  }}
+                >
+                  <MdDelete size={24} />
+                </button>
+              </div>
+            );
+          })}
+          <div className={"flex"}>
+            <button
+              className={"btn my-2"}
+              type={"button"}
+              onClick={() => {
+                setLinks([...links, { label: "", url: "" }]);
+              }}
+            >
+              <MdAdd />
+              {t("Add Link")}
+            </button>
+          </div>
+        </div>
         <div className={"h-2"}></div>
         <p className={"my-1"}>{t("Tags")}</p>
         <p className={"my-1 pb-1"}>
@@ -355,6 +418,6 @@ export default function PublishPage() {
           </button>
         </div>
       </div>
-    </ImageDrapArea>
+    </ImageDropArea>
   );
 }

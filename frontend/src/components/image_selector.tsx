@@ -128,7 +128,7 @@ export function UploadClipboardImageButton({
   );
 }
 
-export function ImageDrapArea({
+export function ImageDropArea({
   children,
   onUploaded,
 }: {

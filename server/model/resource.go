@@ -10,6 +10,7 @@ type Resource struct {
 	gorm.Model
 	Title             string
 	AlternativeTitles []string `gorm:"serializer:json"`
+	Links             []Link   `gorm:"serializer:json"`
 	Article           string
 	Images            []Image `gorm:"many2many:resource_images;"`
 	Tags              []Tag   `gorm:"many2many:resource_tags;"`
@@ -18,6 +19,11 @@ type Resource struct {
 	User              User
 	Views             uint
 	Downloads         uint
+}
+
+type Link struct {
+	URL   string `json:"url"`
+	Label string `json:"label"`
 }
 
 type ResourceView struct {
@@ -33,6 +39,7 @@ type ResourceDetailView struct {
 	ID                uint           `json:"id"`
 	Title             string         `json:"title"`
 	AlternativeTitles []string       `json:"alternativeTitles"`
+	Links             []Link         `json:"links"`
 	Article           string         `json:"article"`
 	CreatedAt         time.Time      `json:"createdAt"`
 	Tags              []TagView      `json:"tags"`
@@ -84,6 +91,7 @@ func (r *Resource) ToDetailView() ResourceDetailView {
 		ID:                r.ID,
 		Title:             r.Title,
 		AlternativeTitles: r.AlternativeTitles,
+		Links:             r.Links,
 		Article:           r.Article,
 		CreatedAt:         r.CreatedAt,
 		Tags:              tags,

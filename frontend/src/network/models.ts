@@ -42,6 +42,7 @@ export interface TagWithCount extends Tag {
 export interface CreateResourceParams {
   title: string;
   alternative_titles: string[];
+  links: RLink[];
   tags: number[];
   article: string;
   images: number[];
@@ -51,6 +52,11 @@ export interface Image {
   id: number;
   width: number;
   height: number;
+}
+
+export interface RLink {
+  label: string;
+  url: string;
 }
 
 export interface Resource {
@@ -66,6 +72,7 @@ export interface ResourceDetails {
   id: number;
   title: string;
   alternativeTitles: string[];
+  links: RLink[];
   article: string;
   createdAt: string;
   tags: Tag[];

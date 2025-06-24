@@ -34,6 +34,7 @@ import {
   MdOutlineDownload,
   MdOutlineEdit,
   MdOutlineImage,
+  MdOutlineLink,
   MdOutlineOpenInNew,
 } from "react-icons/md";
 import { app } from "../app.ts";
@@ -48,6 +49,7 @@ import Badge, { BadgeAccent } from "../components/badge.tsx";
 import Input, { TextArea } from "../components/input.tsx";
 import { useAppContext } from "../components/AppContext.tsx";
 import { ImageGrid, SquareImage } from "../components/image.tsx";
+import { BiLogoSteam } from "react-icons/bi";
 
 export default function ResourcePage() {
   const params = useParams();
@@ -182,6 +184,27 @@ export default function ResourcePage() {
           </div>
         </button>
         <Tags tags={resource.tags} />
+        {resource.links && (
+          <p className={"px-3 mt-2"}>
+            {resource.links.map((l) => {
+              return (
+                <span
+                  className={
+                    "py-1 px-3 inline-flex items-center m-1 border border-base-300 rounded-2xl hover:bg-base-200 transition-colors cursor-pointer select-none"
+                  }
+                >
+                  {l.url.includes("steampowered.com") ? (
+                    <BiLogoSteam size={20} />
+                  ) : (
+                    <MdOutlineLink size={20} />
+                  )}
+                  <span className={"ml-2 text-sm"}>{l.label}</span>
+                </span>
+              );
+            })}
+          </p>
+        )}
+
         <div className="tabs tabs-box my-4 mx-2 p-4">
           <label className="tab transition-all">
             <input

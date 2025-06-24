@@ -24,7 +24,7 @@ func updateSiteMapAndRss(baseURL string) {
 }
 
 func handleCreateResource(c fiber.Ctx) error {
-	var params service.ResourceCreateParams
+	var params service.ResourceParams
 	body := c.Body()
 	err := json.Unmarshal(body, &params)
 	if err != nil {
@@ -229,7 +229,7 @@ func handleUpdateResource(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid resource ID")
 	}
-	var params service.ResourceCreateParams
+	var params service.ResourceParams
 	body := c.Body()
 	err = json.Unmarshal(body, &params)
 	if err != nil {
