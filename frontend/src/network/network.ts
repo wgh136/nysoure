@@ -29,6 +29,19 @@ class Network {
     this.init();
   }
 
+  private async _callApi<T>(request: () => Promise<{ data: T }>): Promise<T> {
+    try {
+      const response = await request();
+      return response.data;
+    } catch (e: any) {
+      console.error(e);
+      return {
+        success: false,
+        message: e.toString(),
+      } as any;
+    }
+  }
+
   init() {
     axios.defaults.validateStatus = (_) => true;
     axios.interceptors.request.use((config) => {
@@ -84,19 +97,12 @@ class Network {
     username: string,
     password: string,
   ): Promise<Response<UserWithToken>> {
-    try {
-      const response = await axios.postForm(`${this.apiBaseUrl}/user/login`, {
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/user/login`, {
         username,
         password,
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async register(
@@ -104,131 +110,67 @@ class Network {
     password: string,
     cfToken: string,
   ): Promise<Response<UserWithToken>> {
-    try {
-      const response = await axios.postForm(
-        `${this.apiBaseUrl}/user/register`,
-        {
-          username,
-          password,
-          cf_token: cfToken,
-        },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/user/register`, {
+        username,
+        password,
+        cf_token: cfToken,
+      }),
+    );
   }
 
   async getMe(): Promise<Response<UserWithToken>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/user/me`);
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() => axios.get(`${this.apiBaseUrl}/user/me`));
   }
 
   async getUserInfo(username: string): Promise<Response<User>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/user/info`, {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/user/info`, {
         params: {
           username,
         },
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async changePassword(
     oldPassword: string,
     newPassword: string,
   ): Promise<Response<UserWithToken>> {
-    try {
-      const response = await axios.postForm(
-        `${this.apiBaseUrl}/user/password`,
-        {
-          old_password: oldPassword,
-          new_password: newPassword,
-        },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/user/password`, {
+        old_password: oldPassword,
+        new_password: newPassword,
+      }),
+    );
   }
 
   async changeAvatar(file: File): Promise<Response<User>> {
-    try {
-      const formData = new FormData();
-      formData.append("avatar", file);
-      const response = await axios.put(
-        `${this.apiBaseUrl}/user/avatar`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+    const formData = new FormData();
+    formData.append("avatar", file);
+    return this._callApi(() =>
+      axios.put(`${this.apiBaseUrl}/user/avatar`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async changeUsername(username: string): Promise<Response<User>> {
-    try {
-      const response = await axios.postForm(
-        `${this.apiBaseUrl}/user/username`,
-        {
-          username,
-        },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/user/username`, {
+        username,
+      }),
+    );
   }
 
   async changeBio(bio: string): Promise<Response<User>> {
-    try {
-      const response = await axios.postForm(`${this.apiBaseUrl}/user/bio`, {
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/user/bio`, {
         bio,
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   getUserAvatar(user: User): string {
@@ -239,176 +181,96 @@ class Network {
     userId: number,
     isAdmin: boolean,
   ): Promise<Response<User>> {
-    try {
-      const response = await axios.postForm(
-        `${this.apiBaseUrl}/user/set_admin`,
-        {
-          user_id: userId,
-          is_admin: isAdmin ? "true" : "false",
-        },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/user/set_admin`, {
+        user_id: userId,
+        is_admin: isAdmin ? "true" : "false",
+      }),
+    );
   }
 
   async setUserUploadPermission(
     userId: number,
     canUpload: boolean,
   ): Promise<Response<User>> {
-    try {
-      const response = await axios.postForm(
-        `${this.apiBaseUrl}/user/set_upload_permission`,
-        {
-          user_id: userId,
-          can_upload: canUpload ? "true" : "false",
-        },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/user/set_upload_permission`, {
+        user_id: userId,
+        can_upload: canUpload ? "true" : "false",
+      }),
+    );
   }
 
   async listUsers(page: number): Promise<PageResponse<User>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/user/list`, {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/user/list`, {
         params: { page },
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async searchUsers(
     username: string,
     page: number,
   ): Promise<PageResponse<User>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/user/search`, {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/user/search`, {
         params: {
           username,
           page,
         },
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async deleteUser(userId: number): Promise<Response<void>> {
-    try {
-      const response = await axios.postForm(`${this.apiBaseUrl}/user/delete`, {
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/user/delete`, {
         user_id: userId,
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async getAllTags(): Promise<Response<TagWithCount[]>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/tag`);
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() => axios.get(`${this.apiBaseUrl}/tag`));
   }
 
   async searchTags(
     keyword: string,
     mainTag?: boolean,
   ): Promise<Response<Tag[]>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/tag/search`, {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/tag/search`, {
         params: {
           keyword,
           mainTag,
         },
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async createTag(name: string): Promise<Response<Tag>> {
-    try {
-      const response = await axios.postForm(`${this.apiBaseUrl}/tag`, {
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/tag`, {
         name,
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async getOrCreateTags(
     names: string[],
     tagType: string,
   ): Promise<Response<Tag[]>> {
-    try {
-      const response = await axios.post(`${this.apiBaseUrl}/tag/batch`, {
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/tag/batch`, {
         names,
         type: tagType,
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async getTagByName(name: string): Promise<Response<Tag>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/tag/${name}`);
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() => axios.get(`${this.apiBaseUrl}/tag/${name}`));
   }
 
   async setTagInfo(
@@ -417,75 +279,39 @@ class Network {
     aliasOf: number | null,
     type: string,
   ): Promise<Response<Tag>> {
-    try {
-      const response = await axios.putForm(
-        `${this.apiBaseUrl}/tag/${tagId}/info`,
-        {
-          description,
-          alias_of: aliasOf,
-          type,
-        },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.putForm(`${this.apiBaseUrl}/tag/${tagId}/info`, {
+        description,
+        alias_of: aliasOf,
+        type,
+      }),
+    );
   }
 
   async setTagAlias(tagID: number, aliases: string[]): Promise<Response<Tag>> {
-    try {
-      const response = await axios.put(
-        `${this.apiBaseUrl}/tag/${tagID}/alias`,
-        {
-          aliases,
-        },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.put(`${this.apiBaseUrl}/tag/${tagID}/alias`, {
+        aliases,
+      }),
+    );
   }
 
   /**
    * Upload image and return the image id
    */
   async uploadImage(file: File): Promise<Response<number>> {
-    try {
-      const data = await file.arrayBuffer();
-      const response = await axios.put(`${this.apiBaseUrl}/image`, data, {
+    const data = await file.arrayBuffer();
+    return this._callApi(() =>
+      axios.put(`${this.apiBaseUrl}/image`, data, {
         headers: {
           "Content-Type": "application/octet-stream",
         },
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async deleteImage(id: number): Promise<Response<void>> {
-    try {
-      const response = await axios.delete(`${this.apiBaseUrl}/image/${id}`);
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() => axios.delete(`${this.apiBaseUrl}/image/${id}`));
   }
 
   getImageUrl(id: number): string {
@@ -500,166 +326,91 @@ class Network {
     params: CreateResourceParams,
   ): Promise<Response<number>> {
     console.log(this);
-    try {
-      const response = await axios.post(`${this.apiBaseUrl}/resource`, params);
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/resource`, params),
+    );
   }
 
   async editResource(
     id: number,
     params: CreateResourceParams,
   ): Promise<Response<void>> {
-    try {
-      const response = await axios.post(
-        `${this.apiBaseUrl}/resource/${id}`,
-        params,
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/resource/${id}`, params),
+    );
   }
 
   async getResources(
     page: number,
     sort: RSort,
   ): Promise<PageResponse<Resource>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/resource`, {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/resource`, {
         params: {
           page,
           sort,
         },
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async getResourcesByTag(
     tag: string,
     page: number,
   ): Promise<PageResponse<Resource>> {
-    try {
-      const response = await axios.get(
-        `${this.apiBaseUrl}/resource/tag/${tag}`,
-        {
-          params: {
-            page,
-          },
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/resource/tag/${tag}`, {
+        params: {
+          page,
         },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async getResourcesByUser(
     username: string,
     page: number,
   ): Promise<PageResponse<Resource>> {
-    try {
-      const response = await axios.get(
+    return this._callApi(() =>
+      axios.get(
         `${this.apiBaseUrl}/resource/user/${encodeURIComponent(username)}`,
         {
           params: {
             page,
           },
         },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      ),
+    );
   }
 
   async searchResources(
     keyword: string,
     page: number,
   ): Promise<PageResponse<Resource>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/resource/search`, {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/resource/search`, {
         params: {
           keyword,
           page,
         },
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async getResourceDetails(id: number): Promise<Response<ResourceDetails>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/resource/${id}`);
-      const data = response.data;
-      if (!data.related) {
-        data.related = [];
-      }
-      return data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi<Response<ResourceDetails>>(() =>
+      axios.get(`${this.apiBaseUrl}/resource/${id}`),
+    );
   }
 
   async getRandomResource(): Promise<Response<Resource>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/resource/random`);
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() => axios.get(`${this.apiBaseUrl}/resource/random`));
   }
 
   async deleteResource(id: number): Promise<Response<void>> {
-    try {
-      const response = await axios.delete(`${this.apiBaseUrl}/resource/${id}`);
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.delete(`${this.apiBaseUrl}/resource/${id}`),
+    );
   }
 
   async createS3Storage(
@@ -671,8 +422,8 @@ class Network {
     maxSizeInMB: number,
     domain: string,
   ): Promise<Response<any>> {
-    try {
-      const response = await axios.post(`${this.apiBaseUrl}/storage/s3`, {
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/storage/s3`, {
         name,
         endPoint,
         accessKeyID,
@@ -680,15 +431,8 @@ class Network {
         bucketName,
         maxSizeInMB,
         domain,
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async createLocalStorage(
@@ -696,46 +440,23 @@ class Network {
     path: string,
     maxSizeInMB: number,
   ): Promise<Response<any>> {
-    try {
-      const response = await axios.post(`${this.apiBaseUrl}/storage/local`, {
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/storage/local`, {
         name,
         path,
         maxSizeInMB,
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async listStorages(): Promise<Response<Storage[]>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/storage`);
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() => axios.get(`${this.apiBaseUrl}/storage`));
   }
 
   async deleteStorage(id: number): Promise<Response<void>> {
-    try {
-      const response = await axios.delete(`${this.apiBaseUrl}/storage/${id}`);
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.delete(`${this.apiBaseUrl}/storage/${id}`),
+    );
   }
 
   async initFileUpload(
@@ -745,25 +466,15 @@ class Network {
     resourceId: number,
     storageId: number,
   ): Promise<Response<UploadingFile>> {
-    try {
-      const response = await axios.post(
-        `${this.apiBaseUrl}/files/upload/init`,
-        {
-          filename,
-          description,
-          file_size: fileSize,
-          resource_id: resourceId,
-          storage_id: storageId,
-        },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/files/upload/init`, {
+        filename,
+        description,
+        file_size: fileSize,
+        resource_id: resourceId,
+        storage_id: storageId,
+      }),
+    );
   }
 
   async uploadFileBlock(
@@ -771,8 +482,8 @@ class Network {
     index: number,
     blockData: ArrayBuffer,
   ): Promise<Response<any>> {
-    try {
-      const response = await axios.post(
+    return this._callApi(() =>
+      axios.post(
         `${this.apiBaseUrl}/files/upload/block/${fileId}/${index}`,
         blockData,
         {
@@ -780,48 +491,23 @@ class Network {
             "Content-Type": "application/octet-stream",
           },
         },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      ),
+    );
   }
 
   async finishFileUpload(
     fileId: number,
     md5: string,
   ): Promise<Response<RFile>> {
-    try {
-      const response = await axios.post(
-        `${this.apiBaseUrl}/files/upload/finish/${fileId}?md5=${md5}`,
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/files/upload/finish/${fileId}?md5=${md5}`),
+    );
   }
 
   async cancelFileUpload(fileId: number): Promise<Response<void>> {
-    try {
-      const response = await axios.post(
-        `${this.apiBaseUrl}/files/upload/cancel/${fileId}`,
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/files/upload/cancel/${fileId}`),
+    );
   }
 
   async createRedirectFile(
@@ -830,21 +516,14 @@ class Network {
     resourceId: number,
     redirectUrl: string,
   ): Promise<Response<RFile>> {
-    try {
-      const response = await axios.post(`${this.apiBaseUrl}/files/redirect`, {
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/files/redirect`, {
         filename,
         description,
         resource_id: resourceId,
         redirect_url: redirectUrl,
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async createServerDownloadTask(
@@ -854,35 +533,19 @@ class Network {
     resourceId: number,
     storageId: number,
   ): Promise<Response<RFile>> {
-    try {
-      const response = await axios.post(`${this.apiBaseUrl}/files/upload/url`, {
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/files/upload/url`, {
         url,
         filename,
         description,
         resource_id: resourceId,
         storage_id: storageId,
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async getFile(fileId: string): Promise<Response<RFile>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/files/${fileId}`);
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() => axios.get(`${this.apiBaseUrl}/files/${fileId}`));
   }
 
   async updateFile(
@@ -890,32 +553,18 @@ class Network {
     filename: string,
     description: string,
   ): Promise<Response<RFile>> {
-    try {
-      const response = await axios.put(`${this.apiBaseUrl}/files/${fileId}`, {
+    return this._callApi(() =>
+      axios.put(`${this.apiBaseUrl}/files/${fileId}`, {
         filename,
         description,
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+      }),
+    );
   }
 
   async deleteFile(fileId: string): Promise<Response<void>> {
-    try {
-      const response = await axios.delete(`${this.apiBaseUrl}/files/${fileId}`);
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() =>
+      axios.delete(`${this.apiBaseUrl}/files/${fileId}`),
+    );
   }
 
   getFileDownloadLink(fileId: string, cfToken: string): string {
@@ -927,16 +576,12 @@ class Network {
     content: string,
     images: number[],
   ): Promise<Response<any>> {
-    try {
-      const response = await axios.post(
-        `${this.apiBaseUrl}/comments/${resourceID}`,
-        { content, images },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return { success: false, message: e.toString() };
-    }
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/comments/${resourceID}`, {
+        content,
+        images,
+      }),
+    );
   }
 
   async updateComment(
@@ -944,102 +589,59 @@ class Network {
     content: string,
     images: number[],
   ): Promise<Response<any>> {
-    try {
-      const response = await axios.put(
-        `${this.apiBaseUrl}/comments/${commentID}`,
-        { content, images },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return { success: false, message: e.toString() };
-    }
+    return this._callApi(() =>
+      axios.put(`${this.apiBaseUrl}/comments/${commentID}`, {
+        content,
+        images,
+      }),
+    );
   }
 
   async listComments(
     resourceID: number,
     page: number = 1,
   ): Promise<PageResponse<Comment>> {
-    try {
-      const response = await axios.get(
-        `${this.apiBaseUrl}/comments/${resourceID}`,
-        {
-          params: { page },
-        },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return { success: false, message: e.toString() };
-    }
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/comments/${resourceID}`, {
+        params: { page },
+      }),
+    );
   }
 
   async listCommentsByUser(
     username: string,
     page: number = 1,
   ): Promise<PageResponse<CommentWithResource>> {
-    try {
-      const response = await axios.get(
+    return this._callApi(() =>
+      axios.get(
         `${this.apiBaseUrl}/comments/user/${encodeURIComponent(username)}`,
         {
           params: { page },
         },
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return { success: false, message: e.toString() };
-    }
+      ),
+    );
   }
 
   async deleteComment(commentID: number): Promise<Response<void>> {
-    try {
-      const response = await axios.delete(
-        `${this.apiBaseUrl}/comments/${commentID}`,
-      );
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return { success: false, message: e.toString() };
-    }
+    return this._callApi(() =>
+      axios.delete(`${this.apiBaseUrl}/comments/${commentID}`),
+    );
   }
 
   async getServerConfig(): Promise<Response<ServerConfig>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/config`);
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() => axios.get(`${this.apiBaseUrl}/config`));
   }
 
   async setServerConfig(config: ServerConfig): Promise<Response<void>> {
-    try {
-      const response = await axios.post(`${this.apiBaseUrl}/config`, config);
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return {
-        success: false,
-        message: e.toString(),
-      };
-    }
+    return this._callApi(() => axios.post(`${this.apiBaseUrl}/config`, config));
   }
 
   async getActivities(page: number = 1): Promise<PageResponse<Activity>> {
-    try {
-      const response = await axios.get(`${this.apiBaseUrl}/activity`, {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/activity`, {
         params: { page },
-      });
-      return response.data;
-    } catch (e: any) {
-      console.error(e);
-      return { success: false, message: e.toString() };
-    }
+      }),
+    );
   }
 }
 
