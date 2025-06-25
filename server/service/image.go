@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/disintegration/imaging"
 	"image"
+	"math"
 	"net/http"
 	"nysoure/server/dao"
 	"nysoure/server/model"
@@ -232,7 +233,7 @@ func getOrCreateResampledImage(i model.Image) ([]byte, error) {
 		return imgData, nil // No need to resample if the image is small enough
 	}
 
-	scale := float64(resampledMaxPixels) / float64(pixels)
+	scale := math.Sqrt(float64(resampledMaxPixels) / float64(pixels))
 	dstWidth := int(float64(img.Bounds().Dx()) * scale)
 	dstHeight := int(float64(img.Bounds().Dy()) * scale)
 	dstImg := imaging.Resize(img, dstWidth, dstHeight, imaging.Lanczos)
