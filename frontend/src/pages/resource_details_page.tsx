@@ -1221,7 +1221,7 @@ function CommentInput({
         return;
       }
     }
-    const res = await network.createComment(
+    const res = await network.createResourceComment(
       resourceId,
       commentContent,
       imageIds,
@@ -1339,7 +1339,7 @@ function CommentsList({
   const [comments, setComments] = useState<Comment[] | null>(null);
 
   useEffect(() => {
-    network.listComments(resourceId, page).then((res) => {
+    network.listResourceComments(resourceId, page).then((res) => {
       if (res.success) {
         setComments(res.data!);
         maxPageCallback(res.totalPages || 1);

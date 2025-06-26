@@ -27,7 +27,11 @@ func GetActivityList(page int) ([]model.ActivityView, int, error) {
 			if err != nil {
 				return nil, 0, err
 			}
-			comment = c.ToViewWithResource()
+			r, err := dao.GetResourceByID(c.RefID)
+			if err != nil {
+				return nil, 0, err
+			}
+			comment = c.ToViewWithResource(&r)
 		} else if activity.Type == model.ActivityTypeNewResource || activity.Type == model.ActivityTypeUpdateResource {
 			r, err := dao.GetResourceByID(activity.RefID)
 			if err != nil {

@@ -24,7 +24,7 @@ type CommentRequest struct {
 	Images  []uint `json:"images"`
 }
 
-func CreateComment(req CommentRequest, userID uint, resourceID uint, ip string) (*model.CommentView, error) {
+func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType model.CommentType) (*model.CommentView, error) {
 	if !commentsLimiter.AllowRequest(ip) {
 		log.Warnf("IP %s has exceeded the comment limit of %d comments per day", ip, maxCommentsPerIP)
 		return nil, model.NewRequestError("Too many comments from this IP address, please try again later")
@@ -40,7 +40,7 @@ func CreateComment(req CommentRequest, userID uint, resourceID uint, ip string) 
 	if len(req.Images) > maxImagePerComment {
 		return nil, model.NewRequestError("Too many images, maximum is 9")
 	}
-	resourceExists, err := dao.ExistsResource(resourceID)
+	resourceExists, err := dao.ExistsResource(refID)
 	if err != nil {
 		log.Error("Error checking resource existence:", err)
 		return nil, model.NewInternalServerError("Error checking resource existence")
@@ -56,7 +56,7 @@ func CreateComment(req CommentRequest, userID uint, resourceID uint, ip string) 
 	if !userExists {
 		return nil, model.NewNotFoundError("User not found")
 	}
-	c, err := dao.CreateComment(req.Content, userID, resourceID, req.Images)
+	c, err := dao.CreateComment(req.Content, userID, refID, req.Images, cType)
 	if err != nil {
 		log.Error("Error creating comment:", err)
 		return nil, model.NewInternalServerError("Error creating comment")
@@ -68,7 +68,7 @@ func CreateComment(req CommentRequest, userID uint, resourceID uint, ip string) 
 	return c.ToView(), nil
 }
 
-func ListComments(resourceID uint, page int) ([]model.CommentView, int, error) {
+func ListResourceComments(resourceID uint, page int) ([]model.CommentView, int, error) {
 	resourceExists, err := dao.ExistsResource(resourceID)
 	if err != nil {
 		log.Error("Error checking resource existence:", err)
@@ -97,7 +97,12 @@ func ListCommentsWithUser(username string, page int) ([]model.CommentWithResourc
 	}
 	res := make([]model.CommentWithResourceView, 0, len(comments))
 	for _, c := range comments {
-		res = append(res, *c.ToViewWithResource())
+		r, err := dao.GetResourceByID(c.RefID)
+		if err != nil {
+			log.Error("Error getting resource for comment:", err)
+			return nil, 0, model.NewInternalServerError("Error getting resource for comment")
+		}
+		res = append(res, *c.ToViewWithResource(&r))
 	}
 	return res, totalPages, nil
 }

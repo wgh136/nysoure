@@ -6,13 +6,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateComment(content string, userID uint, resourceID uint, imageIDs []uint) (model.Comment, error) {
+func CreateComment(content string, userID uint, resourceID uint, imageIDs []uint, cType model.CommentType) (model.Comment, error) {
 	var comment model.Comment
 	err := db.Transaction(func(tx *gorm.DB) error {
 		comment = model.Comment{
-			Content:    content,
-			UserID:     userID,
-			ResourceID: resourceID,
+			Content: content,
+			UserID:  userID,
+			RefID:   resourceID,
+			Type:    cType,
 		}
 		if err := tx.Create(&comment).Error; err != nil {
 			return err
@@ -49,11 +50,24 @@ func GetCommentByResourceID(resourceID uint, page, pageSize int) ([]model.Commen
 	var comments []model.Comment
 	var total int64
 
-	if err := db.Model(&model.Comment{}).Where("resource_id = ?", resourceID).Count(&total).Error; err != nil {
+	if err := db.
+		Model(&model.Comment{}).
+		Where("type = ?", model.CommentTypeResource).
+		Where("ref_id = ?", resourceID).
+		Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	if err := db.Where("resource_id = ?", resourceID).Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Preload("Images").Order("created_at DESC").Find(&comments).Error; err != nil {
+	if err := db.
+		Model(&model.Comment{}).
+		Where("type = ?", model.CommentTypeResource).
+		Where("ref_id = ?", resourceID).
+		Offset((page - 1) * pageSize).
+		Limit(pageSize).
+		Preload("User").
+		Preload("Images").
+		Order("created_at DESC").
+		Find(&comments).Error; err != nil {
 		return nil, 0, err
 	}
 
@@ -70,10 +84,22 @@ func GetCommentsWithUser(username string, page, pageSize int) ([]model.Comment, 
 	}
 	var comments []model.Comment
 	var total int64
-	if err := db.Model(&model.Comment{}).Where("user_id = ?", user.ID).Count(&total).Error; err != nil {
+	if err := db.
+		Model(&model.Comment{}).
+		Where("type = ?", model.CommentTypeResource).
+		Where("user_id = ?", user.ID).
+		Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := db.Where("user_id = ?", user.ID).Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Preload("Resource").Preload("Images").Order("created_at DESC").Find(&comments).Error; err != nil {
+	if err := db.
+		Model(&model.Comment{}).
+		Where("type = ?", model.CommentTypeResource).
+		Where("user_id = ?", user.ID).
+		Offset((page - 1) * pageSize).
+		Limit(pageSize).Preload("User").
+		Preload("Images").
+		Order("created_at DESC").
+		Find(&comments).Error; err != nil {
 		return nil, 0, err
 	}
 	totalPages := (int(total) + pageSize - 1) / pageSize
@@ -82,7 +108,7 @@ func GetCommentsWithUser(username string, page, pageSize int) ([]model.Comment, 
 
 func GetCommentByID(commentID uint) (*model.Comment, error) {
 	var comment model.Comment
-	if err := db.Preload("User").Preload("Resource").Preload("Images").First(&comment, commentID).Error; err != nil {
+	if err := db.Preload("User").Preload("Images").First(&comment, commentID).Error; err != nil {
 		return nil, err
 	}
 	return &comment, nil

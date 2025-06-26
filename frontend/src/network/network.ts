@@ -571,13 +571,13 @@ class Network {
     return `${this.apiBaseUrl}/files/download/${fileId}?cf_token=${cfToken}`;
   }
 
-  async createComment(
+  async createResourceComment(
     resourceID: number,
     content: string,
     images: number[],
   ): Promise<Response<any>> {
     return this._callApi(() =>
-      axios.post(`${this.apiBaseUrl}/comments/${resourceID}`, {
+      axios.post(`${this.apiBaseUrl}/comments/resource/${resourceID}`, {
         content,
         images,
       }),
@@ -597,12 +597,12 @@ class Network {
     );
   }
 
-  async listComments(
+  async listResourceComments(
     resourceID: number,
     page: number = 1,
   ): Promise<PageResponse<Comment>> {
     return this._callApi(() =>
-      axios.get(`${this.apiBaseUrl}/comments/${resourceID}`, {
+      axios.get(`${this.apiBaseUrl}/comments/resource/${resourceID}`, {
         params: { page },
       }),
     );

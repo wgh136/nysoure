@@ -8,13 +8,20 @@ import (
 
 type Comment struct {
 	gorm.Model
-	Content    string   `gorm:"not null"`
-	ResourceID uint     `gorm:"not null"`
-	UserID     uint     `gorm:"not null"`
-	User       User     `gorm:"foreignKey:UserID"`
-	Resource   Resource `gorm:"foreignKey:ResourceID"`
-	Images     []Image  `gorm:"many2many:comment_images;"`
+	Content string      `gorm:"not null"`
+	RefID   uint        `gorm:"not null;index:idx_refid_type,priority:1"`
+	Type    CommentType `gorm:"not null;index:idx_refid_type,priority:2"`
+	UserID  uint        `gorm:"not null"`
+	User    User        `gorm:"foreignKey:UserID"`
+	Images  []Image     `gorm:"many2many:comment_images;"`
 }
+
+type CommentType uint
+
+const (
+	CommentTypeResource CommentType = iota + 1
+	CommentTypeReply
+)
 
 type CommentView struct {
 	ID        uint        `json:"id"`
@@ -48,7 +55,7 @@ type CommentWithResourceView struct {
 	Images    []ImageView  `json:"images"`
 }
 
-func (c *Comment) ToViewWithResource() *CommentWithResourceView {
+func (c *Comment) ToViewWithResource(r *Resource) *CommentWithResourceView {
 	imageViews := make([]ImageView, 0, len(c.Images))
 	for _, img := range c.Images {
 		imageViews = append(imageViews, img.ToView())
@@ -58,7 +65,7 @@ func (c *Comment) ToViewWithResource() *CommentWithResourceView {
 		ID:        c.ID,
 		Content:   c.Content,
 		CreatedAt: c.CreatedAt,
-		Resource:  c.Resource.ToView(),
+		Resource:  r.ToView(),
 		User:      c.User.ToView(),
 		Images:    imageViews,
 	}

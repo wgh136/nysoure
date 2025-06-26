@@ -11,14 +11,16 @@ import (
 
 func AddCommentRoutes(router fiber.Router) {
 	api := router.Group("/comments")
-	api.Post("/:resourceID", createComment)
-	api.Get("/:resourceID", listComments)
-	api.Get("/user/:username", listCommentsWithUser)
+	api.Post("/resource/:resourceID", createResourceComment)
+	api.Post("/reply/:commentID", createReplyComment)
+	api.Get("/resource/:resourceID", listResourceComments)
+	api.Get("/reply/:commentID", listResourceComments)
+	api.Get("/user/:username", listCommentsByUser)
 	api.Put("/:commentID", updateComment)
 	api.Delete("/:commentID", deleteComment)
 }
 
-func createComment(c fiber.Ctx) error {
+func createResourceComment(c fiber.Ctx) error {
 	userID, ok := c.Locals("uid").(uint)
 	if !ok {
 		return model.NewRequestError("You must be logged in to comment")
@@ -38,7 +40,7 @@ func createComment(c fiber.Ctx) error {
 		return model.NewRequestError("Content cannot be empty")
 	}
 
-	comment, err := service.CreateComment(req, userID, uint(resourceID), c.IP())
+	comment, err := service.CreateComment(req, userID, uint(resourceID), c.IP(), model.CommentTypeResource)
 	if err != nil {
 		return err
 	}
@@ -49,7 +51,38 @@ func createComment(c fiber.Ctx) error {
 	})
 }
 
-func listComments(c fiber.Ctx) error {
+func createReplyComment(c fiber.Ctx) error {
+	userID, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewRequestError("You must be logged in to reply")
+	}
+	commentIDStr := c.Params("commentID")
+	commentID, err := strconv.Atoi(commentIDStr)
+	if err != nil {
+		return model.NewRequestError("Invalid comment ID")
+	}
+
+	var req service.CommentRequest
+	if err := c.Bind().JSON(&req); err != nil {
+		return model.NewRequestError("Invalid request format")
+	}
+
+	if req.Content == "" {
+		return model.NewRequestError("Content cannot be empty")
+	}
+
+	comment, err := service.CreateComment(req, userID, uint(commentID), c.IP(), model.CommentTypeReply)
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusCreated).JSON(model.Response[model.CommentView]{
+		Success: true,
+		Data:    *comment,
+		Message: "Reply created successfully",
+	})
+}
+
+func listResourceComments(c fiber.Ctx) error {
 	resourceIDStr := c.Params("resourceID")
 	resourceID, err := strconv.Atoi(resourceIDStr)
 	if err != nil {
@@ -60,7 +93,7 @@ func listComments(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid page number")
 	}
-	comments, totalPages, err := service.ListComments(uint(resourceID), page)
+	comments, totalPages, err := service.ListResourceComments(uint(resourceID), page)
 	if err != nil {
 		return err
 	}
@@ -72,7 +105,7 @@ func listComments(c fiber.Ctx) error {
 	})
 }
 
-func listCommentsWithUser(c fiber.Ctx) error {
+func listCommentsByUser(c fiber.Ctx) error {
 	username := c.Params("username")
 	if username == "" {
 		return model.NewRequestError("Username is required")
