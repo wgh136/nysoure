@@ -17,8 +17,8 @@ const (
 type Activity struct {
 	gorm.Model
 	UserID uint         `gorm:"not null"`
-	Type   ActivityType `gorm:"not null"`
-	RefID  uint         `gorm:"not null"` // Reference ID for the resource or comment
+	Type   ActivityType `gorm:"not null;index:idx_type_refid"`
+	RefID  uint         `gorm:"not null;index:idx_type_refid"`
 }
 
 type ActivityView struct {
