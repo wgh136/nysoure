@@ -85,7 +85,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
           <div>
             <img
               className={"object-contain max-h-52 mt-2 rounded-lg"}
-              src={network.getImageUrl(activity.resource.image.id)}
+              src={network.getResampledImageUrl(activity.resource.image.id)}
               alt={activity.resource.title}
             />
           </div>

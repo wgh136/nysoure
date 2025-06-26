@@ -110,7 +110,11 @@ func CreateImage(uid uint, ip string, data []byte) (uint, error) {
 
 	// If the image is still too large after conversion, return an error
 	if len(data) > 1024*1024*4 {
-		return 0, model.NewRequestError("Image data is too large after conversion")
+		return 0, model.NewRequestError("Image data is too large")
+	}
+	// Normal user has a smaller upload limit
+	if !canUpload && len(data) > 1024*1024*2 {
+		return 0, model.NewRequestError("Image data is too large")
 	}
 
 	filename := uuid.New().String()
