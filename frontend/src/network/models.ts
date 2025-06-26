@@ -81,6 +81,7 @@ export interface ResourceDetails {
   author: User;
   views: number;
   downloads: number;
+  comments: number;
   related: Resource[];
 }
 

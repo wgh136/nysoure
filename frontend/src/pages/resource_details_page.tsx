@@ -245,6 +245,13 @@ export default function ResourcePage() {
             />
             <MdOutlineComment className="text-xl mr-2" />
             <span className="text-sm">{t("Comments")}</span>
+            {resource.comments ? (
+              <span
+                className={`px-1 py-0.5 ml-1 rounded-full text-xs ${page === 2 ? "bg-accent text-accent-content" : "text-base-content/60"}`}
+              >
+                {resource.comments}
+              </span>
+            ) : null}
           </label>
           <div key={"comments"} className="tab-content p-2">
             <Comments resourceId={resource.id} />

@@ -35,6 +35,12 @@ func CreateComment(content string, userID uint, resourceID uint, imageIDs []uint
 		if err := tx.Model(&model.User{}).Where("id = ?", userID).Update("comments_count", gorm.Expr("comments_count + 1")).Error; err != nil {
 			return err
 		}
+
+		// Update resource comments count
+		if err := tx.Model(&model.Resource{}).Where("id = ?", resourceID).Update("comments", gorm.Expr("comments + 1")).Error; err != nil {
+			return err
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -164,6 +170,9 @@ func DeleteCommentByID(commentID uint) error {
 			return err
 		}
 		if err := tx.Model(&model.User{}).Where("id = ?", comment.UserID).Update("comments_count", gorm.Expr("comments_count - 1")).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&model.Resource{}).Where("id = ?", comment.RefID).Update("comments", gorm.Expr("comments - 1")).Error; err != nil {
 			return err
 		}
 		if err := tx.

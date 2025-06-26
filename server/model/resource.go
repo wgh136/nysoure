@@ -19,6 +19,7 @@ type Resource struct {
 	User              User
 	Views             uint
 	Downloads         uint
+	Comments          uint
 }
 
 type Link struct {
@@ -48,6 +49,7 @@ type ResourceDetailView struct {
 	Author            UserView       `json:"author"`
 	Views             uint           `json:"views"`
 	Downloads         uint           `json:"downloads"`
+	Comments          uint           `json:"comments"`
 	Related           []ResourceView `json:"related"`
 }
 
@@ -100,5 +102,6 @@ func (r *Resource) ToDetailView() ResourceDetailView {
 		Author:            r.User.ToView(),
 		Views:             r.Views,
 		Downloads:         r.Downloads,
+		Comments:          r.Comments,
 	}
 }
