@@ -2,13 +2,14 @@ package dao
 
 import (
 	"errors"
-	"github.com/gofiber/fiber/v3/log"
 	"math/rand"
 	"nysoure/server/model"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/gofiber/fiber/v3/log"
 
 	"gorm.io/gorm"
 )
@@ -181,21 +182,10 @@ func splitQuery(query string) []string {
 func Search(query string, page, pageSize int) ([]model.Resource, int, error) {
 	query = strings.TrimSpace(query)
 
-	if len([]rune(query)) < 20 {
-		tag, err := GetTagByName(query)
-		if err == nil {
-			return GetResourceByTag(tag.ID, page, pageSize)
-		}
-		if strings.Contains(query, " ") {
-			removeSpace := strings.ReplaceAll(query, " ", "")
-			tag, err = GetTagByName(removeSpace)
-			if err == nil {
-				return GetResourceByTag(tag.ID, page, pageSize)
-			}
-		}
-	}
-
 	keywords := splitQuery(query)
+	if len(keywords) == 0 {
+		return nil, 0, nil
+	}
 	resource, err := searchWithKeyword(keywords[0])
 	if err != nil {
 		return nil, 0, err
@@ -256,7 +246,12 @@ func Search(query string, page, pageSize int) ([]model.Resource, int, error) {
 func searchWithKeyword(keyword string) ([]model.Resource, error) {
 	if len(keyword) == 0 {
 		return nil, nil
+	} else if len([]rune(keyword)) > 100 {
+		return nil, model.NewRequestError("Keyword is too long")
 	}
+
+	var resources []model.Resource
+
 	if len([]rune(keyword)) < 20 {
 		var tag model.Tag
 		var err error
@@ -276,7 +271,6 @@ func searchWithKeyword(keyword string) ([]model.Resource, error) {
 			for _, alias := range tag.Aliases {
 				tagIds = append(tagIds, alias.ID)
 			}
-			var resources []model.Resource
 			subQuery := db.Table("resource_tags").
 				Select("resource_id").
 				Where("tag_id IN ?", tagIds).
@@ -284,17 +278,31 @@ func searchWithKeyword(keyword string) ([]model.Resource, error) {
 			if err := db.Where("id IN (?)", subQuery).Select("id", "title", "alternative_titles").Preload("Tags").Find(&resources).Error; err != nil {
 				return nil, err
 			}
-			return resources, nil
 		}
 	}
-	if len([]rune(keyword)) < 80 {
-		var resources []model.Resource
-		if err := db.Where("title LIKE ?", "%"+keyword+"%").Or("alternative_titles LIKE ?", "%"+keyword+"%").Select("id", "title", "alternative_titles").Preload("Tags").Find(&resources).Error; err != nil {
-			return nil, err
-		}
-		return resources, nil
+
+	var titleResult []model.Resource
+	if err := db.Where("title LIKE ?", "%"+keyword+"%").Or("alternative_titles LIKE ?", "%"+keyword+"%").Select("id", "title", "alternative_titles").Preload("Tags").Find(&titleResult).Error; err != nil {
+		return nil, err
 	}
-	return nil, model.NewRequestError("Keyword too long")
+
+	if len(titleResult) > 0 {
+		if len(resources) == 0 {
+			resources = titleResult
+		} else {
+			resourceMap := make(map[uint]model.Resource)
+			for _, res := range resources {
+				resourceMap[res.ID] = res
+			}
+			for _, res := range titleResult {
+				if _, exists := resourceMap[res.ID]; !exists {
+					resources = append(resources, res)
+				}
+			}
+		}
+	}
+
+	return resources, nil
 }
 
 func GetResourceByTag(tagID uint, page int, pageSize int) ([]model.Resource, int, error) {
