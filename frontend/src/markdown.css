@@ -115,6 +115,18 @@ article {
       ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, system-ui;
   }
 
+  code {
+    width: 100%;
+    display: block;
+    overflow-x: auto;
+    background-color: var(--color-base-200);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, system-ui;
+    font-size: 12px;
+  }
+
   iframe {
     width: 100%;
     height: 100%;
@@ -138,21 +150,21 @@ article {
     font-size: 18px;
     font-weight: bold;
     padding: 6px 0;
-    margin: 12px 0 6px;
+    margin: 6px 0 6px;
   }
 
   h3 {
     font-size: 15px;
     font-weight: bold;
     padding: 4px 0;
-    margin: 8px 0 4px;
+    margin: 4px 0 4px;
   }
 
   h4 {
     font-size: 13px;
     font-weight: bold;
     padding: 3px 0;
-    margin: 8px 0 4px;
+    margin: 4px 0 4px;
   }
 
   h5 {
@@ -239,6 +251,18 @@ article {
     background-color: var(--color-base-200);
     padding: 1px 3px;
     border-radius: 3px;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, system-ui;
+    font-size: 12px;
+  }
+
+  code {
+    width: 100%;
+    display: block;
+    overflow-x: auto;
+    background-color: var(--color-base-200);
+    padding: 4px 8px;
+    border-radius: 4px;
     font-family:
       ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, system-ui;
     font-size: 12px;

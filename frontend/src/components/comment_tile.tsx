@@ -53,7 +53,7 @@ export function CommentTile({
             navigate(userLink);
           }}
         >
-          <span className="w-8 h-8 rounded-full">
+          <span className="w-8 h-8 rounded-full overflow-clip">
             <img src={network.getUserAvatar(comment.user)} alt={"avatar"} />
           </span>
           <span className={"w-2"}></span>
@@ -70,7 +70,7 @@ export function CommentTile({
       </div>
       <div className={"flex items-center"}>
         {comment.content_truncated && (
-          <Badge className="badge-soft">{t("Click to view more")}</Badge>
+          <Badge className="badge-ghost">{t("Click to view more")}</Badge>
         )}
         <span className={"grow"}></span>
         {comment.reply_count > 0 && (

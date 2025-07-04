@@ -8,6 +8,7 @@ import Loading from "../components/loading";
 import Pagination from "../components/pagination";
 import { MdOutlineArrowRight } from "react-icons/md";
 import { ImageGrid } from "../components/image.tsx";
+import { CommentTile } from "../components/comment_tile.tsx";
 
 export default function UserPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -174,50 +175,8 @@ function CommentsList({
   return (
     <>
       {comments.map((comment) => {
-        return <CommentTile comment={comment} key={comment.id} />;
+        return <CommentTile elevation="high" comment={comment} key={comment.id} />;
       })}
     </>
-  );
-}
-
-function limitArticleLength(content: string, maxLength: number): string {
-  if (content.length <= maxLength) {
-    return content;
-  }
-  return content.slice(0, maxLength) + "...";
-}
-
-function CommentTile({ comment }: { comment: CommentWithResource }) {
-  const navigate = useNavigate();
-
-  return (
-    <div className={"card card-border border-base-300 p-2 my-3"}>
-      <div className={"flex flex-row items-center my-1 mx-1"}>
-        <div className="avatar">
-          <div className="w-8 rounded-full">
-            <img src={network.getUserAvatar(comment.user)} alt={"avatar"} />
-          </div>
-        </div>
-        <div className={"w-2"}></div>
-        <div className={"text-sm font-bold"}>{comment.user.username}</div>
-        <div className={"grow"}></div>
-        <div className={"text-sm text-gray-500"}>
-          {new Date(comment.created_at).toLocaleString()}
-        </div>
-      </div>
-      <div className={"p-2 whitespace-pre-wrap text-sm"}>
-        {limitArticleLength(comment.content, 200)}
-      </div>
-      <ImageGrid images={comment.images} />
-      <a
-        className="text-sm text-base-content/80 p-1 hover:text-primary cursor-pointer transition-all"
-        onClick={() => {
-          navigate("/resources/" + comment.resource.id);
-        }}
-      >
-        <MdOutlineArrowRight className="inline-block mr-1 mb-0.5" size={18} />
-        {comment.resource.title}
-      </a>
-    </div>
   );
 }
