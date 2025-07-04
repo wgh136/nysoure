@@ -3,10 +3,8 @@ import { Activity, ActivityType } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import showToast from "../components/toast.ts";
 import { useTranslation } from "react-i18next";
-import { MdArrowRight } from "react-icons/md";
 import { useNavigate } from "react-router";
 import Loading from "../components/loading.tsx";
-import { ImageGrid } from "../components/image.tsx";
 import { CommentContent } from "../components/comment_tile.tsx";
 
 export default function ActivitiesPage() {
