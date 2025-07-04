@@ -269,7 +269,7 @@ function DeleteCommentDialog({
   );
 }
 
-function CommentContent({ content }: { content: string }) {
+export function CommentContent({ content }: { content: string }) {
   const lines = content.split("\n");
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i];

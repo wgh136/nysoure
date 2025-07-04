@@ -232,6 +232,7 @@ export const i18nData = {
       "Write down your comment": "Write down your comment",
       "Click to view more": "Click to view more",
       "Comment Details": "Comment Details",
+      "Posted a comment": "Posted a comment",
     },
   },
   "zh-CN": {
@@ -456,6 +457,7 @@ export const i18nData = {
       "Write down your comment": "写下您的评论",
       "Click to view more": "点击查看更多",
       "Comment Details": "评论详情",
+      "Posted a comment": "发布了一个评论",
     },
   },
   "zh-TW": {
@@ -680,6 +682,7 @@ export const i18nData = {
       "Write down your comment": "寫下您的評論",
       "Click to view more": "點擊查看更多",
       "Comment Details": "評論詳情",
+      "Posted a comment": "發布了評論",
     },
   },
 };

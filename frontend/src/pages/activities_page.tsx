@@ -7,6 +7,7 @@ import { MdArrowRight } from "react-icons/md";
 import { useNavigate } from "react-router";
 import Loading from "../components/loading.tsx";
 import { ImageGrid } from "../components/image.tsx";
+import { CommentContent } from "../components/comment_tile.tsx";
 
 export default function ActivitiesPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -67,7 +68,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
     "Unknown activity",
     t("Published a resource"),
     t("Updated a resource"),
-    t("Commented on a resource"),
+    t("Posted a comment"),
   ];
 
   const navigate = useNavigate();
@@ -92,19 +93,10 @@ function ActivityCard({ activity }: { activity: Activity }) {
         )}
       </div>
     );
-  } else if (activity.type === ActivityType.ResourceCommented) {
+  } else if (activity.type === ActivityType.NewComment) {
     content = (
-      <div className={"mt-2"}>
-        <div className={"text-sm mx-1 whitespace-pre-wrap"}>
-          {activity.comment?.content}
-        </div>
-        <ImageGrid images={activity.comment?.images ?? []} />
-        <div className={"flex items-center mt-1"}>
-          <MdArrowRight />
-          <span className={"text-sm text-base-content/80"}>
-            {activity.comment?.resource?.title}
-          </span>
-        </div>
+      <div className="comment_tile">
+        <CommentContent content={activity.comment!.content} />
       </div>
     );
   }
@@ -120,8 +112,8 @@ function ActivityCard({ activity }: { activity: Activity }) {
           activity.type === ActivityType.ResourceUpdated
         ) {
           navigate(`/resources/${activity.resource?.id}`);
-        } else if (activity.type === ActivityType.ResourceCommented) {
-          navigate(`/resources/${activity.comment?.resource.id}#comments`);
+        } else if (activity.type === ActivityType.NewComment) {
+          navigate(`/comments/${activity.comment?.id}`);
         }
       }}
     >

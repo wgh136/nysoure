@@ -171,7 +171,7 @@ export enum ActivityType {
   Unknown = 0,
   ResourcePublished = 1,
   ResourceUpdated = 2,
-  ResourceCommented = 3,
+  NewComment = 3,
 }
 
 export interface Activity {
@@ -181,5 +181,5 @@ export interface Activity {
   created_at: string;
   resource?: Resource;
   user?: User;
-  comment?: CommentWithResource;
+  comment?: Comment;
 }
