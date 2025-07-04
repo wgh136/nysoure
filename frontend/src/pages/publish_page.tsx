@@ -306,7 +306,7 @@ export default function PublishPage() {
         />
         <div className={"flex items-center py-1 "}>
           <MdOutlineInfo className={"inline mr-1"} />
-          <span className={"text-sm"}>{t("Use Markdown format")}</span>
+          <span className={"text-sm"}>{t("Use markdown format")}</span>
         </div>
         <div className={"h-4"}></div>
         <p className={"my-1"}>{t("Images")}</p>

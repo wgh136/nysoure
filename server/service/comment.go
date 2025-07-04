@@ -74,14 +74,24 @@ func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType
 		return nil, model.NewRequestError("Comment content exceeds maximum length of 1024 characters")
 	}
 
-	resourceExists, err := dao.ExistsResource(refID)
-	if err != nil {
-		log.Error("Error checking resource existence:", err)
-		return nil, model.NewInternalServerError("Error checking resource existence")
+	switch cType {
+	case model.CommentTypeResource:
+		resourceExists, err := dao.ExistsResource(refID)
+		if err != nil {
+			log.Error("Error checking resource existence:", err)
+			return nil, model.NewInternalServerError("Error checking resource existence")
+		}
+		if !resourceExists {
+			return nil, model.NewNotFoundError("Resource not found")
+		}
+	case model.CommentTypeReply:
+		_, err := dao.GetCommentByID(refID)
+		if err != nil {
+			log.Error("Error getting reply comment:", err)
+			return nil, model.NewNotFoundError("Reply comment not found")
+		}
 	}
-	if !resourceExists {
-		return nil, model.NewNotFoundError("Resource not found")
-	}
+
 	userExists, err := dao.ExistsUserByID(userID)
 	if err != nil {
 		log.Error("Error checking user existence:", err)
@@ -166,15 +176,6 @@ func ListResourceComments(resourceID uint, page int) ([]model.CommentView, int, 
 }
 
 func ListCommentReplies(commentID uint, page int) ([]model.CommentView, int, error) {
-	comment, err := dao.GetCommentByID(commentID)
-	if err != nil {
-		log.Error("Error getting comment:", err)
-		return nil, 0, model.NewNotFoundError("Comment not found")
-	}
-	if comment.Type != model.CommentTypeReply {
-		return nil, 0, model.NewRequestError("This comment is not a reply")
-	}
-
 	replies, totalPages, err := dao.GetCommentReplies(commentID, page, pageSize)
 	if err != nil {
 		log.Error("Error getting replies:", err)

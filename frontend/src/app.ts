@@ -33,6 +33,9 @@ class App {
     this.appName = (window as MyWindow).serverName || this.appName;
     this.cloudflareTurnstileSiteKey =
       (window as MyWindow).cloudflareTurnstileSiteKey || null;
+    if (this.cloudflareTurnstileSiteKey === "{{CFTurnstileSiteKey}}") {
+      this.cloudflareTurnstileSiteKey = null; // Placeholder value, set to null if not configured
+    }
     this.siteInfo = (window as MyWindow).siteInfo || "";
   }
 

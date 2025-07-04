@@ -27,8 +27,8 @@ export function CommentInput({
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       let height = textareaRef.current.scrollHeight;
-      if (height < 144) {
-        height = 144; // Minimum height of 144px (h-36)
+      if (height < 128) {
+        height = 128;
       }
       textareaRef.current.style.height = `${height}px`;
     }
@@ -37,7 +37,7 @@ export function CommentInput({
   // Reset textarea height to default
   const resetTextareaHeight = () => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = '144px'; // h-36 = 144px
+      textareaRef.current.style.height = '128px';
     }
   };
 
@@ -158,13 +158,13 @@ export function CommentInput({
       <textarea
         ref={textareaRef}
         placeholder={t("Write down your comment")}
-        className={"w-full resize-none grow h-36"}
+        className={"w-full resize-none grow h-32"}
         value={commentContent}
         onChange={(e) => setCommentContent(e.target.value)}
       />
       <div className={"flex items-center"}>
         <button
-          className={"btn btn-ghost btn-sm btn-circle"}
+          className={"btn btn-sm btn-circle mr-2"}
           onClick={handleAddImage}
         >
           {isUploadingimage ? (
@@ -176,7 +176,7 @@ export function CommentInput({
         <Badge className="badge-ghost">
           <MdOutlineInfo size={18} />
           <span>
-            {t("Use markdown format.")}
+            {t("Use markdown format")}
           </span>
         </Badge>
         <span className={"grow"} />

@@ -630,6 +630,17 @@ class Network {
     );
   }
 
+  async listCommentReplies(
+    commentID: number,
+    page: number = 1,
+  ): Promise<PageResponse<Comment>> {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/comments/reply/${commentID}`, {
+        params: { page },
+      }),
+    );
+  }
+
   async getComment(commentID: number): Promise<Response<CommentWithRef>> {
     return this._callApi(() =>
       axios.get(`${this.apiBaseUrl}/comments/${commentID}`),

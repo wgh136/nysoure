@@ -182,7 +182,6 @@ export const i18nData = {
       "Edit": "Edit",
       "Edit Tag": "Edit Tag",
       "Set the description of the tag.": "Set the description of the tag.",
-      "Use markdown format.": "Use markdown format.",
       "Tag: ": "Tag: ",
       "Select a Order": "Select a Order",
       "Time Ascending": "Time Ascending",
@@ -225,6 +224,12 @@ export const i18nData = {
       "Published a resource": "Published a resource",
       "Updated a resource": "Updated a resource",
       "Commented on a resource": "Commented on a resource",
+
+      "Comment": "Comment",
+      "Replies": "Replies",
+      "Reply": "Reply",
+      "Commented on": "Commented on",
+      "Write down your comment": "Write down your comment",
     },
   },
   "zh-CN": {
@@ -254,7 +259,7 @@ export const i18nData = {
       "Add Alternative Title": "新增标题",
       "Tags": "标签",
       "Description": "介绍",
-      "Use Markdown format": "使用Markdown格式",
+      "Use markdown format": "使用Markdown格式",
       "Images": "图片",
       "Images will not be displayed automatically, you need to reference them in the description":
         "图片不会被自动显示, 你需要在介绍中引用它们",
@@ -399,7 +404,6 @@ export const i18nData = {
       "Edit": "编辑",
       "Edit Tag": "编辑标签",
       "Set the description of the tag.": "设置标签的描述。",
-      "Use markdown format.": "使用Markdown格式。",
       "Tag: ": "标签: ",
       "Select a Order": "选择排序方式",
       "Time Ascending": "时间升序",
@@ -442,6 +446,12 @@ export const i18nData = {
       "Published a resource": "发布了一个资源",
       "Updated a resource": "更新了一个资源",
       "Commented on a resource": "评论了一个资源",
+
+      "Comment": "评论",
+      "Replies": "回复",
+      "Reply": "回复",
+      "Commented on": "评论于",
+      "Write down your comment": "写下您的评论",
     },
   },
   "zh-TW": {
@@ -471,7 +481,7 @@ export const i18nData = {
       "Add Alternative Title": "新增標題",
       "Tags": "標籤",
       "Description": "介紹",
-      "Use Markdown format": "使用Markdown格式",
+      "Use markdown format": "使用Markdown格式",
       "Images": "圖片",
       "Images will not be displayed automatically, you need to reference them in the description":
         "圖片不會自動顯示，需在介紹中引用",
@@ -616,7 +626,6 @@ export const i18nData = {
       "Edit": "編輯",
       "Edit Tag": "編輯標籤",
       "Set the description of the tag.": "設置標籤的描述。",
-      "Use markdown format.": "使用Markdown格式。",
       "Tag: ": "標籤: ",
       "Select a Order": "選擇排序方式",
       "Time Ascending": "時間升序",
@@ -659,6 +668,12 @@ export const i18nData = {
       "Published a resource": "發布了資源",
       "Updated a resource": "更新了資源",
       "Commented on a resource": "評論了資源",
+
+      "Comment": "評論",
+      "Replies": "回覆",  
+      "Reply": "回覆",
+      "Commented on": "評論於",
+      "Write down your comment": "寫下您的評論",
     },
   },
 };

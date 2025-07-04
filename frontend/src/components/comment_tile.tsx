@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { MdOutlineDelete, MdOutlineEdit, MdOutlineReply } from "react-icons/md";
+import { MdOutlineComment, MdOutlineDelete, MdOutlineEdit, MdOutlineReply } from "react-icons/md";
 import { TextArea } from "./input";
 import { Comment } from "../network/models";
 import { network } from "../network/network";
@@ -13,20 +13,24 @@ import Markdown from "react-markdown";
 export function CommentTile({
   comment,
   onUpdated,
+  elevation,
 }: {
   comment: Comment;
   onUpdated?: () => void;
+  elevation?: "normal" | "high";
 }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const link = `/comments/${comment.id}`;
+  const userLink = `/user/${encodeURIComponent(comment.user.username)}`;
 
   // @ts-ignore
   return (
     <a
       href={link}
       className={
-        "block card bg-base-100 p-2 my-3 shadow-xs hover:shadow transition-shadow cursor-pointer"
+        "block card bg-base-100 p-2 my-3 transition-shadow cursor-pointer" + 
+        (!elevation || elevation == "normal" ? " shadow-xs hover:shadow" : " shadow hover:shadow-md")
       }
       onClick={(e) => {
         e.preventDefault();
@@ -34,45 +38,46 @@ export function CommentTile({
       }}
     >
       <div className={"flex flex-row items-center my-1 mx-1"}>
-        <div
-          className="avatar cursor-pointer"
-          onClick={() =>
-            navigate(`/user/${encodeURIComponent(comment.user.username)}`)
+        <a
+          href={userLink}
+          className="flex flex-row items-center avatar cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            navigate(userLink)
+          }
           }
         >
-          <div className="w-8 rounded-full">
+          <span className="w-8 h-8 rounded-full">
             <img src={network.getUserAvatar(comment.user)} alt={"avatar"} />
-          </div>
-        </div>
-        <div className={"w-2"}></div>
-        <div
-          className={"text-sm font-bold cursor-pointer"}
-          onClick={() => {
-            navigate(`/user/${encodeURIComponent(comment.user.username)}`);
-          }}
-        >
-          {comment.user.username}
-        </div>
+          </span>
+          <span className={"w-2"}></span>
+          <span
+            className={"text-sm font-bold"}
+          >
+            {comment.user.username}
+          </span>
+        </a>
+        
         <div className={"grow"}></div>
-        {comment.reply_count > 0 && (
-          <Badge className={"badge-soft badge-info badge-sm mr-2"}>
-            <MdOutlineReply size={16} className={"inline-block"} />
-            <span className={"w-1"} />
-            {comment.reply_count}
-          </Badge>
-        )}
-        <Badge className={"badge-soft badge-primary badge-sm"}>
-          {new Date(comment.created_at).toLocaleString()}
+        <Badge className={"badge-ghost badge-sm"}>
+          {new Date(comment.created_at).toLocaleDateString()}
         </Badge>
       </div>
       <div className={"p-2 comment_tile"}>
         <CommentContent content={comment.content} />
       </div>
-      <div className={"flex"}>
+      <div className={"flex items-center"}>
         {comment.content_truncated && (
           <Badge className="badge-soft">{t("Click to view more")}</Badge>
         )}
         <span className={"grow"}></span>
+        {comment.reply_count > 0 && (
+          <Badge className={"badge-soft badge-primary mr-2"}>
+            <MdOutlineComment size={16} className={"inline-block"} />
+            {comment.reply_count}
+          </Badge>
+        )}
         {app.user?.id === comment.user.id && (
           <>
             <EditCommentDialog comment={comment} onUpdated={onUpdated} />
@@ -127,7 +132,9 @@ function EditCommentDialog({
     <>
       <button
         className={"btn btn-sm btn-ghost ml-1"}
-        onClick={() => {
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
           const dialog = document.getElementById(
             `edit_comment_dialog_${comment.id}`,
           ) as HTMLDialogElement;
@@ -137,7 +144,10 @@ function EditCommentDialog({
         <MdOutlineEdit size={16} className={"inline-block"} />
         {t("Edit")}
       </button>
-      <dialog id={`edit_comment_dialog_${comment.id}`} className="modal">
+      <dialog id={`edit_comment_dialog_${comment.id}`} className="modal" onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}>
         <div className="modal-box" id={"dialog_box"}>
           <h3 className="font-bold text-lg">{t("Edit Comment")}</h3>
           <TextArea
@@ -146,9 +156,12 @@ function EditCommentDialog({
             onChange={(e) => setContent(e.target.value)}
           />
           <div className="modal-action">
-            <form method="dialog">
-              <button className="btn btn-ghost">{t("Close")}</button>
-            </form>
+            <button className="btn btn-ghost" onClick={() => {
+              const dialog = document.getElementById(
+                `edit_comment_dialog_${comment.id}`,
+              ) as HTMLDialogElement;
+              dialog.close();
+            }}>{t("Close")}</button>
             <button className="btn btn-primary" onClick={handleUpdate}>
               {isLoading ? (
                 <span className={"loading loading-spinner loading-sm"}></span>
@@ -198,7 +211,9 @@ function DeleteCommentDialog({
     <>
       <button
         className={"btn btn-error btn-sm btn-ghost ml-1"}
-        onClick={() => {
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
           const dialog = document.getElementById(id) as HTMLDialogElement;
           dialog.showModal();
         }}
@@ -206,7 +221,10 @@ function DeleteCommentDialog({
         <MdOutlineDelete size={16} className={"inline-block"} />
         {t("Delete")}
       </button>
-      <dialog id={id} className="modal">
+      <dialog id={id} className="modal" onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}>
         <div className="modal-box">
           <h3 className="font-bold text-lg">{t("Delete Comment")}</h3>
           <p className="py-4">
@@ -215,9 +233,10 @@ function DeleteCommentDialog({
             )}
           </p>
           <div className="modal-action">
-            <form method="dialog">
-              <button className="btn btn-ghost">{t("Close")}</button>
-            </form>
+            <button className="btn btn-ghost" onClick={() => {
+              const dialog = document.getElementById(id) as HTMLDialogElement;
+              dialog.close();
+            }}>{t("Close")}</button>
             <button className="btn btn-error" onClick={handleDelete}>
               {isLoading ? (
                 <span className={"loading loading-spinner loading-sm"}></span>

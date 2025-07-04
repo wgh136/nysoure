@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"os"
 	"runtime"
 )
@@ -19,7 +20,16 @@ func GetStoragePath() string {
 	}
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		if err := os.MkdirAll(path, os.ModePerm); err != nil {
-			panic("failed to create storage directory")
+			if errors.Is(err, os.ErrPermission) {
+				// Fallback to home directory if permission is denied
+				userDir, _ := os.UserHomeDir()
+				path = userDir + "/.nysoure"
+				if _, err := os.Stat(path); os.IsNotExist(err) {
+					if err := os.MkdirAll(path, os.ModePerm); err != nil {
+						panic("Failed to create storage directory: " + err.Error())
+					}
+				}
+			}
 		}
 	}
 	return path
