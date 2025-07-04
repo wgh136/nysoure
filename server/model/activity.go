@@ -1,8 +1,9 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type ActivityType uint
@@ -22,10 +23,10 @@ type Activity struct {
 }
 
 type ActivityView struct {
-	ID       uint                     `json:"id"`
-	Time     time.Time                `json:"time"`
-	Type     ActivityType             `json:"type"`
-	User     UserView                 `json:"user"`
-	Comment  *CommentWithResourceView `json:"comment,omitempty"`
-	Resource *ResourceView            `json:"resource,omitempty"`
+	ID       uint          `json:"id"`
+	Time     time.Time     `json:"time"`
+	Type     ActivityType  `json:"type"`
+	User     UserView      `json:"user"`
+	Comment  *CommentView  `json:"comment,omitempty"`
+	Resource *ResourceView `json:"resource,omitempty"`
 }
