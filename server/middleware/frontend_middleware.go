@@ -90,7 +90,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 		username := strings.TrimPrefix(path, "/user/")
 		u, err := service.GetUserByUsername(username)
 		if err == nil {
-			preview = fmt.Sprintf("%s/avatar/%d", serverBaseURL, u.ID)
+			preview = fmt.Sprintf("%s/api/avatar/%d", serverBaseURL, u.ID)
 			title = u.Username
 			description = "User " + u.Username + "'s profile"
 		}
@@ -113,7 +113,10 @@ func serveIndexHtml(c fiber.Ctx) error {
 			if err == nil {
 				title = "Comment Details"
 				description = utils.ArticleToDescription(cmt.Content, 200)
-				preview = fmt.Sprintf("%s/avatar/%d", serverBaseURL, cmt.User.ID)
+				preview = fmt.Sprintf("%s/api/avatar/%d", serverBaseURL, cmt.User.ID)
+				if len(cmt.Images) > 0 {
+					preview = fmt.Sprintf("%s/api/image/%d", serverBaseURL, cmt.Images[0].ID)
+				}
 			}
 		}
 	}
