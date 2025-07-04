@@ -90,7 +90,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 		username := strings.TrimPrefix(path, "/user/")
 		u, err := service.GetUserByUsername(username)
 		if err == nil {
-			preview = fmt.Sprintf("/avatar/%d", u.ID)
+			preview = fmt.Sprintf("%s/avatar/%d", serverBaseURL, u.ID)
 			title = u.Username
 			description = "User " + u.Username + "'s profile"
 		}
@@ -103,6 +103,17 @@ func serveIndexHtml(c fiber.Ctx) error {
 			if err == nil {
 				title = "Tag: " + t.Name
 				description = utils.ArticleToDescription(t.Description, 256)
+			}
+		}
+	} else if strings.HasPrefix(path, "/comments/") {
+		commentIDStr := strings.TrimPrefix(path, "/comments/")
+		commentID, err := strconv.Atoi(commentIDStr)
+		if err == nil {
+			cmt, err := service.GetCommentByID(uint(commentID))
+			if err == nil {
+				title = "Comment Details"
+				description = utils.ArticleToDescription(cmt.Content, 200)
+				preview = fmt.Sprintf("%s/avatar/%d", serverBaseURL, cmt.User.ID)
 			}
 		}
 	}
