@@ -165,24 +165,26 @@ function CommentReply({ comment }: { comment: CommentWithRef }) {
     setListKey((prev) => prev + 1);
   }, []);
 
-  return <>
-    <h2 className="text-xl font-bold my-2">{t("Replies")}</h2>
-    <CommentInput replyTo={comment.id} reload={reload} />
-    <CommentsList
-      commentId={comment.id}
-      page={page}
-      maxPageCallback={(maxPage: number) => {
-        setMaxPage(maxPage);
-      }}
-      key={listKey}
-      reload={reload}
-    />
-    {maxPage ? (
-      <div className={"w-full flex justify-center"}>
-        <Pagination page={page} setPage={setPage} totalPages={maxPage} />
-      </div>
-    ) : null}
-  </>
+  return (
+    <>
+      <h2 className="text-xl font-bold my-2">{t("Replies")}</h2>
+      <CommentInput replyTo={comment.id} reload={reload} />
+      <CommentsList
+        commentId={comment.id}
+        page={page}
+        maxPageCallback={(maxPage: number) => {
+          setMaxPage(maxPage);
+        }}
+        key={listKey}
+        reload={reload}
+      />
+      {maxPage ? (
+        <div className={"w-full flex justify-center"}>
+          <Pagination page={page} setPage={setPage} totalPages={maxPage} />
+        </div>
+      ) : null}
+    </>
+  );
 }
 
 function CommentsList({
@@ -224,7 +226,12 @@ function CommentsList({
     <>
       {comments.map((comment) => {
         return (
-          <CommentTile elevation="high" comment={comment} key={comment.id} onUpdated={reload} />
+          <CommentTile
+            elevation="high"
+            comment={comment}
+            key={comment.id}
+            onUpdated={reload}
+          />
         );
       })}
     </>

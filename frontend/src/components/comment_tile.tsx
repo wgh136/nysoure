@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { MdOutlineComment, MdOutlineDelete, MdOutlineEdit, MdOutlineReply } from "react-icons/md";
+import {
+  MdOutlineComment,
+  MdOutlineDelete,
+  MdOutlineEdit,
+} from "react-icons/md";
 import { TextArea } from "./input";
 import { Comment } from "../network/models";
 import { network } from "../network/network";
@@ -29,8 +33,10 @@ export function CommentTile({
     <a
       href={link}
       className={
-        "block card bg-base-100 p-2 my-3 transition-shadow cursor-pointer" + 
-        (!elevation || elevation == "normal" ? " shadow-xs hover:shadow" : " shadow hover:shadow-md")
+        "block card bg-base-100 p-2 my-3 transition-shadow cursor-pointer" +
+        (!elevation || elevation == "normal"
+          ? " shadow-xs hover:shadow"
+          : " shadow hover:shadow-md")
       }
       onClick={(e) => {
         e.preventDefault();
@@ -44,21 +50,16 @@ export function CommentTile({
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            navigate(userLink)
-          }
-          }
+            navigate(userLink);
+          }}
         >
           <span className="w-8 h-8 rounded-full">
             <img src={network.getUserAvatar(comment.user)} alt={"avatar"} />
           </span>
           <span className={"w-2"}></span>
-          <span
-            className={"text-sm font-bold"}
-          >
-            {comment.user.username}
-          </span>
+          <span className={"text-sm font-bold"}>{comment.user.username}</span>
         </a>
-        
+
         <div className={"grow"}></div>
         <Badge className={"badge-ghost badge-sm"}>
           {new Date(comment.created_at).toLocaleDateString()}
@@ -144,10 +145,14 @@ function EditCommentDialog({
         <MdOutlineEdit size={16} className={"inline-block"} />
         {t("Edit")}
       </button>
-      <dialog id={`edit_comment_dialog_${comment.id}`} className="modal" onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}>
+      <dialog
+        id={`edit_comment_dialog_${comment.id}`}
+        className="modal"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+      >
         <div className="modal-box" id={"dialog_box"}>
           <h3 className="font-bold text-lg">{t("Edit Comment")}</h3>
           <TextArea
@@ -156,12 +161,17 @@ function EditCommentDialog({
             onChange={(e) => setContent(e.target.value)}
           />
           <div className="modal-action">
-            <button className="btn btn-ghost" onClick={() => {
-              const dialog = document.getElementById(
-                `edit_comment_dialog_${comment.id}`,
-              ) as HTMLDialogElement;
-              dialog.close();
-            }}>{t("Close")}</button>
+            <button
+              className="btn btn-ghost"
+              onClick={() => {
+                const dialog = document.getElementById(
+                  `edit_comment_dialog_${comment.id}`,
+                ) as HTMLDialogElement;
+                dialog.close();
+              }}
+            >
+              {t("Close")}
+            </button>
             <button className="btn btn-primary" onClick={handleUpdate}>
               {isLoading ? (
                 <span className={"loading loading-spinner loading-sm"}></span>
@@ -221,10 +231,14 @@ function DeleteCommentDialog({
         <MdOutlineDelete size={16} className={"inline-block"} />
         {t("Delete")}
       </button>
-      <dialog id={id} className="modal" onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}>
+      <dialog
+        id={id}
+        className="modal"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+      >
         <div className="modal-box">
           <h3 className="font-bold text-lg">{t("Delete Comment")}</h3>
           <p className="py-4">
@@ -233,10 +247,15 @@ function DeleteCommentDialog({
             )}
           </p>
           <div className="modal-action">
-            <button className="btn btn-ghost" onClick={() => {
-              const dialog = document.getElementById(id) as HTMLDialogElement;
-              dialog.close();
-            }}>{t("Close")}</button>
+            <button
+              className="btn btn-ghost"
+              onClick={() => {
+                const dialog = document.getElementById(id) as HTMLDialogElement;
+                dialog.close();
+              }}
+            >
+              {t("Close")}
+            </button>
             <button className="btn btn-error" onClick={handleDelete}>
               {isLoading ? (
                 <span className={"loading loading-spinner loading-sm"}></span>

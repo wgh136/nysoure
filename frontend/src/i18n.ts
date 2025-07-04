@@ -670,7 +670,7 @@ export const i18nData = {
       "Commented on a resource": "評論了資源",
 
       "Comment": "評論",
-      "Replies": "回覆",  
+      "Replies": "回覆",
       "Reply": "回覆",
       "Commented on": "評論於",
       "Write down your comment": "寫下您的評論",

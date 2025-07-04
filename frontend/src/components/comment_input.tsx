@@ -25,7 +25,7 @@ export function CommentInput({
   // Auto-resize textarea based on content
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = "auto";
       let height = textareaRef.current.scrollHeight;
       if (height < 128) {
         height = 128;
@@ -37,7 +37,7 @@ export function CommentInput({
   // Reset textarea height to default
   const resetTextareaHeight = () => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = '128px';
+      textareaRef.current.style.height = "128px";
     }
   };
 
@@ -175,9 +175,7 @@ export function CommentInput({
         </button>
         <Badge className="badge-ghost">
           <MdOutlineInfo size={18} />
-          <span>
-            {t("Use markdown format")}
-          </span>
+          <span>{t("Use markdown format")}</span>
         </Badge>
         <span className={"grow"} />
         <button
