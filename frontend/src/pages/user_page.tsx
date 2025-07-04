@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { CommentWithResource, User } from "../network/models";
 import { network } from "../network/network";
 import showToast from "../components/toast";
@@ -6,8 +6,6 @@ import { useEffect, useState } from "react";
 import ResourcesView from "../components/resources_view";
 import Loading from "../components/loading";
 import Pagination from "../components/pagination";
-import { MdOutlineArrowRight } from "react-icons/md";
-import { ImageGrid } from "../components/image.tsx";
 import { CommentTile } from "../components/comment_tile.tsx";
 
 export default function UserPage() {
@@ -175,7 +173,9 @@ function CommentsList({
   return (
     <>
       {comments.map((comment) => {
-        return <CommentTile elevation="high" comment={comment} key={comment.id} />;
+        return (
+          <CommentTile elevation="high" comment={comment} key={comment.id} />
+        );
       })}
     </>
   );
