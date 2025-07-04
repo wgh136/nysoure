@@ -173,7 +173,7 @@ export function CommentInput({
             <MdOutlineImage size={18} />
           )}
         </button>
-        <Badge className="badge-ghost">
+        <Badge className="badge-ghost hidden sm:inline-flex">
           <MdOutlineInfo size={18} />
           <span>{t("Use markdown format")}</span>
         </Badge>

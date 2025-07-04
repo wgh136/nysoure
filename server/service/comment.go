@@ -282,6 +282,11 @@ func GetCommentByID(commentID uint) (*model.CommentWithRefView, error) {
 		replyTo = reply
 	}
 
-	return comment.ToViewWithRef(resource, replyTo), nil
+	v := comment.ToViewWithRef(resource, replyTo)
 
+	if v.ReplyTo != nil {
+		v.ReplyTo.Content, v.ReplyTo.ContentTruncated = restrictCommentLength(v.ReplyTo.Content)
+	}
+
+	return v, nil
 }

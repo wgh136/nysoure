@@ -11,6 +11,9 @@ import { CommentInput } from "../components/comment_input";
 import { CommentTile } from "../components/comment_tile";
 import { Comment } from "../network/models";
 import Pagination from "../components/pagination";
+import { MdOutlineDelete, MdOutlineEdit } from "react-icons/md";
+import { TextArea } from "../components/input";
+import { app } from "../app";
 
 export default function CommentPage() {
   const params = useParams();
@@ -41,6 +44,39 @@ export default function CommentPage() {
     });
   }, [commentId]);
 
+  const onUpdated = useCallback(() => {
+    setComment(null);
+        const id = parseInt(commentId || "0");
+    if (isNaN(id) || id <= 0) {
+      showToast({
+        message: t("Invalid comment ID"),
+        type: "error",
+      });
+      return;
+    }
+    network.getComment(id).then((res) => {
+      if (res.success) {
+        setComment(res.data!);
+      } else {
+        showToast({
+          message: res.message,
+          type: "error",
+        });
+      }
+    });
+  }, []);
+
+  const onDeleted = useCallback(() => {
+    // check history length
+    if (window.history.length > 1) {
+      // go back to the previous page
+      navigate(-1);
+    } else {
+      // if there is no previous page, go to the home page
+      navigate("/");
+    }
+  }, [navigate]);
+
   useEffect(() => {
     document.title = t("Comment Details");
   });
@@ -52,6 +88,8 @@ export default function CommentPage() {
   return (
     <div className="p-4">
       {comment.resource && <ResourceCard resource={comment.resource} />}
+      {comment.reply_to && <CommentTile comment={comment.reply_to} />}
+      <div className="h-2"></div>
       <div className="flex items-center mt-4">
         <button
           onClick={() => {
@@ -77,6 +115,12 @@ export default function CommentPage() {
       <article>
         <CommentContent content={comment.content} />
       </article>
+      {app.user?.id === comment.user.id && (
+          <div className="flex flex-row justify-end mt-2">
+            <EditCommentDialog comment={comment} onUpdated={onUpdated} />
+            <DeleteCommentDialog commentId={comment.id} onUpdated={onDeleted} />
+          </div>
+        )}
       <div className="h-4" />
       <div className="border-t border-base-300" />
       <div className="h-4" />
@@ -112,7 +156,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
   return (
     <a
       href="link"
-      className="flex flex-row w-full card bg-base-200 shadow-xs hover:shadow overflow-clip my-2"
+      className="flex flex-col sm:flex-row w-full card bg-base-200 shadow-xs hover:shadow overflow-clip my-2"
       onClick={(e) => {
         e.preventDefault();
         navigate(link);
@@ -120,7 +164,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
     >
       {resource.image != null && (
         <img
-          className="object-cover w-32 sm:w-40 md:w-44 lg:w-52 max-h-64"
+          className="object-cover w-full max-h-40 sm:w-40 md:w-44 lg:w-52 sm:max-h-64"
           src={network.getResampledImageUrl(resource.image.id)}
           alt="cover"
         />
@@ -234,6 +278,186 @@ function CommentsList({
           />
         );
       })}
+    </>
+  );
+}
+
+
+function EditCommentDialog({
+  comment,
+  onUpdated,
+}: {
+  comment: CommentWithRef;
+  onUpdated?: () => void;
+}) {
+  const [isLoading, setLoading] = useState(false);
+  const [content, setContent] = useState(comment.content);
+  const { t } = useTranslation();
+
+  const handleUpdate = async () => {
+    if (isLoading) {
+      return;
+    }
+    setLoading(true);
+    const res = await network.updateComment(comment.id, content);
+    const dialog = document.getElementById(
+      `edit_comment_dialog_${comment.id}`,
+    ) as HTMLDialogElement;
+    dialog.close();
+    if (res.success) {
+      showToast({
+        message: t("Comment updated successfully"),
+        type: "success",
+      });
+      if (onUpdated) {
+        onUpdated();
+      }
+    } else {
+      showToast({
+        message: res.message,
+        type: "error",
+        parent: document.getElementById(`dialog_box`),
+      });
+    }
+    setLoading(false);
+  };
+
+  return (
+    <>
+      <button
+        className={"btn btn-sm btn-ghost ml-1"}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const dialog = document.getElementById(
+            `edit_comment_dialog_${comment.id}`,
+          ) as HTMLDialogElement;
+          dialog.showModal();
+        }}
+      >
+        <MdOutlineEdit size={16} className={"inline-block"} />
+        {t("Edit")}
+      </button>
+      <dialog
+        id={`edit_comment_dialog_${comment.id}`}
+        className="modal"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+      >
+        <div className="modal-box" id={"dialog_box"}>
+          <h3 className="font-bold text-lg">{t("Edit Comment")}</h3>
+          <TextArea
+            label={t("Content")}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
+          <div className="modal-action">
+            <button
+              className="btn btn-ghost"
+              onClick={() => {
+                const dialog = document.getElementById(
+                  `edit_comment_dialog_${comment.id}`,
+                ) as HTMLDialogElement;
+                dialog.close();
+              }}
+            >
+              {t("Close")}
+            </button>
+            <button className="btn btn-primary" onClick={handleUpdate}>
+              {isLoading ? (
+                <span className={"loading loading-spinner loading-sm"}></span>
+              ) : null}
+              {t("Submit")}
+            </button>
+          </div>
+        </div>
+      </dialog>
+    </>
+  );
+}
+
+function DeleteCommentDialog({
+  commentId,
+  onUpdated,
+}: {
+  commentId: number;
+  onUpdated?: () => void;
+}) {
+  const [isLoading, setLoading] = useState(false);
+  const { t } = useTranslation();
+
+  const id = `delete_comment_dialog_${commentId}`;
+
+  const handleDelete = async () => {
+    if (isLoading) return;
+    setLoading(true);
+    const res = await network.deleteComment(commentId);
+    const dialog = document.getElementById(id) as HTMLDialogElement;
+    dialog.close();
+    if (res.success) {
+      showToast({
+        message: t("Comment deleted successfully"),
+        type: "success",
+      });
+      if (onUpdated) {
+        onUpdated();
+      }
+    } else {
+      showToast({ message: res.message, type: "error" });
+    }
+    setLoading(false);
+  };
+
+  return (
+    <>
+      <button
+        className={"btn btn-error btn-sm btn-ghost ml-1"}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const dialog = document.getElementById(id) as HTMLDialogElement;
+          dialog.showModal();
+        }}
+      >
+        <MdOutlineDelete size={16} className={"inline-block"} />
+        {t("Delete")}
+      </button>
+      <dialog
+        id={id}
+        className="modal"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+      >
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">{t("Delete Comment")}</h3>
+          <p className="py-4">
+            {t(
+              "Are you sure you want to delete this comment? This action cannot be undone.",
+            )}
+          </p>
+          <div className="modal-action">
+            <button
+              className="btn btn-ghost"
+              onClick={() => {
+                const dialog = document.getElementById(id) as HTMLDialogElement;
+                dialog.close();
+              }}
+            >
+              {t("Close")}
+            </button>
+            <button className="btn btn-error" onClick={handleDelete}>
+              {isLoading ? (
+                <span className={"loading loading-spinner loading-sm"}></span>
+              ) : null}
+              {t("Delete")}
+            </button>
+          </div>
+        </div>
+      </dialog>
     </>
   );
 }
