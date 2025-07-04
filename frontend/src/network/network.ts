@@ -18,6 +18,7 @@ import {
   RSort,
   TagWithCount,
   Activity,
+  CommentWithRef,
 } from "./models.ts";
 
 class Network {
@@ -574,12 +575,10 @@ class Network {
   async createResourceComment(
     resourceID: number,
     content: string,
-    images: number[],
   ): Promise<Response<any>> {
     return this._callApi(() =>
       axios.post(`${this.apiBaseUrl}/comments/resource/${resourceID}`, {
         content,
-        images,
       }),
     );
   }
@@ -587,12 +586,21 @@ class Network {
   async updateComment(
     commentID: number,
     content: string,
-    images: number[],
   ): Promise<Response<any>> {
     return this._callApi(() =>
       axios.put(`${this.apiBaseUrl}/comments/${commentID}`, {
         content,
-        images,
+      }),
+    );
+  }
+
+  async replyToComment(
+    commentID: number,
+    content: string,
+  ): Promise<Response<any>> {
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/comments/reply/${commentID}`, {
+        content,
       }),
     );
   }
@@ -619,6 +627,12 @@ class Network {
           params: { page },
         },
       ),
+    );
+  }
+
+  async getComment(commentID: number): Promise<Response<CommentWithRef>> {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/comments/${commentID}`),
     );
   }
 

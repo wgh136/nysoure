@@ -120,6 +120,8 @@ export interface Comment {
   created_at: string;
   user: User;
   images: Image[];
+  content_truncated: boolean;
+  reply_count: number;
 }
 
 export interface CommentWithResource {
@@ -129,6 +131,19 @@ export interface CommentWithResource {
   user: User;
   images: Image[];
   resource: Resource;
+  content_truncated: boolean;
+  reply_count: number;
+}
+
+export interface CommentWithRef {
+  id: number;
+  content: string;
+  created_at: string;
+  user: User;
+  images: Image[];
+  reply_count: number;
+  resource?: Resource;
+  reply_to?: Comment;
 }
 
 export interface ServerConfig {

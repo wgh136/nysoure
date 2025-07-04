@@ -6,13 +6,13 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateComment(content string, userID uint, resourceID uint, imageIDs []uint, cType model.CommentType) (model.Comment, error) {
+func CreateComment(content string, userID uint, refID uint, imageIDs []uint, cType model.CommentType) (model.Comment, error) {
 	var comment model.Comment
 	err := db.Transaction(func(tx *gorm.DB) error {
 		comment = model.Comment{
 			Content: content,
 			UserID:  userID,
-			RefID:   resourceID,
+			RefID:   refID,
 			Type:    cType,
 		}
 		if err := tx.Create(&comment).Error; err != nil {
@@ -36,9 +36,16 @@ func CreateComment(content string, userID uint, resourceID uint, imageIDs []uint
 			return err
 		}
 
-		// Update resource comments count
-		if err := tx.Model(&model.Resource{}).Where("id = ?", resourceID).Update("comments", gorm.Expr("comments + 1")).Error; err != nil {
-			return err
+		if cType == model.CommentTypeResource {
+			// Update resource comments count
+			if err := tx.Model(&model.Resource{}).Where("id = ?", refID).Update("comments", gorm.Expr("comments + 1")).Error; err != nil {
+				return err
+			}
+		} else if cType == model.CommentTypeReply {
+			// Update reply count for the parent comment
+			if err := tx.Model(&model.Comment{}).Where("id = ?", refID).Update("reply_count", gorm.Expr("reply_count + 1")).Error; err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -183,4 +190,33 @@ func DeleteCommentByID(commentID uint) error {
 		}
 		return nil
 	})
+}
+
+func GetCommentReplies(commentID uint, page, pageSize int) ([]model.Comment, int, error) {
+	var replies []model.Comment
+	var total int64
+
+	if err := db.
+		Model(&model.Comment{}).
+		Where("type = ?", model.CommentTypeReply).
+		Where("ref_id = ?", commentID).
+		Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := db.
+		Model(&model.Comment{}).
+		Where("type = ?", model.CommentTypeReply).
+		Where("ref_id = ?", commentID).
+		Offset((page - 1) * pageSize).
+		Limit(pageSize).
+		Preload("User").
+		Order("created_at DESC").
+		Find(&replies).Error; err != nil {
+		return nil, 0, err
+	}
+
+	totalPages := (int(total) + pageSize - 1) / pageSize
+
+	return replies, totalPages, nil
 }

@@ -24,22 +24,18 @@ import "../markdown.css";
 import Loading from "../components/loading.tsx";
 import {
   MdAdd,
-  MdArrowDownward,
-  MdArrowUpward,
-  MdClose,
   MdOutlineArticle,
   MdOutlineComment,
   MdOutlineDataset,
   MdOutlineDelete,
   MdOutlineDownload,
   MdOutlineEdit,
-  MdOutlineImage,
   MdOutlineLink,
   MdOutlineOpenInNew,
 } from "react-icons/md";
 import { app } from "../app.ts";
 import { uploadingManager } from "../network/uploading.ts";
-import { ErrorAlert, InfoAlert } from "../components/alert.tsx";
+import { ErrorAlert } from "../components/alert.tsx";
 import { useTranslation } from "react-i18next";
 import Pagination from "../components/pagination.tsx";
 import showPopup, { useClosePopup } from "../components/popup.tsx";
@@ -48,8 +44,9 @@ import Button from "../components/button.tsx";
 import Badge, { BadgeAccent } from "../components/badge.tsx";
 import Input, { TextArea } from "../components/input.tsx";
 import { useAppContext } from "../components/AppContext.tsx";
-import { ImageGrid, SquareImage } from "../components/image.tsx";
 import { BiLogoSteam } from "react-icons/bi";
+import { CommentTile } from "../components/comment_tile.tsx";
+import { CommentInput } from "../components/comment_input.tsx";
 
 export default function ResourcePage() {
   const params = useParams();
@@ -1193,147 +1190,6 @@ function Comments({ resourceId }: { resourceId: number }) {
   );
 }
 
-function CommentInput({
-  resourceId,
-  reload,
-}: {
-  resourceId: number;
-  reload: () => void;
-}) {
-  const [commentContent, setCommentContent] = useState("");
-  const [isLoading, setLoading] = useState(false);
-  const [images, setImages] = useState<File[]>([]);
-  const { t } = useTranslation();
-
-  const sendComment = async () => {
-    if (isLoading) {
-      return;
-    }
-    if (commentContent === "") {
-      showToast({
-        message: t("Comment content cannot be empty"),
-        type: "error",
-      });
-      return;
-    }
-    setLoading(true);
-    const imageIds: number[] = [];
-    for (const image of images) {
-      const res = await network.uploadImage(image);
-      if (res.success) {
-        imageIds.push(res.data!);
-      } else {
-        showToast({ message: res.message, type: "error" });
-        setLoading(false);
-        return;
-      }
-    }
-    const res = await network.createResourceComment(
-      resourceId,
-      commentContent,
-      imageIds,
-    );
-    if (res.success) {
-      setCommentContent("");
-      setImages([]);
-      showToast({
-        message: t("Comment created successfully"),
-        type: "success",
-      });
-      reload();
-    } else {
-      showToast({ message: res.message, type: "error" });
-    }
-    setLoading(false);
-  };
-
-  const handleAddImage = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.multiple = true;
-    input.onchange = (e) => {
-      const files = (e.target as HTMLInputElement).files;
-      if ((files?.length ?? 0) + images.length > 9) {
-        showToast({
-          message: t("You can only upload up to 9 images"),
-          type: "error",
-        });
-        return;
-      }
-      if (files) {
-        setImages((prev) => [...prev, ...Array.from(files)]);
-      }
-    };
-    input.click();
-  };
-
-  if (!app.isLoggedIn()) {
-    return (
-      <InfoAlert
-        message={t("You need to log in to comment")}
-        className={"my-4 alert-info"}
-      />
-    );
-  }
-
-  return (
-    <div className={"mt-4 mb-6 textarea w-full p-4 flex flex-col"}>
-      <textarea
-        placeholder={t("Write down your comment")}
-        className={"w-full resize-none grow h-40"}
-        value={commentContent}
-        onChange={(e) => setCommentContent(e.target.value)}
-      />
-      {images.length > 0 && (
-        <div
-          className={
-            "grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 my-2"
-          }
-        >
-          {images.map((image, index) => (
-            <div key={index} className={"relative"}>
-              <img
-                src={URL.createObjectURL(image)}
-                alt={`comment-image-${index}`}
-                className={"rounded-lg aspect-square object-cover"}
-              />
-              <button
-                className={
-                  "btn btn-xs btn-circle btn-error absolute top-1 right-1"
-                }
-                onClick={() => {
-                  setImages((prev) => prev.filter((_, i) => i !== index));
-                }}
-              >
-                <MdClose size={14} />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-      <div className={"flex"}>
-        <button
-          className={"btn btn-ghost btn-sm btn-circle"}
-          onClick={handleAddImage}
-        >
-          <MdOutlineImage size={18} />
-        </button>
-        <span className={"grow"} />
-        <button
-          onClick={sendComment}
-          className={`btn btn-primary h-8 text-sm mx-2 ${commentContent === "" && "btn-disabled"}`}
-        >
-          {isLoading ? (
-            <span className={"loading loading-spinner loading-sm"}></span>
-          ) : null}
-          {t("Submit")}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function CommentsList({
   resourceId,
   page,
@@ -1344,6 +1200,8 @@ function CommentsList({
   maxPageCallback: (maxPage: number) => void;
 }) {
   const [comments, setComments] = useState<Comment[] | null>(null);
+
+  const reload = useContext(context);
 
   useEffect(() => {
     network.listResourceComments(resourceId, page).then((res) => {
@@ -1370,74 +1228,11 @@ function CommentsList({
   return (
     <>
       {comments.map((comment) => {
-        return <CommentTile comment={comment} key={comment.id} />;
+        return (
+          <CommentTile comment={comment} key={comment.id} onUpdated={reload} />
+        );
       })}
     </>
-  );
-}
-
-function CommentTile({ comment }: { comment: Comment }) {
-  const navigate = useNavigate();
-  const [expanded, setExpanded] = useState(false);
-  const { t } = useTranslation();
-
-  const isLongComment = comment.content.length > 300;
-  const displayContent =
-    expanded || !isLongComment
-      ? comment.content
-      : comment.content.substring(0, 300) + "...";
-
-  // @ts-ignore
-  return (
-    <div className={"card bg-base-100 p-2 my-3 shadow-xs"}>
-      <div className={"flex flex-row items-center my-1 mx-1"}>
-        <div
-          className="avatar cursor-pointer"
-          onClick={() =>
-            navigate(`/user/${encodeURIComponent(comment.user.username)}`)
-          }
-        >
-          <div className="w-8 rounded-full">
-            <img src={network.getUserAvatar(comment.user)} alt={"avatar"} />
-          </div>
-        </div>
-        <div className={"w-2"}></div>
-        <div
-          className={"text-sm font-bold cursor-pointer"}
-          onClick={() => {
-            navigate(`/user/${encodeURIComponent(comment.user.username)}`);
-          }}
-        >
-          {comment.user.username}
-        </div>
-        <div className={"grow"}></div>
-        <Badge className={"badge-soft badge-primary badge-sm"}>
-          {new Date(comment.created_at).toLocaleString()}
-        </Badge>
-      </div>
-      <div className={"text-sm p-2 whitespace-pre-wrap"}>
-        {displayContent}
-        {isLongComment && (
-          <div className={"flex items-center justify-center"}>
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="mt-2 text-primary text-sm cursor-pointer flex items-center"
-            >
-              {expanded ? <MdArrowUpward /> : <MdArrowDownward />}
-              <span className={"w-1"}></span>
-              {expanded ? t("Show less") : t("Show more")}
-            </button>
-          </div>
-        )}
-      </div>
-      <ImageGrid images={comment.images} />
-      {app.user?.id === comment.user.id && (
-        <div className={"flex flex-row-reverse"}>
-          <DeleteCommentDialog commentId={comment.id} />
-          <EditCommentDialog comment={comment} />
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -1501,237 +1296,6 @@ function DeleteFileDialog({
               <button className="btn btn-ghost">{t("Close")}</button>
             </form>
             <button className="btn btn-error" onClick={handleDelete}>
-              {t("Delete")}
-            </button>
-          </div>
-        </div>
-      </dialog>
-    </>
-  );
-}
-
-function EditCommentDialog({ comment }: { comment: Comment }) {
-  const [isLoading, setLoading] = useState(false);
-  const [content, setContent] = useState(comment.content);
-  const { t } = useTranslation();
-  const reload = useContext(context);
-  const [existingImages, setExistingImages] = useState(comment.images);
-  const [newImages, setNewImages] = useState<File[]>([]);
-
-  const handleUpdate = async () => {
-    if (isLoading) {
-      return;
-    }
-    setLoading(true);
-    const imageIds: number[] = [];
-    for (const existingImage of existingImages) {
-      imageIds.push(existingImage.id);
-    }
-    for (const newImage of newImages) {
-      const res = await network.uploadImage(newImage);
-      if (res.success) {
-        imageIds.push(res.data!);
-      } else {
-        showToast({
-          message: res.message,
-          type: "error",
-          parent: document.getElementById(`dialog_box`),
-        });
-        setLoading(false);
-        return;
-      }
-    }
-    const res = await network.updateComment(comment.id, content, imageIds);
-    const dialog = document.getElementById(
-      `edit_comment_dialog_${comment.id}`,
-    ) as HTMLDialogElement;
-    dialog.close();
-    if (res.success) {
-      showToast({
-        message: t("Comment updated successfully"),
-        type: "success",
-      });
-      reload();
-    } else {
-      showToast({
-        message: res.message,
-        type: "error",
-        parent: document.getElementById(`dialog_box`),
-      });
-    }
-    setLoading(false);
-  };
-
-  return (
-    <>
-      <button
-        className={"btn btn-sm btn-ghost ml-1"}
-        onClick={() => {
-          const dialog = document.getElementById(
-            `edit_comment_dialog_${comment.id}`,
-          ) as HTMLDialogElement;
-          dialog.showModal();
-        }}
-      >
-        <MdOutlineEdit size={16} className={"inline-block"} />
-        {t("Edit")}
-      </button>
-      <dialog id={`edit_comment_dialog_${comment.id}`} className="modal">
-        <div className="modal-box" id={"dialog_box"}>
-          <h3 className="font-bold text-lg">{t("Edit Comment")}</h3>
-          <TextArea
-            label={t("Content")}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
-          <div className={"flex flex-col my-2"}>
-            <p className={"text-sm font-bold mb-2"}>{t("Images")}</p>
-            <div className={"grid grid-cols-4 sm:grid-cols-5 gap-2"}>
-              {existingImages.map((image) => (
-                <div key={image.id} className={"relative"}>
-                  <SquareImage image={image} />
-                  <button
-                    className={
-                      "btn btn-xs btn-circle btn-error absolute top-1 right-1"
-                    }
-                    onClick={() => {
-                      setExistingImages((prev) =>
-                        prev.filter((i) => i.id !== image.id),
-                      );
-                    }}
-                  >
-                    <MdClose size={14} />
-                  </button>
-                </div>
-              ))}
-              {newImages.map((image, index) => (
-                <div key={index} className={"relative"}>
-                  <img
-                    src={URL.createObjectURL(image)}
-                    alt={`comment-image-${index}`}
-                    className={"rounded-lg aspect-square object-cover"}
-                  />
-                  <button
-                    className={
-                      "btn btn-xs btn-circle btn-error absolute top-1 right-1"
-                    }
-                    onClick={() => {
-                      setNewImages((prev) =>
-                        prev.filter((_, i) => i !== index),
-                      );
-                    }}
-                  >
-                    <MdClose size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-            <div className={"flex"}>
-              <button
-                className={"btn btn-sm mt-2"}
-                onClick={() => {
-                  const input = document.createElement("input");
-                  input.type = "file";
-                  input.accept = "image/*";
-                  input.multiple = true;
-                  input.onchange = (e) => {
-                    const files = (e.target as HTMLInputElement).files;
-                    if (
-                      (files?.length ?? 0) +
-                        existingImages.length +
-                        newImages.length >
-                      9
-                    ) {
-                      showToast({
-                        message: t("You can only upload up to 9 images"),
-                        type: "error",
-                        parent: document.getElementById(`dialog_box`),
-                      });
-                      return;
-                    }
-                    if (files) {
-                      setNewImages((prev) => [...prev, ...Array.from(files)]);
-                    }
-                  };
-                  input.click();
-                }}
-              >
-                <MdAdd size={18} />
-                {t("Add")}
-              </button>
-            </div>
-          </div>
-          <div className="modal-action">
-            <form method="dialog">
-              <button className="btn btn-ghost">{t("Close")}</button>
-            </form>
-            <button className="btn btn-primary" onClick={handleUpdate}>
-              {isLoading ? (
-                <span className={"loading loading-spinner loading-sm"}></span>
-              ) : null}
-              {t("Submit")}
-            </button>
-          </div>
-        </div>
-      </dialog>
-    </>
-  );
-}
-
-// 新增：删除评论弹窗组件
-function DeleteCommentDialog({ commentId }: { commentId: number }) {
-  const [isLoading, setLoading] = useState(false);
-  const reload = useContext(context);
-  const { t } = useTranslation();
-
-  const id = `delete_comment_dialog_${commentId}`;
-
-  const handleDelete = async () => {
-    if (isLoading) return;
-    setLoading(true);
-    const res = await network.deleteComment(commentId);
-    const dialog = document.getElementById(id) as HTMLDialogElement;
-    dialog.close();
-    if (res.success) {
-      showToast({
-        message: t("Comment deleted successfully"),
-        type: "success",
-      });
-      reload();
-    } else {
-      showToast({ message: res.message, type: "error" });
-    }
-    setLoading(false);
-  };
-
-  return (
-    <>
-      <button
-        className={"btn btn-error btn-sm btn-ghost ml-1"}
-        onClick={() => {
-          const dialog = document.getElementById(id) as HTMLDialogElement;
-          dialog.showModal();
-        }}
-      >
-        <MdOutlineDelete size={16} className={"inline-block"} />
-        {t("Delete")}
-      </button>
-      <dialog id={id} className="modal">
-        <div className="modal-box">
-          <h3 className="font-bold text-lg">{t("Delete Comment")}</h3>
-          <p className="py-4">
-            {t(
-              "Are you sure you want to delete this comment? This action cannot be undone.",
-            )}
-          </p>
-          <div className="modal-action">
-            <form method="dialog">
-              <button className="btn btn-ghost">{t("Close")}</button>
-            </form>
-            <button className="btn btn-error" onClick={handleDelete}>
-              {isLoading ? (
-                <span className={"loading loading-spinner loading-sm"}></span>
-              ) : null}
               {t("Delete")}
             </button>
           </div>

@@ -4,15 +4,19 @@ import (
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/utils"
+	"regexp"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v3/log"
 )
 
 const (
-	maxImagePerComment = 9
-	maxCommentsPerIP   = 512  // Maximum number of comments allowed per IP address per day
-	maxCommentLength   = 1024 // Maximum length of a comment
+	maxCommentsPerIP      = 512  // Maximum number of comments allowed per IP address per day
+	maxCommentLength      = 2048 // Maximum length of a comment
+	maxCommentBriefLines  = 16   // Maximum number of lines in a comment brief
+	maxCommentBriefLength = 256  // Maximum length of a comment brief
 )
 
 var (
@@ -20,11 +24,44 @@ var (
 )
 
 type CommentRequest struct {
-	Content string `json:"content"`
-	Images  []uint `json:"images"`
+	Content string `json:"content"` // markdown
+	// Images  []uint `json:"images"` // Unrequired after new design
 }
 
-func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType model.CommentType) (*model.CommentView, error) {
+func findImagesInContent(content string, host string) []uint {
+	// Handle both absolute and relative URLs
+	absolutePattern := `!\[.*?\]\((?:https?://` + host + `)?/api/image/(\d+)(?:\s+["'].*?["'])?\)`
+	relativePattern := `!\[.*?\]\(/api/image/(\d+)(?:\s+["'].*?["'])?\)`
+
+	// Combine patterns and compile regex
+	patterns := []string{absolutePattern, relativePattern}
+
+	// Store unique image IDs to avoid duplicates
+	imageIDs := make(map[uint]struct{})
+
+	for _, pattern := range patterns {
+		re := regexp.MustCompile(pattern)
+		matches := re.FindAllStringSubmatch(content, -1)
+
+		for _, match := range matches {
+			if len(match) >= 2 {
+				if id, err := strconv.ParseUint(match[1], 10, 32); err == nil {
+					imageIDs[uint(id)] = struct{}{}
+				}
+			}
+		}
+	}
+
+	// Convert map keys to slice
+	result := make([]uint, 0, len(imageIDs))
+	for id := range imageIDs {
+		result = append(result, id)
+	}
+
+	return result
+}
+
+func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType model.CommentType, host string) (*model.CommentView, error) {
 	if !commentsLimiter.AllowRequest(ip) {
 		log.Warnf("IP %s has exceeded the comment limit of %d comments per day", ip, maxCommentsPerIP)
 		return nil, model.NewRequestError("Too many comments from this IP address, please try again later")
@@ -37,9 +74,6 @@ func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType
 		return nil, model.NewRequestError("Comment content exceeds maximum length of 1024 characters")
 	}
 
-	if len(req.Images) > maxImagePerComment {
-		return nil, model.NewRequestError("Too many images, maximum is 9")
-	}
 	resourceExists, err := dao.ExistsResource(refID)
 	if err != nil {
 		log.Error("Error checking resource existence:", err)
@@ -56,7 +90,10 @@ func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType
 	if !userExists {
 		return nil, model.NewNotFoundError("User not found")
 	}
-	c, err := dao.CreateComment(req.Content, userID, refID, req.Images, cType)
+
+	images := findImagesInContent(req.Content, host)
+
+	c, err := dao.CreateComment(req.Content, userID, refID, images, cType)
 	if err != nil {
 		log.Error("Error creating comment:", err)
 		return nil, model.NewInternalServerError("Error creating comment")
@@ -66,6 +103,41 @@ func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType
 		log.Error("Error creating comment activity:", err)
 	}
 	return c.ToView(), nil
+}
+
+func restrictCommentLength(content string) (c string, truncated bool) {
+	lines := strings.Split(content, "\n")
+	lineCount := 0
+	for i, line := range lines {
+		reg := regexp.MustCompile(`!\[.*?\]\(.*?\)`)
+		if reg.MatchString(line) {
+			// Count the line with image as 5 lines
+			lineCount += 5
+		} else {
+			lineCount++
+		}
+
+		if lineCount > maxCommentBriefLines {
+			lines = lines[:i+1] // Keep the current line
+			content = strings.Join(lines, "\n")
+			truncated = true
+			break
+		}
+	}
+
+	if len([]rune(content)) > maxCommentBriefLength {
+		i := len(lines) - 1
+		for count := len([]rune(content)); count > maxCommentBriefLength && i > 0; i-- {
+			count -= len([]rune(lines[i]))
+		}
+		if i == 0 && len([]rune(lines[0])) > maxCommentBriefLength {
+			content = string([]rune(lines[0])[:maxCommentBriefLength])
+		} else {
+			content = strings.Join(lines[:i+1], "\n")
+		}
+		truncated = true
+	}
+	return content, truncated
 }
 
 func ListResourceComments(resourceID uint, page int) ([]model.CommentView, int, error) {
@@ -84,7 +156,37 @@ func ListResourceComments(resourceID uint, page int) ([]model.CommentView, int, 
 	}
 	res := make([]model.CommentView, 0, len(comments))
 	for _, c := range comments {
-		res = append(res, *c.ToView())
+		v := *c.ToView()
+		var truncated bool
+		v.Content, truncated = restrictCommentLength(v.Content)
+		v.ContentTruncated = truncated
+		res = append(res, v)
+	}
+	return res, totalPages, nil
+}
+
+func ListCommentReplies(commentID uint, page int) ([]model.CommentView, int, error) {
+	comment, err := dao.GetCommentByID(commentID)
+	if err != nil {
+		log.Error("Error getting comment:", err)
+		return nil, 0, model.NewNotFoundError("Comment not found")
+	}
+	if comment.Type != model.CommentTypeReply {
+		return nil, 0, model.NewRequestError("This comment is not a reply")
+	}
+
+	replies, totalPages, err := dao.GetCommentReplies(commentID, page, pageSize)
+	if err != nil {
+		log.Error("Error getting replies:", err)
+		return nil, 0, model.NewInternalServerError("Error getting replies")
+	}
+	res := make([]model.CommentView, 0, len(replies))
+	for _, r := range replies {
+		v := *r.ToView()
+		var truncated bool
+		v.Content, truncated = restrictCommentLength(v.Content)
+		v.ContentTruncated = truncated
+		res = append(res, v)
 	}
 	return res, totalPages, nil
 }
@@ -102,12 +204,16 @@ func ListCommentsWithUser(username string, page int) ([]model.CommentWithResourc
 			log.Error("Error getting resource for comment:", err)
 			return nil, 0, model.NewInternalServerError("Error getting resource for comment")
 		}
-		res = append(res, *c.ToViewWithResource(&r))
+		v := *c.ToViewWithResource(&r)
+		var truncated bool
+		v.Content, truncated = restrictCommentLength(v.Content)
+		v.ContentTruncated = truncated
+		res = append(res, v)
 	}
 	return res, totalPages, nil
 }
 
-func UpdateComment(commentID, userID uint, req CommentRequest) (*model.CommentView, error) {
+func UpdateComment(commentID, userID uint, req CommentRequest, host string) (*model.CommentView, error) {
 	if len(req.Content) == 0 {
 		return nil, model.NewRequestError("Content cannot be empty")
 	}
@@ -115,17 +221,22 @@ func UpdateComment(commentID, userID uint, req CommentRequest) (*model.CommentVi
 		return nil, model.NewRequestError("Comment content exceeds maximum length of 1024 characters")
 	}
 
-	if len(req.Images) > maxImagePerComment {
-		return nil, model.NewRequestError("Too many images, maximum is 9")
-	}
 	comment, err := dao.GetCommentByID(commentID)
 	if err != nil {
 		return nil, model.NewNotFoundError("Comment not found")
 	}
 	if comment.UserID != userID {
-		return nil, model.NewRequestError("You can only update your own comments")
+		isAdmin, err := CheckUserIsAdmin(userID)
+		if err != nil {
+			log.Error("Error checking if user is admin:", err)
+			return nil, model.NewInternalServerError("Error checking user permissions")
+		}
+		if !isAdmin {
+			return nil, model.NewUnAuthorizedError("You can only update your own comments")
+		}
 	}
-	updated, err := dao.UpdateCommentContent(commentID, req.Content, req.Images)
+	images := findImagesInContent(req.Content, host)
+	updated, err := dao.UpdateCommentContent(commentID, req.Content, images)
 	if err != nil {
 		return nil, model.NewInternalServerError("Error updating comment")
 	}
@@ -144,4 +255,32 @@ func DeleteComment(commentID, userID uint) error {
 		return model.NewInternalServerError("Error deleting comment")
 	}
 	return nil
+}
+
+func GetCommentByID(commentID uint) (*model.CommentWithRefView, error) {
+	comment, err := dao.GetCommentByID(commentID)
+	if err != nil {
+		return nil, model.NewNotFoundError("Comment not found")
+	}
+
+	var resource *model.Resource
+	var replyTo *model.Comment
+	if comment.Type == model.CommentTypeResource {
+		r, err := dao.GetResourceByID(comment.RefID)
+		if err != nil {
+			log.Error("Error getting resource for comment:", err)
+			return nil, model.NewInternalServerError("Error getting resource for comment")
+		}
+		resource = &r
+	} else {
+		reply, err := dao.GetCommentByID(comment.RefID)
+		if err != nil {
+			log.Error("Error getting reply for comment:", err)
+			return nil, model.NewInternalServerError("Error getting reply for comment")
+		}
+		replyTo = reply
+	}
+
+	return comment.ToViewWithRef(resource, replyTo), nil
+
 }

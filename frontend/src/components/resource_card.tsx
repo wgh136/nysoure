@@ -34,7 +34,7 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
           </figure>
         )}
         <div className="flex flex-col p-4">
-          <h2 className="card-title">{resource.title}</h2>
+          <h2 className="card-title break-all">{resource.title}</h2>
           <div className="h-2"></div>
           <p>
             {tags.map((tag) => {

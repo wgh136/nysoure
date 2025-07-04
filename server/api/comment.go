@@ -14,10 +14,29 @@ func AddCommentRoutes(router fiber.Router) {
 	api.Post("/resource/:resourceID", createResourceComment)
 	api.Post("/reply/:commentID", createReplyComment)
 	api.Get("/resource/:resourceID", listResourceComments)
-	api.Get("/reply/:commentID", listResourceComments)
+	api.Get("/reply/:commentID", listReplyComments)
 	api.Get("/user/:username", listCommentsByUser)
+	api.Get("/:commentID", GetCommentByID)
 	api.Put("/:commentID", updateComment)
 	api.Delete("/:commentID", deleteComment)
+}
+
+func GetCommentByID(c fiber.Ctx) error {
+	commentIDStr := c.Params("commentID")
+	commentID, err := strconv.Atoi(commentIDStr)
+	if err != nil {
+		return model.NewRequestError("Invalid comment ID")
+	}
+
+	comment, err := service.GetCommentByID(uint(commentID))
+	if err != nil {
+		return err
+	}
+	return c.JSON(model.Response[model.CommentWithRefView]{
+		Success: true,
+		Data:    *comment,
+		Message: "Comment retrieved successfully",
+	})
 }
 
 func createResourceComment(c fiber.Ctx) error {
@@ -40,7 +59,7 @@ func createResourceComment(c fiber.Ctx) error {
 		return model.NewRequestError("Content cannot be empty")
 	}
 
-	comment, err := service.CreateComment(req, userID, uint(resourceID), c.IP(), model.CommentTypeResource)
+	comment, err := service.CreateComment(req, userID, uint(resourceID), c.IP(), model.CommentTypeResource, c.Host())
 	if err != nil {
 		return err
 	}
@@ -71,7 +90,7 @@ func createReplyComment(c fiber.Ctx) error {
 		return model.NewRequestError("Content cannot be empty")
 	}
 
-	comment, err := service.CreateComment(req, userID, uint(commentID), c.IP(), model.CommentTypeReply)
+	comment, err := service.CreateComment(req, userID, uint(commentID), c.IP(), model.CommentTypeReply, c.Host())
 	if err != nil {
 		return err
 	}
@@ -102,6 +121,29 @@ func listResourceComments(c fiber.Ctx) error {
 		Data:       comments,
 		TotalPages: totalPages,
 		Message:    "Comments retrieved successfully",
+	})
+}
+
+func listReplyComments(c fiber.Ctx) error {
+	commentIDStr := c.Params("commentID")
+	commentID, err := strconv.Atoi(commentIDStr)
+	if err != nil {
+		return model.NewRequestError("Invalid comment ID")
+	}
+	pageStr := c.Query("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return model.NewRequestError("Invalid page number")
+	}
+	replies, totalPages, err := service.ListCommentReplies(uint(commentID), page)
+	if err != nil {
+		return err
+	}
+	return c.JSON(model.PageResponse[model.CommentView]{
+		Success:    true,
+		Data:       replies,
+		TotalPages: totalPages,
+		Message:    "Replies retrieved successfully",
 	})
 }
 
@@ -151,7 +193,7 @@ func updateComment(c fiber.Ctx) error {
 		return model.NewRequestError("Content cannot be empty")
 	}
 
-	comment, err := service.UpdateComment(uint(commentID), userID, req)
+	comment, err := service.UpdateComment(uint(commentID), userID, req, c.Host())
 	if err != nil {
 		return err
 	}
