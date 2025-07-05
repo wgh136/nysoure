@@ -100,7 +100,7 @@ export interface RFile {
   description: string;
   size: number;
   is_redirect: boolean;
-  user_id: number;
+  user: User;
 }
 
 export interface UploadingFile {

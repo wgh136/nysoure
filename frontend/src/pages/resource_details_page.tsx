@@ -23,7 +23,7 @@ import Markdown from "react-markdown";
 import "../markdown.css";
 import Loading from "../components/loading.tsx";
 import {
-  MdAdd,
+  MdAdd, MdOutlineArchive,
   MdOutlineArticle,
   MdOutlineComment,
   MdOutlineDataset,
@@ -41,7 +41,7 @@ import Pagination from "../components/pagination.tsx";
 import showPopup, { useClosePopup } from "../components/popup.tsx";
 import { Turnstile } from "@marsidev/react-turnstile";
 import Button from "../components/button.tsx";
-import Badge, { BadgeAccent } from "../components/badge.tsx";
+import Badge from "../components/badge.tsx";
 import Input, { TextArea } from "../components/input.tsx";
 import { useAppContext } from "../components/AppContext.tsx";
 import { BiLogoSteam } from "react-icons/bi";
@@ -609,6 +609,10 @@ function FileTile({ file }: { file: RFile }) {
 
   const { t } = useTranslation();
 
+  const userLink = `/user/${encodeURIComponent(file.user.username)}`;
+
+  const navigate = useNavigate();
+
   return (
     <div className={"card shadow bg-base-100 mb-4"}>
       <div className={"p-4 flex flex-row items-center"}>
@@ -617,11 +621,34 @@ function FileTile({ file }: { file: RFile }) {
           <p className={"text-sm my-1 whitespace-pre-wrap"}>
             {file.description}
           </p>
-          <p>
-            <BadgeAccent className={"mt-1"}>
+          <div className={"flex items-center mt-1"}>
+            <a
+              href={userLink}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(userLink);
+              }}
+            >
+              <Badge
+                className={
+                  "badge-soft badge-primary text-xs mr-2 hover:shadow-xs transition-shadow"
+                }
+              >
+                <img
+                  src={network.getUserAvatar(file.user)}
+                  className={"w-4 h-4 rounded-full"}
+                  alt={"avatar"}
+                />
+                {file.user.username}
+              </Badge>
+            </a>
+            <Badge className={"badge-soft badge-secondary text-xs mr-2"}>
+              <MdOutlineArchive size={16} className={"inline-block"} />
               {file.is_redirect ? t("Redirect") : fileSizeToString(file.size)}
-            </BadgeAccent>
-          </p>
+            </Badge>
+            <DeleteFileDialog fileId={file.id} uploaderId={file.user.id} />
+            <UpdateFileInfoDialog file={file} />
+          </div>
         </div>
         <div className={"flex flex-row items-center"}>
           <button
@@ -638,8 +665,6 @@ function FileTile({ file }: { file: RFile }) {
           >
             <MdOutlineDownload size={24} />
           </button>
-          <DeleteFileDialog fileId={file.id} uploaderId={file.user_id} />
-          <UpdateFileInfoDialog file={file} />
         </div>
       </div>
     </div>
@@ -1116,14 +1141,14 @@ function UpdateFileInfoDialog({ file }: { file: RFile }) {
     setLoading(false);
   };
 
-  if (!app.isAdmin() && app.user?.id !== file.user_id) {
+  if (!app.isAdmin() && app.user?.id !== file.user.id) {
     return <></>;
   }
 
   return (
     <>
       <button
-        className={"btn btn-primary btn-ghost btn-circle ml-1"}
+        className={"btn btn-primary btn-ghost btn-circle btn-sm ml-1"}
         onClick={() => {
           const dialog = document.getElementById(
             `update_file_info_dialog_${file.id}`,
@@ -1131,7 +1156,7 @@ function UpdateFileInfoDialog({ file }: { file: RFile }) {
           dialog.showModal();
         }}
       >
-        <MdOutlineEdit size={20} className={"inline-block"} />
+        <MdOutlineEdit size={16} className={"inline-block"} />
       </button>
       <dialog id={`update_file_info_dialog_${file.id}`} className="modal">
         <div className="modal-box">
@@ -1275,13 +1300,13 @@ function DeleteFileDialog({
   return (
     <>
       <button
-        className={"btn btn-error btn-ghost btn-circle ml-1"}
+        className={"btn btn-error btn-ghost btn-circle btn-sm ml-1"}
         onClick={() => {
           const dialog = document.getElementById(id) as HTMLDialogElement;
           dialog.showModal();
         }}
       >
-        <MdOutlineDelete size={20} className={"inline-block"} />
+        <MdOutlineDelete size={16} className={"inline-block"} />
       </button>
       <dialog id={id} className="modal">
         <div className="modal-box">
