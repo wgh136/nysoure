@@ -156,7 +156,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
   return (
     <a
       href="link"
-      className="flex flex-col sm:flex-row w-full card bg-base-200 shadow-xs hover:shadow overflow-clip my-2"
+      className="flex flex-col sm:flex-row w-full card bg-base-200 shadow-xs hover:shadow overflow-clip my-2 transition-shadow"
       onClick={(e) => {
         e.preventDefault();
         navigate(link);

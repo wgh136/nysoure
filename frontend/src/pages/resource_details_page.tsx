@@ -244,7 +244,7 @@ export default function ResourcePage() {
             <span className="text-sm">{t("Comments")}</span>
             {resource.comments ? (
               <span
-                className={`px-1 py-0.5 ml-1 rounded-full text-xs ${page === 2 ? "bg-accent text-accent-content" : "text-base-content/60"}`}
+                className={`px-1.5 py-0.5 ml-1 rounded-full text-xs ${page === 2 ? "bg-accent text-accent-content" : "text-base-content/60"}`}
               >
                 {resource.comments}
               </span>
@@ -617,11 +617,11 @@ function FileTile({ file }: { file: RFile }) {
     <div className={"card shadow bg-base-100 mb-4"}>
       <div className={"p-4 flex flex-row items-center"}>
         <div className={"grow"}>
-          <h4 className={"font-bold"}>{file.filename}</h4>
+          <h4 className={"font-bold break-all"}>{file.filename}</h4>
           <p className={"text-sm my-1 whitespace-pre-wrap"}>
             {file.description}
           </p>
-          <div className={"flex items-center mt-1"}>
+          <p className={"items-center mt-1"}>
             <a
               href={userLink}
               onClick={(e) => {
@@ -648,7 +648,7 @@ function FileTile({ file }: { file: RFile }) {
             </Badge>
             <DeleteFileDialog fileId={file.id} uploaderId={file.user.id} />
             <UpdateFileInfoDialog file={file} />
-          </div>
+          </p>
         </div>
         <div className={"flex flex-row items-center"}>
           <button
