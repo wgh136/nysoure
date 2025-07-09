@@ -5,7 +5,8 @@ export interface User {
   avatar_path: string;
   is_admin: boolean;
   can_upload: boolean;
-  uploads_count: number;
+  resources_count: number;
+  files_count: number;
   comments_count: number;
   bio: string;
 }

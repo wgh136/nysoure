@@ -89,7 +89,7 @@ function UserCard({ user }: { user: User }) {
           <p>
             <span className="text-sm font-bold mr-1">
               {" "}
-              {user.uploads_count}
+              {user.resources_count}
             </span>
             <span className="text-sm">Resources</span>
             <span className="mx-2"></span>

@@ -77,6 +77,7 @@ func CreateFile(filename string, description string, resourceID uint, storageID 
 	if storageID == nil && redirectUrl == "" {
 		return nil, errors.New("storageID and redirectUrl cannot be both empty")
 	}
+
 	f := &model.File{
 		UUID:        uuid.NewString(),
 		Filename:    filename,
@@ -88,9 +89,23 @@ func CreateFile(filename string, description string, resourceID uint, storageID 
 		Size:        size,
 		UserID:      userID,
 	}
-	if err := db.Create(f).Error; err != nil {
+
+	err := db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(f).Error; err != nil {
+			return err
+		}
+		err := tx.Model(&model.User{}).Where("id = ?", userID).
+			UpdateColumn("FilesCount", gorm.Expr("FilesCount + ?", 1)).Error
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
 		return nil, err
 	}
+
 	return f, nil
 }
 
@@ -108,14 +123,19 @@ func GetFile(id string) (*model.File, error) {
 func DeleteFile(id string) error {
 	f := &model.File{}
 	if err := db.Where("uuid = ?", id).First(f).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return model.NewNotFoundError("file not found")
+		return err
+	}
+
+	if err := db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Delete(f).Error; err != nil {
+			return err
 		}
+		return tx.Model(&model.User{}).Where("id = ?", f.UserID).
+			UpdateColumn("FilesCount", gorm.Expr("FilesCount - ?", 1)).Error
+	}); err != nil {
 		return err
 	}
-	if err := db.Delete(f).Error; err != nil {
-		return err
-	}
+
 	return nil
 }
 
