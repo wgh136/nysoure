@@ -382,6 +382,15 @@ function SearchBar() {
         className={"w-full"}
         onSubmit={(e) => {
           e.preventDefault();
+          if (search.length === 0) {
+            return;
+          }
+          const dialog = document.getElementById(
+            "search_dialog",
+          ) as HTMLDialogElement;
+          if (dialog) {
+            dialog.close();
+          }
           doSearch();
         }}
       >
