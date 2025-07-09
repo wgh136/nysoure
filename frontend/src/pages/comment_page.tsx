@@ -46,7 +46,7 @@ export default function CommentPage() {
 
   const onUpdated = useCallback(() => {
     setComment(null);
-        const id = parseInt(commentId || "0");
+    const id = parseInt(commentId || "0");
     if (isNaN(id) || id <= 0) {
       showToast({
         message: t("Invalid comment ID"),
@@ -116,11 +116,11 @@ export default function CommentPage() {
         <CommentContent content={comment.content} />
       </article>
       {app.user?.id === comment.user.id && (
-          <div className="flex flex-row justify-end mt-2">
-            <EditCommentDialog comment={comment} onUpdated={onUpdated} />
-            <DeleteCommentDialog commentId={comment.id} onUpdated={onDeleted} />
-          </div>
-        )}
+        <div className="flex flex-row justify-end mt-2">
+          <EditCommentDialog comment={comment} onUpdated={onUpdated} />
+          <DeleteCommentDialog commentId={comment.id} onUpdated={onDeleted} />
+        </div>
+      )}
       <div className="h-4" />
       <div className="border-t border-base-300" />
       <div className="h-4" />
@@ -281,7 +281,6 @@ function CommentsList({
     </>
   );
 }
-
 
 function EditCommentDialog({
   comment,

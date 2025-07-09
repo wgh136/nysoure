@@ -1,8 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import {
-  MdOutlineComment,
-} from "react-icons/md";
+import { MdOutlineComment } from "react-icons/md";
 import { Comment } from "../network/models";
 import { network } from "../network/network";
 import Badge from "./badge";

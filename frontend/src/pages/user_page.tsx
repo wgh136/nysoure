@@ -8,7 +8,11 @@ import Loading from "../components/loading";
 import Pagination from "../components/pagination";
 import { CommentTile } from "../components/comment_tile.tsx";
 import Badge from "../components/badge.tsx";
-import { MdOutlineArchive, MdOutlineComment, MdOutlinePhotoAlbum, MdPhotoAlbum } from "react-icons/md";
+import {
+  MdOutlineArchive,
+  MdOutlineComment,
+  MdOutlinePhotoAlbum,
+} from "react-icons/md";
 import { useTranslation } from "react-i18next";
 
 export default function UserPage() {
@@ -69,7 +73,10 @@ export default function UserPage() {
   return (
     <div>
       <UserCard user={user!} />
-      <div role="tablist" className="border-b border-base-300 mx-2 flex tabs tabs-border">
+      <div
+        role="tablist"
+        className="border-b border-base-300 mx-2 flex tabs tabs-border"
+      >
         <div
           role="tab"
           className={`tab ${page === 0 ? "tab-active" : ""} `}
@@ -97,42 +104,51 @@ export default function UserPage() {
 function UserCard({ user }: { user: User }) {
   const { t } = useTranslation();
 
-  const statistics = <p className="mt-2">
-          <Badge className="badge-soft badge-primary badge-lg m-1">
-            <MdOutlinePhotoAlbum size={18} />
-            <span className="ml-1 text-sm">{t("Resources")} {user.resources_count}</span>
-          </Badge>
-          <Badge className="badge-soft badge-secondary badge-lg m-1">
-            <MdOutlineArchive size={18} />
-            <span className="ml-1 text-sm">{t('Files')} {user.files_count}</span>
-          </Badge>
-          <Badge className="badge-soft badge-accent badge-lg m-1">
-            <MdOutlineComment size={18} />
-            <span className="ml-1 text-sm">{t("Comments")} {user.comments_count}</span>
-          </Badge>
-        </p>
+  const statistics = (
+    <p className="mt-2">
+      <Badge className="badge-soft badge-primary badge-lg m-1">
+        <MdOutlinePhotoAlbum size={18} />
+        <span className="ml-1 text-sm">
+          {t("Resources")} {user.resources_count}
+        </span>
+      </Badge>
+      <Badge className="badge-soft badge-secondary badge-lg m-1">
+        <MdOutlineArchive size={18} />
+        <span className="ml-1 text-sm">
+          {t("Files")} {user.files_count}
+        </span>
+      </Badge>
+      <Badge className="badge-soft badge-accent badge-lg m-1">
+        <MdOutlineComment size={18} />
+        <span className="ml-1 text-sm">
+          {t("Comments")} {user.comments_count}
+        </span>
+      </Badge>
+    </p>
+  );
 
   const haveBio = user.bio.trim() !== "";
 
   return (
     <>
       <div className={"flex m-4 items-center"}>
-      <div className={"avatar py-2"}>
-        <div className="w-24 rounded-full ring-2 ring-offset-2 ring-primary ring-offset-base-100">
-          <img alt={"avatar"} src={network.getUserAvatar(user)} />
+        <div className={"avatar py-2"}>
+          <div className="w-24 rounded-full ring-2 ring-offset-2 ring-primary ring-offset-base-100">
+            <img alt={"avatar"} src={network.getUserAvatar(user)} />
+          </div>
+        </div>
+        <div className="w-6"></div>
+        <div>
+          <h1 className="text-2xl font-bold">{user.username}</h1>
+          <div className="h-4"></div>
+          {haveBio ? (
+            <p className="text-sm text-base-content/80">{user.bio.trim()}</p>
+          ) : (
+            statistics
+          )}
         </div>
       </div>
-      <div className="w-6"></div>
-      <div>
-        <h1 className="text-2xl font-bold">{user.username}</h1>
-        <div className="h-4"></div>
-        {haveBio ? (
-          <p className="text-sm text-base-content/80">{user.bio.trim()}</p>
-        ): statistics}
-      </div>
-      
-    </div>
-    { haveBio && <div className="mb-2 mx-2">{statistics}</div>}
+      {haveBio && <div className="mb-2 mx-2">{statistics}</div>}
     </>
   );
 }

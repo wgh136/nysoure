@@ -23,7 +23,8 @@ import Markdown from "react-markdown";
 import "../markdown.css";
 import Loading from "../components/loading.tsx";
 import {
-  MdAdd, MdOutlineArchive,
+  MdAdd,
+  MdOutlineArchive,
   MdOutlineArticle,
   MdOutlineComment,
   MdOutlineDataset,
