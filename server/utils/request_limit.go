@@ -6,12 +6,12 @@ import (
 )
 
 type RequestLimiter struct {
-	limit        int
+	limit        func() int
 	requestsByIP map[string]int
 	mu           sync.Mutex
 }
 
-func NewRequestLimiter(limit int, duration time.Duration) *RequestLimiter {
+func NewRequestLimiter(limit func() int, duration time.Duration) *RequestLimiter {
 	l := &RequestLimiter{
 		limit:        limit,
 		requestsByIP: make(map[string]int),
@@ -38,7 +38,7 @@ func (rl *RequestLimiter) AllowRequest(ip string) bool {
 		count = 0
 	}
 
-	if count >= rl.limit {
+	if count >= rl.limit() {
 		return false // Exceeded request limit for this IP
 	}
 

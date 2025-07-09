@@ -13,7 +13,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v3/log"
@@ -24,23 +23,6 @@ const (
 	blockSize             = 4 * 1024 * 1024           // 4MB
 	storageKeyUnavailable = "storage_key_unavailable" // Placeholder for unavailable storage key
 )
-
-var (
-	ipDownloads = sync.Map{}
-)
-
-func init() {
-	go func() {
-		for {
-			// Clean up old IP download records every 24 hours
-			time.Sleep(24 * time.Hour)
-			ipDownloads.Range(func(key, value interface{}) bool {
-				ipDownloads.Delete(key)
-				return true
-			})
-		}
-	}()
-}
 
 func getUploadingSize() int64 {
 	return dao.GetStatistic("uploading_size")
@@ -405,7 +387,7 @@ func GetFile(fid string) (*model.FileView, error) {
 }
 
 // DownloadFile handles the file download request. Return a presigned URL or a direct file path.
-func DownloadFile(ip, fid, cfToken string) (string, string, error) {
+func DownloadFile(fid, cfToken string) (string, string, error) {
 	passed, err := verifyCfToken(cfToken)
 	if err != nil {
 		log.Error("failed to verify cf token: ", err)
@@ -414,17 +396,6 @@ func DownloadFile(ip, fid, cfToken string) (string, string, error) {
 	if !passed {
 		log.Info("cf token verification failed")
 		return "", "", model.NewRequestError("cf token verification failed")
-	}
-	log.Info("File download request from: " + ip)
-	downloads, _ := ipDownloads.Load(ip)
-	if downloads == nil {
-		ipDownloads.Store(ip, 1)
-	} else {
-		count := downloads.(int)
-		if count >= config.MaxDownloadsPerDayForSingleIP() {
-			return "", "", model.NewRequestError("Too many requests, please try again later")
-		}
-		ipDownloads.Store(ip, count+1)
 	}
 	file, err := dao.GetFile(fid)
 	if err != nil {

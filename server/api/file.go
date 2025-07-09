@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"nysoure/server/config"
+	"nysoure/server/middleware"
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"nysoure/server/utils"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -16,17 +19,17 @@ import (
 func AddFileRoutes(router fiber.Router) {
 	fileGroup := router.Group("/files")
 	{
-		fileGroup.Post("/upload/init", initUpload)
+		fileGroup.Use(middleware.NewRequestLimiter(10, time.Hour)).Post("/upload/init", initUpload)
 		fileGroup.Post("/upload/block/:id/:index", uploadBlock)
 		fileGroup.Post("/upload/finish/:id", finishUpload)
 		fileGroup.Post("/upload/cancel/:id", cancelUpload)
-		fileGroup.Post("/redirect", createRedirectFile)
+		fileGroup.Use(middleware.NewRequestLimiter(50, time.Hour)).Post("/redirect", createRedirectFile)
 		fileGroup.Post("/upload/url", createServerDownloadTask)
 		fileGroup.Get("/:id", getFile)
 		fileGroup.Put("/:id", updateFile)
 		fileGroup.Delete("/:id", deleteFile)
 		fileGroup.Get("/download/local", downloadLocalFile)
-		fileGroup.Get("/download/:id", downloadFile)
+		fileGroup.Use(middleware.NewDynamicRequestLimiter(config.MaxDownloadsPerDayForSingleIP, 24*time.Hour)).Get("/download/:id", downloadFile)
 	}
 }
 
@@ -201,8 +204,7 @@ func deleteFile(c fiber.Ctx) error {
 
 func downloadFile(c fiber.Ctx) error {
 	cfToken := c.Query("cf_token")
-	ip := c.IP()
-	s, filename, err := service.DownloadFile(ip, c.Params("id"), cfToken)
+	s, filename, err := service.DownloadFile(c.Params("id"), cfToken)
 	if err != nil {
 		return err
 	}

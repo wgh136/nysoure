@@ -4,9 +4,11 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"nysoure/server/middleware"
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -342,7 +344,7 @@ func handleGetMe(c fiber.Ctx) error {
 
 func AddUserRoutes(r fiber.Router) {
 	u := r.Group("user")
-	u.Post("/register", handleUserRegister)
+	u.Use(middleware.NewRequestLimiter(5, time.Hour)).Post("/register", handleUserRegister)
 	u.Post("/login", handleUserLogin)
 	u.Put("/avatar", handleUserChangeAvatar)
 	u.Post("/password", handleUserChangePassword)

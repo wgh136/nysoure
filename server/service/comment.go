@@ -3,11 +3,9 @@ package service
 import (
 	"nysoure/server/dao"
 	"nysoure/server/model"
-	"nysoure/server/utils"
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gofiber/fiber/v3/log"
 )
@@ -17,10 +15,6 @@ const (
 	maxCommentLength      = 2048 // Maximum length of a comment
 	maxCommentBriefLines  = 16   // Maximum number of lines in a comment brief
 	maxCommentBriefLength = 256  // Maximum length of a comment brief
-)
-
-var (
-	commentsLimiter = utils.NewRequestLimiter(maxCommentsPerIP, 24*time.Hour)
 )
 
 type CommentRequest struct {
@@ -62,11 +56,6 @@ func findImagesInContent(content string, host string) []uint {
 }
 
 func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType model.CommentType, host string) (*model.CommentView, error) {
-	if !commentsLimiter.AllowRequest(ip) {
-		log.Warnf("IP %s has exceeded the comment limit of %d comments per day", ip, maxCommentsPerIP)
-		return nil, model.NewRequestError("Too many comments from this IP address, please try again later")
-	}
-
 	if len(req.Content) == 0 {
 		return nil, model.NewRequestError("Content cannot be empty")
 	}

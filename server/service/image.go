@@ -3,7 +3,6 @@ package service
 import (
 	"bytes"
 	"errors"
-	"github.com/disintegration/imaging"
 	"image"
 	"math"
 	"net/http"
@@ -14,13 +13,16 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/disintegration/imaging"
+
 	"github.com/gofiber/fiber/v3/log"
 	"github.com/google/uuid"
 
-	_ "golang.org/x/image/bmp"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+
+	_ "golang.org/x/image/bmp"
 
 	_ "golang.org/x/image/webp"
 
@@ -54,23 +56,11 @@ func init() {
 	}()
 }
 
-var (
-	imageLimiter = utils.NewRequestLimiter(maxUploadsPerIP, 24*time.Hour)
-)
-
-const maxUploadsPerIP = 100
-
 func CreateImage(uid uint, ip string, data []byte) (uint, error) {
 	canUpload, err := checkUserCanUpload(uid)
 	if err != nil {
 		log.Error("Error checking user upload permission:", err)
 		return 0, model.NewInternalServerError("Error checking user upload permission")
-	}
-	if !canUpload {
-		// For a normal user, check the IP upload limit
-		if !imageLimiter.AllowRequest(ip) {
-			return 0, model.NewUnAuthorizedError("You have reached the maximum upload limit")
-		}
 	}
 
 	if len(data) == 0 {

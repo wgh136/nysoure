@@ -2,17 +2,19 @@ package api
 
 import (
 	"net/url"
+	"nysoure/server/middleware"
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 )
 
 func AddCommentRoutes(router fiber.Router) {
 	api := router.Group("/comments")
-	api.Post("/resource/:resourceID", createResourceComment)
-	api.Post("/reply/:commentID", createReplyComment)
+	api.Use(middleware.NewRequestLimiter(500, 24*time.Hour)).Post("/resource/:resourceID", createResourceComment)
+	api.Use(middleware.NewRequestLimiter(500, 24*time.Hour)).Post("/reply/:commentID", createReplyComment)
 	api.Get("/resource/:resourceID", listResourceComments)
 	api.Get("/reply/:commentID", listReplyComments)
 	api.Get("/user/:username", listCommentsByUser)

@@ -1,12 +1,15 @@
 package api
 
 import (
-	"github.com/gofiber/fiber/v3"
 	"net/http"
+	"nysoure/server/middleware"
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/gofiber/fiber/v3"
 )
 
 func handleUploadImage(c fiber.Ctx) error {
@@ -94,7 +97,7 @@ func handleGetResampledImage(c fiber.Ctx) error {
 func AddImageRoutes(api fiber.Router) {
 	image := api.Group("/image")
 	{
-		image.Put("/", handleUploadImage)
+		image.Use(middleware.NewRequestLimiter(50, time.Hour)).Put("/", handleUploadImage)
 		image.Get("/resampled/:id", handleGetResampledImage)
 		image.Get("/:id", handleGetImage)
 		image.Delete("/:id", handleDeleteImage)

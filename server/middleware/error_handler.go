@@ -2,8 +2,9 @@ package middleware
 
 import (
 	"errors"
-	"github.com/gofiber/fiber/v3/log"
 	"nysoure/server/model"
+
+	"github.com/gofiber/fiber/v3/log"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -14,6 +15,7 @@ func ErrorHandler(c fiber.Ctx) error {
 		var requestErr *model.RequestError
 		var unauthorizedErr *model.UnAuthorizedError
 		var notFoundErr *model.NotFoundError
+		var fiberErr *fiber.Error
 		if errors.As(err, &requestErr) {
 			log.Error("Request Error: ", err)
 			return c.Status(fiber.StatusBadRequest).JSON(model.Response[any]{
@@ -46,6 +48,12 @@ func ErrorHandler(c fiber.Ctx) error {
 				Success: false,
 				Data:    nil,
 				Message: "Method not allowed",
+			})
+		} else if errors.As(err, &fiberErr) && fiberErr.Message != "" {
+			return c.Status(fiberErr.Code).JSON(model.Response[any]{
+				Success: false,
+				Data:    nil,
+				Message: fiberErr.Message,
 			})
 		} else {
 			var fiberErr *fiber.Error

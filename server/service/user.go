@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	"fmt"
-	"github.com/gofiber/fiber/v3/log"
 	"nysoure/server/config"
 	"nysoure/server/dao"
 	"nysoure/server/model"
@@ -14,6 +13,8 @@ import (
 	"sync"
 	"time"
 	"unicode"
+
+	"github.com/gofiber/fiber/v3/log"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -376,7 +377,7 @@ func validateUsername(username string) error {
 	if usernameLen < 3 || usernameLen > 20 {
 		return model.NewRequestError("Username must be between 3 and 20 characters")
 	}
-	for _, r := range []rune(username) {
+	for _, r := range username {
 		if r == ' ' || r == '\n' || r == '\r' || r == '\t' || r == '\v' || r == '\f' {
 			return model.NewRequestError("Username cannot contain whitespace characters")
 		}
