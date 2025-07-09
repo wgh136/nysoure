@@ -344,7 +344,7 @@ func handleGetMe(c fiber.Ctx) error {
 
 func AddUserRoutes(r fiber.Router) {
 	u := r.Group("user")
-	u.Use(middleware.NewRequestLimiter(5, time.Hour)).Post("/register", handleUserRegister)
+	u.Post("/register", handleUserRegister, middleware.NewRequestLimiter(5, time.Hour))
 	u.Post("/login", handleUserLogin)
 	u.Put("/avatar", handleUserChangeAvatar)
 	u.Post("/password", handleUserChangePassword)

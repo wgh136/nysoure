@@ -13,8 +13,8 @@ import (
 
 func AddCommentRoutes(router fiber.Router) {
 	api := router.Group("/comments")
-	api.Use(middleware.NewRequestLimiter(500, 24*time.Hour)).Post("/resource/:resourceID", createResourceComment)
-	api.Use(middleware.NewRequestLimiter(500, 24*time.Hour)).Post("/reply/:commentID", createReplyComment)
+	api.Post("/resource/:resourceID", createResourceComment, middleware.NewRequestLimiter(500, 24*time.Hour))
+	api.Post("/reply/:commentID", createReplyComment, middleware.NewRequestLimiter(500, 24*time.Hour))
 	api.Get("/resource/:resourceID", listResourceComments)
 	api.Get("/reply/:commentID", listReplyComments)
 	api.Get("/user/:username", listCommentsByUser)

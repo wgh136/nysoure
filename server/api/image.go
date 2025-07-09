@@ -97,7 +97,7 @@ func handleGetResampledImage(c fiber.Ctx) error {
 func AddImageRoutes(api fiber.Router) {
 	image := api.Group("/image")
 	{
-		image.Use(middleware.NewRequestLimiter(50, time.Hour)).Put("/", handleUploadImage)
+		image.Put("/", handleUploadImage, middleware.NewRequestLimiter(50, time.Hour))
 		image.Get("/resampled/:id", handleGetResampledImage)
 		image.Get("/:id", handleGetImage)
 		image.Delete("/:id", handleDeleteImage)
