@@ -126,9 +126,6 @@ func UploadBlock(uid uint, fid uint, index int, data []byte) error {
 	if index < 0 || index >= uploadingFile.BlocksCount() {
 		return model.NewRequestError("block index is not correct")
 	}
-	if uploadingFile.Blocks[index] {
-		return model.NewRequestError("block already uploaded")
-	}
 
 	path := filepath.Join(uploadingFile.TempPath, strconv.Itoa(index))
 	if err := os.WriteFile(path, data, os.ModePerm); err != nil {
