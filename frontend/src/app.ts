@@ -4,6 +4,8 @@ interface MyWindow extends Window {
   serverName?: string;
   cloudflareTurnstileSiteKey?: string;
   siteInfo?: string;
+  uploadPrompt?: string;
+  allowNormalUserUpload?: string;
 }
 
 class App {
@@ -16,6 +18,10 @@ class App {
   cloudflareTurnstileSiteKey: string | null = null;
 
   siteInfo = "";
+
+  uploadPrompt = "";
+
+  allowNormalUserUpload = true;
 
   constructor() {
     this.init();
@@ -37,6 +43,8 @@ class App {
       this.cloudflareTurnstileSiteKey = null; // Placeholder value, set to null if not configured
     }
     this.siteInfo = (window as MyWindow).siteInfo || "";
+    this.uploadPrompt = (window as MyWindow).uploadPrompt || "";
+    // this.allowNormalUserUpload = (window as MyWindow).allowNormalUserUpload === "true";
   }
 
   saveData() {

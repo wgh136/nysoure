@@ -28,6 +28,12 @@ type ServerConfig struct {
 	ServerDescription string `json:"server_description"`
 	// SiteInfo is an article that describes the site. It will be displayed on the home page. Markdown format.
 	SiteInfo string `json:"site_info"`
+	// AllowNormalUserUpload indicates whether normal users are allowed to upload files.
+	AllowNormalUserUpload bool `json:"allow_normal_user_upload"`
+	// MaxNormalUserUploadSizeInMB is the maximum size of files that normal users can upload.
+	MaxNormalUserUploadSizeInMB int `json:"max_normal_user_upload_size_in_mb"`
+	// Prompt for upload page
+	UploadPrompt string `json:"upload_prompt"`
 }
 
 func init() {
@@ -42,6 +48,9 @@ func init() {
 			CloudflareTurnstileSecretKey:  "",
 			ServerName:                    "Nysoure",
 			ServerDescription:             "Nysoure is a file sharing service.",
+			AllowNormalUserUpload:         true,
+			MaxNormalUserUploadSizeInMB:   16,
+			UploadPrompt:                  "You can upload your files here.",
 		}
 	} else {
 		data, err := os.ReadFile(p)
@@ -105,4 +114,16 @@ func CloudflareTurnstileSecretKey() string {
 
 func SiteInfo() string {
 	return config.SiteInfo
+}
+
+func AllowNormalUserUpload() bool {
+	return config.AllowNormalUserUpload
+}
+
+func MaxNormalUserUploadSize() int64 {
+	return int64(config.MaxNormalUserUploadSizeInMB) * 1024 * 1024
+}
+
+func UploadPrompt() string {
+	return config.UploadPrompt
 }

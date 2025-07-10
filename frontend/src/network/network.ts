@@ -460,6 +460,12 @@ class Network {
     );
   }
 
+  async setDefaultStorage(id: number): Promise<Response<Storage>> {
+    return this._callApi(() =>
+      axios.put(`${this.apiBaseUrl}/storage/${id}/default`),
+    );
+  }
+
   async initFileUpload(
     filename: string,
     description: string,

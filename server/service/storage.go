@@ -105,3 +105,19 @@ func DeleteStorage(uid, id uint) error {
 	}
 	return nil
 }
+
+func SetDefaultStorage(uid, id uint) error {
+	isAdmin, err := CheckUserIsAdmin(uid)
+	if err != nil {
+		log.Errorf("check user is admin failed: %s", err)
+		return model.NewInternalServerError("check user is admin failed")
+	}
+	if !isAdmin {
+		return model.NewUnAuthorizedError("only admin can set default storage")
+	}
+	err = dao.SetDefaultStorage(id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

@@ -404,7 +404,6 @@ function Article({ resource }: { resource: ResourceDetails }) {
       <Markdown
         components={{
           p: ({ node, ...props }) => {
-            console.log(props.children);
             if (
               typeof props.children === "object" &&
               (props.children as ReactElement).type === "strong"
@@ -722,7 +721,7 @@ function Files({ files, resourceID }: { files: RFile[]; resourceID: number }) {
         return <FileTile file={file} key={file.id}></FileTile>;
       })}
       <div className={"h-2"}></div>
-      {app.canUpload() && (
+      {app.canUpload() || app.allowNormalUserUpload && (
         <div className={"flex flex-row-reverse"}>
           <CreateFileDialog resourceId={resourceID}></CreateFileDialog>
         </div>
@@ -876,6 +875,12 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
                 showToast({ message: res.message, type: "error" });
               } else {
                 storages.current = res.data!;
+                let defaultStorage = storages.current.find((s) => s.isDefault);
+                if (!defaultStorage && storages.current.length > 0) {
+                  defaultStorage = storages.current[0];
+                }
+                console.log("defaultStorage", defaultStorage);
+                setStorage(defaultStorage || null);
                 setLoading(false);
                 const dialog = document.getElementById(
                   "upload_dialog",
@@ -901,6 +906,10 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
       <dialog id="upload_dialog" className="modal">
         <div className="modal-box">
           <h3 className="font-bold text-lg mb-2">{t("Create File")}</h3>
+
+          {app.uploadPrompt && (
+            <p className={"text-sm p-2"}>{app.uploadPrompt}</p>
+          )}
 
           <p className={"text-sm font-bold p-2"}>{t("Type")}</p>
           <form className="filter mb-2">
@@ -980,8 +989,9 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
                 )}
               </p>
               <select
+                disabled={!app.canUpload()} // normal user cannot choose storage
                 className="select select-primary w-full my-2"
-                defaultValue={""}
+                value={storage?.id || ""}
                 onChange={(e) => {
                   const id = parseInt(e.target.value);
                   if (isNaN(id)) {
@@ -1027,7 +1037,15 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
             </>
           )}
 
-          {fileType === FileType.serverTask && (
+          {fileType === FileType.serverTask && !app.canUpload() && (
+            <p className={"text-sm p-2"}>
+              {t(
+                "You do not have permission to upload files, please contact the administrator.",
+              )}
+            </p>
+          )}
+
+          {fileType === FileType.serverTask && app.canUpload() && (
             <>
               <p className={"text-sm p-2"}>
                 {t(
@@ -1035,8 +1053,9 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
                 )}
               </p>
               <select
+                disabled={!app.canUpload()}
                 className="select select-primary w-full my-2"
-                defaultValue={""}
+                value={storage?.id || ""}
                 onChange={(e) => {
                   const id = parseInt(e.target.value);
                   if (isNaN(id)) {

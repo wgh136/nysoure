@@ -1,9 +1,10 @@
 package dao
 
 import (
+	"nysoure/server/model"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"nysoure/server/model"
 )
 
 func CreateStorage(s model.Storage) (model.Storage, error) {
@@ -35,5 +36,14 @@ func AddStorageUsage(id uint, offset int64) error {
 			return err
 		}
 		return tx.Model(&model.Storage{}).Where("id = ?", id).Update("current_size", storage.CurrentSize+offset).Error
+	})
+}
+
+func SetDefaultStorage(id uint) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&model.Storage{}).Where("is_default = ?", true).Update("is_default", false).Error; err != nil {
+			return err
+		}
+		return tx.Model(&model.Storage{}).Where("id = ?", id).Update("is_default", true).Error
 	})
 }

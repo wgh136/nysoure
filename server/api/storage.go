@@ -109,10 +109,34 @@ func handleDeleteStorage(c fiber.Ctx) error {
 	})
 }
 
+func handleSetDefaultStorage(c fiber.Ctx) error {
+	idStr := c.Params("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		return model.NewRequestError("Invalid storage ID")
+	}
+
+	uid, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewUnAuthorizedError("You are not authorized to perform this action")
+	}
+
+	err = service.SetDefaultStorage(uid, uint(id))
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.Response[any]{
+		Success: true,
+		Message: "Default storage set successfully",
+	})
+}
+
 func AddStorageRoutes(r fiber.Router) {
 	s := r.Group("storage")
 	s.Post("/s3", handleCreateS3Storage)
 	s.Post("/local", handleCreateLocalStorage)
 	s.Get("/", handleListStorages)
 	s.Delete("/:id", handleDeleteStorage)
+	s.Put("/:id/default", handleSetDefaultStorage)
 }

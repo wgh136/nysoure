@@ -1,8 +1,9 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Storage struct {
@@ -12,6 +13,7 @@ type Storage struct {
 	Config      string
 	MaxSize     int64
 	CurrentSize int64
+	IsDefault   bool
 }
 
 type StorageView struct {
@@ -21,6 +23,7 @@ type StorageView struct {
 	MaxSize     int64     `json:"maxSize"`
 	CurrentSize int64     `json:"currentSize"`
 	CreatedAt   time.Time `json:"createdAt"`
+	IsDefault   bool      `json:"isDefault"`
 }
 
 func (s *Storage) ToView() StorageView {
@@ -31,5 +34,6 @@ func (s *Storage) ToView() StorageView {
 		MaxSize:     s.MaxSize,
 		CurrentSize: s.CurrentSize,
 		CreatedAt:   s.CreatedAt,
+		IsDefault:   s.IsDefault,
 	}
 }

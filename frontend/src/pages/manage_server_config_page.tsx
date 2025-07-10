@@ -108,7 +108,7 @@ export default function ManageServerConfigPage() {
         }}
       ></Input>
       <fieldset className="fieldset w-full">
-        <legend className="fieldset-legend">Allow register</legend>
+        <legend className="fieldset-legend">Allow registration</legend>
         <input
           type="checkbox"
           checked={config.allow_register}
@@ -164,6 +164,36 @@ export default function ManageServerConfigPage() {
         label="Site info (Markdown)"
         height={180}
       />
+      <fieldset className="fieldset w-full">
+        <legend className="fieldset-legend">Allow normal user upload</legend>
+        <input
+          type="checkbox"
+          checked={config.allow_normal_user_upload}
+          className="toggle-primary toggle"
+          onChange={(e) => {
+            setConfig({ ...config, allow_normal_user_upload: e.target.checked });
+          }}
+        />
+      </fieldset>
+      <Input
+        type="number"
+        value={config.max_normal_user_upload_size_in_mb.toString()}
+        label="Max normal user upload size (MB)"
+        onChange={(e) => {
+          setConfig({
+            ...config,
+            max_normal_user_upload_size_in_mb: parseInt(e.target.value),
+          });
+        }}
+      ></Input>
+      <Input
+        type="text"
+        value={config.upload_prompt}
+        label="Upload prompt"
+        onChange={(e) => {
+          setConfig({ ...config, upload_prompt: e.target.value });
+        }}
+      ></Input>
       <InfoAlert
         className="my-2"
         message="If the cloudflare turnstile keys are not empty, the turnstile will be used for register and download."

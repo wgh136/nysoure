@@ -3,10 +3,12 @@ import { Storage } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import showToast from "../components/toast.ts";
 import Loading from "../components/loading.tsx";
-import { MdAdd, MdDelete } from "react-icons/md";
+import { MdAdd, MdMoreHoriz } from "react-icons/md";
 import { ErrorAlert } from "../components/alert.tsx";
 import { useTranslation } from "react-i18next";
 import { app } from "../app.ts";
+import showPopup, { PopupMenuItem } from "../components/popup.tsx";
+import Badge from "../components/badge.tsx";
 
 export default function StorageView() {
   const { t } = useTranslation();
@@ -84,6 +86,26 @@ export default function StorageView() {
     setLoadingId(null);
   };
 
+  const handleSetDefault = async (id: number) => {
+    if (loadingId != null) {
+      return;
+    }
+    setLoadingId(id);
+    const response = await network.setDefaultStorage(id);
+    if (response.success) {
+      showToast({
+        message: t("Storage set as default successfully"),
+      });
+      updateStorages();
+    } else {
+      showToast({
+        message: response.message,
+        type: "error",
+      });
+    }
+    setLoadingId(null);
+  };
+
   return (
     <>
       <div
@@ -121,7 +143,10 @@ export default function StorageView() {
             {storages.map((s) => {
               return (
                 <tr key={s.id} className={"hover"}>
-                  <td>{s.name}</td>
+                  <td>
+                    {s.name}
+                    {s.isDefault && <Badge className={"ml-1"}>{t("Default")}</Badge>}
+                  </td>
                   <td>{new Date(s.createdAt).toLocaleString()}</td>
                   <td>
                     {(s.currentSize / 1024 / 1024).toFixed(2)} /{" "}
@@ -129,13 +154,39 @@ export default function StorageView() {
                   </td>
                   <td>
                     <button
+                      id={`set_default_button_${s.id}`}
                       className={"btn btn-square"}
                       type={"button"}
                       onClick={() => {
-                        const dialog = document.getElementById(
-                          `confirm_delete_dialog_${s.id}`,
-                        ) as HTMLDialogElement;
-                        dialog.showModal();
+                        showPopup(
+                          <ul className="menu bg-base-100 rounded-box z-1 w-64 p-2 shadow-sm">
+                            <h4 className="text-sm font-bold px-3 py-1 text-primary">
+                              {t("Actions")}
+                            </h4>
+                            <PopupMenuItem
+                              onClick={() => {
+                                const dialog = document.getElementById(
+                                  `confirm_delete_dialog_${s.id}`,
+                                ) as HTMLDialogElement;
+                                dialog.showModal();
+                              }}
+                            >
+                              <a>{t("Delete")}</a>
+                            </PopupMenuItem>
+                            {!s.isDefault && <PopupMenuItem
+                              onClick={() => {
+                                handleSetDefault(s.id);
+                              }}
+                            >
+                              <a>
+                                t("Set as Default")
+                              </a>
+                            </PopupMenuItem>}
+                          </ul>,
+                          document.getElementById(
+                            `set_default_button_${s.id}`,
+                          )!,
+                        );
                       }}
                     >
                       {loadingId === s.id ? (
@@ -143,7 +194,7 @@ export default function StorageView() {
                           className={"loading loading-spinner loading-sm"}
                         ></span>
                       ) : (
-                        <MdDelete size={24} />
+                        <MdMoreHoriz size={24} />
                       )}
                     </button>
                     <dialog

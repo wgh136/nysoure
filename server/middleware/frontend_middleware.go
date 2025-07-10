@@ -128,6 +128,8 @@ func serveIndexHtml(c fiber.Ctx) error {
 	content = strings.ReplaceAll(content, "{{Url}}", url)
 	content = strings.ReplaceAll(content, "{{CFTurnstileSiteKey}}", cfTurnstileSiteKey)
 	content = strings.ReplaceAll(content, "{{SiteInfo}}", siteInfo)
+	content = strings.ReplaceAll(content, "{{UploadPrompt}}", config.UploadPrompt())
+	content = strings.ReplaceAll(content, "{{AllowNormalUserUpload}}", strconv.FormatBool(config.AllowNormalUserUpload()))
 
 	c.Set("Content-Type", "text/html; charset=utf-8")
 	return c.SendString(content)

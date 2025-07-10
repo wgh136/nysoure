@@ -93,6 +93,7 @@ export interface Storage {
   maxSize: number;
   currentSize: number;
   createdAt: string;
+  isDefault: boolean;
 }
 
 export interface RFile {
@@ -157,6 +158,9 @@ export interface ServerConfig {
   server_name: string;
   server_description: string;
   site_info: string;
+  allow_normal_user_upload: boolean;
+  max_normal_user_upload_size_in_mb: number;
+  upload_prompt: string;
 }
 
 export enum RSort {

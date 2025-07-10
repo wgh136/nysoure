@@ -80,7 +80,9 @@ func CreateUploadingFile(uid uint, filename string, description string, fileSize
 		return nil, model.NewInternalServerError("failed to check user permission")
 	}
 	if !canUpload {
-		return nil, model.NewUnAuthorizedError("user cannot upload file")
+		if !config.AllowNormalUserUpload() || fileSize > config.MaxNormalUserUploadSize()*1024*1024 {
+			return nil, model.NewUnAuthorizedError("user cannot upload file")
+		}
 	}
 
 	if fileSize > config.MaxFileSize() {
@@ -300,7 +302,7 @@ func CreateRedirectFile(uid uint, filename string, description string, resourceI
 		log.Error("failed to check user permission: ", err)
 		return nil, model.NewInternalServerError("failed to check user permission")
 	}
-	if !canUpload {
+	if !canUpload && !config.AllowNormalUserUpload() {
 		return nil, model.NewUnAuthorizedError("user cannot upload file")
 	}
 
