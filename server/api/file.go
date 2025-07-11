@@ -19,11 +19,11 @@ import (
 func AddFileRoutes(router fiber.Router) {
 	fileGroup := router.Group("/files")
 	{
-		fileGroup.Post("/upload/init", initUpload, middleware.NewRequestLimiter(10, time.Hour))
+		fileGroup.Post("/upload/init", initUpload, middleware.NewRequestLimiter(100, 24*time.Hour))
 		fileGroup.Post("/upload/block/:id/:index", uploadBlock)
 		fileGroup.Post("/upload/finish/:id", finishUpload)
 		fileGroup.Post("/upload/cancel/:id", cancelUpload)
-		fileGroup.Post("/redirect", createRedirectFile, middleware.NewRequestLimiter(50, time.Hour))
+		fileGroup.Post("/redirect", createRedirectFile, middleware.NewRequestLimiter(300, 24*time.Hour))
 		fileGroup.Post("/upload/url", createServerDownloadTask)
 		fileGroup.Get("/:id", getFile)
 		fileGroup.Put("/:id", updateFile)
