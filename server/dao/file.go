@@ -95,7 +95,7 @@ func CreateFile(filename string, description string, resourceID uint, storageID 
 			return err
 		}
 		err := tx.Model(&model.User{}).Where("id = ?", userID).
-			UpdateColumn("FilesCount", gorm.Expr("FilesCount + ?", 1)).Error
+			UpdateColumn("files_count", gorm.Expr("files_count + ?", 1)).Error
 		if err != nil {
 			return err
 		}
@@ -131,7 +131,7 @@ func DeleteFile(id string) error {
 			return err
 		}
 		return tx.Model(&model.User{}).Where("id = ?", f.UserID).
-			UpdateColumn("FilesCount", gorm.Expr("FilesCount - ?", 1)).Error
+			UpdateColumn("files_count", gorm.Expr("files_count - ?", 1)).Error
 	}); err != nil {
 		return err
 	}
