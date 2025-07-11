@@ -721,7 +721,7 @@ function Files({ files, resourceID }: { files: RFile[]; resourceID: number }) {
         return <FileTile file={file} key={file.id}></FileTile>;
       })}
       <div className={"h-2"}></div>
-      {app.canUpload() || app.allowNormalUserUpload && (
+      {(app.canUpload() || app.allowNormalUserUpload) && (
         <div className={"flex flex-row-reverse"}>
           <CreateFileDialog resourceId={resourceID}></CreateFileDialog>
         </div>
