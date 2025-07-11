@@ -556,6 +556,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
                                 maxWidth: "100%",
                                 textOverflow: "ellipsis",
                                 lineBreak: "anywhere",
+                                wordBreak: "break-all",
                                 fontSize: "1.2rem",
                                 fontWeight: "bold",
                                 lineHeight: "1.5rem",
