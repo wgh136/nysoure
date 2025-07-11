@@ -16,6 +16,7 @@ import {
   Storage,
   Comment,
   Tag,
+  Resource,
 } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import showToast from "../components/toast.ts";
@@ -394,11 +395,9 @@ function DeleteResourceDialog({
   );
 }
 
-const context = createContext<() => void>(() => {});
+const context = createContext<() => void>(() => { });
 
 function Article({ resource }: { resource: ResourceDetails }) {
-  const navigate = useNavigate();
-
   return (
     <article>
       <Markdown
@@ -502,82 +501,22 @@ function Article({ resource }: { resource: ResourceDetails }) {
           },
           a: ({ node, ...props }) => {
             const href = props.href as string;
+            const origin = window.location.origin;
 
             if (
-              href.startsWith(window.location.origin) ||
+              href.startsWith(origin) ||
               href.startsWith("/")
             ) {
               let path = href;
-              if (path.startsWith(window.location.origin)) {
-                path = path.substring(window.location.origin.length);
+              if (path.startsWith(origin)) {
+                path = path.substring(origin.length);
               }
               const content = props.children?.toString();
               if (path.startsWith("/resources/")) {
                 const id = path.substring("/resources/".length);
                 for (const r of resource.related ?? []) {
                   if (r.id.toString() === id) {
-                    const imgHeight =
-                      r.image && r.image.width > r.image.height ? 320 : 420;
-                    const imgWidth = r.image
-                      ? (r.image.width / r.image.height) * imgHeight
-                      : undefined;
-
-                    return (
-                      <span className={"inline-flex max-w-full"}>
-                        <a
-                          href={"/resources/" + r.id}
-                          className={
-                            "mr-2 mb-2 max-w-full cursor-pointer inline-flex min-w-0 flex-col bg-base-100 shadow hover:shadow-md transition-shadow rounded-xl no-underline"
-                          }
-                          onClick={(e) => {
-                            e.preventDefault();
-                            navigate(`/resources/${r.id}`);
-                          }}
-                        >
-                          {r.image && (
-                            <img
-                              style={{
-                                width: imgWidth,
-                                height: imgHeight,
-                              }}
-                              className={"h-full min-h-0 object-cover min-w-0"}
-                              alt={"cover"}
-                              src={network.getImageUrl(r.image?.id)}
-                            />
-                          )}
-                          <span
-                            className={"inline-flex flex-col p-4"}
-                            style={{
-                              width: imgWidth,
-                            }}
-                          >
-                            <span
-                              style={{
-                                maxWidth: "100%",
-                                textOverflow: "ellipsis",
-                                lineBreak: "anywhere",
-                                wordBreak: "break-all",
-                                fontSize: "1.2rem",
-                                fontWeight: "bold",
-                                lineHeight: "1.5rem",
-                                color: "var(--color-base-content)",
-                              }}
-                            >
-                              {r.title}
-                            </span>
-                            <span className={"h-2"}></span>
-                            <span
-                              style={{
-                                color: "var(--color-base-content)",
-                                lineBreak: "anywhere",
-                              }}
-                            >
-                              {content}
-                            </span>
-                          </span>
-                        </a>
-                      </span>
-                    );
+                    return <RelatedResourceCard r={r} content={content} />;
                   }
                 }
               }
@@ -590,6 +529,97 @@ function Article({ resource }: { resource: ResourceDetails }) {
         {resource.article.replaceAll("\n", "  \n")}
       </Markdown>
     </article>
+  );
+}
+
+function RelatedResourceCard({ r, content }: { r: Resource, content?: string }) {
+  const navigate = useNavigate();
+
+  const [articleWidth, setArticleWidth] = useState<number | null>(null);
+
+  useEffect(() => {
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width !== articleWidth) {
+          setArticleWidth(entry.contentRect.width);
+        }
+      }
+    });
+    const articleElement = document.querySelector("article");
+    if (articleElement) {
+      observer.observe(articleElement);
+    }
+  }, [])
+
+  const imgHeight =
+    r.image && r.image.width > r.image.height ? 320 : 420;
+  let imgWidth = r.image
+    ? (r.image.width / r.image.height) * imgHeight
+    : undefined;
+  if (articleWidth && imgWidth && imgWidth > articleWidth) {
+    imgWidth = articleWidth;
+  }
+
+  if (!articleWidth) {
+    return <></>
+  }
+
+  return (
+    <span className={"inline-flex max-w-full"}>
+      <a
+        href={"/resources/" + r.id}
+        className={
+          "mr-2 mb-2 max-w-full cursor-pointer inline-flex min-w-0 flex-col bg-base-100 shadow hover:shadow-md transition-shadow rounded-xl no-underline"
+        }
+        onClick={(e) => {
+          e.preventDefault();
+          navigate(`/resources/${r.id}`);
+        }}
+      >
+        {r.image && (
+          <img
+            style={{
+              width: imgWidth,
+              height: imgHeight,
+              objectFit: "cover",
+            }}
+            className={"h-full min-h-0 object-cover min-w-0"}
+            alt={"cover"}
+            src={network.getImageUrl(r.image?.id)}
+          />
+        )}
+        <span
+          className={"inline-flex flex-col p-4"}
+          style={{
+            width: imgWidth,
+          }}
+        >
+          <span
+            style={{
+              maxWidth: "100%",
+              textOverflow: "ellipsis",
+              lineBreak: "anywhere",
+              wordBreak: "break-all",
+              fontSize: "1.2rem",
+              fontWeight: "bold",
+              lineHeight: "1.5rem",
+              color: "var(--color-base-content)",
+            }}
+          >
+            {r.title}
+          </span>
+          <span className={"h-2"}></span>
+          <span
+            style={{
+              color: "var(--color-base-content)",
+              lineBreak: "anywhere",
+            }}
+          >
+            {content}
+          </span>
+        </span>
+      </a>
+    </span>
   );
 }
 
