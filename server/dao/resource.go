@@ -20,7 +20,7 @@ func CreateResource(r model.Resource) (model.Resource, error) {
 		if err != nil {
 			return err
 		}
-		if err := tx.Model(&model.User{}).Where("id = ?", r.UserID).Update("uploads_count", gorm.Expr("uploads_count + ?", 1)).Error; err != nil {
+		if err := tx.Model(&model.User{}).Where("id = ?", r.UserID).Update("resources_count", gorm.Expr("resources_count + ?", 1)).Error; err != nil {
 			return err
 		}
 		return nil
@@ -122,7 +122,7 @@ func DeleteResource(id uint) error {
 			}
 			return err
 		}
-		if err := tx.Model(&model.User{}).Where("id = ?", r.UserID).Update("uploads_count", gorm.Expr("uploads_count - ?", 1)).Error; err != nil {
+		if err := tx.Model(&model.User{}).Where("id = ?", r.UserID).Update("resources_count", gorm.Expr("resources_count - ?", 1)).Error; err != nil {
 			return err
 		}
 		if err := tx.Delete(&r).Error; err != nil {
