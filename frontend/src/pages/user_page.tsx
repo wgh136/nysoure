@@ -187,6 +187,7 @@ function UserComments({ user }: { user: User }) {
         username={user.username}
         page={page}
         maxPageCallback={setMaxPage}
+        key={`user-comments-${user.username}-${page}`}
       />
       {maxPage ? (
         <div className={"w-full flex justify-center"}>
@@ -252,6 +253,7 @@ function UserFiles({ user }: { user: User }) {
         username={user.username}
         page={page}
         maxPageCallback={setMaxPage}
+        key={`${user.username}-files-${page}`}
       />
       {maxPage ? (
         <div className={"w-full flex justify-center"}>
