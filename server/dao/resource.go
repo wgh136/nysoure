@@ -128,6 +128,12 @@ func DeleteResource(id uint) error {
 		if err := tx.Delete(&r).Error; err != nil {
 			return err
 		}
+		if err := tx.Model(&model.Activity{}).Where("type = ? AND ref_id = ?", model.ActivityTypeNewResource, id).Delete(&model.Activity{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&model.Activity{}).Where("type = ? AND ref_id = ?", model.ActivityTypeUpdateResource, id).Delete(&model.Activity{}).Error; err != nil {
+			return err
+		}
 		return nil
 	})
 }
