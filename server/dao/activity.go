@@ -18,7 +18,11 @@ func AddNewResourceActivity(userID, resourceID uint) error {
 
 func AddUpdateResourceActivity(userID, resourceID uint) error {
 	var userLastActivity model.Activity
-	if err := db.Model(&userLastActivity).Where("user_id = ?", userID).First(&userLastActivity).Error; err != nil {
+	if err := db.
+		Model(&userLastActivity).
+		Where("user_id = ?", userID).
+		Order("created_at DESC").First(&userLastActivity).
+		Error; err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
