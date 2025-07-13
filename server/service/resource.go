@@ -176,6 +176,13 @@ func DeleteResource(uid, id uint) error {
 			return model.NewUnAuthorizedError("You have not permission to delete this resource")
 		}
 	}
+	r, err := GetResource(id, "")
+	if err != nil {
+		return err
+	}
+	if len(r.Files) > 0 {
+		return model.NewRequestError("This resource has files, please delete them first")
+	}
 	if err := dao.DeleteResource(id); err != nil {
 		return err
 	}

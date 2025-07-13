@@ -13,6 +13,7 @@ const (
 	ActivityTypeNewResource
 	ActivityTypeUpdateResource
 	ActivityTypeNewComment
+	ActivityTypeNewFile
 )
 
 type Activity struct {
@@ -29,4 +30,5 @@ type ActivityView struct {
 	User     UserView      `json:"user"`
 	Comment  *CommentView  `json:"comment,omitempty"`
 	Resource *ResourceView `json:"resource,omitempty"`
+	File     *FileView     `json:"file,omitempty"`
 }

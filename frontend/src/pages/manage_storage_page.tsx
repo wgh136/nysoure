@@ -145,7 +145,9 @@ export default function StorageView() {
                 <tr key={s.id} className={"hover"}>
                   <td>
                     {s.name}
-                    {s.isDefault && <Badge className={"ml-1"}>{t("Default")}</Badge>}
+                    {s.isDefault && (
+                      <Badge className={"ml-1"}>{t("Default")}</Badge>
+                    )}
                   </td>
                   <td>{new Date(s.createdAt).toLocaleString()}</td>
                   <td>
@@ -173,15 +175,15 @@ export default function StorageView() {
                             >
                               <a>{t("Delete")}</a>
                             </PopupMenuItem>
-                            {!s.isDefault && <PopupMenuItem
-                              onClick={() => {
-                                handleSetDefault(s.id);
-                              }}
-                            >
-                              <a>
-                                t("Set as Default")
-                              </a>
-                            </PopupMenuItem>}
+                            {!s.isDefault && (
+                              <PopupMenuItem
+                                onClick={() => {
+                                  handleSetDefault(s.id);
+                                }}
+                              >
+                                <a>t("Set as Default")</a>
+                              </PopupMenuItem>
+                            )}
                           </ul>,
                           document.getElementById(
                             `set_default_button_${s.id}`,

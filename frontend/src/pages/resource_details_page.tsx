@@ -395,7 +395,7 @@ function DeleteResourceDialog({
   );
 }
 
-const context = createContext<() => void>(() => { });
+const context = createContext<() => void>(() => {});
 
 function Article({ resource }: { resource: ResourceDetails }) {
   return (
@@ -503,10 +503,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
             const href = props.href as string;
             const origin = window.location.origin;
 
-            if (
-              href.startsWith(origin) ||
-              href.startsWith("/")
-            ) {
+            if (href.startsWith(origin) || href.startsWith("/")) {
               let path = href;
               if (path.startsWith(origin)) {
                 path = path.substring(origin.length);
@@ -532,7 +529,13 @@ function Article({ resource }: { resource: ResourceDetails }) {
   );
 }
 
-function RelatedResourceCard({ r, content }: { r: Resource, content?: string }) {
+function RelatedResourceCard({
+  r,
+  content,
+}: {
+  r: Resource;
+  content?: string;
+}) {
   const navigate = useNavigate();
 
   const [articleWidth, setArticleWidth] = useState<number | null>(null);
@@ -549,10 +552,9 @@ function RelatedResourceCard({ r, content }: { r: Resource, content?: string }) 
     if (articleElement) {
       observer.observe(articleElement);
     }
-  }, [])
+  }, []);
 
-  const imgHeight =
-    r.image && r.image.width > r.image.height ? 320 : 420;
+  const imgHeight = r.image && r.image.width > r.image.height ? 320 : 420;
   let imgWidth = r.image
     ? (r.image.width / r.image.height) * imgHeight
     : undefined;
@@ -561,7 +563,7 @@ function RelatedResourceCard({ r, content }: { r: Resource, content?: string }) 
   }
 
   if (!articleWidth) {
-    return <></>
+    return <></>;
   }
 
   return (

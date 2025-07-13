@@ -171,7 +171,10 @@ export default function ManageServerConfigPage() {
           checked={config.allow_normal_user_upload}
           className="toggle-primary toggle"
           onChange={(e) => {
-            setConfig({ ...config, allow_normal_user_upload: e.target.checked });
+            setConfig({
+              ...config,
+              allow_normal_user_upload: e.target.checked,
+            });
           }}
         />
       </fieldset>

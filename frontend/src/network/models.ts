@@ -177,6 +177,7 @@ export enum ActivityType {
   ResourcePublished = 1,
   ResourceUpdated = 2,
   NewComment = 3,
+  NewFile = 4,
 }
 
 export interface Activity {
@@ -187,4 +188,5 @@ export interface Activity {
   resource?: Resource;
   user?: User;
   comment?: Comment;
+  file?: RFile;
 }

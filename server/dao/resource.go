@@ -122,6 +122,9 @@ func DeleteResource(id uint) error {
 			}
 			return err
 		}
+		if err := tx.Unscoped().Model(&model.File{}).Where("resource_id = ?", id).Delete(&model.File{}).Error; err != nil {
+			return err
+		}
 		if err := tx.Model(&model.User{}).Where("id = ?", r.UserID).Update("resources_count", gorm.Expr("resources_count - ?", 1)).Error; err != nil {
 			return err
 		}
@@ -540,7 +543,10 @@ func RandomResource() (model.Resource, error) {
 		return model.Resource{}, err
 	}
 	for {
-		randomID := uint(1 + rand.Int63n(maxID-1))
+		randomID := uint(1)
+		if maxID > 1 {
+			randomID = uint(1 + rand.Int63n(maxID-1))
+		}
 		var resource model.Resource
 		if err := db.
 			Preload("User").

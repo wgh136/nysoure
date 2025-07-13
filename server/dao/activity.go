@@ -29,6 +29,15 @@ func AddNewCommentActivity(userID, commentID uint) error {
 	return db.Create(activity).Error
 }
 
+func AddNewFileActivity(userID, fileID uint) error {
+	activity := &model.Activity{
+		UserID: userID,
+		Type:   model.ActivityTypeNewFile,
+		RefID:  fileID,
+	}
+	return db.Create(activity).Error
+}
+
 func DeleteResourceActivity(resourceID uint) error {
 	return db.Where("ref_id = ? AND (type = ? OR type = ?)", resourceID, model.ActivityTypeNewResource, model.ActivityTypeUpdateResource).Delete(&model.Activity{}).Error
 }

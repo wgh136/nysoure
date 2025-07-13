@@ -106,12 +106,25 @@ func CreateFile(filename string, description string, resourceID uint, storageID 
 		return nil, err
 	}
 
+	_ = AddNewFileActivity(userID, f.ID)
+
 	return f, nil
 }
 
 func GetFile(id string) (*model.File, error) {
 	f := &model.File{}
 	if err := db.Preload("Storage").Where("uuid = ?", id).First(f).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, model.NewNotFoundError("file not found")
+		}
+		return nil, err
+	}
+	return f, nil
+}
+
+func GetFileByID(id uint) (*model.File, error) {
+	f := &model.File{}
+	if err := db.Preload("Storage").Where("id = ?", id).First(f).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, model.NewNotFoundError("file not found")
 		}
@@ -130,8 +143,21 @@ func DeleteFile(id string) error {
 		if err := tx.Delete(f).Error; err != nil {
 			return err
 		}
-		return tx.Model(&model.User{}).Where("id = ?", f.UserID).
-			UpdateColumn("files_count", gorm.Expr("files_count - ?", 1)).Error
+		if err := tx.
+			Model(&model.User{}).
+			Where("id = ?", f.UserID).
+			UpdateColumn("files_count", gorm.Expr("files_count - ?", 1)).
+			Error; err != nil {
+			return err
+		}
+		if err := tx.
+			Model(&model.Activity{}).
+			Where("type = ? AND ref_id = ?", model.ActivityTypeNewFile, f.ID).
+			Delete(&model.Activity{}).
+			Error; err != nil {
+			return err
+		}
+		return nil
 	}); err != nil {
 		return err
 	}

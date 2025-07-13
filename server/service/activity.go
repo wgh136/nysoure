@@ -22,6 +22,7 @@ func GetActivityList(page int) ([]model.ActivityView, int, error) {
 		}
 		var comment *model.CommentView
 		var resource *model.ResourceView
+		var file *model.FileView
 		switch activity.Type {
 		case model.ActivityTypeNewComment:
 			c, err := dao.GetCommentByID(activity.RefID)
@@ -37,6 +38,19 @@ func GetActivityList(page int) ([]model.ActivityView, int, error) {
 			}
 			rv := r.ToView()
 			resource = &rv
+		case model.ActivityTypeNewFile:
+			f, err := dao.GetFileByID(activity.RefID)
+			if err != nil {
+				return nil, 0, err
+			}
+			fv := f.ToView()
+			file = fv
+			r, err := dao.GetResourceByID(f.ResourceID)
+			if err != nil {
+				return nil, 0, err
+			}
+			rv := r.ToView()
+			resource = &rv
 		}
 		view := model.ActivityView{
 			ID:       activity.ID,
@@ -45,6 +59,7 @@ func GetActivityList(page int) ([]model.ActivityView, int, error) {
 			Time:     activity.CreatedAt,
 			Comment:  comment,
 			Resource: resource,
+			File:     file,
 		}
 		views = append(views, view)
 	}

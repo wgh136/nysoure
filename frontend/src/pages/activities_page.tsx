@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import Loading from "../components/loading.tsx";
 import { CommentContent } from "../components/comment_tile.tsx";
+import {MdOutlineArchive, MdOutlinePhotoAlbum} from "react-icons/md";
+import Badge from "../components/badge.tsx";
 
 export default function ActivitiesPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -59,6 +61,18 @@ export default function ActivitiesPage() {
   );
 }
 
+function fileSizeToString(size: number) {
+  if (size < 1024) {
+    return size + "B";
+  } else if (size < 1024 * 1024) {
+    return (size / 1024).toFixed(2) + "KB";
+  } else if (size < 1024 * 1024 * 1024) {
+    return (size / 1024 / 1024).toFixed(2) + "MB";
+  } else {
+    return (size / 1024 / 1024 / 1024).toFixed(2) + "GB";
+  }
+}
+
 function ActivityCard({ activity }: { activity: Activity }) {
   const { t } = useTranslation();
 
@@ -67,6 +81,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
     t("Published a resource"),
     t("Updated a resource"),
     t("Posted a comment"),
+    t("Added a new file"),
   ];
 
   const navigate = useNavigate();
@@ -97,6 +112,33 @@ function ActivityCard({ activity }: { activity: Activity }) {
         <CommentContent content={activity.comment!.content} />
       </div>
     );
+  } else if (activity.type === ActivityType.NewFile) {
+    content = (
+      <div>
+        <h4 className={"font-bold py-2"}>{activity.file!.filename}</h4>
+        <p className={"text-sm whitespace-pre-wrap"}>
+          {activity.file!.description}
+        </p>
+        <p className={"pt-1"}>
+          <Badge className={"badge-soft badge-secondary text-xs mr-2"}>
+            <MdOutlineArchive size={16} className={"inline-block"} />
+            {activity.file!.is_redirect
+              ? t("Redirect")
+              : fileSizeToString(activity.file!.size)}
+          </Badge>
+          <Badge className={"badge-soft badge-accent text-xs mr-2"}>
+            <MdOutlinePhotoAlbum size={16} className={"inline-block"} />
+            {(() => {
+              let title = activity.resource!.title;
+              if (title.length > 20) {
+                title = title.slice(0, 20) + "...";
+              }
+              return title;
+            })()}
+          </Badge>
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -112,6 +154,8 @@ function ActivityCard({ activity }: { activity: Activity }) {
           navigate(`/resources/${activity.resource?.id}`);
         } else if (activity.type === ActivityType.NewComment) {
           navigate(`/comments/${activity.comment?.id}`);
+        } else if (activity.type === ActivityType.NewFile) {
+          navigate(`/resources/${activity.resource?.id}#files`);
         }
       }}
     >
