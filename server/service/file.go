@@ -614,3 +614,26 @@ func CreateServerDownloadTask(uid uint, url, filename, description string, resou
 
 	return file.ToView(), nil
 }
+
+func ListUserFiles(username string, page int) ([]*model.FileView, int, error) {
+	user, err := dao.GetUserByUsername(username)
+	if err != nil {
+		log.Error("failed to get user by username: ", err)
+		return nil, 0, model.NewNotFoundError("user not found")
+	}
+	uid := user.ID
+	files, total, err := dao.ListUserFiles(uid, page, pageSize)
+	if err != nil {
+		log.Error("failed to list user files: ", err)
+		return nil, 0, model.NewInternalServerError("failed to list user files")
+	}
+
+	fileViews := make([]*model.FileView, len(files))
+	for i, file := range files {
+		fileViews[i] = file.ToViewWithResource()
+	}
+
+	totalPages := (total + pageSize - 1) / pageSize
+
+	return fileViews, int(totalPages), nil
+}

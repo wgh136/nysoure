@@ -1,8 +1,8 @@
 import { useParams, useLocation, useNavigate } from "react-router";
-import { CommentWithResource, User } from "../network/models";
+import { CommentWithResource, RFile, User } from "../network/models";
 import { network } from "../network/network";
 import showToast from "../components/toast";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ResourcesView from "../components/resources_view";
 import Loading from "../components/loading";
 import Pagination from "../components/pagination";
@@ -26,23 +26,27 @@ export default function UserPage() {
   const username = rawUsername ? decodeURIComponent(rawUsername) : "";
 
   // 从 hash 中获取当前页面，默认为 resources
-  const getPageFromHash = () => {
+  const getPageFromHash = useCallback(() => {
     const hash = location.hash.slice(1); // 移除 # 号
     if (hash === "comments") return 1;
+    if (hash === "files") return 2;
     return 0; // 默认为 resources
-  };
+  }, [location.hash]);
 
   const [page, setPage] = useState(getPageFromHash());
 
   // 监听 hash 变化
   useEffect(() => {
     setPage(getPageFromHash());
-  }, [location.hash]);
+  }, [location.hash, getPageFromHash]);
 
   // 更新 hash 的函数
   const updateHash = (newPage: number) => {
-    const hash = newPage === 1 ? "#comments" : "#resources";
-    navigate(location.pathname + hash, { replace: true });
+    const hashs = ["resources", "comments", "files"];
+    const newHash = hashs[newPage] || "resources";
+    if (location.hash.slice(1) !== newHash) {
+      navigate(`/user/${username}#${newHash}`, { replace: true });
+    }
   };
 
   useEffect(() => {
@@ -91,10 +95,18 @@ export default function UserPage() {
         >
           Comments
         </div>
+        <div
+          role="tab"
+          className={`tab ${page === 2 ? "tab-active" : ""}`}
+          onClick={() => updateHash(2)}
+        >
+          Files
+        </div>
       </div>
       <div className="w-full">
         {page === 0 && <UserResources user={user} />}
         {page === 1 && <UserComments user={user} />}
+        {page === 2 && <UserFiles user={user} />}
       </div>
       <div className="h-16"></div>
     </div>
@@ -223,6 +235,122 @@ function CommentsList({
       {comments.map((comment) => {
         return (
           <CommentTile elevation="high" comment={comment} key={comment.id} />
+        );
+      })}
+    </>
+  );
+}
+
+function UserFiles({ user }: { user: User }) {
+  const [page, setPage] = useState(1);
+
+  const [maxPage, setMaxPage] = useState(0);
+
+  return (
+    <div className="px-2">
+      <FilesList
+        username={user.username}
+        page={page}
+        maxPageCallback={setMaxPage}
+      />
+      {maxPage ? (
+        <div className={"w-full flex justify-center"}>
+          <Pagination page={page} setPage={setPage} totalPages={maxPage} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function fileSizeToString(size: number) {
+  if (size < 1024) {
+    return size + "B";
+  } else if (size < 1024 * 1024) {
+    return (size / 1024).toFixed(2) + "KB";
+  } else if (size < 1024 * 1024 * 1024) {
+    return (size / 1024 / 1024).toFixed(2) + "MB";
+  } else {
+    return (size / 1024 / 1024 / 1024).toFixed(2) + "GB";
+  }
+}
+
+function FilesList({
+  username,
+  page,
+  maxPageCallback,
+}: {
+  username: string;
+  page: number;
+  maxPageCallback: (maxPage: number) => void;
+}) {
+  const [files, setFiles] = useState<RFile[] | null>(null);
+
+  const navigate = useNavigate();
+
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    network.getUserFiles(username, page).then((res) => {
+      if (res.success) {
+        setFiles(res.data!);
+        maxPageCallback(res.totalPages || 1);
+      } else {
+        showToast({
+          message: res.message,
+          type: "error",
+        });
+      }
+    });
+  }, [maxPageCallback, page, username]);
+
+  if (files == null) {
+    return (
+      <div className={"w-full"}>
+        <Loading />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {files.map((file) => {
+        return (
+          <a
+            href={`/resources/${file.resource!.id}#files`}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate(`/resources/${file.resource!.id}#files`);
+            }}
+          >
+            <div
+              className={
+                "card shadow p-4 my-2 hover:shadow-md transition-shadow"
+              }
+            >
+              <h4 className={"font-bold pb-2"}>{file!.filename}</h4>
+              <p className={"text-sm whitespace-pre-wrap"}>
+                {file!.description}
+              </p>
+              <p className={"pt-1"}>
+                <Badge className={"badge-soft badge-secondary text-xs mr-2"}>
+                  <MdOutlineArchive size={16} className={"inline-block"} />
+                  {file!.is_redirect
+                    ? t("Redirect")
+                    : fileSizeToString(file!.size)}
+                </Badge>
+                <Badge className={"badge-soft badge-accent text-xs mr-2"}>
+                  <MdOutlinePhotoAlbum size={16} className={"inline-block"} />
+                  {(() => {
+                    let title = file.resource!.title;
+                    if (title.length > 20) {
+                      title = title.slice(0, 20) + "...";
+                    }
+                    return title;
+                  })()}
+                </Badge>
+              </p>
+            </div>
+          </a>
         );
       })}
     </>

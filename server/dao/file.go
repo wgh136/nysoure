@@ -215,3 +215,20 @@ func SetFileStorageKeyAndSize(id string, storageKey string, size int64) error {
 	}
 	return nil
 }
+
+func ListUserFiles(userID uint, page, pageSize int) ([]*model.File, int64, error) {
+	var files []*model.File
+	var count int64
+
+	if err := db.Model(&model.File{}).
+		Preload("Resource").
+		Where("user_id = ?", userID).
+		Count(&count).
+		Order("created_at DESC").
+		Offset((page - 1) * pageSize).
+		Limit(pageSize).
+		Find(&files).Error; err != nil {
+		return nil, 0, err
+	}
+	return files, count, nil
+}

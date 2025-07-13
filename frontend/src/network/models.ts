@@ -103,6 +103,7 @@ export interface RFile {
   size: number;
   is_redirect: boolean;
   user: User;
+  resource?: Resource;
 }
 
 export interface UploadingFile {

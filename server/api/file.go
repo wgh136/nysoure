@@ -30,6 +30,7 @@ func AddFileRoutes(router fiber.Router) {
 		fileGroup.Delete("/:id", deleteFile)
 		fileGroup.Get("/download/local", downloadLocalFile)
 		fileGroup.Get("/download/:id", downloadFile, middleware.NewDynamicRequestLimiter(config.MaxDownloadsPerDayForSingleIP, 24*time.Hour))
+		fileGroup.Get("/user/:username", listUserFiles, middleware.NewRequestLimiter(100, 24*time.Hour))
 	}
 }
 
@@ -271,5 +272,24 @@ func createServerDownloadTask(c fiber.Ctx) error {
 	return c.JSON(model.Response[*model.FileView]{
 		Success: true,
 		Data:    result,
+	})
+}
+
+func listUserFiles(c fiber.Ctx) error {
+	username := c.Params("username")
+	page, err := strconv.Atoi(c.Query("page", "1"))
+	if err != nil || page < 1 {
+		return model.NewRequestError("Invalid page number")
+	}
+
+	files, totalPages, err := service.ListUserFiles(username, page)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(model.PageResponse[*model.FileView]{
+		Success:    true,
+		Data:       files,
+		TotalPages: totalPages,
 	})
 }

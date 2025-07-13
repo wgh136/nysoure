@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import Loading from "../components/loading.tsx";
 import { CommentContent } from "../components/comment_tile.tsx";
-import {MdOutlineArchive, MdOutlinePhotoAlbum} from "react-icons/md";
+import { MdOutlineArchive, MdOutlinePhotoAlbum } from "react-icons/md";
 import Badge from "../components/badge.tsx";
 
 export default function ActivitiesPage() {

@@ -574,6 +574,20 @@ class Network {
     );
   }
 
+  async getUserFiles(
+    username: string,
+    page: number = 1,
+  ): Promise<PageResponse<RFile>> {
+    return this._callApi(() =>
+      axios.get(
+        `${this.apiBaseUrl}/files/user/${encodeURIComponent(username)}`,
+        {
+          params: { page },
+        },
+      ),
+    );
+  }
+
   getFileDownloadLink(fileId: string, cfToken: string): string {
     return `${this.apiBaseUrl}/files/download/${fileId}?cf_token=${cfToken}`;
   }
