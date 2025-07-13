@@ -1,6 +1,11 @@
 package dao
 
-import "nysoure/server/model"
+import (
+	"errors"
+	"gorm.io/gorm"
+	"nysoure/server/model"
+	"time"
+)
 
 func AddNewResourceActivity(userID, resourceID uint) error {
 	activity := &model.Activity{
@@ -12,6 +17,19 @@ func AddNewResourceActivity(userID, resourceID uint) error {
 }
 
 func AddUpdateResourceActivity(userID, resourceID uint) error {
+	var userLastActivity model.Activity
+	if err := db.Model(&userLastActivity).Where("user_id = ?", userID).First(&userLastActivity).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+	}
+	if userLastActivity.Type == model.ActivityTypeUpdateResource && userLastActivity.RefID == resourceID {
+		if time.Since(userLastActivity.CreatedAt) < 10*time.Minute {
+			// If the last activity is an update to the same resource within 10 minutes, skip creating a new activity
+			return nil
+		}
+	}
+
 	activity := &model.Activity{
 		UserID: userID,
 		Type:   model.ActivityTypeUpdateResource,
