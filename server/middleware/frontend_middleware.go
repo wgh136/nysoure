@@ -1,8 +1,9 @@
 package middleware
 
 import (
+	"encoding/json"
 	"fmt"
-	url2 "net/url"
+	"net/url"
 	"nysoure/server/config"
 	"nysoure/server/service"
 	"nysoure/server/utils"
@@ -68,22 +69,27 @@ func serveIndexHtml(c fiber.Ctx) error {
 	description := config.ServerDescription()
 	preview := serverBaseURL + "/icon-192.png"
 	title := siteName
-	url := serverBaseURL + c.Path()
+	htmlUrl := serverBaseURL + c.Path()
 	cfTurnstileSiteKey := config.CloudflareTurnstileSiteKey()
 	siteInfo := config.SiteInfo()
 	path := c.Path()
+	preFetchData := ""
 
 	if strings.HasPrefix(path, "/resources/") {
 		idStr := strings.TrimPrefix(path, "/resources/")
 		id, err := strconv.Atoi(idStr)
 		if err == nil {
-			r, err := service.GetResource(uint(id), "")
+			r, err := service.GetResource(uint(id), c.Hostname())
 			if err == nil {
 				if len(r.Images) > 0 {
 					preview = fmt.Sprintf("%s/api/image/%d", serverBaseURL, r.Images[0].ID)
 				}
 				title = r.Title
 				description = utils.ArticleToDescription(r.Article, 200)
+				preFetchDataJson, _ := json.Marshal(map[string]interface{}{
+					"resource": r,
+				})
+				preFetchData = url.QueryEscape(string(preFetchDataJson))
 			}
 		}
 	} else if strings.HasPrefix(path, "/user/") {
@@ -93,10 +99,14 @@ func serveIndexHtml(c fiber.Ctx) error {
 			preview = fmt.Sprintf("%s/api/avatar/%d", serverBaseURL, u.ID)
 			title = u.Username
 			description = "User " + u.Username + "'s profile"
+			preFetchDataJson, _ := json.Marshal(map[string]interface{}{
+				"user": u,
+			})
+			preFetchData = url.QueryEscape(string(preFetchDataJson))
 		}
 	} else if strings.HasPrefix(path, "/tag/") {
 		tagName := strings.TrimPrefix(path, "/tag/")
-		tagName, err := url2.PathUnescape(tagName)
+		tagName, err := url.PathUnescape(tagName)
 		tagName = strings.TrimSpace(tagName)
 		if err == nil {
 			t, err := service.GetTagByName(tagName)
@@ -117,6 +127,10 @@ func serveIndexHtml(c fiber.Ctx) error {
 				if len(cmt.Images) > 0 {
 					preview = fmt.Sprintf("%s/api/image/%d", serverBaseURL, cmt.Images[0].ID)
 				}
+				preFetchDataJson, _ := json.Marshal(map[string]interface{}{
+					"comment": cmt,
+				})
+				preFetchData = url.QueryEscape(string(preFetchDataJson))
 			}
 		}
 	}
@@ -125,11 +139,12 @@ func serveIndexHtml(c fiber.Ctx) error {
 	content = strings.ReplaceAll(content, "{{Description}}", description)
 	content = strings.ReplaceAll(content, "{{Preview}}", preview)
 	content = strings.ReplaceAll(content, "{{Title}}", title)
-	content = strings.ReplaceAll(content, "{{Url}}", url)
+	content = strings.ReplaceAll(content, "{{Url}}", htmlUrl)
 	content = strings.ReplaceAll(content, "{{CFTurnstileSiteKey}}", cfTurnstileSiteKey)
 	content = strings.ReplaceAll(content, "{{SiteInfo}}", siteInfo)
 	content = strings.ReplaceAll(content, "{{UploadPrompt}}", config.UploadPrompt())
 	content = strings.ReplaceAll(content, "{{AllowNormalUserUpload}}", strconv.FormatBool(config.AllowNormalUserUpload()))
+	content = strings.ReplaceAll(content, "<script id=\"pre_fetch_data\"></script>", fmt.Sprintf("<script type=\"application/json\" id=\"pre_fetch_data\">%s</script>", preFetchData))
 
 	c.Set("Content-Type", "text/html; charset=utf-8")
 	return c.SendString(content)

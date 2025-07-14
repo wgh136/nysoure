@@ -63,6 +63,21 @@ class App {
   canUpload() {
     return this.isLoggedIn() && (this.user?.can_upload || this.isAdmin());
   }
+
+  getPreFetchData() {
+    const preFetchDataElement = document.getElementById("pre_fetch_data");
+    if (preFetchDataElement) {
+      let content = preFetchDataElement.textContent
+      if (!content) {
+        return null;
+      }
+      content = decodeURIComponent(content);
+      const res = JSON.parse(content);
+      preFetchDataElement.remove();
+      return res;
+    }
+    return null;
+  }
 }
 
 export const app = new App();

@@ -14,6 +14,7 @@ import {
   MdOutlinePhotoAlbum,
 } from "react-icons/md";
 import { useTranslation } from "react-i18next";
+import { app } from "../app.ts";
 
 export default function UserPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -50,6 +51,11 @@ export default function UserPage() {
   };
 
   useEffect(() => {
+    const preFetchData = app.getPreFetchData();
+    if (preFetchData?.user?.username === username) {
+      setUser(preFetchData.user);
+      return;
+    }
     network.getUserInfo(username || "").then((res) => {
       if (res.success) {
         setUser(res.data!);

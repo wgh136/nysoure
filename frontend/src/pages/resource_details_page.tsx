@@ -90,14 +90,19 @@ export default function ResourcePage() {
       if (location.state) {
         setResource(location.state.resource);
       } else {
-        network.getResourceDetails(id).then((res) => {
-          if (res.success) {
-            setResource(res.data!);
-            document.title = res.data!.title;
-          } else {
-            showToast({ message: res.message, type: "error" });
-          }
-        });
+        const preFetchData = app.getPreFetchData();
+        if (preFetchData?.resource?.id === id) {
+          setResource(preFetchData.resource);
+        } else {
+          network.getResourceDetails(id).then((res) => {
+            if (res.success) {
+              setResource(res.data!);
+              document.title = res.data!.title;
+            } else {
+              showToast({ message: res.message, type: "error" });
+            }
+          });
+        }
       }
     }
   }, [id, location.state]);
