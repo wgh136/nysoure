@@ -32,6 +32,11 @@ export default function CommentPage() {
       });
       return;
     }
+    const preFetchData = app.getPreFetchData();
+    if (preFetchData?.comment?.id === id) {
+      setComment(preFetchData.comment);
+      return;
+    }
     network.getComment(id).then((res) => {
       if (res.success) {
         setComment(res.data!);
@@ -52,11 +57,6 @@ export default function CommentPage() {
         message: t("Invalid comment ID"),
         type: "error",
       });
-      return;
-    }
-    const preFetchData = app.getPreFetchData();
-    if (preFetchData?.comment?.id === id) {
-      setComment(preFetchData.comment);
       return;
     }
     network.getComment(id).then((res) => {
