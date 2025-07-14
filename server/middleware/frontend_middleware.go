@@ -89,7 +89,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 				preFetchDataJson, _ := json.Marshal(map[string]interface{}{
 					"resource": r,
 				})
-				preFetchData = url.QueryEscape(string(preFetchDataJson))
+				preFetchData = url.PathEscape(string(preFetchDataJson))
 			}
 		}
 	} else if strings.HasPrefix(path, "/user/") {
@@ -102,7 +102,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 			preFetchDataJson, _ := json.Marshal(map[string]interface{}{
 				"user": u,
 			})
-			preFetchData = url.QueryEscape(string(preFetchDataJson))
+			preFetchData = url.PathEscape(string(preFetchDataJson))
 		}
 	} else if strings.HasPrefix(path, "/tag/") {
 		tagName := strings.TrimPrefix(path, "/tag/")
@@ -130,7 +130,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 				preFetchDataJson, _ := json.Marshal(map[string]interface{}{
 					"comment": cmt,
 				})
-				preFetchData = url.QueryEscape(string(preFetchDataJson))
+				preFetchData = url.PathEscape(string(preFetchDataJson))
 			}
 		}
 	}
