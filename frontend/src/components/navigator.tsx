@@ -35,12 +35,7 @@ export default function Navigator() {
   const { t } = useTranslation();
 
   return (
-    <div style={{
-      position: "relative",
-      overflowY: "hidden",
-      overflowX: "hidden",
-      minHeight: "100vh",
-    }}>
+    <>
       {/* background */}
       {background && (
         <div
@@ -89,7 +84,6 @@ export default function Navigator() {
         style={{
           position: "relative",
           zIndex: 1,
-          minHeight: "100vh",
         }}
       >
         <FloatingToTopButton />
@@ -269,7 +263,7 @@ export default function Navigator() {
           <div className={"max-w-7xl mx-auto pt-16"}>{outlet}</div>
         </navigatorContext.Provider>
       </div>
-    </div>
+    </>
   );
 }
 
