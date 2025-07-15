@@ -49,6 +49,7 @@ import { useAppContext } from "../components/AppContext.tsx";
 import { BiLogoSteam } from "react-icons/bi";
 import { CommentTile } from "../components/comment_tile.tsx";
 import { CommentInput } from "../components/comment_input.tsx";
+import { useNavigator } from "../components/navigator.tsx";
 
 export default function ResourcePage() {
   const params = useParams();
@@ -63,6 +64,8 @@ export default function ResourcePage() {
   const [page, setPage] = useState(0);
 
   const location = useLocation();
+
+  const navigator = useNavigator();
 
   const reload = useCallback(async () => {
     if (!isNaN(id)) {
@@ -97,7 +100,6 @@ export default function ResourcePage() {
           network.getResourceDetails(id).then((res) => {
             if (res.success) {
               setResource(res.data!);
-              document.title = res.data!.title;
             } else {
               showToast({ message: res.message, type: "error" });
             }
@@ -106,6 +108,15 @@ export default function ResourcePage() {
       }
     }
   }, [id, location.state]);
+
+  useEffect(() => {
+    if (resource) {
+      document.title = resource.title;
+      if (resource.images.length > 0) {
+        navigator.setBackground(network.getImageUrl(resource.images[0].id));
+      }
+    }
+  }, [resource])
 
   const navigate = useNavigate();
 
@@ -195,7 +206,7 @@ export default function ResourcePage() {
                 <a href={l.url} target={"_blank"}>
                   <span
                     className={
-                      "py-1 px-3 inline-flex items-center m-1 border border-base-300 rounded-2xl hover:bg-base-200 transition-colors cursor-pointer select-none"
+                      "py-1 px-3 inline-flex items-center m-1 border border-base-300 bg-base-100 opacity-90 rounded-2xl hover:bg-base-200 transition-colors cursor-pointer select-none"
                     }
                   >
                     {l.url.includes("steampowered.com") ? (
@@ -211,7 +222,9 @@ export default function ResourcePage() {
           </p>
         )}
 
-        <div className="tabs tabs-box my-4 mx-2 p-4">
+        <div className="tabs tabs-box my-4 mx-2 p-4 shadow" style={{
+          backgroundColor: "rgb(var(--color-base-100-rgb) / 0.82)",
+        }}>
           <label className="tab transition-all">
             <input
               type="radio"
@@ -302,11 +315,11 @@ function Tags({ tags }: { tags: Tag[] }) {
     <>
       {Array.from(tagsMap.entries()).map(([type, tags]) => (
         <p key={type} className={"px-4"}>
-          <Badge key={type}>{type == "" ? t("Other") : type}</Badge>
+          <Badge className="shadow-xs" key={type}>{type == "" ? t("Other") : type}</Badge>
           {tags.map((tag) => (
             <Badge
               key={tag.name}
-              className={"m-1 cursor-pointer badge-soft badge-primary"}
+              className={"m-1 cursor-pointer badge-soft badge-primary shadow-xs"}
               onClick={() => {
                 navigate(`/tag/${tag.name}`);
               }}

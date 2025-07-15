@@ -8,6 +8,7 @@
   prefersdark: false;
   color-scheme: "light dark";
   --color-base-100: oklch(99% 0.014 343.198);
+  --color-base-100-rgb: 255 246 251; /* 99% oklch(343.198) 近似RGB */
   --color-base-200: oklch(97% 0.028 342.258);
   --color-base-300: oklch(84% 0.061 343.231);
   --color-base-content: oklch(0% 0 0);
@@ -40,6 +41,7 @@
 @media (prefers-color-scheme: dark) {
   [data-theme="pink"] {
     --color-base-100: oklch(28% 0.022 277.508);
+    --color-base-100-rgb: 54 34 56; /* 28% oklch(277.508) 近似RGB */
     --color-base-200: oklch(24% 0.02 277.508);
     --color-base-300: oklch(40% 0.153 2.432);
     --color-base-content: oklch(97.747% 0.007 106.545);
@@ -69,6 +71,7 @@
   prefersdark: false;
   color-scheme: "light dark";
   --color-base-100: oklch(98% 0.005 240);
+  --color-base-100-rgb: 245 249 255; /* 98% oklch(240) 近似RGB */
   --color-base-200: oklch(96% 0.01 240);
   --color-base-300: oklch(92% 0.015 240);
   --color-base-content: oklch(20% 0.01 240);
@@ -101,6 +104,7 @@
 @media (prefers-color-scheme: dark) {
   [data-theme="ocean"] {
     --color-base-100: oklch(15% 0.02 240);
+    --color-base-100-rgb: 17 19 38; /* 15% oklch(240) 近似RGB */
     --color-base-200: oklch(12% 0.015 240);
     --color-base-300: oklch(25% 0.03 240);
     --color-base-content: oklch(90% 0.01 240);
@@ -130,6 +134,7 @@
   prefersdark: false;
   color-scheme: "light dark";
   --color-base-100: oklch(98% 0.005 140);
+  --color-base-100-rgb: 241 255 245; /* 98% oklch(140) 近似RGB */
   --color-base-200: oklch(96% 0.01 140);
   --color-base-300: oklch(92% 0.015 140);
   --color-base-content: oklch(20% 0.01 140);
@@ -162,6 +167,7 @@
 @media (prefers-color-scheme: dark) {
   [data-theme="mint"] {
     --color-base-100: oklch(15% 0.02 140);
+    --color-base-100-rgb: 19 38 24; /* 15% oklch(140) 近似RGB */
     --color-base-200: oklch(12% 0.015 140);
     --color-base-300: oklch(25% 0.03 140);
     --color-base-content: oklch(90% 0.01 140);
@@ -191,6 +197,7 @@
   prefersdark: false;
   color-scheme: "light dark";
   --color-base-100: oklch(98% 0.005 50);
+  --color-base-100-rgb: 255 253 241; /* 98% oklch(50) 近似RGB */
   --color-base-200: oklch(96% 0.01 50);
   --color-base-300: oklch(92% 0.015 50);
   --color-base-content: oklch(20% 0.01 50);
@@ -223,6 +230,7 @@
 @media (prefers-color-scheme: dark) {
   [data-theme="glow"] {
     --color-base-100: oklch(15% 0.02 50);
+    --color-base-100-rgb: 38 36 19; /* 15% oklch(50) 近似RGB */
     --color-base-200: oklch(12% 0.015 50);
     --color-base-300: oklch(25% 0.03 50);
     --color-base-content: oklch(90% 0.01 50);
@@ -303,4 +311,8 @@ body {
 .text-md {
   font-size: 1rem;
   line-height: 1.5rem;
+}
+
+.bg-base-100-tr82 {
+  background-color: rgb(var(--color-base-100-rgb) / 0.82);
 }

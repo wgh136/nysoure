@@ -8,6 +8,7 @@ import UploadingSideBar from "./uploading_side_bar.tsx";
 import { ThemeSwitcher } from "./theme_switcher.tsx";
 import { IoLogoGithub } from "react-icons/io";
 import { useAppContext } from "./AppContext.tsx";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function Navigator() {
   const outlet = useOutlet();
@@ -16,202 +17,272 @@ export default function Navigator() {
 
   const [key, setKey] = useState(0);
 
+  const [background, setBackground] = useState<string | undefined>(undefined);
+
   const appContext = useAppContext();
 
   const [naviContext, _] = useState<NavigatorContext>({
     refresh: () => {
       setKey(key + 1);
     },
+    setBackground: (b: string) => {
+      if (b !== background) {
+        setBackground(b);
+      }
+    },
   });
 
   const { t } = useTranslation();
 
   return (
-    <>
-      <FloatingToTopButton />
+    <div style={{
+      position: "relative",
+      overflowY: "hidden",
+      overflowX: "hidden",
+      minHeight: "100vh",
+    }}>
+      {/* background */}
+      {background && (
+        <div
+          className="background-wrapper"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: -2,
+            filter: "blur(8px)",
+          }}
+        >
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={background}
+              src={background}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="absolute w-full h-full object-cover"
+            />
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* Background overlay */}
+      {background && (
+        <div
+          className="bg-base-100 opacity-60 dark:opacity-40"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: -1,
+          }}
+        />
+      )}
+
+      {/* Content overlay with backdrop blur */}
       <div
-        className="navbar bg-base-100 shadow-sm fixed top-0 z-1 lg:z-10"
-        key={key}
+        style={{
+          position: "relative",
+          zIndex: 1,
+          minHeight: "100vh",
+        }}
       >
-        <div className={"flex-1 max-w-7xl mx-auto flex items-center"}>
-          <div className="dropdown">
-            <div
-              tabIndex={0}
-              role="button"
-              className="btn btn-ghost btn-circle lg:hidden"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+        <FloatingToTopButton />
+        <div className="z-1 fixed top-0 w-full backdrop-blur h-16"/>
+        <div className="z-2 fixed top-0 w-full h-16 bg-base-100 opacity-80"/>
+        <div
+          className="navbar shadow-sm fixed top-0 z-3 lg:z-10 bg-transparent h-16"
+          key={key}
+        >
+          <div className={"flex-1 max-w-7xl mx-auto flex items-center"}>
+            <div className="dropdown">
+              <div
+                tabIndex={0}
+                role="button"
+                className="btn btn-ghost btn-circle lg:hidden"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h7"
-                />
-              </svg>
-            </div>
-            <ul
-              id={"navi_menu"}
-              tabIndex={0}
-              className="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
-            >
-              <li
-                onClick={() => {
-                  const menu = document.getElementById(
-                    "navi_menu",
-                  ) as HTMLElement;
-                  menu.blur();
-                  navigate("/");
-                }}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 6h16M4 12h16M4 18h7"
+                  />
+                </svg>
+              </div>
+              <ul
+                id={"navi_menu"}
+                tabIndex={0}
+                className="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
               >
-                <a>{t("Home")}</a>
-              </li>
-              <li
-                onClick={() => {
-                  const menu = document.getElementById(
-                    "navi_menu",
-                  ) as HTMLElement;
-                  menu.blur();
-                  navigate("/tags");
-                }}
-              >
-                <a>{t("Tags")}</a>
-              </li>
-              <li>
-                <a
+                <li
                   onClick={() => {
                     const menu = document.getElementById(
                       "navi_menu",
                     ) as HTMLElement;
                     menu.blur();
+                    navigate("/");
+                  }}
+                >
+                  <a>{t("Home")}</a>
+                </li>
+                <li
+                  onClick={() => {
+                    const menu = document.getElementById(
+                      "navi_menu",
+                    ) as HTMLElement;
+                    menu.blur();
+                    navigate("/tags");
+                  }}
+                >
+                  <a>{t("Tags")}</a>
+                </li>
+                <li>
+                  <a
+                    onClick={() => {
+                      const menu = document.getElementById(
+                        "navi_menu",
+                      ) as HTMLElement;
+                      menu.blur();
+                      navigate("/activity");
+                    }}
+                  >
+                    {t("Activity")}
+                  </a>
+                </li>
+                <li
+                  onClick={() => {
+                    const menu = document.getElementById(
+                      "navi_menu",
+                    ) as HTMLElement;
+                    menu.blur();
+                    navigate("/random");
+                  }}
+                >
+                  <a>{t("Random")}</a>
+                </li>
+                <li
+                  onClick={() => {
+                    const menu = document.getElementById(
+                      "navi_menu",
+                    ) as HTMLElement;
+                    menu.blur();
+                    navigate("/about");
+                  }}
+                >
+                  <a>{t("About")}</a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <button
+                className="btn btn-ghost text-xl"
+                onClick={() => {
+                  appContext.clear();
+                  navigate(`/`, { replace: true });
+                }}
+              >
+                {app.appName}
+              </button>
+            </div>
+            <div className="hidden lg:flex">
+              <ul className="menu menu-horizontal px-1">
+                <li
+                  onClick={() => {
+                    navigate("/");
+                  }}
+                >
+                  <a>{t("Home")}</a>
+                </li>
+                <li
+                  onClick={() => {
+                    navigate("/tags");
+                  }}
+                >
+                  <a>{t("Tags")}</a>
+                </li>
+                <li
+                  onClick={() => {
+                    navigate("/random");
+                  }}
+                >
+                  <a>{t("Random")}</a>
+                </li>
+                <li
+                  onClick={() => {
                     navigate("/activity");
                   }}
                 >
-                  {t("Activity")}
-                </a>
-              </li>
-              <li
-                onClick={() => {
-                  const menu = document.getElementById(
-                    "navi_menu",
-                  ) as HTMLElement;
-                  menu.blur();
-                  navigate("/random");
-                }}
+                  <a>{t("Activity")}</a>
+                </li>
+                <li
+                  onClick={() => {
+                    navigate("/about");
+                  }}
+                >
+                  <a>{t("About")}</a>
+                </li>
+              </ul>
+            </div>
+            <div className={"flex-1"}></div>
+            <div className="flex gap-2">
+              <SearchBar />
+              <UploadingSideBar />
+              <ThemeSwitcher />
+              <a
+                className={"hidden sm:inline"}
+                href="https://github.com/wgh136/nysoure"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <a>{t("Random")}</a>
-              </li>
-              <li
-                onClick={() => {
-                  const menu = document.getElementById(
-                    "navi_menu",
-                  ) as HTMLElement;
-                  menu.blur();
-                  navigate("/about");
-                }}
-              >
-                <a>{t("About")}</a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <button
-              className="btn btn-ghost text-xl"
-              onClick={() => {
-                appContext.clear();
-                navigate(`/`, { replace: true });
-              }}
-            >
-              {app.appName}
-            </button>
-          </div>
-          <div className="hidden lg:flex">
-            <ul className="menu menu-horizontal px-1">
-              <li
-                onClick={() => {
-                  navigate("/");
-                }}
-              >
-                <a>{t("Home")}</a>
-              </li>
-              <li
-                onClick={() => {
-                  navigate("/tags");
-                }}
-              >
-                <a>{t("Tags")}</a>
-              </li>
-              <li
-                onClick={() => {
-                  navigate("/random");
-                }}
-              >
-                <a>{t("Random")}</a>
-              </li>
-              <li
-                onClick={() => {
-                  navigate("/activity");
-                }}
-              >
-                <a>{t("Activity")}</a>
-              </li>
-              <li
-                onClick={() => {
-                  navigate("/about");
-                }}
-              >
-                <a>{t("About")}</a>
-              </li>
-            </ul>
-          </div>
-          <div className={"flex-1"}></div>
-          <div className="flex gap-2">
-            <SearchBar />
-            <UploadingSideBar />
-            <ThemeSwitcher />
-            <a
-              className={"hidden sm:inline"}
-              href="https://github.com/wgh136/nysoure"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <button className={"btn btn-circle btn-ghost"}>
-                <IoLogoGithub size={24} />
-              </button>
-            </a>
-            {app.isLoggedIn() ? (
-              <UserButton />
-            ) : (
-              <button
-                className={"btn btn-primary btn-square btn-soft"}
-                onClick={() => {
-                  navigate("/login");
-                }}
-              >
-                <MdOutlinePerson size={24}></MdOutlinePerson>
-              </button>
-            )}
+                <button className={"btn btn-circle btn-ghost"}>
+                  <IoLogoGithub size={24} />
+                </button>
+              </a>
+              {app.isLoggedIn() ? (
+                <UserButton />
+              ) : (
+                <button
+                  className={"btn btn-primary btn-square btn-soft"}
+                  onClick={() => {
+                    navigate("/login");
+                  }}
+                >
+                  <MdOutlinePerson size={24}></MdOutlinePerson>
+                </button>
+              )}
+            </div>
           </div>
         </div>
+        <navigatorContext.Provider value={naviContext}>
+          <div className={"max-w-7xl mx-auto pt-16"}>{outlet}</div>
+        </navigatorContext.Provider>
       </div>
-      <navigatorContext.Provider value={naviContext}>
-        <div className={"max-w-7xl mx-auto pt-16"}>{outlet}</div>
-      </navigatorContext.Provider>
-    </>
+    </div>
   );
 }
 
 interface NavigatorContext {
   refresh: () => void;
+  setBackground: (background: string) => void;
 }
 
 const navigatorContext = createContext<NavigatorContext>({
   refresh: () => {
+    // do nothing
+  },
+  setBackground: (_) => {
     // do nothing
   },
 });

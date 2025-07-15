@@ -24,7 +24,7 @@ export function CommentTile({
     <a
       href={link}
       className={
-        "block card bg-base-100 p-2 my-3 transition-shadow cursor-pointer" +
+        "block card bg-base-100-tr82 p-2 my-3 transition-shadow cursor-pointer" +
         (!elevation || elevation == "normal"
           ? " shadow-xs hover:shadow"
           : " shadow hover:shadow-md")
@@ -35,8 +35,7 @@ export function CommentTile({
       }}
     >
       <div className={"flex flex-row items-center my-1 mx-1"}>
-        <a
-          href={userLink}
+        <p
           className="flex flex-row items-center avatar cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
@@ -49,7 +48,7 @@ export function CommentTile({
           </span>
           <span className={"w-2"}></span>
           <span className={"text-sm font-bold"}>{comment.user.username}</span>
-        </a>
+        </p>
 
         <div className={"grow"}></div>
         <Badge className={"badge-ghost badge-sm"}>

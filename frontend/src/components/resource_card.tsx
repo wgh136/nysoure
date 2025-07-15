@@ -20,7 +20,7 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
         navigate(`/resources/${resource.id}`);
       }}
     >
-      <div className={"card shadow hover:shadow-md transition-shadow"}>
+      <div className={"card shadow hover:shadow-md transition-shadow bg-base-100-tr82"}>
         {resource.image != null && (
           <figure>
             <img

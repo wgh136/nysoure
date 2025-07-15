@@ -144,7 +144,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
   return (
     <div
       className={
-        "card shadow m-4 p-4 hover:shadow-md transition-shadow cursor-pointer"
+        "card shadow m-4 p-4 hover:shadow-md transition-shadow cursor-pointer bg-base-100-tr82"
       }
       onClick={() => {
         if (

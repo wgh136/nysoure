@@ -332,7 +332,7 @@ function FilesList({
           >
             <div
               className={
-                "card shadow p-4 my-2 hover:shadow-md transition-shadow"
+                "card shadow p-4 my-2 hover:shadow-md transition-shadow bg-base-100-tr82"
               }
             >
               <h4 className={"font-bold pb-2"}>{file!.filename}</h4>
