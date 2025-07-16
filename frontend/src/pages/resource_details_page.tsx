@@ -702,20 +702,32 @@ function FileTile({ file }: { file: RFile }) {
           </p>
         </div>
         <div className={"flex flex-row items-center"}>
-          <button
-            ref={buttonRef}
-            className={"btn btn-primary btn-soft btn-square"}
-            onClick={() => {
-              if (!app.cloudflareTurnstileSiteKey) {
-                const link = network.getFileDownloadLink(file.id, "");
-                window.open(link, "_blank");
-              } else {
-                showPopup(<CloudflarePopup file={file} />, buttonRef.current!);
-              }
-            }}
-          >
-            <MdOutlineDownload size={24} />
-          </button>
+          {
+            file.size > 10 * 1024 * 1024 ? (
+              <button
+                ref={buttonRef}
+                className={"btn btn-primary btn-soft btn-square"}
+                onClick={() => {
+                  if (!app.cloudflareTurnstileSiteKey) {
+                    const link = network.getFileDownloadLink(file.id, "");
+                    window.open(link, "_blank");
+                  } else {
+                    showPopup(<CloudflarePopup file={file} />, buttonRef.current!);
+                  }
+                }}
+              >
+                <MdOutlineDownload size={24} />
+              </button>
+            ) : (
+              <a
+                href={network.getFileDownloadLink(file.id, "")}
+                target="_blank"
+                className={"btn btn-primary btn-soft btn-square"}
+              >
+                <MdOutlineDownload size={24} />
+              </a>
+            )
+          }
         </div>
       </div>
     </div>

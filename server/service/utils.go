@@ -28,6 +28,9 @@ func verifyCfToken(cfToken string) (bool, error) {
 	if config.CloudflareTurnstileSecretKey() == "" {
 		return true, nil
 	}
+	if cfToken == "" {
+		return false, nil
+	}
 	client := &http.Client{}
 	data, _ := json.Marshal(map[string]string{
 		"secret":   config.CloudflareTurnstileSecretKey(),

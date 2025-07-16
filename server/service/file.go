@@ -20,8 +20,9 @@ import (
 )
 
 const (
-	blockSize             = 4 * 1024 * 1024           // 4MB
-	storageKeyUnavailable = "storage_key_unavailable" // Placeholder for unavailable storage key
+	blockSize                  = 4 * 1024 * 1024           // 4MB
+	storageKeyUnavailable      = "storage_key_unavailable" // Placeholder for unavailable storage key
+	MinUnrequireVerifyFileSize = 10 * 1024 * 1024          // 10MB
 )
 
 func getUploadingSize() int64 {
@@ -387,15 +388,6 @@ func GetFile(fid string) (*model.FileView, error) {
 
 // DownloadFile handles the file download request. Return a presigned URL or a direct file path.
 func DownloadFile(fid, cfToken string) (string, string, error) {
-	passed, err := verifyCfToken(cfToken)
-	if err != nil {
-		log.Error("failed to verify cf token: ", err)
-		return "", "", model.NewRequestError("failed to verify cf token")
-	}
-	if !passed {
-		log.Info("cf token verification failed")
-		return "", "", model.NewRequestError("cf token verification failed")
-	}
 	file, err := dao.GetFile(fid)
 	if err != nil {
 		log.Error("failed to get file: ", err)
@@ -403,6 +395,16 @@ func DownloadFile(fid, cfToken string) (string, string, error) {
 	}
 	if file.StorageKey == storageKeyUnavailable {
 		return "", "", model.NewRequestError("file is not available, please try again later")
+	}
+
+	passed, err := verifyCfToken(cfToken)
+	if err != nil {
+		log.Error("failed to verify cf token: ", err)
+		return "", "", model.NewRequestError("failed to verify cf token")
+	}
+	if !passed && file.Size > MinUnrequireVerifyFileSize {
+		log.Info("cf token verification failed")
+		return "", "", model.NewRequestError("cf token verification failed")
 	}
 
 	if file.StorageID == nil {
