@@ -67,7 +67,7 @@ class App {
   getPreFetchData() {
     const preFetchDataElement = document.getElementById("pre_fetch_data");
     if (preFetchDataElement) {
-      let content = preFetchDataElement.textContent
+      let content = preFetchDataElement.textContent;
       if (!content) {
         return null;
       }

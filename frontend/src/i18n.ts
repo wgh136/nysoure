@@ -235,6 +235,7 @@ export const i18nData = {
       "Posted a comment": "Posted a comment",
       "Resources": "Resources",
       "Added a new file": "Added a new file",
+      "Data from": "Data from",
     },
   },
   "zh-CN": {
@@ -463,6 +464,8 @@ export const i18nData = {
 
       "Resources": "资源",
       "Added a new file": "添加了新文件",
+
+      "Data from": "数据来源",
     },
   },
   "zh-TW": {
@@ -691,6 +694,8 @@ export const i18nData = {
 
       "Resources": "資源",
       "Added a new file": "添加了新檔案",
+
+      "Data from": "數據來源",
     },
   },
 };

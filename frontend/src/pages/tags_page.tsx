@@ -65,7 +65,9 @@ export default function TagsPage() {
                   navigate(`/tag/${tag.name}`);
                 }}
                 key={tag.name}
-                className={"m-1 cursor-pointer badge-soft badge-primary shadow-xs"}
+                className={
+                  "m-1 cursor-pointer badge-soft badge-primary shadow-xs"
+                }
               >
                 {tag.name +
                   (tag.resources_count > 0 ? ` (${tag.resources_count})` : "")}

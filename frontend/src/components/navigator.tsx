@@ -87,8 +87,8 @@ export default function Navigator() {
         }}
       >
         <FloatingToTopButton />
-        <div className="z-1 fixed top-0 w-full backdrop-blur h-16"/>
-        <div className="z-2 fixed top-0 w-full h-16 bg-base-100 opacity-80"/>
+        <div className="z-1 fixed top-0 w-full backdrop-blur h-16" />
+        <div className="z-2 fixed top-0 w-full h-16 bg-base-100 opacity-80" />
         <div
           className="navbar shadow-sm fixed top-0 z-3 lg:z-10 bg-transparent h-16"
           key={key}

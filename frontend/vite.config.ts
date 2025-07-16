@@ -12,6 +12,10 @@ export default defineConfig({
         // target: "https://res.nyne.dev",
         changeOrigin: true,
       },
+      "https://www.moyu.moe": {
+        target: "https://www.moyu.moe",
+        changeOrigin: true,
+      },
     },
   },
 });

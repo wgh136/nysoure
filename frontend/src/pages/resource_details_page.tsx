@@ -50,6 +50,13 @@ import { BiLogoSteam } from "react-icons/bi";
 import { CommentTile } from "../components/comment_tile.tsx";
 import { CommentInput } from "../components/comment_input.tsx";
 import { useNavigator } from "../components/navigator.tsx";
+import KunApi, {
+  kunLanguageToString,
+  KunPatchResourceResponse,
+  KunPatchResponse,
+  kunPlatformToString,
+  kunResourceTypeToString,
+} from "../network/kun.ts";
 
 export default function ResourcePage() {
   const params = useParams();
@@ -62,6 +69,8 @@ export default function ResourcePage() {
   const [resource, setResource] = useState<ResourceDetails | null>(null);
 
   const [page, setPage] = useState(0);
+
+  const [visitedTabs, setVisitedTabs] = useState<Set<number>>(new Set([]));
 
   const location = useLocation();
 
@@ -113,10 +122,12 @@ export default function ResourcePage() {
     if (resource) {
       document.title = resource.title;
       if (resource.images.length > 0) {
-        navigator.setBackground(network.getResampledImageUrl(resource.images[0].id));
+        navigator.setBackground(
+          network.getResampledImageUrl(resource.images[0].id),
+        );
       }
     }
-  }, [resource])
+  }, [resource]);
 
   const navigate = useNavigate();
 
@@ -136,6 +147,7 @@ export default function ResourcePage() {
   // 初始状态读取hash
   useEffect(() => {
     setPage(getPageFromHash(window.location.hash));
+    setVisitedTabs(new Set([getPageFromHash(window.location.hash)]));
     // 监听hash变化
     const onHashChange = () => {
       setPage(getPageFromHash(window.location.hash));
@@ -149,6 +161,8 @@ export default function ResourcePage() {
   const handleTabChange = (idx: number) => {
     setPage(idx);
     setHashByPage(idx);
+    // Mark tab as visited when switched to
+    setVisitedTabs((prev) => new Set(prev).add(idx));
   };
 
   if (isNaN(id)) {
@@ -222,9 +236,12 @@ export default function ResourcePage() {
           </p>
         )}
 
-        <div className="tabs tabs-box my-4 mx-2 p-4 shadow" style={{
-          backgroundColor: "rgb(var(--color-base-100-rgb) / 0.82)",
-        }}>
+        <div
+          className="tabs tabs-box my-4 mx-2 p-4 shadow"
+          style={{
+            backgroundColor: "rgb(var(--color-base-100-rgb) / 0.82)",
+          }}
+        >
           <label className="tab transition-all">
             <input
               type="radio"
@@ -236,7 +253,7 @@ export default function ResourcePage() {
             <span className="text-sm">{t("Description")}</span>
           </label>
           <div key={"article"} className="tab-content p-2">
-            <Article resource={resource} />
+            {visitedTabs.has(0) && <Article resource={resource} />}
           </div>
 
           <label className="tab transition-all">
@@ -250,7 +267,9 @@ export default function ResourcePage() {
             <span className="text-sm">{t("Files")}</span>
           </label>
           <div key={"files"} className="tab-content p-2">
-            <Files files={resource.files} resourceID={resource.id} />
+            {visitedTabs.has(1) && (
+              <Files files={resource.files} resource={resource} />
+            )}
           </div>
 
           <label className="tab transition-all">
@@ -271,7 +290,7 @@ export default function ResourcePage() {
             ) : null}
           </label>
           <div key={"comments"} className="tab-content p-2">
-            <Comments resourceId={resource.id} />
+            {visitedTabs.has(2) && <Comments resourceId={resource.id} />}
           </div>
 
           <div className={"grow"}></div>
@@ -315,11 +334,15 @@ function Tags({ tags }: { tags: Tag[] }) {
     <>
       {Array.from(tagsMap.entries()).map(([type, tags]) => (
         <p key={type} className={"px-4"}>
-          <Badge className="shadow-xs" key={type}>{type == "" ? t("Other") : type}</Badge>
+          <Badge className="shadow-xs" key={type}>
+            {type == "" ? t("Other") : type}
+          </Badge>
           {tags.map((tag) => (
             <Badge
               key={tag.name}
-              className={"m-1 cursor-pointer badge-soft badge-primary shadow-xs"}
+              className={
+                "m-1 cursor-pointer badge-soft badge-primary shadow-xs"
+              }
               onClick={() => {
                 navigate(`/tag/${tag.name}`);
               }}
@@ -603,7 +626,7 @@ function RelatedResourceCard({
               height: imgHeight,
               objectFit: "cover",
             }}
-            className={"h-full min-h-0 object-cover min-w-0"}
+            className={"h-full object-cover min-w-0"}
             alt={"cover"}
             src={network.getImageUrl(r.image?.id)}
           />
@@ -702,32 +725,33 @@ function FileTile({ file }: { file: RFile }) {
           </p>
         </div>
         <div className={"flex flex-row items-center"}>
-          {
-            file.size > 10 * 1024 * 1024 ? (
-              <button
-                ref={buttonRef}
-                className={"btn btn-primary btn-soft btn-square"}
-                onClick={() => {
-                  if (!app.cloudflareTurnstileSiteKey) {
-                    const link = network.getFileDownloadLink(file.id, "");
-                    window.open(link, "_blank");
-                  } else {
-                    showPopup(<CloudflarePopup file={file} />, buttonRef.current!);
-                  }
-                }}
-              >
-                <MdOutlineDownload size={24} />
-              </button>
-            ) : (
-              <a
-                href={network.getFileDownloadLink(file.id, "")}
-                target="_blank"
-                className={"btn btn-primary btn-soft btn-square"}
-              >
-                <MdOutlineDownload size={24} />
-              </a>
-            )
-          }
+          {file.size > 10 * 1024 * 1024 ? (
+            <button
+              ref={buttonRef}
+              className={"btn btn-primary btn-soft btn-square"}
+              onClick={() => {
+                if (!app.cloudflareTurnstileSiteKey) {
+                  const link = network.getFileDownloadLink(file.id, "");
+                  window.open(link, "_blank");
+                } else {
+                  showPopup(
+                    <CloudflarePopup file={file} />,
+                    buttonRef.current!,
+                  );
+                }
+              }}
+            >
+              <MdOutlineDownload size={24} />
+            </button>
+          ) : (
+            <a
+              href={network.getFileDownloadLink(file.id, "")}
+              target="_blank"
+              className={"btn btn-primary btn-soft btn-square"}
+            >
+              <MdOutlineDownload size={24} />
+            </a>
+          )}
         </div>
       </div>
     </div>
@@ -777,7 +801,13 @@ function CloudflarePopup({ file }: { file: RFile }) {
   );
 }
 
-function Files({ files, resourceID }: { files: RFile[]; resourceID: number }) {
+function Files({
+  files,
+  resource,
+}: {
+  files: RFile[];
+  resource: ResourceDetails;
+}) {
   return (
     <div className={"pt-3"}>
       {files.map((file) => {
@@ -786,9 +816,10 @@ function Files({ files, resourceID }: { files: RFile[]; resourceID: number }) {
       <div className={"h-2"}></div>
       {(app.canUpload() || app.allowNormalUserUpload) && (
         <div className={"flex flex-row-reverse"}>
-          <CreateFileDialog resourceId={resourceID}></CreateFileDialog>
+          <CreateFileDialog resourceId={resource.id}></CreateFileDialog>
         </div>
       )}
+      <KunFiles resource={resource} />
     </div>
   );
 }
@@ -1410,5 +1441,140 @@ function DeleteFileDialog({
         </div>
       </dialog>
     </>
+  );
+}
+
+function KunFiles({ resource }: { resource: ResourceDetails }) {
+  let vnid = "";
+  for (const link of resource.links) {
+    if (link.label.toLowerCase() === "vndb") {
+      vnid = link.url.split("/").pop() || "";
+      break;
+    }
+  }
+
+  const [data, setData] = useState<KunPatchResponse | null>(null);
+
+  const [isLoading, setLoading] = useState<boolean>(true);
+
+  const [error, setError] = useState<string | null>(null);
+
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    if (!vnid || !KunApi.isAvailable()) {
+      return;
+    }
+    KunApi.getPatch(vnid).then((res) => {
+      if (res.success) {
+        setData(res.data!);
+      } else if (res.message === "404") {
+        // ignore
+      } else {
+        setError(res.message);
+      }
+      setLoading(false);
+    });
+  }, [vnid]);
+
+  if (error) {
+    return <ErrorAlert className={"my-2"} message={error} />;
+  }
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (!vnid || !KunApi.isAvailable() || data === null) {
+    return <></>;
+  }
+
+  return (
+    <>
+      <div className="mx-2 my-4 flex">
+        <a href="https://moyu.moe" target="_blank">
+          <div className="border-b-2 pb-1 border-transparent hover:border-primary select-none cursor-pointer transition-all flex items-center gap-2">
+            <img src="/kun.webp" className="h-8 w-8 rounded-full" />
+            <span className="text-xl font-bold">鲲补丁</span>
+          </div>
+        </a>
+      </div>
+      {data && (
+        <div className={"flex flex-col gap-2"}>
+          {data.resource.map((file) => {
+            return <KunFile file={file} patchID={data.id} key={file.id} />;
+          })}
+          {data.resource.length === 0 && (
+            <p className={"text-sm text-base-content/80"}>
+              {t("No patches found for this VN.")}
+            </p>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+function KunFile({
+  file,
+  patchID,
+}: {
+  file: KunPatchResourceResponse;
+  patchID: number;
+}) {
+  const tags: string[] = [];
+  if (file.model_name) {
+    tags.push(file.model_name);
+  }
+  tags.push(...file.platform.map((p) => kunPlatformToString(p)));
+  tags.push(...file.language.map((l) => kunLanguageToString(l)));
+  tags.push(...file.type.map((t) => kunResourceTypeToString(t)));
+
+  return (
+    <div className={"card shadow bg-base-100 mb-4"}>
+      <div className={"p-4 flex flex-row items-center"}>
+        <div className={"grow"}>
+          <h4 className={"font-bold break-all"}>{file.name}</h4>
+          <p className={"text-sm my-1 whitespace-pre-wrap"}>{file.note}</p>
+          <p className={"items-center mt-1"}>
+            <a
+              href={"https://www.moyu.moe/user/" + file.user.id}
+              target="_blank"
+            >
+              <Badge
+                className={
+                  "badge-soft badge-primary text-xs mr-2 hover:shadow-xs transition-shadow"
+                }
+              >
+                <img
+                  src={file.user.avatar}
+                  className={"w-4 h-4 rounded-full"}
+                  alt={"avatar"}
+                />
+                {file.user.name}
+              </Badge>
+            </a>
+            <Badge className={"badge-soft badge-secondary text-xs mr-2"}>
+              <MdOutlineArchive size={16} className={"inline-block"} />
+              {file.size}
+            </Badge>
+            {tags.map((p) => (
+              <Badge className={"badge-soft badge-info text-xs mr-2"} key={p}>
+                {p}
+              </Badge>
+            ))}
+          </p>
+        </div>
+        <div className={"flex flex-row items-center"}>
+          <a
+            href={`https://www.moyu.moe/patch/${patchID}/resource#kun_patch_resource_${file.id}`}
+            target="_blank"
+            className={"btn btn-primary btn-soft btn-square"}
+          >
+            <MdOutlineOpenInNew size={24} />
+          </a>
+        </div>
+      </div>
+    </div>
   );
 }
