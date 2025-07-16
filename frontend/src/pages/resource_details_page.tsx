@@ -692,7 +692,7 @@ function FileTile({ file }: { file: RFile }) {
       <div className={"p-4 flex flex-row items-center"}>
         <div className={"grow"}>
           <h4 className={"font-bold break-all"}>{file.filename}</h4>
-          <p className={"text-sm my-1 whitespace-pre-wrap"}>
+          <p className={"text-sm my-1 whitespace-pre-wrap break-all"}>
             {file.description}
           </p>
           <p className={"items-center mt-1"}>
@@ -1535,7 +1535,7 @@ function KunFile({
       <div className={"p-4 flex flex-row items-center"}>
         <div className={"grow"}>
           <h4 className={"font-bold break-all"}>{file.name}</h4>
-          <p className={"text-sm my-1 whitespace-pre-wrap"}>{file.note}</p>
+          <p className={"text-sm my-1 whitespace-pre-wrap break-all"}>{file.note}</p>
           <p className={"items-center mt-1"}>
             <a
               href={"https://www.moyu.moe/user/" + file.user.id}
