@@ -1463,6 +1463,7 @@ function KunFiles({ resource }: { resource: ResourceDetails }) {
 
   useEffect(() => {
     if (!vnid || !KunApi.isAvailable()) {
+      setLoading(false);
       return;
     }
     KunApi.getPatch(vnid).then((res) => {
