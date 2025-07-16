@@ -113,7 +113,7 @@ export default function ResourcePage() {
     if (resource) {
       document.title = resource.title;
       if (resource.images.length > 0) {
-        navigator.setBackground(network.getImageUrl(resource.images[0].id));
+        navigator.setBackground(network.getResampledImageUrl(resource.images[0].id));
       }
     }
   }, [resource])
