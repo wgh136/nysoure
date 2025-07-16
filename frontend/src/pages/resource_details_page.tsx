@@ -1446,7 +1446,7 @@ function DeleteFileDialog({
 
 function KunFiles({ resource }: { resource: ResourceDetails }) {
   let vnid = "";
-  for (const link of resource.links) {
+  for (const link of (resource.links ?? [])) {
     if (link.label.toLowerCase() === "vndb") {
       vnid = link.url.split("/").pop() || "";
       break;
