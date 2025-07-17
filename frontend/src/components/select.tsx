@@ -26,7 +26,7 @@ export default function Select({
           tabIndex={0}
           role={"button"}
           className={
-            "flex border border-primary rounded-3xl px-4 py-2 items-center cursor-pointer min-w-52 focus:outline-2 focus:outline-primary outline-offset-2"
+            "flex border border-primary/80 bg-base-100-tr82 rounded-3xl px-4 py-2 items-center cursor-pointer min-w-52 focus:outline-2 focus:outline-primary outline-offset-2"
           }
         >
           <span className={"flex-1 text-sm"}>

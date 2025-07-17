@@ -316,3 +316,13 @@ body {
 .bg-base-100-tr82 {
   background-color: rgb(var(--color-base-100-rgb) / 0.82);
 }
+
+.bg-base-200-tr82 {
+  background-color: rgb(var(--color-base-200-rgb) / 0.82);
+}
+
+@media (width >= 1024px) {
+  .lg\:bg-base-100-tr82 {
+    background-color: rgb(var(--color-base-100-rgb) / 0.82);
+  }
+}

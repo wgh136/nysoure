@@ -14,6 +14,7 @@ import Pagination from "../components/pagination";
 import { MdOutlineDelete, MdOutlineEdit } from "react-icons/md";
 import { TextArea } from "../components/input";
 import { app } from "../app";
+import { useNavigator } from "../components/navigator";
 
 export default function CommentPage() {
   const params = useParams();
@@ -84,7 +85,18 @@ export default function CommentPage() {
 
   useEffect(() => {
     document.title = t("Comment Details");
-  });
+  }, [t]);
+
+  const navigator = useNavigator();
+
+  useEffect(() => {
+    if (comment?.resource && comment.resource.image) {
+      navigator.setBackground(network.getResampledImageUrl(comment.resource.image.id));
+    } else if (comment?.images?.length) {
+      // comment images are not resampled
+      navigator.setBackground(network.getImageUrl(comment.images[0].id));
+    }
+  }, [comment]);
 
   if (!comment) {
     return <Loading />;
@@ -95,7 +107,8 @@ export default function CommentPage() {
       {comment.resource && <ResourceCard resource={comment.resource} />}
       {comment.reply_to && <CommentTile comment={comment.reply_to} />}
       <div className="h-2"></div>
-      <div className="flex items-center mt-4">
+      <div className="bg-base-100-tr82 rounded-2xl p-4 shadow">
+        <div className="flex items-center">
         <button
           onClick={() => {
             navigate(`/user/${encodeURIComponent(comment.user.username)}`);
@@ -126,6 +139,7 @@ export default function CommentPage() {
           <DeleteCommentDialog commentId={comment.id} onUpdated={onDeleted} />
         </div>
       )}
+      </div>
       <div className="h-4" />
       <div className="border-t border-base-300" />
       <div className="h-4" />
@@ -161,7 +175,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
   return (
     <a
       href="link"
-      className="flex flex-col sm:flex-row w-full card bg-base-200 shadow-xs hover:shadow overflow-clip my-2 transition-shadow"
+      className="flex flex-col sm:flex-row w-full card bg-base-100-tr82 shadow hover:shadow-md overflow-clip my-2 transition-shadow"
       onClick={(e) => {
         e.preventDefault();
         navigate(link);

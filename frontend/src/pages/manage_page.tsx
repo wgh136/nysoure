@@ -68,15 +68,12 @@ export default function ManagePage() {
   ];
 
   return (
-    <div className="drawer lg:drawer-open">
+    <div className="drawer lg:drawer-open lg:pl-4">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
       <div
-        className="drawer-content"
-        style={{
-          height: "calc(100vh - 64px)",
-        }}
+        className="drawer-content overflow-y-auto bg-base-100-tr82 lg:m-4 rounded-md lg:p-2 h-[calc(100vh-64px)] lg:h-[calc(100vh-96px)]"
       >
-        <div className={"flex w-full h-14 items-center gap-2 px-3"}>
+        <div className={"flex w-full h-14 items-center gap-2 px-4"}>
           <label
             className={"btn btn-square btn-ghost lg:hidden"}
             htmlFor="my-drawer-2"
@@ -91,6 +88,7 @@ export default function ManagePage() {
         className="drawer-side"
         style={{
           height: lg ? "calc(100vh - 64px)" : "100vh",
+          zIndex: 10,
         }}
       >
         <label
@@ -98,7 +96,7 @@ export default function ManagePage() {
           aria-label="close sidebar"
           className="drawer-overlay"
         ></label>
-        <ul className="menu bg-base-100 min-h-full lg:min-h-0 w-72 px-4 lg:mt-1">
+        <ul className="menu bg-base-100 lg:bg-base-100-tr82 min-h-full lg:min-h-0 lg:h-[calc(100%-32px)] lg:overflow-y-auto lg:my-4 w-72 px-4 lg:rounded-md">
           <h2 className={"text-lg font-bold p-4"}>{t("Manage")}</h2>
           {buildItem(t("My Info"), <MdOutlineBadge className={"text-xl"} />, 0)}
           {buildItem(

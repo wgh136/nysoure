@@ -46,7 +46,7 @@ function ListTile({
 }) {
   return (
     <div
-      className="flex flex-row items-center h-12 px-2 bg-base-100 hover:bg-gray-200 cursor-pointer duration-200"
+      className="flex flex-row items-center h-12 px-2 hover:bg-gray-200 cursor-pointer duration-200"
       onClick={onClick}
     >
       <div className="flex flex-row items-center">
