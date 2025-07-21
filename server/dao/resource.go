@@ -122,7 +122,7 @@ func DeleteResource(id uint) error {
 			}
 			return err
 		}
-		if err := tx.Unscoped().Model(&model.File{}).Where("resource_id = ?", id).Delete(&model.File{}).Error; err != nil {
+		if err := tx.Model(&model.File{}).Where("resource_id = ?", id).Delete(&model.File{}).Error; err != nil {
 			return err
 		}
 		if err := tx.Model(&model.User{}).Where("id = ?", r.UserID).Update("resources_count", gorm.Expr("resources_count - ?", 1)).Error; err != nil {
