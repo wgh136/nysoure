@@ -692,9 +692,9 @@ function FileTile({ file }: { file: RFile }) {
       <div className={"p-4 flex flex-row items-center"}>
         <div className={"grow"}>
           <h4 className={"font-bold break-all"}>{file.filename}</h4>
-          <p className={"text-sm my-1 whitespace-pre-wrap break-all"}>
-            {file.description}
-          </p>
+          <div className={"text-sm my-1 comment_tile"}>
+            <Markdown>{file.description.replaceAll("\n", "  \n")}</Markdown>
+          </div>
           <p className={"items-center mt-1"}>
             <a
               href={userLink}
@@ -814,7 +814,7 @@ function Files({
         return <FileTile file={file} key={file.id}></FileTile>;
       })}
       <div className={"h-2"}></div>
-      {(app.canUpload() || app.allowNormalUserUpload) && (
+      {(app.canUpload() || (app.allowNormalUserUpload && app.isLoggedIn())) && (
         <div className={"flex flex-row-reverse"}>
           <CreateFileDialog resourceId={resource.id}></CreateFileDialog>
         </div>
@@ -1067,7 +1067,7 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
               />
               <textarea
                 className="textarea w-full my-2"
-                placeholder={t("Description")}
+                placeholder={t("Description" + " (Markdown)")}
                 onChange={(e) => {
                   setDescription(e.target.value);
                 }}
@@ -1123,7 +1123,7 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
 
               <textarea
                 className="textarea w-full my-2"
-                placeholder={t("Description")}
+                placeholder={t("Description" + " (Markdown)")}
                 onChange={(e) => {
                   setDescription(e.target.value);
                 }}
@@ -1195,7 +1195,7 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
 
               <textarea
                 className="textarea w-full my-2"
-                placeholder={t("Description")}
+                placeholder={t("Description" + " (Markdown)")}
                 onChange={(e) => {
                   setDescription(e.target.value);
                 }}
@@ -1446,7 +1446,7 @@ function DeleteFileDialog({
 
 function KunFiles({ resource }: { resource: ResourceDetails }) {
   let vnid = "";
-  for (const link of (resource.links ?? [])) {
+  for (const link of resource.links ?? []) {
     if (link.label.toLowerCase() === "vndb") {
       vnid = link.url.split("/").pop() || "";
       break;
@@ -1536,7 +1536,9 @@ function KunFile({
       <div className={"p-4 flex flex-row items-center"}>
         <div className={"grow"}>
           <h4 className={"font-bold break-all"}>{file.name}</h4>
-          <p className={"text-sm my-1 whitespace-pre-wrap break-all"}>{file.note}</p>
+          <div className={"text-sm my-1 comment_tile"}>
+            <Markdown>{file.note.replaceAll("\n", "  \n")}</Markdown>
+          </div>
           <p className={"items-center mt-1"}>
             <a
               href={"https://www.moyu.moe/user/" + file.user.id}

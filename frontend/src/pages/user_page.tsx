@@ -15,6 +15,7 @@ import {
 } from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import { app } from "../app.ts";
+import Markdown from "react-markdown";
 
 export default function UserPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -336,9 +337,9 @@ function FilesList({
               }
             >
               <h4 className={"font-bold pb-2"}>{file!.filename}</h4>
-              <p className={"text-sm whitespace-pre-wrap"}>
-                {file!.description}
-              </p>
+              <div className={"text-sm comment_tile"}>
+                <Markdown>{file.description.replaceAll("\n", "  \n")}</Markdown>
+              </div>
               <p className={"pt-1"}>
                 <Badge className={"badge-soft badge-secondary text-xs mr-2"}>
                   <MdOutlineArchive size={16} className={"inline-block"} />

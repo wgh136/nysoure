@@ -8,6 +8,7 @@ import Loading from "../components/loading.tsx";
 import { CommentContent } from "../components/comment_tile.tsx";
 import { MdOutlineArchive, MdOutlinePhotoAlbum } from "react-icons/md";
 import Badge from "../components/badge.tsx";
+import Markdown from "react-markdown";
 
 export default function ActivitiesPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -116,9 +117,11 @@ function ActivityCard({ activity }: { activity: Activity }) {
     content = (
       <div>
         <h4 className={"font-bold py-2"}>{activity.file!.filename}</h4>
-        <p className={"text-sm whitespace-pre-wrap"}>
-          {activity.file!.description}
-        </p>
+        <div className={"text-sm my-1 comment_tile"}>
+          <Markdown>
+            {activity.file!.description.replaceAll("\n", "  \n")}
+          </Markdown>
+        </div>
         <p className={"pt-1"}>
           <Badge className={"badge-soft badge-secondary text-xs mr-2"}>
             <MdOutlineArchive size={16} className={"inline-block"} />
