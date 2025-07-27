@@ -4,7 +4,7 @@ import { ReactElement, ReactNode } from "react";
 
 export default function AboutPage() {
   return (
-    <article className={"p-4"}>
+    <article className={"p-4 bg-base-100-tr82 rounded-2xl mt-4 shadow mx-2"}>
       <Markdown
         components={{
           a: ({ node, ...props }) => {
@@ -31,7 +31,7 @@ export default function AboutPage() {
                       target={"_blank"}
                       href={href}
                     >
-                      <figure className={"max-h-72 max-w-96"}>{img}</figure>
+                      <figure className={"max-h-60 max-w-80"}>{img}</figure>
                       <div className={"card-body text-base-content text-lg"}>
                         {second}
                       </div>
