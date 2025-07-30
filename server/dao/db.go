@@ -1,12 +1,13 @@
 package dao
 
 import (
-	"gorm.io/driver/mysql"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"nysoure/server/model"
 	"os"
 	"time"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 var db *gorm.DB
@@ -45,6 +46,7 @@ func init() {
 		&model.Statistic{},
 		&model.Comment{},
 		&model.Activity{},
+		&model.Collection{},
 	)
 }
 
