@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/logger"
 	"log"
 	"nysoure/server/api"
 	"nysoure/server/middleware"
+
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/logger"
 )
 
 func main() {
@@ -35,6 +36,7 @@ func main() {
 		api.AddCommentRoutes(apiG)
 		api.AddConfigRoutes(apiG)
 		api.AddActivityRoutes(apiG)
+		api.AddCollectionRoutes(apiG) // 新增
 	}
 
 	log.Fatal(app.Listen(":3000"))

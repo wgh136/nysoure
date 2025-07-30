@@ -2,9 +2,10 @@ package dao
 
 import (
 	"errors"
-	"gorm.io/gorm"
 	"nysoure/server/model"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 func CreateImage(name string, width, height int) (model.Image, error) {
@@ -45,6 +46,7 @@ func GetUnusedImages() ([]model.Image, error) {
 	if err := db.
 		Where("NOT EXISTS (SELECT 1 FROM resource_images WHERE image_id = images.id)").
 		Where("NOT EXISTS (SELECT 1 FROM comment_images WHERE image_id = images.id)").
+		Where("NOT EXISTS (SELECT 1 FROM collection_images WHERE image_id = images.id)").
 		Where("created_at < ?", oneDayAgo).
 		Find(&images).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

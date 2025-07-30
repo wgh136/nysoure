@@ -4,7 +4,6 @@ import (
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/gofiber/fiber/v3/log"
@@ -20,39 +19,6 @@ const (
 type CommentRequest struct {
 	Content string `json:"content"` // markdown
 	// Images  []uint `json:"images"` // Unrequired after new design
-}
-
-func findImagesInContent(content string, host string) []uint {
-	// Handle both absolute and relative URLs
-	absolutePattern := `!\[.*?\]\((?:https?://` + host + `)?/api/image/(\d+)(?:\s+["'].*?["'])?\)`
-	relativePattern := `!\[.*?\]\(/api/image/(\d+)(?:\s+["'].*?["'])?\)`
-
-	// Combine patterns and compile regex
-	patterns := []string{absolutePattern, relativePattern}
-
-	// Store unique image IDs to avoid duplicates
-	imageIDs := make(map[uint]struct{})
-
-	for _, pattern := range patterns {
-		re := regexp.MustCompile(pattern)
-		matches := re.FindAllStringSubmatch(content, -1)
-
-		for _, match := range matches {
-			if len(match) >= 2 {
-				if id, err := strconv.ParseUint(match[1], 10, 32); err == nil {
-					imageIDs[uint(id)] = struct{}{}
-				}
-			}
-		}
-	}
-
-	// Convert map keys to slice
-	result := make([]uint, 0, len(imageIDs))
-	for id := range imageIDs {
-		result = append(result, id)
-	}
-
-	return result
 }
 
 func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType model.CommentType, host string) (*model.CommentView, error) {

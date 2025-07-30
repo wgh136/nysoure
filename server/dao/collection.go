@@ -1,0 +1,193 @@
+package dao
+
+import (
+	"nysoure/server/model"
+
+	"gorm.io/gorm"
+)
+
+func CreateCollection(uid uint, title string, article string, images []uint) (model.Collection, error) {
+	var collection model.Collection
+	err := db.Transaction(func(tx *gorm.DB) error {
+		collection = model.Collection{
+			UserID:  uid,
+			Title:   title,
+			Article: article,
+		}
+
+		if err := tx.Create(collection).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(collection).Association("Images").Replace(images); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return model.Collection{}, err
+	}
+	return collection, nil
+}
+
+func UpdateCollection(id uint, title string, article string, images []uint) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		collection := &model.Collection{
+			Title:   title,
+			Article: article,
+		}
+
+		if err := tx.Model(collection).Where("id = ?", id).Updates(collection).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(collection).Association("Images").Replace(images); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func DeleteCollection(id uint) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		collection := &model.Collection{}
+
+		if err := tx.Where("id = ?", id).First(collection).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(collection).Association("Images").Clear(); err != nil {
+			return err
+		}
+
+		if err := tx.Model(collection).Association("Resources").Clear(); err != nil {
+			return err
+		}
+
+		if err := tx.Delete(collection).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func AddResourceToCollection(collectionID uint, resourceID uint) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		collection := &model.Collection{}
+
+		if err := tx.Where("id = ?", collectionID).First(collection).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(collection).Association("Resources").Append(&model.Resource{
+			Model: gorm.Model{
+				ID: resourceID,
+			},
+		}); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func RemoveResourceFromCollection(collectionID uint, resourceID uint) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		collection := &model.Collection{}
+
+		if err := tx.Where("id = ?", collectionID).First(collection).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(collection).Association("Resources").Delete(&model.Resource{
+			Model: gorm.Model{
+				ID: resourceID,
+			},
+		}); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func GetCollectionByID(id uint) (*model.Collection, error) {
+	collection := &model.Collection{}
+	if err := db.Preload("Images").Preload("Resources").Where("id = ?", id).First(collection).Error; err != nil {
+		return nil, err
+	}
+	return collection, nil
+}
+
+func ListUserCollections(uid uint, page int, pageSize int) ([]*model.Collection, int64, error) {
+	var collections []*model.Collection
+	var total int64
+
+	if err := db.Model(&model.Collection{}).Where("user_id = ?", uid).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := db.
+		Model(&model.Collection{}).
+		Preload("Images").
+		Preload("Resources").
+		Where("user_id = ?", uid).
+		Offset((page - 1) * pageSize).
+		Limit(pageSize).
+		Find(&collections).Error; err != nil {
+		return nil, 0, err
+	}
+
+	totalPages := (total + int64(pageSize) - 1) / int64(pageSize)
+
+	return collections, totalPages, nil
+}
+
+func ListCollectionResources(collectionID uint, page int, pageSize int) ([]*model.Resource, int64, error) {
+	var resources []*model.Resource
+	var total int64
+
+	if err := db.Raw(`
+		select count(*) from collection_resources
+		where collection_id = ?`, collectionID).Scan(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := db.
+		Model(&model.Resource{}).
+		Preload("User").
+		Preload("Images").
+		Preload("Tags").
+		Joins("JOIN collection_resources ON collection_resources.resource_id = resources.id").
+		Where("collection_resources.collection_id = ?", collectionID).
+		Offset((page - 1) * pageSize).
+		Limit(pageSize).
+		Find(&resources).Error; err != nil {
+		return nil, 0, err
+	}
+
+	totalPages := (total + int64(pageSize) - 1) / int64(pageSize)
+
+	return resources, totalPages, nil
+}
+
+// SearchUserCollections searches for collections by user ID and keyword limited to 10 results.
+func SearchUserCollections(uid uint, keyword string) ([]*model.Collection, error) {
+	var collections []*model.Collection
+
+	if err := db.
+		Model(&model.Collection{}).
+		Preload("Images").
+		Preload("Resources").
+		Where("user_id = ? AND title LIKE ?", uid, "%"+keyword+"%").
+		Limit(10).
+		Find(&collections).Error; err != nil {
+		return nil, err
+	}
+
+	return collections, nil
+}

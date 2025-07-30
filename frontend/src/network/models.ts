@@ -191,3 +191,11 @@ export interface Activity {
   comment?: Comment;
   file?: RFile;
 }
+
+export interface Collection {
+  id: number;
+  title: string;
+  article: string;
+  user: User;
+  images: Image[];
+}

@@ -19,6 +19,7 @@ import {
   TagWithCount,
   Activity,
   CommentWithRef,
+  Collection,
 } from "./models.ts";
 
 class Network {
@@ -685,6 +686,99 @@ class Network {
     return this._callApi(() =>
       axios.get(`${this.apiBaseUrl}/activity`, {
         params: { page },
+      }),
+    );
+  }
+
+  async createCollection(
+    title: string,
+    article: string,
+  ): Promise<Response<Collection>> {
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/collection/create`, {
+        title,
+        article,
+      }),
+    );
+  }
+
+  async updateCollection(
+    id: number,
+    title: string,
+    article: string,
+  ): Promise<Response<any>> {
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/collection/update`, {
+        id,
+        title,
+        article,
+      }),
+    );
+  }
+
+  async deleteCollection(id: number): Promise<Response<any>> {
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/collection/delete`, {
+        id,
+      }),
+    );
+  }
+
+  async getCollection(id: number): Promise<Response<Collection>> {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/collection/${id}`),
+    );
+  }
+
+  async listUserCollections(page: number = 1): Promise<PageResponse<Collection>> {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/collection/list`, {
+        params: { page },
+      }),
+    );
+  }
+
+  async listCollectionResources(
+    collectionId: number,
+    page: number = 1,
+  ): Promise<PageResponse<Resource>> {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/collection/${collectionId}/resources`, {
+        params: { page },
+      }),
+    );
+  }
+
+  async addResourceToCollection(
+    collectionId: number,
+    resourceId: number,
+  ): Promise<Response<any>> {
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/collection/add_resource`, {
+        collection_id: collectionId,
+        resource_id: resourceId,
+      }),
+    );
+  }
+
+  async removeResourceFromCollection(
+    collectionId: number,
+    resourceId: number,
+  ): Promise<Response<any>> {
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/collection/remove_resource`, {
+        collection_id: collectionId,
+        resource_id: resourceId,
+      }),
+    );
+  }
+
+  async searchUserCollections(
+    keyword: string,
+  ): Promise<Response<Collection[]>> {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/collection/search`, {
+        params: { keyword },
       }),
     );
   }
