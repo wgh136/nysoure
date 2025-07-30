@@ -96,10 +96,15 @@ func GetCollectionByID(id uint) (*model.CollectionView, error) {
 }
 
 // List collections of a user with pagination.
-func ListUserCollections(uid uint, page int) ([]*model.CollectionView, int64, error) {
-	if uid == 0 || page < 1 {
+func ListUserCollections(username string, page int) ([]*model.CollectionView, int64, error) {
+	if username == "" || page < 1 {
 		return nil, 0, errors.New("invalid parameters")
 	}
+	user, err := dao.GetUserByUsername(username)
+	if err != nil {
+		return nil, 0, err
+	}
+	uid := user.ID
 	collections, total, err := dao.ListUserCollections(uid, page, pageSize)
 	if err != nil {
 		return nil, 0, err
@@ -129,10 +134,15 @@ func ListCollectionResources(collectionID uint, page int) ([]*model.ResourceView
 }
 
 // Search user collections by keyword, limited to 10 results.
-func SearchUserCollections(uid uint, keyword string) ([]*model.CollectionView, error) {
-	if uid == 0 || keyword == "" {
+func SearchUserCollections(username string, keyword string) ([]*model.CollectionView, error) {
+	if username == "" || keyword == "" {
 		return nil, errors.New("invalid parameters")
 	}
+	user, err := dao.GetUserByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+	uid := user.ID
 	collections, err := dao.SearchUserCollections(uid, keyword)
 	if err != nil {
 		return nil, err

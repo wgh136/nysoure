@@ -730,10 +730,10 @@ class Network {
     );
   }
 
-  async listUserCollections(page: number = 1): Promise<PageResponse<Collection>> {
+  async listUserCollections(username: string, page: number = 1): Promise<PageResponse<Collection>> {
     return this._callApi(() =>
       axios.get(`${this.apiBaseUrl}/collection/list`, {
-        params: { page },
+        params: { username, page },
       }),
     );
   }
@@ -774,11 +774,12 @@ class Network {
   }
 
   async searchUserCollections(
+    username: string,
     keyword: string,
   ): Promise<Response<Collection[]>> {
     return this._callApi(() =>
       axios.get(`${this.apiBaseUrl}/collection/search`, {
-        params: { keyword },
+        params: { username, keyword },
       }),
     );
   }

@@ -95,16 +95,16 @@ func handleGetCollection(c fiber.Ctx) error {
 }
 
 func handleListUserCollections(c fiber.Ctx) error {
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
 	pageStr := c.Query("page", "1")
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page < 1 {
 		page = 1
 	}
-	cols, total, err := service.ListUserCollections(uid, page)
+	username := c.Query("username", "")
+	if username == "" {
+		return model.NewRequestError("Username is required")
+	}
+	cols, total, err := service.ListUserCollections(username, page)
 	if err != nil {
 		return err
 	}
@@ -194,15 +194,15 @@ func handleRemoveResourceFromCollection(c fiber.Ctx) error {
 }
 
 func handleSearchUserCollections(c fiber.Ctx) error {
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
 	keyword := c.Query("keyword", "")
 	if keyword == "" {
 		return model.NewRequestError("keyword is required")
 	}
-	cols, err := service.SearchUserCollections(uid, keyword)
+	username := c.Query("username", "")
+	if username == "" {
+		return model.NewRequestError("username is required")
+	}
+	cols, err := service.SearchUserCollections(username, keyword)
 	if err != nil {
 		return err
 	}
