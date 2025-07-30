@@ -218,10 +218,10 @@ func AddCollectionRoutes(r fiber.Router) {
 	cg.Post("/create", handleCreateCollection)
 	cg.Post("/update", handleUpdateCollection)
 	cg.Post("/delete", handleDeleteCollection)
-	cg.Get("/:id", handleGetCollection)
 	cg.Get("/list", handleListUserCollections)
-	cg.Get("/:id/resources", handleListCollectionResources)
 	cg.Post("/add_resource", handleAddResourceToCollection)
 	cg.Post("/remove_resource", handleRemoveResourceFromCollection)
 	cg.Get("/search", handleSearchUserCollections)
+	cg.Get("/:id/resources", handleListCollectionResources)
+	cg.Get("/:id", handleGetCollection)
 }
