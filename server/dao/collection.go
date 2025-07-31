@@ -42,11 +42,11 @@ func UpdateCollection(id uint, title string, article string, images []uint) erro
 			Article: article,
 		}
 
-		if err := tx.Model(collection).Where("id = ?", id).Updates(collection).Error; err != nil {
+		if err := tx.Model(collection).Updates(collection).Error; err != nil {
 			return err
 		}
 
-		if err := tx.Model(collection).Where("id = ?", id).Association("Images").Replace(images); err != nil {
+		if err := tx.Model(collection).Association("Images").Replace(images); err != nil {
 			return err
 		}
 
