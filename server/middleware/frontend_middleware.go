@@ -133,8 +133,8 @@ func serveIndexHtml(c fiber.Ctx) error {
 				preFetchData = url.PathEscape(string(preFetchDataJson))
 			}
 		}
-	} else if strings.HasPrefix(path, "/collections/") {
-		collectionIDStr := strings.TrimPrefix(path, "/collections/")
+	} else if strings.HasPrefix(path, "/collection/") {
+		collectionIDStr := strings.TrimPrefix(path, "/collection/")
 		collectionID, err := strconv.Atoi(collectionIDStr)
 		if err == nil {
 			coll, err := service.GetCollectionByID(uint(collectionID))
