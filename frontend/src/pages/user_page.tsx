@@ -23,7 +23,6 @@ import {
 import { useTranslation } from "../utils/i18n";
 import { app } from "../app.ts";
 import Markdown from "react-markdown";
-import { t } from "i18next";
 import { Debounce } from "../utils/debounce.ts";
 
 export default function UserPage() {
@@ -32,6 +31,8 @@ export default function UserPage() {
   const { username: rawUsername } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const { t } = useTranslation();
 
   // 解码用户名，确保特殊字符被还原
   const username = rawUsername ? decodeURIComponent(rawUsername) : "";
@@ -102,28 +103,28 @@ export default function UserPage() {
           className={`tab ${page === 0 ? "tab-active" : ""} `}
           onClick={() => updateHash(0)}
         >
-          Collections
+          {t("Collections")}
         </div>
         <div
           role="tab"
           className={`tab ${page === 1 ? "tab-active" : ""} `}
           onClick={() => updateHash(1)}
         >
-          Resources
+          {t("Resources")}
         </div>
         <div
           role="tab"
           className={`tab ${page === 2 ? "tab-active" : ""}`}
           onClick={() => updateHash(2)}
         >
-          Comments
+          {t("Comments")}
         </div>
         <div
           role="tab"
           className={`tab ${page === 3 ? "tab-active" : ""}`}
           onClick={() => updateHash(3)}
         >
-          Files
+          {t("Files")}
         </div>
       </div>
       <div className="w-full">
@@ -500,6 +501,8 @@ function CollectionsList({
 
 function CollectionCard({ collection }: { collection: Collection }) {
   const navigate = useNavigate();
+
+  const { t } = useTranslation();
 
   return (
     <div

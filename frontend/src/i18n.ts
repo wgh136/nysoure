@@ -228,6 +228,7 @@ export const i18nData = {
 
       "Data from": "数据来源",
 
+      "Collections": "合集",
       "Create Collection": "创建合集",
       "Create": "创建",
       "Image size exceeds 5MB limit": "图片大小超过5MB限制",
@@ -481,6 +482,7 @@ export const i18nData = {
 
       "Data from": "數據來源",
 
+      "Collections": "合集",
       "Create Collection": "創建合集",
       "Create": "創建",
       "Image size exceeds 5MB limit": "圖片大小超過5MB限制",
