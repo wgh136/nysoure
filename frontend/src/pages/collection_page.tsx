@@ -33,8 +33,9 @@ export default function CollectionPage() {
       return;
     }
 
-    if (app.getPreFetchData()?.collection?.id === idInt) {
-      setCollection(app.getPreFetchData().collection);
+    const prefetchData = app.getPreFetchData();
+    if (prefetchData?.collection?.id === idInt) {
+      setCollection(prefetchData.collection);
       return;
     }
 
