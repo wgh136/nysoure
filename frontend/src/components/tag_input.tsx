@@ -1,12 +1,13 @@
 import { Tag } from "../network/models.ts";
 import { useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { network } from "../network/network.ts";
 import { LuInfo } from "react-icons/lu";
 import { MdSearch } from "react-icons/md";
 import Button from "./button.tsx";
 import Input, { TextArea } from "./input.tsx";
 import { ErrorAlert } from "./alert.tsx";
+import { Debounce } from "../utils/debounce.ts";
 
 export default function TagInput({
   onAdd,
@@ -175,31 +176,6 @@ export default function TagInput({
       </ul>
     </div>
   );
-}
-
-class Debounce {
-  private timer: number | null = null;
-  private readonly delay: number;
-
-  constructor(delay: number) {
-    this.delay = delay;
-  }
-
-  run(callback: () => void) {
-    if (this.timer) {
-      clearTimeout(this.timer);
-    }
-    this.timer = setTimeout(() => {
-      callback();
-    }, this.delay);
-  }
-
-  cancel() {
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
-  }
 }
 
 export function QuickAddTagDialog({

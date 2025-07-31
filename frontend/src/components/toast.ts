@@ -10,7 +10,7 @@ export default function showToast({
   type = type || "info";
   const div = document.createElement("div");
   div.innerHTML = `
-        <div class="toast toast-center">
+        <div class="toast toast-center z-10">
           <div class="alert shadow ${type === "success" && "alert-success"} ${type === "error" && "alert-error"} ${type === "warning" && "alert-warning"} ${type === "info" && "alert-info"}">
             <span>${message}</span>
           </div>

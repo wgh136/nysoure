@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { MdPalette } from "react-icons/md";
 
 interface ThemeOption {

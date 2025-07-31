@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Activity, ActivityType } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import showToast from "../components/toast.ts";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { useNavigate } from "react-router";
 import Loading from "../components/loading.tsx";
 import { CommentContent } from "../components/comment_tile.tsx";

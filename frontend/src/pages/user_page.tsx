@@ -1,5 +1,11 @@
 import { useParams, useLocation, useNavigate } from "react-router";
-import { CommentWithResource, RFile, User } from "../network/models";
+import {
+  Collection,
+  CommentWithResource,
+  PageResponse,
+  RFile,
+  User,
+} from "../network/models";
 import { network } from "../network/network";
 import showToast from "../components/toast";
 import { useCallback, useEffect, useState } from "react";
@@ -9,13 +15,17 @@ import Pagination from "../components/pagination";
 import { CommentTile } from "../components/comment_tile.tsx";
 import Badge from "../components/badge.tsx";
 import {
+  MdOutlineAdd,
   MdOutlineArchive,
   MdOutlineComment,
   MdOutlinePhotoAlbum,
 } from "react-icons/md";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { app } from "../app.ts";
 import Markdown from "react-markdown";
+import Button from "../components/button.tsx";
+import { t } from "i18next";
+import { Debounce } from "../utils/debounce.ts";
 
 export default function UserPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -27,12 +37,12 @@ export default function UserPage() {
   // 解码用户名，确保特殊字符被还原
   const username = rawUsername ? decodeURIComponent(rawUsername) : "";
 
-  // 从 hash 中获取当前页面，默认为 resources
+  // 从 hash 中获取当前页面，默认为 collections
   const getPageFromHash = useCallback(() => {
     const hash = location.hash.slice(1); // 移除 # 号
-    if (hash === "comments") return 1;
-    if (hash === "files") return 2;
-    return 0; // 默认为 resources
+    const hashs = ["collections", "resources", "comments", "files"];
+    const index = hashs.indexOf(hash);
+    return index !== -1 ? index : 0; // 如果 hash 不在预定义的列表中，默认为 0
   }, [location.hash]);
 
   const [page, setPage] = useState(getPageFromHash());
@@ -44,8 +54,8 @@ export default function UserPage() {
 
   // 更新 hash 的函数
   const updateHash = (newPage: number) => {
-    const hashs = ["resources", "comments", "files"];
-    const newHash = hashs[newPage] || "resources";
+    const hashs = ["collections", "resources", "comments", "files"];
+    const newHash = hashs[newPage] || "collections";
     if (location.hash.slice(1) !== newHash) {
       navigate(`/user/${username}#${newHash}`, { replace: true });
     }
@@ -93,27 +103,35 @@ export default function UserPage() {
           className={`tab ${page === 0 ? "tab-active" : ""} `}
           onClick={() => updateHash(0)}
         >
-          Resources
+          Collections
         </div>
         <div
           role="tab"
-          className={`tab ${page === 1 ? "tab-active" : ""}`}
+          className={`tab ${page === 1 ? "tab-active" : ""} `}
           onClick={() => updateHash(1)}
         >
-          Comments
+          Resources
         </div>
         <div
           role="tab"
           className={`tab ${page === 2 ? "tab-active" : ""}`}
           onClick={() => updateHash(2)}
         >
+          Comments
+        </div>
+        <div
+          role="tab"
+          className={`tab ${page === 3 ? "tab-active" : ""}`}
+          onClick={() => updateHash(3)}
+        >
           Files
         </div>
       </div>
       <div className="w-full">
-        {page === 0 && <UserResources user={user} />}
-        {page === 1 && <UserComments user={user} />}
-        {page === 2 && <UserFiles user={user} />}
+        {page === 0 && <Collections username={username} />}
+        {page === 1 && <UserResources user={user} />}
+        {page === 2 && <UserComments user={user} />}
+        {page === 3 && <UserFiles user={user} />}
       </div>
       <div className="h-16"></div>
     </div>
@@ -364,4 +382,159 @@ function FilesList({
       })}
     </>
   );
+}
+
+function Collections({ username }: { username?: string }) {
+  const [searchKeyword, setSearchKeyword] = useState("");
+
+  const [realSearchKeyword, setRealSearchKeyword] = useState("");
+
+  const { t } = useTranslation();
+
+  const navigate = useNavigate();
+
+  const debounce = new Debounce(500);
+
+  const delayedSetSearchKeyword = (keyword: string) => {
+    setSearchKeyword(keyword);
+    debounce.run(() => {
+      setRealSearchKeyword(keyword);
+    });
+  };
+
+  return (
+    <>
+      <div className="flex m-4">
+        <input
+          type="text"
+          placeholder="Search"
+          className="input input-bordered w-full max-w-2xs mr-2"
+          value={searchKeyword}
+          onChange={(e) => delayedSetSearchKeyword(e.target.value)}
+        />
+        <span className="flex-1" />
+        <button
+          className="btn btn-primary btn-soft"
+          onClick={() => {
+            navigate("/create-collection");
+          }}
+        >
+          <MdOutlineAdd size={20} className="inline-block mr-1" />
+          {t("Create")}
+        </button>
+      </div>
+      <CollectionsList
+        username={username}
+        keyword={realSearchKeyword}
+        key={realSearchKeyword}
+      />
+    </>
+  );
+}
+
+async function getOrSearchUserCollections(
+  username: string,
+  keyword: string,
+  page: number,
+): Promise<PageResponse<Collection>> {
+  if (keyword.trim() === "") {
+    return network.listUserCollections(username, page);
+  } else {
+    let res = await network.searchUserCollections(username, keyword);
+    return {
+      success: res.success,
+      data: res.data || [],
+      totalPages: 1,
+      message: res.message || "",
+    };
+  }
+}
+
+function CollectionsList({
+  username,
+  keyword,
+}: {
+  username?: string;
+  keyword: string;
+}) {
+  const [page, setPage] = useState(1);
+  const [maxPage, setMaxPage] = useState(1);
+  const [collections, setCollections] = useState<Collection[] | null>(null);
+
+  useEffect(() => {
+    if (!username) return;
+    setCollections(null);
+    getOrSearchUserCollections(username, keyword, page).then((res) => {
+      if (res.success) {
+        setCollections(res.data! || []);
+        setMaxPage(res.totalPages || 1);
+      } else {
+        showToast({
+          message: res.message,
+          type: "error",
+        });
+      }
+    });
+  }, [username, keyword, page]);
+
+  if (collections == null) {
+    return (
+      <div className={"w-full"}>
+        <Loading />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {collections.map((collection) => {
+        return <CollectionCard collection={collection} key={collection.id} />;
+      })}
+      {maxPage > 1 ? (
+        <div className={"w-full flex justify-center"}>
+          <Pagination page={page} setPage={setPage} totalPages={maxPage} />
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+function CollectionCard({ collection }: { collection: Collection }) {
+  const navigate = useNavigate();
+
+  return (
+    <div
+      className={
+        "card m-4 p-2 bg-base-100-tr82 shadow hover:shadow-md transition-shadow cursor-pointer"
+      }
+      onClick={() => {
+        navigate(`/collection/${collection.id}`);
+      }}
+    >
+      <h3 className={"card-title mx-2 mt-2"}>{collection.title}</h3>
+      <div className={"p-2 comment_tile"}>
+        <CollectionContent content={collection.article} />
+      </div>
+      <div className="flex">
+        <Badge className="badge-soft badge-primary text-xs mr-2">
+          <MdOutlinePhotoAlbum size={16} className="inline-block" />
+          {collection.resources_count} {t("Resources")}
+        </Badge>
+      </div>
+    </div>
+  );
+}
+
+function CollectionContent({ content }: { content: string }) {
+  const lines = content.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    if (!line.endsWith("  ")) {
+      // Ensure that each line ends with two spaces for Markdown to recognize it as a line break
+      lines[i] = line + "  ";
+    }
+  }
+  content = lines.join("\n");
+
+  return <Markdown>{content}</Markdown>;
 }

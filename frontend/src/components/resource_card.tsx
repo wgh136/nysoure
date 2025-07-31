@@ -2,8 +2,15 @@ import { Resource } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import { useNavigate } from "react-router";
 import Badge from "./badge.tsx";
+import React from "react";
 
-export default function ResourceCard({ resource }: { resource: Resource }) {
+export default function ResourceCard({
+  resource,
+  action,
+}: {
+  resource: Resource;
+  action?: React.ReactNode;
+}) {
   const navigate = useNavigate();
 
   let tags = resource.tags;
@@ -58,6 +65,8 @@ export default function ResourceCard({ resource }: { resource: Resource }) {
             </div>
             <div className="w-2"></div>
             <div className="text-sm">{resource.author.username}</div>
+            <div className="flex-1"></div>
+            {action}
           </div>
         </div>
       </div>

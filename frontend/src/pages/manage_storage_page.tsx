@@ -5,7 +5,7 @@ import showToast from "../components/toast.ts";
 import Loading from "../components/loading.tsx";
 import { MdAdd, MdMoreHoriz } from "react-icons/md";
 import { ErrorAlert } from "../components/alert.tsx";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { app } from "../app.ts";
 import showPopup, { PopupMenuItem } from "../components/popup.tsx";
 import Badge from "../components/badge.tsx";

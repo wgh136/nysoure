@@ -35,6 +35,9 @@ func CreateCollection(uid uint, title string, article string, images []uint) (mo
 func UpdateCollection(id uint, title string, article string, images []uint) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		collection := &model.Collection{
+			Model: gorm.Model{
+				ID: id,
+			},
 			Title:   title,
 			Article: article,
 		}

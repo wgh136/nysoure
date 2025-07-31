@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import showToast from "./toast";
 import { network } from "../network/network";
 import { InfoAlert } from "./alert";

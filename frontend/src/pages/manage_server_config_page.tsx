@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { app } from "../app";
 import { ErrorAlert, InfoAlert } from "../components/alert";
 import { useEffect, useState } from "react";

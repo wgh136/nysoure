@@ -10,7 +10,7 @@ import { Tag } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import { useNavigate, useParams } from "react-router";
 import showToast from "../components/toast.ts";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { app } from "../app.ts";
 import { ErrorAlert } from "../components/alert.tsx";
 import Loading from "../components/loading.tsx";

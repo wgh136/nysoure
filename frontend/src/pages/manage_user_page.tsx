@@ -6,7 +6,7 @@ import Loading from "../components/loading";
 import { MdMoreHoriz, MdSearch } from "react-icons/md";
 import Pagination from "../components/pagination";
 import showPopup, { PopupMenuItem } from "../components/popup";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { app } from "../app";
 import { ErrorAlert } from "../components/alert";
 

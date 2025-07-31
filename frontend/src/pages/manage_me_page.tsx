@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { app } from "../app";
 import { ErrorAlert } from "../components/alert";
 import { network } from "../network/network";

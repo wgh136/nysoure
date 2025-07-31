@@ -9,9 +9,11 @@ import { useAppContext } from "./AppContext.tsx";
 export default function ResourcesView({
   loader,
   storageKey,
+  actionBuilder,
 }: {
   loader: (page: number) => Promise<PageResponse<Resource>>;
   storageKey?: string;
+  actionBuilder?: (resource: Resource) => React.ReactNode;
 }) {
   const [data, setData] = useState<Resource[]>([]);
   const pageRef = useRef(1);
@@ -54,7 +56,8 @@ export default function ResourcesView({
       isLoadingRef.current = false;
       pageRef.current = pageRef.current + 1;
       totalPagesRef.current = res.totalPages ?? 1;
-      setData((prev) => [...prev, ...res.data!]);
+      let data = res.data ?? [];
+      setData((prev) => [...prev, ...data]);
     }
   }, [loader]);
 
@@ -71,7 +74,13 @@ export default function ResourcesView({
         columnWidth={300}
         items={data}
         render={(e) => {
-          return <ResourceCard resource={e.data} key={e.data.id} />;
+          return (
+            <ResourceCard
+              resource={e.data}
+              key={e.data.id}
+              action={actionBuilder?.(e.data)}
+            />
+          );
         }}
       ></Masonry>
       {pageRef.current <= totalPagesRef.current && <Loading />}

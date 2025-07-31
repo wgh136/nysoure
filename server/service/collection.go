@@ -34,8 +34,8 @@ func UpdateCollection(uid, id uint, title, article string, host string) error {
 }
 
 // Delete a collection by ID.
-func DeleteCollection(uint, id uint) error {
-	user, err := dao.GetUserByID(id)
+func DeleteCollection(uid, id uint) error {
+	user, err := dao.GetUserByID(uid)
 	if err != nil {
 		return err
 	}

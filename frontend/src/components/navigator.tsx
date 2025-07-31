@@ -3,7 +3,7 @@ import { network } from "../network/network.ts";
 import { useNavigate, useOutlet } from "react-router";
 import { createContext, useContext, useEffect, useState } from "react";
 import { MdArrowUpward, MdOutlinePerson, MdSearch } from "react-icons/md";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import UploadingSideBar from "./uploading_side_bar.tsx";
 import { ThemeSwitcher } from "./theme_switcher.tsx";
 import { IoLogoGithub } from "react-icons/io";

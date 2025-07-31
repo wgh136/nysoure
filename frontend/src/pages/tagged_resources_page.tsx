@@ -3,7 +3,7 @@ import { ErrorAlert } from "../components/alert.tsx";
 import ResourcesView from "../components/resources_view.tsx";
 import { network } from "../network/network.ts";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { Tag } from "../network/models.ts";
 import Button from "../components/button.tsx";
 import Markdown from "react-markdown";

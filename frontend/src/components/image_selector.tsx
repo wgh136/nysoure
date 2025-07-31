@@ -1,5 +1,5 @@
 import { MdAdd } from "react-icons/md";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { network } from "../network/network.ts";
 import showToast from "./toast.ts";
 import { useState } from "react";

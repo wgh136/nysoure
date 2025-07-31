@@ -1,243 +1,4 @@
 export const i18nData = {
-  "en": {
-    translation: {
-      "My Profile": "My Profile",
-      "Publish": "Publish",
-      "Log out": "Log out",
-      "Are you sure you want to log out?": "Are you sure you want to log out?",
-      "Cancel": "Cancel",
-      "Confirm": "Confirm",
-      "Search": "Search",
-      "Login": "Login",
-      "Register": "Register",
-      "Username": "Username",
-      "Password": "Password",
-      "Confirm Password": "Confirm Password",
-      "Username and password cannot be empty":
-        "Username and password cannot be empty",
-      "Passwords do not match": "Passwords do not match",
-      "Continue": "Continue",
-      "Don't have an account? Register": "Don't have an account? Register",
-      "Already have an account? Login": "Already have an account? Login",
-      "Publish Resource": "Publish Resource",
-      "All information can be modified after publishing":
-        "All information can be modified after publishing",
-      "Title": "Title",
-      "Alternative Titles": "Alternative Titles",
-      "Add Alternative Title": "Add Alternative Title",
-      "Tags": "Tags",
-      "Description": "Description",
-      "Use Markdown format": "Use Markdown format",
-      "Images": "Images",
-      "Images will not be displayed automatically, you need to reference them in the description":
-        "Images will not be displayed automatically, you need to reference them in the description",
-      "Preview": "Preview",
-      "Link": "Link",
-      "Action": "Action",
-      "Upload Image": "Upload Image",
-      "Error": "Error",
-      "Title cannot be empty": "Title cannot be empty",
-      "Alternative title cannot be empty": "Alternative title cannot be empty",
-      "At least one tag required": "At least one tag required",
-      "Description cannot be empty": "Description cannot be empty",
-      "Loading": "Loading",
-      "Enter a search keyword to continue":
-        "Enter a search keyword to continue",
-      "My Info": "My Info",
-      "Server": "Server",
-
-      // Management page translations
-      "Settings": "Settings",
-      "Manage": "Manage",
-      "Storage": "Storage",
-      "Users": "Users",
-      "You are not logged in. Please log in to access this page.":
-        "You are not logged in. Please log in to access this page.",
-      "You are not authorized to access this page.":
-        "You are not authorized to access this page.",
-
-      // Storage management
-      "No storage found. Please create a new storage.":
-        "No storage found. Please create a new storage.",
-      "Name": "Name",
-      "Created At": "Created At",
-      "Actions": "Actions",
-      "Delete Storage": "Delete Storage",
-      "Are you sure you want to delete this storage? This action cannot be undone.":
-        "Are you sure you want to delete this storage? This action cannot be undone.",
-      "Delete": "Delete",
-      "Storage deleted successfully": "Storage deleted successfully",
-      "New Storage": "New Storage",
-      "Type": "Type",
-      "Local": "Local",
-      "S3": "S3",
-      "Path": "Path",
-      "Max Size (MB)": "Max Size (MB)",
-      "Endpoint": "Endpoint",
-      "Access Key ID": "Access Key ID",
-      "Secret Access Key": "Secret Access Key",
-      "Bucket Name": "Bucket Name",
-      "All fields are required": "All fields are required",
-      "Storage created successfully": "Storage created successfully",
-      "Close": "Close",
-      "Submit": "Submit",
-
-      // User management
-      "Admin": "Admin",
-      "Can Upload": "Can Upload",
-      "Yes": "Yes",
-      "No": "No",
-      "Delete User": "Delete User",
-      "Are you sure you want to delete user":
-        "Are you sure you want to delete user",
-      "This action cannot be undone.": "This action cannot be undone.",
-      "User deleted successfully": "User deleted successfully",
-      "Set as user": "Set as user",
-      "Set as admin": "Set as admin",
-      "Remove upload permission": "Remove upload permission",
-      "Grant upload permission": "Grant upload permission",
-      "User set as admin successfully": "User set as admin successfully",
-      "User set as user successfully": "User set as user successfully",
-      "User set as upload permission successfully":
-        "User set as upload permission successfully",
-      "User removed upload permission successfully":
-        "User removed upload permission successfully",
-
-      // Resource details page
-      "Resource ID is required": "Resource ID is required",
-      "Files": "Files",
-      "Comments": "Comments",
-      "Upload": "Upload",
-      "Create File": "Create File",
-      "Please select a file type": "Please select a file type",
-      "Please fill in all fields": "Please fill in all fields",
-      "File created successfully": "File created successfully",
-      "Successfully create uploading task.":
-        "Successfully create uploading task.",
-      "Please select a file and storage": "Please select a file and storage",
-      "Redirect": "Redirect",
-      "User who click the file will be redirected to the URL":
-        "User who click the file will be redirected to the URL",
-      "File Name": "File Name",
-      "URL": "URL",
-      "Upload a file to server, then the file will be moved to the selected storage.":
-        "Upload a file to server, then the file will be moved to the selected storage.",
-      "Select Storage": "Select Storage",
-      "Resource Details": "Resource Details",
-      "Delete Resource": "Delete Resource",
-      "Are you sure you want to delete the resource":
-        "Are you sure you want to delete the resource",
-      "Delete File": "Delete File",
-      "Are you sure you want to delete the file":
-        "Are you sure you want to delete the file",
-
-      // 评论删除相关
-      "Delete Comment": "Delete Comment",
-      "Are you sure you want to delete this comment? This action cannot be undone.":
-        "Are you sure you want to delete this comment? This action cannot be undone.",
-      "Comment deleted successfully": "Comment deleted successfully",
-
-      // New translations
-      "Change Avatar": "Change Avatar",
-      "Change Username": "Change Username",
-      "Change Password": "Change Password",
-      "New Username": "New Username",
-      "Enter new username": "Enter new username",
-      "Save": "Save",
-      "Current Password": "Current Password",
-      "Enter current password": "Enter current password",
-      "New Password": "New Password",
-      "Enter new password": "Enter new password",
-      "Confirm New Password": "Confirm New Password",
-      "Confirm new password": "Confirm new password",
-      "Avatar changed successfully": "Avatar changed successfully",
-      "Username changed successfully": "Username changed successfully",
-      "Password changed successfully": "Password changed successfully",
-
-      // Manage server config page translations
-      "Update server config successfully": "Update server config successfully",
-      "Max uploading size (MB)": "Max uploading size (MB)",
-      "Max file size (MB)": "Max file size (MB)",
-      "Max downloads per day for single IP":
-        "Max downloads per day for single IP",
-      "Allow register": "Allow register",
-      "Server name": "Server name",
-      "Server description": "Server description",
-      "Cloudflare Turnstile Site Key": "Cloudflare Turnstile Site Key",
-      "Cloudflare Turnstile Secret Key": "Cloudflare Turnstile Secret Key",
-      "If the cloudflare turnstile keys are not empty, the turnstile will be used for register and download.":
-        "If the cloudflare turnstile keys are not empty, the turnstile will be used for register and download.",
-      "The first image will be used as the cover image":
-        "The first image will be used as the cover image",
-      "Please enter a search keyword": "Please enter a search keyword",
-      "Searching...": "Searching...",
-      "Create Tag": "Create Tag",
-      "Search Tags": "Search Tags",
-      "Edit Resource": "Edit Resource",
-      "Change Bio": "Change Bio",
-      "About this site": "About this site",
-      "Tag not found": "Tag not found",
-      "Description is too long": "Description is too long",
-      "Unknown error": "Unknown error",
-      "Edit": "Edit",
-      "Edit Tag": "Edit Tag",
-      "Set the description of the tag.": "Set the description of the tag.",
-      "Tag: ": "Tag: ",
-      "Select a Order": "Select a Order",
-      "Time Ascending": "Time Ascending",
-      "Time Descending": "Time Descending",
-      "Views Ascending": "Views Ascending",
-      "Views Descending": "Views Descending",
-      "Downloads Ascending": "Downloads Ascending",
-      "Downloads Descending": "Downloads Descending",
-      "File Url": "File Url",
-      "Provide a file url for the server to download, and the file will be moved to the selected storage.":
-        "Provide a file url for the server to download, and the file will be moved to the selected storage.",
-      "Verifying your request": "Verifying your request",
-      "Please check your network if the verification takes too long or the captcha does not appear.":
-        "Please check your network if the verification takes too long or the captcha does not appear.",
-      "About": "About",
-      "Home": "Home",
-      "Other": "Other",
-      "Quick Add": "Quick Add",
-      "Add Tags": "Add Tags",
-      "Input tags separated by separator.":
-        "Input tags separated by separator.",
-      "If the tag does not exist, it will be created automatically.":
-        "If the tag does not exist, it will be created automatically.",
-      "Optionally, you can specify a type for the new tags.":
-        "Optionally, you can specify a type for the new tags.",
-      "Upload Clipboard Image": "Upload Clipboard Image",
-      "Show more": "Show more",
-      "Show less": "Show less",
-      "You need to log in to comment": "You need to log in to comment",
-
-      // Color Scheme Translation
-      "Light Pink": "Light Pink",
-      "Ocean Breeze": "Ocean Breeze",
-      "Mint Leaf": "Mint Leaf",
-      "Golden Glow": "Golden Glow",
-      "Random": "Random",
-
-      // Activity Page
-      "Activity": "Activity",
-      "Published a resource": "Published a resource",
-      "Updated a resource": "Updated a resource",
-      "Commented on a resource": "Commented on a resource",
-
-      "Comment": "Comment",
-      "Replies": "Replies",
-      "Reply": "Reply",
-      "Commented on": "Commented on",
-      "Write down your comment": "Write down your comment",
-      "Click to view more": "Click to view more",
-      "Comment Details": "Comment Details",
-      "Posted a comment": "Posted a comment",
-      "Resources": "Resources",
-      "Added a new file": "Added a new file",
-      "Data from": "Data from",
-    },
-  },
   "zh-CN": {
     translation: {
       "My Profile": "我的资料",
@@ -466,6 +227,29 @@ export const i18nData = {
       "Added a new file": "添加了新文件",
 
       "Data from": "数据来源",
+
+      "Create Collection": "创建合集",
+      "Create": "创建",
+      "Image size exceeds 5MB limit": "图片大小超过5MB限制",
+      "Title and description cannot be empty": "标题和描述不能为空",
+      "Collection created successfully": "合集创建成功",
+      "Collection deleted successfully": "合集删除成功",
+      "Remove Resource": "移除资源",
+      "Are you sure you want to remove this resource?": "您确定要移除此资源吗？",
+      "Resource deleted successfully": "资源移除成功",
+      "Edit Collection": "编辑合集",
+      "Edit successful": "编辑成功",
+      "Failed to save changes": "保存更改失败",
+
+      "Collect": "收藏",
+      "Add to Collection": "添加到合集",
+      "Add": "添加",
+      "Resource added to collection successfully": "资源已成功添加到合集",
+      "No patches found for this VN.": "未找到该作品的补丁。",
+      "Update File Info": "更新文件信息",
+      "File info updated successfully": "文件信息更新成功",
+      "File URL": "文件URL",
+      "You do not have permission to upload files, please contact the administrator.": "您没有上传文件的权限，请联系管理员。",
     },
   },
   "zh-TW": {
@@ -696,6 +480,29 @@ export const i18nData = {
       "Added a new file": "添加了新檔案",
 
       "Data from": "數據來源",
+
+      "Create Collection": "創建合集",
+      "Create": "創建",
+      "Image size exceeds 5MB limit": "圖片大小超過5MB限制",
+      "Title and description cannot be empty": "標題和描述不能為空",
+      "Collection created successfully": "合集創建成功",
+      "Collection deleted successfully": "合集刪除成功",
+      "Remove Resource": "移除資源",
+      "Are you sure you want to remove this resource?": "您確定要移除此資源嗎？",
+      "Resource deleted successfully": "資源移除成功",
+      "Edit Collection": "編輯合集",
+      "Edit successful": "編輯成功",
+      "Failed to save changes": "保存更改失敗",
+
+      "Collect": "收藏",
+      "Add to Collection": "添加到合集",
+      "Add": "添加",
+      "Resource added to collection successfully": "資源已成功添加到合集",
+      "No patches found for this VN.": "未找到該作品的補丁。",
+      "Update File Info": "更新檔案信息",
+      "File info updated successfully": "檔案信息更新成功",
+      "File URL": "檔案URL",
+      "You do not have permission to upload files, please contact the administrator.": "您沒有上傳檔案的權限，請聯繫管理員。",
     },
   },
 };

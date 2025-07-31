@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { network } from "../network/network.ts";
 import { app } from "../app.ts";
 import { useNavigate } from "react-router";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function RegisterPage() {

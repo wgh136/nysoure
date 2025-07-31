@@ -2,7 +2,7 @@ import { useSearchParams } from "react-router";
 import { network } from "../network/network.ts";
 import ResourcesView from "../components/resources_view.tsx";
 import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 
 export default function SearchPage() {
   const [params, _] = useSearchParams();

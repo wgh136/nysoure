@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { network } from "../network/network";
 import showToast from "../components/toast";
 import { useNavigate, useParams } from "react-router";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { CommentWithRef, Resource } from "../network/models";
 import Loading from "../components/loading";
 import Markdown from "react-markdown";
@@ -91,7 +91,9 @@ export default function CommentPage() {
 
   useEffect(() => {
     if (comment?.resource && comment.resource.image) {
-      navigator.setBackground(network.getResampledImageUrl(comment.resource.image.id));
+      navigator.setBackground(
+        network.getResampledImageUrl(comment.resource.image.id),
+      );
     } else if (comment?.images?.length) {
       // comment images are not resampled
       navigator.setBackground(network.getImageUrl(comment.images[0].id));
@@ -109,36 +111,39 @@ export default function CommentPage() {
       <div className="h-2"></div>
       <div className="bg-base-100-tr82 rounded-2xl p-4 shadow">
         <div className="flex items-center">
-        <button
-          onClick={() => {
-            navigate(`/user/${encodeURIComponent(comment.user.username)}`);
-          }}
-          className="border-b-2 py-1 cursor-pointer border-transparent hover:border-primary transition-colors duration-200 ease-in-out"
-        >
-          <div className="flex items-center">
-            <div className="avatar">
-              <div className="w-6 rounded-full">
-                <img src={network.getUserAvatar(comment.user)} alt={"avatar"} />
+          <button
+            onClick={() => {
+              navigate(`/user/${encodeURIComponent(comment.user.username)}`);
+            }}
+            className="border-b-2 py-1 cursor-pointer border-transparent hover:border-primary transition-colors duration-200 ease-in-out"
+          >
+            <div className="flex items-center">
+              <div className="avatar">
+                <div className="w-6 rounded-full">
+                  <img
+                    src={network.getUserAvatar(comment.user)}
+                    alt={"avatar"}
+                  />
+                </div>
               </div>
+              <div className="w-2"></div>
+              <div className="text-sm">{comment.user.username}</div>
             </div>
-            <div className="w-2"></div>
-            <div className="text-sm">{comment.user.username}</div>
-          </div>
-        </button>
-        <span className="text-xs text-base-content/80 ml-2">
-          {t("Commented on")}
-          {new Date(comment.created_at).toLocaleDateString()}
-        </span>
-      </div>
-      <article>
-        <CommentContent content={comment.content} />
-      </article>
-      {app.user?.id === comment.user.id && (
-        <div className="flex flex-row justify-end mt-2">
-          <EditCommentDialog comment={comment} onUpdated={onUpdated} />
-          <DeleteCommentDialog commentId={comment.id} onUpdated={onDeleted} />
+          </button>
+          <span className="text-xs text-base-content/80 ml-2">
+            {t("Commented on")}
+            {new Date(comment.created_at).toLocaleDateString()}
+          </span>
         </div>
-      )}
+        <article>
+          <CommentContent content={comment.content} />
+        </article>
+        {app.user?.id === comment.user.id && (
+          <div className="flex flex-row justify-end mt-2">
+            <EditCommentDialog comment={comment} onUpdated={onUpdated} />
+            <DeleteCommentDialog commentId={comment.id} onUpdated={onDeleted} />
+          </div>
+        )}
       </div>
       <div className="h-4" />
       <div className="border-t border-base-300" />

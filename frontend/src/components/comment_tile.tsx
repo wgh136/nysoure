@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { useNavigate } from "react-router";
 import { MdOutlineComment } from "react-icons/md";
 import { Comment } from "../network/models";

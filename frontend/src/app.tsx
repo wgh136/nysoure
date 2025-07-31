@@ -15,29 +15,43 @@ import TagsPage from "./pages/tags_page.tsx";
 import RandomPage from "./pages/random_page.tsx";
 import ActivitiesPage from "./pages/activities_page.tsx";
 import CommentPage from "./pages/comment_page.tsx";
+import CreateCollectionPage from "./pages/create_collection_page.tsx";
+import CollectionPage from "./pages/collection_page.tsx";
+import { i18nData } from "./i18n.ts";
+import { i18nContext } from "./utils/i18n.ts";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path={"/login"} element={<LoginPage />} />
-        <Route path={"/register"} element={<RegisterPage />} />
-        <Route element={<Navigator />}>
-          <Route path={"/"} element={<HomePage />} />
-          <Route path={"/publish"} element={<PublishPage />} />
-          <Route path={"/search"} element={<SearchPage />} />
-          <Route path={"/resources/:id"} element={<ResourcePage />} />
-          <Route path={"/manage"} element={<ManagePage />} />
-          <Route path={"/tag/:tag"} element={<TaggedResourcesPage />} />
-          <Route path={"/user/:username"} element={<UserPage />} />
-          <Route path={"/resource/edit/:rid"} element={<EditResourcePage />} />
-          <Route path={"/about"} element={<AboutPage />} />
-          <Route path={"/tags"} element={<TagsPage />} />
-          <Route path={"/random"} element={<RandomPage />} />
-          <Route path={"/activity"} element={<ActivitiesPage />} />
-          <Route path={"/comments/:id"} element={<CommentPage />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <i18nContext.Provider value={i18nData}>
+      <BrowserRouter>
+        <Routes>
+          <Route path={"/login"} element={<LoginPage />} />
+          <Route path={"/register"} element={<RegisterPage />} />
+          <Route element={<Navigator />}>
+            <Route path={"/"} element={<HomePage />} />
+            <Route path={"/publish"} element={<PublishPage />} />
+            <Route path={"/search"} element={<SearchPage />} />
+            <Route path={"/resources/:id"} element={<ResourcePage />} />
+            <Route path={"/manage"} element={<ManagePage />} />
+            <Route path={"/tag/:tag"} element={<TaggedResourcesPage />} />
+            <Route path={"/user/:username"} element={<UserPage />} />
+            <Route
+              path={"/resource/edit/:rid"}
+              element={<EditResourcePage />}
+            />
+            <Route path={"/about"} element={<AboutPage />} />
+            <Route path={"/tags"} element={<TagsPage />} />
+            <Route path={"/random"} element={<RandomPage />} />
+            <Route path={"/activity"} element={<ActivitiesPage />} />
+            <Route path={"/comments/:id"} element={<CommentPage />} />
+            <Route
+              path={"/create-collection"}
+              element={<CreateCollectionPage />}
+            />
+            <Route path={"/collection/:id"} element={<CollectionPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </i18nContext.Provider>
   );
 }

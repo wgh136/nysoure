@@ -17,6 +17,7 @@ import {
   Comment,
   Tag,
   Resource,
+  Collection,
 } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import showToast from "../components/toast.ts";
@@ -32,13 +33,15 @@ import {
   MdOutlineDelete,
   MdOutlineDownload,
   MdOutlineEdit,
+  MdOutlineFolder,
+  MdOutlineFolderSpecial,
   MdOutlineLink,
   MdOutlineOpenInNew,
 } from "react-icons/md";
 import { app } from "../app.ts";
 import { uploadingManager } from "../network/uploading.ts";
 import { ErrorAlert } from "../components/alert.tsx";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import Pagination from "../components/pagination.tsx";
 import showPopup, { useClosePopup } from "../components/popup.tsx";
 import { Turnstile } from "@marsidev/react-turnstile";
@@ -57,6 +60,7 @@ import KunApi, {
   kunPlatformToString,
   kunResourceTypeToString,
 } from "../network/kun.ts";
+import { Debounce } from "../utils/debounce.ts";
 
 export default function ResourcePage() {
   const params = useParams();
@@ -213,28 +217,27 @@ export default function ResourcePage() {
           </div>
         </button>
         <Tags tags={resource.tags} />
-        {resource.links && (
-          <p className={"px-3 mt-2"}>
-            {resource.links.map((l) => {
-              return (
-                <a href={l.url} target={"_blank"}>
-                  <span
-                    className={
-                      "py-1 px-3 inline-flex items-center m-1 border border-base-300 bg-base-100 opacity-90 rounded-2xl hover:bg-base-200 transition-colors cursor-pointer select-none"
-                    }
-                  >
-                    {l.url.includes("steampowered.com") ? (
-                      <BiLogoSteam size={20} />
-                    ) : (
-                      <MdOutlineLink size={20} />
-                    )}
-                    <span className={"ml-2 text-sm"}>{l.label}</span>
-                  </span>
-                </a>
-              );
-            })}
-          </p>
-        )}
+        <p className={"px-3 mt-2"}>
+          {resource.links.map((l) => {
+            return (
+              <a href={l.url} target={"_blank"}>
+                <span
+                  className={
+                    "py-1 px-3 inline-flex items-center m-1 border border-base-300 bg-base-100 opacity-90 rounded-2xl hover:bg-base-200 transition-colors cursor-pointer select-none"
+                  }
+                >
+                  {l.url.includes("steampowered.com") ? (
+                    <BiLogoSteam size={20} />
+                  ) : (
+                    <MdOutlineLink size={20} />
+                  )}
+                  <span className={"ml-2 text-sm"}>{l.label}</span>
+                </span>
+              </a>
+            );
+          })}
+          <CollectionDialog rid={resource.id} />
+        </p>
 
         <div
           className="tabs tabs-box my-4 mx-2 p-4 shadow"
@@ -1578,6 +1581,177 @@ function KunFile({
           </a>
         </div>
       </div>
+    </div>
+  );
+}
+
+function CollectionDialog({ rid }: { rid: number }) {
+  const { t } = useTranslation();
+
+  const [searchKeyword, setSearchKeyword] = useState("");
+
+  const [realSearchKeyword, setRealSearchKeyword] = useState("");
+
+  const [dialogVisited, setDialogVisited] = useState(false);
+
+  const [selectedCID, setSelectedCID] = useState<number | null>(null);
+
+  const debounce = new Debounce(500);
+
+  const delayedSetSearchKeyword = (keyword: string) => {
+    setSearchKeyword(keyword);
+    debounce.run(() => {
+      setSelectedCID(null);
+      setRealSearchKeyword(keyword);
+    });
+  };
+
+  const handleAddToCollection = () => {
+    if (selectedCID == null) {
+      return;
+    }
+    network.addResourceToCollection(selectedCID, rid).then((res) => {
+      if (res.success) {
+        showToast({
+          message: t("Resource added to collection successfully"),
+          type: "success",
+        });
+        setSelectedCID(null);
+        setRealSearchKeyword("");
+        setSearchKeyword("");
+        setDialogVisited(false);
+        const dialog = document.getElementById(
+          "collection_dialog",
+        ) as HTMLDialogElement;
+        dialog.close();
+      } else {
+        showToast({
+          message: res.message,
+          type: "error",
+          parent: document.getElementById("collection_dialog_content"),
+        });
+      }
+    });
+  };
+
+  return (
+    <>
+      <span
+        className={
+          "py-1 px-3 inline-flex items-center m-1 border border-base-300 bg-base-100 opacity-90 rounded-2xl hover:bg-base-200 transition-colors cursor-pointer select-none"
+        }
+        onClick={() => {
+          setDialogVisited(true);
+          const dialog = document.getElementById(
+            "collection_dialog",
+          ) as HTMLDialogElement;
+          dialog.showModal();
+        }}
+      >
+        <MdOutlineFolderSpecial size={20} />
+        <span className={"ml-2 text-sm"}>{t("Collect")}</span>
+      </span>
+      <dialog id="collection_dialog" className="modal">
+        <div className="modal-box" id="collection_dialog_content">
+          <h3 className="font-bold text-lg mb-2">{t("Add to Collection")}</h3>
+          <input
+            type="text"
+            placeholder="Search"
+            className="input input-bordered w-full max-w-2xs mr-2"
+            value={searchKeyword}
+            onChange={(e) => delayedSetSearchKeyword(e.target.value)}
+          />
+          {dialogVisited && (
+            <CollectionSelector
+              resourceId={rid}
+              keyword={realSearchKeyword}
+              seletedID={selectedCID}
+              selectCallback={(collection) => {
+                if (selectedCID === collection.id) {
+                  setSelectedCID(null);
+                } else {
+                  setSelectedCID(collection.id);
+                }
+              }}
+              key={realSearchKeyword}
+            />
+          )}
+          <div className="modal-action">
+            <form method="dialog">
+              <Button className="btn">Close</Button>
+            </form>
+            <Button
+              className="btn-primary"
+              disabled={selectedCID == null}
+              onClick={handleAddToCollection}
+            >
+              {t("Add")}
+            </Button>
+          </div>
+        </div>
+      </dialog>
+    </>
+  );
+}
+
+function CollectionSelector({
+  resourceId,
+  keyword,
+  seletedID: selectedID,
+  selectCallback,
+}: {
+  resourceId: number;
+  keyword: string;
+  seletedID?: number | null;
+  selectCallback: (collection: Collection) => void;
+}) {
+  const [collections, setCollections] = useState<Collection[] | null>(null);
+
+  useEffect(() => {
+    setCollections(null);
+    network
+      .searchUserCollections(app.user!.username, keyword, resourceId)
+      .then((res) => {
+        if (res.success) {
+          setCollections(res.data! || []);
+        } else {
+          showToast({
+            message: res.message,
+            type: "error",
+          });
+        }
+      });
+  }, [keyword]);
+
+  if (collections == null) {
+    return (
+      <div className={"w-full"}>
+        <Loading />
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-2 max-h-80 overflow-y-auto w-full overflow-x-clip">
+      {collections.map((collection) => {
+        return (
+          <div
+            className={`${selectedID === collection.id && "bg-base-200 shadow"} rounded-lg transition-all p-2 hover:bg-base-200 w-full overflow-ellipsis hover:cursor-pointer`}
+            key={collection.id}
+            onClick={() => {
+              selectCallback(collection);
+            }}
+          >
+            <input
+              type="checkbox"
+              className="checkbox checkbox-primary mr-2"
+              checked={selectedID === collection.id}
+              readOnly
+            />
+            {collection.title}
+          </div>
+        );
+      })}
     </div>
   );
 }

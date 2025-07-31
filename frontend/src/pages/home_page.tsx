@@ -3,7 +3,7 @@ import ResourcesView from "../components/resources_view.tsx";
 import { network } from "../network/network.ts";
 import { app } from "../app.ts";
 import { RSort } from "../network/models.ts";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { useAppContext } from "../components/AppContext.tsx";
 import Select from "../components/select.tsx";
 

@@ -7,7 +7,7 @@ import {
 import { ReactNode, useEffect, useState } from "react";
 import StorageView from "./manage_storage_page.tsx";
 import UserView from "./manage_user_page.tsx";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n";
 import { ManageMePage } from "./manage_me_page.tsx";
 import ManageServerConfigPage from "./manage_server_config_page.tsx";
 
@@ -70,9 +70,7 @@ export default function ManagePage() {
   return (
     <div className="drawer lg:drawer-open lg:pl-4">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
-      <div
-        className="drawer-content overflow-y-auto bg-base-100-tr82 lg:m-4 rounded-md lg:p-2 h-[calc(100vh-64px)] lg:h-[calc(100vh-96px)]"
-      >
+      <div className="drawer-content overflow-y-auto bg-base-100-tr82 lg:m-4 rounded-md lg:p-2 h-[calc(100vh-64px)] lg:h-[calc(100vh-96px)]">
         <div className={"flex w-full h-14 items-center gap-2 px-4"}>
           <label
             className={"btn btn-square btn-ghost lg:hidden"}
