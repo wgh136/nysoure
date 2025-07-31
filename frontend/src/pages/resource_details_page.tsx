@@ -26,6 +26,7 @@ import "../markdown.css";
 import Loading from "../components/loading.tsx";
 import {
   MdAdd,
+  MdOutlineAdd,
   MdOutlineArchive,
   MdOutlineArticle,
   MdOutlineComment,
@@ -1597,6 +1598,8 @@ function CollectionDialog({ rid }: { rid: number }) {
 
   const debounce = new Debounce(500);
 
+  const navigate = useNavigate();
+
   const delayedSetSearchKeyword = (keyword: string) => {
     setSearchKeyword(keyword);
     debounce.run(() => {
@@ -1632,6 +1635,10 @@ function CollectionDialog({ rid }: { rid: number }) {
       }
     });
   };
+
+  if (!app.isLoggedIn()) {
+    return <></>
+  }
 
   return (
     <>
@@ -1676,8 +1683,21 @@ function CollectionDialog({ rid }: { rid: number }) {
             />
           )}
           <div className="modal-action">
+            <Button className="btn-ghost" onClick={() => {
+              const dialog = document.getElementById(
+                "collection_dialog",
+              ) as HTMLDialogElement;
+              dialog.close();
+              navigate("/create-collection");
+            }}>
+              <div className="flex items-center">
+                <MdOutlineAdd size={20} className={"inline-block mr-1"} />
+                {t("Create")}
+              </div>
+            </Button>
+            <span className="flex-1"></span>
             <form method="dialog">
-              <Button className="btn">Close</Button>
+              <Button className="btn">{t("Cancel")}</Button>
             </form>
             <Button
               className="btn-primary"
