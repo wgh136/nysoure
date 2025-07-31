@@ -139,7 +139,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 		if err == nil {
 			coll, err := service.GetCollectionByID(uint(collectionID))
 			if err == nil {
-				title = "Collection: " + coll.Title
+				title = coll.Title
 				description = utils.ArticleToDescription(coll.Article, 256)
 				if len(coll.Images) > 0 {
 					preview = fmt.Sprintf("%s/api/image/%d", serverBaseURL, coll.Images[0].ID)

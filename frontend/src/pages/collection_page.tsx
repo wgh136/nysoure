@@ -51,6 +51,11 @@ export default function CollectionPage() {
     });
   }, [id]);
 
+  useEffect(() => {
+    if (!collection) return;
+    document.title = collection.title;
+  }, [collection])
+
   const toBeDeletedRID = useRef<number | null>(null);
 
   const handleDeleteResource = (resourceId: number) => {
