@@ -66,6 +66,7 @@ func ErrorHandler(c fiber.Ctx) error {
 					})
 				}
 			}
+			log.Error("Internal Server Error: ", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(model.Response[any]{
 				Success: false,
 				Data:    nil,
