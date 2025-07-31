@@ -217,7 +217,7 @@ export default function ResourcePage() {
         </button>
         <Tags tags={resource.tags} />
         <p className={"px-3 mt-2"}>
-          {resource.links.map((l) => {
+          {resource.links && resource.links.map((l) => {
             return (
               <a href={l.url} target={"_blank"}>
                 <span
