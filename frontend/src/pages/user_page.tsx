@@ -412,7 +412,7 @@ function Collections({ username }: { username?: string }) {
           onChange={(e) => delayedSetSearchKeyword(e.target.value)}
         />
         <span className="flex-1" />
-        <button
+        {username == app.user?.username && <button
           className="btn btn-primary btn-soft"
           onClick={() => {
             navigate("/create-collection");
@@ -420,7 +420,7 @@ function Collections({ username }: { username?: string }) {
         >
           <MdOutlineAdd size={20} className="inline-block mr-1" />
           {t("Create")}
-        </button>
+        </button>}
       </div>
       <CollectionsList
         username={username}
