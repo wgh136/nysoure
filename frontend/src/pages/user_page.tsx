@@ -23,7 +23,6 @@ import {
 import { useTranslation } from "../utils/i18n";
 import { app } from "../app.ts";
 import Markdown from "react-markdown";
-import Button from "../components/button.tsx";
 import { t } from "i18next";
 import { Debounce } from "../utils/debounce.ts";
 

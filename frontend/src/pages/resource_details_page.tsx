@@ -33,7 +33,6 @@ import {
   MdOutlineDelete,
   MdOutlineDownload,
   MdOutlineEdit,
-  MdOutlineFolder,
   MdOutlineFolderSpecial,
   MdOutlineLink,
   MdOutlineOpenInNew,
