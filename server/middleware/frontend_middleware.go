@@ -133,6 +133,28 @@ func serveIndexHtml(c fiber.Ctx) error {
 				preFetchData = url.PathEscape(string(preFetchDataJson))
 			}
 		}
+	} else if strings.HasPrefix(path, "/collections/") {
+		collectionIDStr := strings.TrimPrefix(path, "/collections/")
+		collectionID, err := strconv.Atoi(collectionIDStr)
+		if err == nil {
+			coll, err := service.GetCollectionByID(uint(collectionID))
+			if err == nil {
+				title = "Collection: " + coll.Title
+				description = utils.ArticleToDescription(coll.Article, 256)
+				if len(coll.Images) > 0 {
+					preview = fmt.Sprintf("%s/api/image/%d", serverBaseURL, coll.Images[0].ID)
+				} else {
+					preview = fmt.Sprintf("%s/api/avatar/%d", serverBaseURL, coll.User.ID)
+				}
+				if len(coll.Images) > 0 {
+					preview = fmt.Sprintf("%s/api/image/%d", serverBaseURL, coll.Images[0].ID)
+				}
+				preFetchDataJson, _ := json.Marshal(map[string]interface{}{
+					"collection": coll,
+				})
+				preFetchData = url.PathEscape(string(preFetchDataJson))
+			}
+		}
 	}
 
 	content = strings.ReplaceAll(content, "{{SiteName}}", siteName)

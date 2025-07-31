@@ -33,6 +33,11 @@ export default function CollectionPage() {
       return;
     }
 
+    if (app.getPreFetchData()?.collection?.id === idInt) {
+      setCollection(app.getPreFetchData().collection);
+      return;
+    }
+
     network.getCollection(idInt).then((res) => {
       if (res.success) {
         setCollection(res.data!);
@@ -43,7 +48,7 @@ export default function CollectionPage() {
         });
       }
     });
-  }, [resourcesKey]);
+  }, [id]);
 
   const toBeDeletedRID = useRef<number | null>(null);
 
