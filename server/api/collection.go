@@ -202,7 +202,14 @@ func handleSearchUserCollections(c fiber.Ctx) error {
 	if username == "" {
 		return model.NewRequestError("username is required")
 	}
-	cols, err := service.SearchUserCollections(username, keyword)
+	excludedRIDStr := c.Query("excludedRID", "")
+	var excludedRID uint = 0
+	if excludedRIDStr != "" {
+		if rid, err := strconv.Atoi(excludedRIDStr); err == nil && rid > 0 {
+			excludedRID = uint(rid)
+		}
+	}
+	cols, err := service.SearchUserCollections(username, keyword, excludedRID)
 	if err != nil {
 		return err
 	}

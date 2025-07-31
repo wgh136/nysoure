@@ -176,14 +176,23 @@ func ListCollectionResources(collectionID uint, page int, pageSize int) ([]*mode
 }
 
 // SearchUserCollections searches for collections by user ID and keyword limited to 10 results.
-func SearchUserCollections(uid uint, keyword string) ([]*model.Collection, error) {
+// excludedRID: if >0, only return collections not containing this resource.
+func SearchUserCollections(uid uint, keyword string, excludedRID uint) ([]*model.Collection, error) {
 	var collections []*model.Collection
 
-	if err := db.
-		Model(&model.Collection{}).
+	query := db.Model(&model.Collection{}).
+		Where("user_id = ? AND title LIKE ?", uid, "%"+keyword+"%")
+
+	if excludedRID > 0 {
+		// Use LEFT JOIN with IS NULL for better performance
+		query = query.
+			Joins("LEFT JOIN collection_resources cr ON collections.id = cr.collection_id AND cr.resource_id = ?", excludedRID).
+			Where("cr.collection_id IS NULL")
+	}
+
+	if err := query.
 		Preload("Images").
 		Preload("Resources").
-		Where("user_id = ? AND title LIKE ?", uid, "%"+keyword+"%").
 		Limit(10).
 		Find(&collections).Error; err != nil {
 		return nil, err
