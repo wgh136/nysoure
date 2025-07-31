@@ -136,7 +136,7 @@ func ListCollectionResources(collectionID uint, page int) ([]*model.ResourceView
 // Search user collections by keyword, limited to 10 results.
 // excludedRID: if >0, only return collections not containing this resource.
 func SearchUserCollections(username string, keyword string, excludedRID uint) ([]*model.CollectionView, error) {
-	if username == "" || keyword == "" {
+	if username == "" {
 		return nil, errors.New("invalid parameters")
 	}
 	user, err := dao.GetUserByUsername(username)

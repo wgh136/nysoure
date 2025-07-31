@@ -181,7 +181,11 @@ func SearchUserCollections(uid uint, keyword string, excludedRID uint) ([]*model
 	var collections []*model.Collection
 
 	query := db.Model(&model.Collection{}).
-		Where("user_id = ? AND title LIKE ?", uid, "%"+keyword+"%")
+		Where("user_id = ?", uid)
+
+	if keyword != "" {
+		query = query.Where("title LIKE ?", "%"+keyword+"%")
+	}
 
 	if excludedRID > 0 {
 		// Use LEFT JOIN with IS NULL for better performance

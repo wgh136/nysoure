@@ -195,9 +195,9 @@ func handleRemoveResourceFromCollection(c fiber.Ctx) error {
 
 func handleSearchUserCollections(c fiber.Ctx) error {
 	keyword := c.Query("keyword", "")
-	if keyword == "" {
-		return model.NewRequestError("keyword is required")
-	}
+	// if keyword == "" {
+	// 	return model.NewRequestError("keyword is required")
+	// }
 	username := c.Query("username", "")
 	if username == "" {
 		return model.NewRequestError("username is required")
