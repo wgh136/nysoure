@@ -43,7 +43,7 @@ func UpdateCollection(id uint, title string, article string, images []uint) erro
 			return err
 		}
 
-		if err := tx.Model(collection).Association("Images").Replace(images); err != nil {
+		if err := tx.Model(collection).Where("id = ?", id).Association("Images").Replace(images); err != nil {
 			return err
 		}
 
@@ -133,7 +133,7 @@ func RemoveResourceFromCollection(collectionID uint, resourceID uint) error {
 
 func GetCollectionByID(id uint) (*model.Collection, error) {
 	collection := &model.Collection{}
-	if err := db.Preload("Images").Preload("Resources").Where("id = ?", id).First(collection).Error; err != nil {
+	if err := db.Preload("Images").Preload("Resources").Preload("User").Where("id = ?", id).First(collection).Error; err != nil {
 		return nil, err
 	}
 	return collection, nil
