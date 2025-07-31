@@ -197,5 +197,6 @@ export interface Collection {
   title: string;
   article: string;
   user: User;
+  resources_count: number;
   images: Image[];
 }

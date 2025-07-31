@@ -80,7 +80,11 @@ func AddResourceToCollection(collectionID uint, resourceID uint) error {
 		collection := &model.Collection{}
 
 		if err := tx.Where("id = ?", collectionID).First(collection).Error; err != nil {
-			return err
+			return model.NewRequestError("Invalid collection ID")
+		}
+
+		if err := tx.Model(&model.Resource{}).Where("id = ?", resourceID).First(&model.Resource{}).Error; err != nil {
+			return model.NewRequestError("Invalid resource ID")
 		}
 
 		if err := tx.Model(collection).Association("Resources").Append(&model.Resource{
@@ -88,6 +92,10 @@ func AddResourceToCollection(collectionID uint, resourceID uint) error {
 				ID: resourceID,
 			},
 		}); err != nil {
+			return err
+		}
+
+		if err := tx.Model(collection).UpdateColumn("resources_count", gorm.Expr("resources_count + ?", 1)).Error; err != nil {
 			return err
 		}
 
@@ -100,7 +108,11 @@ func RemoveResourceFromCollection(collectionID uint, resourceID uint) error {
 		collection := &model.Collection{}
 
 		if err := tx.Where("id = ?", collectionID).First(collection).Error; err != nil {
-			return err
+			return model.NewRequestError("Invalid collection ID")
+		}
+
+		if err := tx.Model(&model.Resource{}).Where("id = ?", resourceID).First(&model.Resource{}).Error; err != nil {
+			return model.NewRequestError("Invalid resource ID")
 		}
 
 		if err := tx.Model(collection).Association("Resources").Delete(&model.Resource{
@@ -108,6 +120,10 @@ func RemoveResourceFromCollection(collectionID uint, resourceID uint) error {
 				ID: resourceID,
 			},
 		}); err != nil {
+			return err
+		}
+
+		if err := tx.Model(collection).UpdateColumn("resources_count", gorm.Expr("resources_count - ?", 1)).Error; err != nil {
 			return err
 		}
 
