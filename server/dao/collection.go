@@ -15,11 +15,11 @@ func CreateCollection(uid uint, title string, article string, images []uint) (mo
 			Article: article,
 		}
 
-		if err := tx.Create(collection).Error; err != nil {
+		if err := tx.Create(&collection).Error; err != nil {
 			return err
 		}
 
-		if err := tx.Model(collection).Association("Images").Replace(images); err != nil {
+		if err := tx.Model(&collection).Association("Images").Replace(images); err != nil {
 			return err
 		}
 
