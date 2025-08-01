@@ -35,16 +35,21 @@ func CreateCollection(uid uint, title string, article string, images []uint, pub
 
 func UpdateCollection(id uint, title string, article string, images []uint, public bool) error {
 	return db.Transaction(func(tx *gorm.DB) error {
-		collection := &model.Collection{
-			Model: gorm.Model{
-				ID: id,
-			},
-			Title:   title,
-			Article: article,
-			Public:  public, // 新增
+		collection := &model.Collection{}
+
+		// First find the existing collection
+		if err := tx.Where("id = ?", id).First(collection).Error; err != nil {
+			return err
 		}
 
-		if err := tx.Model(collection).Updates(collection).Error; err != nil {
+		// Update the fields
+		updates := map[string]interface{}{
+			"title":   title,
+			"article": article,
+			"public":  public,
+		}
+
+		if err := tx.Model(collection).Updates(updates).Error; err != nil {
 			return err
 		}
 

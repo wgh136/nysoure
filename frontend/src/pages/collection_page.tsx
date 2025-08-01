@@ -6,7 +6,7 @@ import { Collection } from "../network/models";
 import Markdown from "react-markdown";
 import ResourcesView from "../components/resources_view";
 import Loading from "../components/loading";
-import { MdOutlineAdd, MdOutlineDelete, MdOutlineEdit } from "react-icons/md";
+import { MdOutlineDelete, MdOutlineEdit, MdOutlineLock } from "react-icons/md";
 import { app } from "../app";
 import { useTranslation } from "../utils/i18n";
 import Button from "../components/button";
@@ -163,8 +163,8 @@ export default function CollectionPage() {
           )}
           <span className="flex-1" />
           {!collection.isPublic && (
-            <Badge className="badge-soft badge-error text-xs mr-2">
-              <MdOutlineAdd size={16} className="inline-block" /> {t("Private")}
+            <Badge className="badge-soft badge-error text-xs mr-2 shadow-xs">
+              <MdOutlineLock size={16} className="inline-block" /> {t("Private")}
             </Badge>
           )}
         </div>
@@ -344,15 +344,15 @@ function EditCollectionDialog({
           onChange={(e) => setEditArticle(e.target.value)}
           disabled={editLoading}
         />
-        <label className="flex items-center mb-4">
+        <label className="flex items-center mb-4 mt-2">
           <input
             type="checkbox"
-            checked={editIsPublic}
-            onChange={(e) => setEditIsPublic(e.target.checked)}
+            checked={!editIsPublic}
+            onChange={(e) => setEditIsPublic(!e.target.checked)}
             className="checkbox mr-2"
             disabled={editLoading}
           />
-          {t("Public")}
+          {t("Private")}
         </label>
         <div className="modal-action">
           <button className="btn" onClick={onClose} disabled={editLoading}>

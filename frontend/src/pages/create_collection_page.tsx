@@ -111,15 +111,15 @@ export default function CreateCollectionPage() {
           onChange={(e) => setArticle(e.target.value)}
           className="textarea mt-1 w-full min-h-80"
         />
-        <div className="mt-4">
-          <label className="flex items-center">
+        <div className="mt-4 mx-1">
+          <label className="flex items-center py-2">
             <input
               type="checkbox"
-              checked={isPublic}
-              onChange={(e) => setIsPublic(e.target.checked)}
-              className="checkbox mr-2"
+              checked={!isPublic}
+              onChange={(e) => setIsPublic(!e.target.checked)}
+              className="checkbox mr-2 checkbox-primary"
             />
-            {t("Public")}
+            {t("Private")}
           </label>
         </div>
       </div>
