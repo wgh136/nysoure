@@ -199,4 +199,5 @@ export interface Collection {
   user: User;
   resources_count: number;
   images: Image[];
+  isPublic: boolean;
 }

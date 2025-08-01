@@ -6,10 +6,11 @@ import { Collection } from "../network/models";
 import Markdown from "react-markdown";
 import ResourcesView from "../components/resources_view";
 import Loading from "../components/loading";
-import { MdOutlineDelete, MdOutlineEdit } from "react-icons/md";
+import { MdOutlineAdd, MdOutlineDelete, MdOutlineEdit } from "react-icons/md";
 import { app } from "../app";
 import { useTranslation } from "../utils/i18n";
 import Button from "../components/button";
+import Badge from "../components/badge";
 
 export default function CollectionPage() {
   const { id } = useParams<{ id: string }>();
@@ -54,7 +55,7 @@ export default function CollectionPage() {
   useEffect(() => {
     if (!collection) return;
     document.title = collection.title;
-  }, [collection])
+  }, [collection]);
 
   const toBeDeletedRID = useRef<number | null>(null);
 
@@ -159,6 +160,12 @@ export default function CollectionPage() {
                 {t("Delete")}
               </button>
             </>
+          )}
+          <span className="flex-1" />
+          {!collection.isPublic && (
+            <Badge className="badge-soft badge-error text-xs mr-2">
+              <MdOutlineAdd size={16} className="inline-block" /> {t("Private")}
+            </Badge>
           )}
         </div>
       </div>
@@ -275,6 +282,7 @@ function EditCollectionDialog({
 }) {
   const [editTitle, setEditTitle] = useState(collection.title);
   const [editArticle, setEditArticle] = useState(collection.article);
+  const [editIsPublic, setEditIsPublic] = useState(collection.isPublic);
   const [editLoading, setEditLoading] = useState(false);
 
   const { t } = useTranslation();
@@ -292,6 +300,7 @@ function EditCollectionDialog({
       collection.id,
       editTitle,
       editArticle,
+      editIsPublic,
     );
     setEditLoading(false);
     if (res.success) {
@@ -300,7 +309,12 @@ function EditCollectionDialog({
       if (getRes.success) {
         onSaved(getRes.data!);
       } else {
-        onSaved({ ...collection, title: editTitle, article: editArticle });
+        onSaved({
+          ...collection,
+          title: editTitle,
+          article: editArticle,
+          isPublic: editIsPublic,
+        });
       }
     } else {
       showToast({
@@ -325,11 +339,21 @@ function EditCollectionDialog({
         />
         <label className="block mb-1">{t("Description")}</label>
         <textarea
-          className="textarea w-full min-h-32"
+          className="textarea w-full min-h-32 mb-2"
           value={editArticle}
           onChange={(e) => setEditArticle(e.target.value)}
           disabled={editLoading}
         />
+        <label className="flex items-center mb-4">
+          <input
+            type="checkbox"
+            checked={editIsPublic}
+            onChange={(e) => setEditIsPublic(e.target.checked)}
+            className="checkbox mr-2"
+            disabled={editLoading}
+          />
+          {t("Public")}
+        </label>
         <div className="modal-action">
           <button className="btn" onClick={onClose} disabled={editLoading}>
             {t("Cancel")}

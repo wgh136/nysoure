@@ -218,24 +218,25 @@ export default function ResourcePage() {
         </button>
         <Tags tags={resource.tags} />
         <p className={"px-3 mt-2"}>
-          {resource.links && resource.links.map((l) => {
-            return (
-              <a href={l.url} target={"_blank"}>
-                <span
-                  className={
-                    "py-1 px-3 inline-flex items-center m-1 border border-base-300 bg-base-100 opacity-90 rounded-2xl hover:bg-base-200 transition-colors cursor-pointer select-none"
-                  }
-                >
-                  {l.url.includes("steampowered.com") ? (
-                    <BiLogoSteam size={20} />
-                  ) : (
-                    <MdOutlineLink size={20} />
-                  )}
-                  <span className={"ml-2 text-sm"}>{l.label}</span>
-                </span>
-              </a>
-            );
-          })}
+          {resource.links &&
+            resource.links.map((l) => {
+              return (
+                <a href={l.url} target={"_blank"}>
+                  <span
+                    className={
+                      "py-1 px-3 inline-flex items-center m-1 border border-base-300 bg-base-100 opacity-90 rounded-2xl hover:bg-base-200 transition-colors cursor-pointer select-none"
+                    }
+                  >
+                    {l.url.includes("steampowered.com") ? (
+                      <BiLogoSteam size={20} />
+                    ) : (
+                      <MdOutlineLink size={20} />
+                    )}
+                    <span className={"ml-2 text-sm"}>{l.label}</span>
+                  </span>
+                </a>
+              );
+            })}
           <CollectionDialog rid={resource.id} />
         </p>
 
@@ -1637,7 +1638,7 @@ function CollectionDialog({ rid }: { rid: number }) {
   };
 
   if (!app.isLoggedIn()) {
-    return <></>
+    return <></>;
   }
 
   return (
@@ -1683,13 +1684,16 @@ function CollectionDialog({ rid }: { rid: number }) {
             />
           )}
           <div className="modal-action">
-            <Button className="btn-ghost" onClick={() => {
-              const dialog = document.getElementById(
-                "collection_dialog",
-              ) as HTMLDialogElement;
-              dialog.close();
-              navigate("/create-collection");
-            }}>
+            <Button
+              className="btn-ghost"
+              onClick={() => {
+                const dialog = document.getElementById(
+                  "collection_dialog",
+                ) as HTMLDialogElement;
+                dialog.close();
+                navigate("/create-collection");
+              }}
+            >
               <div className="flex items-center">
                 <MdOutlineAdd size={20} className={"inline-block mr-1"} />
                 {t("Create")}

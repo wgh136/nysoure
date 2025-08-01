@@ -6,11 +6,11 @@ import (
 )
 
 // Create a new collection.
-func CreateCollection(uid uint, title, article string, host string) (*model.CollectionView, error) {
+func CreateCollection(uid uint, title, article string, host string, public bool) (*model.CollectionView, error) {
 	if uid == 0 || title == "" || article == "" {
 		return nil, model.NewRequestError("invalid parameters")
 	}
-	c, err := dao.CreateCollection(uid, title, article, findImagesInContent(article, host))
+	c, err := dao.CreateCollection(uid, title, article, findImagesInContent(article, host), public)
 	if err != nil {
 		return nil, err
 	}
@@ -19,7 +19,7 @@ func CreateCollection(uid uint, title, article string, host string) (*model.Coll
 }
 
 // Update an existing collection with user validation.
-func UpdateCollection(uid, id uint, title, article string, host string) error {
+func UpdateCollection(uid, id uint, title, article string, host string, public bool) error {
 	if uid == 0 || id == 0 || title == "" || article == "" {
 		return model.NewRequestError("invalid parameters")
 	}
@@ -30,7 +30,7 @@ func UpdateCollection(uid, id uint, title, article string, host string) error {
 	if collection.UserID != uid {
 		return model.NewUnAuthorizedError("user does not have permission to update this collection")
 	}
-	return dao.UpdateCollection(id, title, article, findImagesInContent(article, host))
+	return dao.UpdateCollection(id, title, article, findImagesInContent(article, host), public)
 }
 
 // Delete a collection by ID.
@@ -83,7 +83,7 @@ func RemoveResourceFromCollection(uid, collectionID, resourceID uint) error {
 }
 
 // Get a collection by ID.
-func GetCollectionByID(id uint) (*model.CollectionView, error) {
+func GetCollectionByID(id uint, viewerUID uint) (*model.CollectionView, error) {
 	if id == 0 {
 		return nil, model.NewRequestError("invalid collection id")
 	}
@@ -91,11 +91,17 @@ func GetCollectionByID(id uint) (*model.CollectionView, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Check if collection is private and viewer is not the owner
+	if !c.Public && c.UserID != viewerUID {
+		return nil, model.NewUnAuthorizedError("you do not have permission to view this private collection")
+	}
+
 	return c.ToView(), nil
 }
 
 // List collections of a user with pagination.
-func ListUserCollections(username string, page int) ([]*model.CollectionView, int64, error) {
+func ListUserCollections(username string, page int, viewerUID uint) ([]*model.CollectionView, int64, error) {
 	if username == "" || page < 1 {
 		return nil, 0, model.NewRequestError("invalid parameters")
 	}
@@ -104,7 +110,11 @@ func ListUserCollections(username string, page int) ([]*model.CollectionView, in
 		return nil, 0, err
 	}
 	uid := user.ID
-	collections, total, err := dao.ListUserCollections(uid, page, pageSize)
+
+	// Check if viewer can see private collections (only owner can see their private collections)
+	showPrivate := uid == viewerUID
+
+	collections, total, err := dao.ListUserCollections(uid, page, pageSize, showPrivate)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -116,10 +126,21 @@ func ListUserCollections(username string, page int) ([]*model.CollectionView, in
 }
 
 // List resources in a collection with pagination.
-func ListCollectionResources(collectionID uint, page int) ([]*model.ResourceView, int64, error) {
+func ListCollectionResources(collectionID uint, page int, viewerUID uint) ([]*model.ResourceView, int64, error) {
 	if collectionID == 0 || page < 1 {
 		return nil, 0, model.NewRequestError("invalid parameters")
 	}
+
+	// Check collection privacy first
+	collection, err := dao.GetCollectionByID(collectionID)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if !collection.Public && collection.UserID != viewerUID {
+		return nil, 0, model.NewUnAuthorizedError("you do not have permission to view this private collection")
+	}
+
 	resources, total, err := dao.ListCollectionResources(collectionID, page, pageSize)
 	if err != nil {
 		return nil, 0, err
@@ -134,7 +155,7 @@ func ListCollectionResources(collectionID uint, page int) ([]*model.ResourceView
 
 // Search user collections by keyword, limited to 10 results.
 // excludedRID: if >0, only return collections not containing this resource.
-func SearchUserCollections(username string, keyword string, excludedRID uint) ([]*model.CollectionView, error) {
+func SearchUserCollections(username string, keyword string, excludedRID uint, viewerUID uint) ([]*model.CollectionView, error) {
 	if username == "" {
 		return nil, model.NewRequestError("invalid parameters")
 	}
@@ -143,7 +164,11 @@ func SearchUserCollections(username string, keyword string, excludedRID uint) ([
 		return nil, err
 	}
 	uid := user.ID
-	collections, err := dao.SearchUserCollections(uid, keyword, excludedRID)
+
+	// Check if viewer can see private collections
+	showPrivate := uid == viewerUID
+
+	collections, err := dao.SearchUserCollections(uid, keyword, excludedRID, showPrivate)
 	if err != nil {
 		return nil, err
 	}

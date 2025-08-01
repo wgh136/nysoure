@@ -6,13 +6,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateCollection(uid uint, title string, article string, images []uint) (model.Collection, error) {
+func CreateCollection(uid uint, title string, article string, images []uint, public bool) (model.Collection, error) {
 	var collection model.Collection
 	err := db.Transaction(func(tx *gorm.DB) error {
 		collection = model.Collection{
 			UserID:  uid,
 			Title:   title,
 			Article: article,
+			Public:  public, // 新增
 		}
 
 		if err := tx.Create(&collection).Error; err != nil {
@@ -32,7 +33,7 @@ func CreateCollection(uid uint, title string, article string, images []uint) (mo
 	return collection, nil
 }
 
-func UpdateCollection(id uint, title string, article string, images []uint) error {
+func UpdateCollection(id uint, title string, article string, images []uint, public bool) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		collection := &model.Collection{
 			Model: gorm.Model{
@@ -40,6 +41,7 @@ func UpdateCollection(id uint, title string, article string, images []uint) erro
 			},
 			Title:   title,
 			Article: article,
+			Public:  public, // 新增
 		}
 
 		if err := tx.Model(collection).Updates(collection).Error; err != nil {
@@ -142,19 +144,22 @@ func GetCollectionByID(id uint) (*model.Collection, error) {
 	return collection, nil
 }
 
-func ListUserCollections(uid uint, page int, pageSize int) ([]*model.Collection, int64, error) {
+func ListUserCollections(uid uint, page int, pageSize int, showPrivate bool) ([]*model.Collection, int64, error) {
 	var collections []*model.Collection
 	var total int64
 
-	if err := db.Model(&model.Collection{}).Where("user_id = ?", uid).Count(&total).Error; err != nil {
+	query := db.Model(&model.Collection{}).Where("user_id = ?", uid)
+	if !showPrivate {
+		query = query.Where("public = ?", true)
+	}
+
+	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	if err := db.
-		Model(&model.Collection{}).
+	if err := query.
 		Preload("Images").
 		Preload("Resources").
-		Where("user_id = ?", uid).
 		Offset((page - 1) * pageSize).
 		Limit(pageSize).
 		Find(&collections).Error; err != nil {
@@ -196,11 +201,15 @@ func ListCollectionResources(collectionID uint, page int, pageSize int) ([]*mode
 
 // SearchUserCollections searches for collections by user ID and keyword limited to 10 results.
 // excludedRID: if >0, only return collections not containing this resource.
-func SearchUserCollections(uid uint, keyword string, excludedRID uint) ([]*model.Collection, error) {
+func SearchUserCollections(uid uint, keyword string, excludedRID uint, showPrivate bool) ([]*model.Collection, error) {
 	var collections []*model.Collection
 
 	query := db.Model(&model.Collection{}).
 		Where("user_id = ?", uid)
+
+	if !showPrivate {
+		query = query.Where("public = ?", true)
+	}
 
 	if keyword != "" {
 		query = query.Where("title LIKE ?", "%"+keyword+"%")

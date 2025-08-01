@@ -8,6 +8,7 @@ import { useNavigate } from "react-router";
 export default function CreateCollectionPage() {
   const [title, setTitle] = useState<string>("");
   const [article, setArticle] = useState<string>("");
+  const [isPublic, setIsPublic] = useState<boolean>(true);
   const [isLoading, setLoading] = useState(false);
   const [isUploadingimage, setUploadingImage] = useState(false);
   const { t } = useTranslation();
@@ -73,7 +74,7 @@ export default function CreateCollectionPage() {
       return;
     }
     setLoading(true);
-    const res = await network.createCollection(title, article);
+    const res = await network.createCollection(title, article, isPublic);
     if (res.success) {
       showToast({
         message: t("Collection created successfully"),
@@ -110,6 +111,17 @@ export default function CreateCollectionPage() {
           onChange={(e) => setArticle(e.target.value)}
           className="textarea mt-1 w-full min-h-80"
         />
+        <div className="mt-4">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              className="checkbox mr-2"
+            />
+            {t("Public")}
+          </label>
+        </div>
       </div>
       <div className={"flex items-center mt-4"}>
         <button

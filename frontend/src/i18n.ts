@@ -236,7 +236,8 @@ export const i18nData = {
       "Collection created successfully": "合集创建成功",
       "Collection deleted successfully": "合集删除成功",
       "Remove Resource": "移除资源",
-      "Are you sure you want to remove this resource?": "您确定要移除此资源吗？",
+      "Are you sure you want to remove this resource?":
+        "您确定要移除此资源吗？",
       "Resource deleted successfully": "资源移除成功",
       "Edit Collection": "编辑合集",
       "Edit successful": "编辑成功",
@@ -250,7 +251,9 @@ export const i18nData = {
       "Update File Info": "更新文件信息",
       "File info updated successfully": "文件信息更新成功",
       "File URL": "文件URL",
-      "You do not have permission to upload files, please contact the administrator.": "您没有上传文件的权限，请联系管理员。",
+      "You do not have permission to upload files, please contact the administrator.":
+        "您没有上传文件的权限，请联系管理员。",
+      "Private": "私有",
     },
   },
   "zh-TW": {
@@ -490,7 +493,8 @@ export const i18nData = {
       "Collection created successfully": "合集創建成功",
       "Collection deleted successfully": "合集刪除成功",
       "Remove Resource": "移除資源",
-      "Are you sure you want to remove this resource?": "您確定要移除此資源嗎？",
+      "Are you sure you want to remove this resource?":
+        "您確定要移除此資源嗎？",
       "Resource deleted successfully": "資源移除成功",
       "Edit Collection": "編輯合集",
       "Edit successful": "編輯成功",
@@ -504,7 +508,9 @@ export const i18nData = {
       "Update File Info": "更新檔案信息",
       "File info updated successfully": "檔案信息更新成功",
       "File URL": "檔案URL",
-      "You do not have permission to upload files, please contact the administrator.": "您沒有上傳檔案的權限，請聯繫管理員。",
+      "You do not have permission to upload files, please contact the administrator.":
+        "您沒有上傳檔案的權限，請聯繫管理員。",
+      "Private": "私有",
     },
   },
 };

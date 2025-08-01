@@ -11,6 +11,7 @@ type Collection struct {
 	ResourcesCount int        `gorm:"default:0"`
 	Images         []Image    `gorm:"many2many:collection_images;"`
 	Resources      []Resource `gorm:"many2many:collection_resources;"`
+	Public         bool       `gorm:"default:false"` // 新增公开/私有字段
 }
 
 type CollectionView struct {
@@ -20,6 +21,7 @@ type CollectionView struct {
 	User           UserView `json:"user"`
 	ResourcesCount int      `json:"resources_count"`
 	Images         []Image  `json:"images"`
+	IsPublic       bool     `json:"isPublic"` // 新增公开/私有字段
 }
 
 func (c Collection) ToView() *CollectionView {
@@ -30,5 +32,6 @@ func (c Collection) ToView() *CollectionView {
 		User:           c.User.ToView(),
 		ResourcesCount: c.ResourcesCount,
 		Images:         c.Images,
+		IsPublic:       c.Public, // 新增
 	}
 }

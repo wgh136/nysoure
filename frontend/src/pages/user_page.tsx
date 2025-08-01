@@ -413,15 +413,17 @@ function Collections({ username }: { username?: string }) {
           onChange={(e) => delayedSetSearchKeyword(e.target.value)}
         />
         <span className="flex-1" />
-        {username == app.user?.username && <button
-          className="btn btn-primary btn-soft"
-          onClick={() => {
-            navigate("/create-collection");
-          }}
-        >
-          <MdOutlineAdd size={20} className="inline-block mr-1" />
-          {t("Create")}
-        </button>}
+        {username == app.user?.username && (
+          <button
+            className="btn btn-primary btn-soft"
+            onClick={() => {
+              navigate("/create-collection");
+            }}
+          >
+            <MdOutlineAdd size={20} className="inline-block mr-1" />
+            {t("Create")}
+          </button>
+        )}
       </div>
       <CollectionsList
         username={username}
@@ -522,6 +524,12 @@ function CollectionCard({ collection }: { collection: Collection }) {
           <MdOutlinePhotoAlbum size={16} className="inline-block" />
           {collection.resources_count} {t("Resources")}
         </Badge>
+        <span className="flex-1" />
+        {!collection.isPublic && (
+          <Badge className="badge-soft badge-error text-xs mr-2">
+            <MdOutlineAdd size={16} className="inline-block" /> {t("Private")}
+          </Badge>
+        )}
       </div>
     </div>
   );

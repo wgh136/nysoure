@@ -15,11 +15,16 @@ func handleCreateCollection(c fiber.Ctx) error {
 	}
 	title := c.FormValue("title")
 	article := c.FormValue("article")
+	publicStr := c.FormValue("public")
+	public := false
+	if publicStr == "true" || publicStr == "1" {
+		public = true
+	}
 	if title == "" || article == "" {
 		return model.NewRequestError("Title and article are required")
 	}
 	host := c.Hostname()
-	col, err := service.CreateCollection(uid, title, article, host)
+	col, err := service.CreateCollection(uid, title, article, host, public)
 	if err != nil {
 		return err
 	}
@@ -38,6 +43,11 @@ func handleUpdateCollection(c fiber.Ctx) error {
 	idStr := c.FormValue("id")
 	title := c.FormValue("title")
 	article := c.FormValue("article")
+	publicStr := c.FormValue("public")
+	public := false
+	if publicStr == "true" || publicStr == "1" {
+		public = true
+	}
 	if idStr == "" || title == "" || article == "" {
 		return model.NewRequestError("ID, title and article are required")
 	}
@@ -46,7 +56,7 @@ func handleUpdateCollection(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid collection ID")
 	}
 	host := c.Hostname()
-	if err := service.UpdateCollection(uid, uint(id), title, article, host); err != nil {
+	if err := service.UpdateCollection(uid, uint(id), title, article, host, public); err != nil {
 		return err
 	}
 	return c.Status(fiber.StatusOK).JSON(model.Response[any]{
@@ -83,7 +93,11 @@ func handleGetCollection(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid collection ID")
 	}
-	col, err := service.GetCollectionByID(uint(id))
+
+	// Get viewer UID (0 if not authenticated)
+	viewerUID, _ := c.Locals("uid").(uint)
+
+	col, err := service.GetCollectionByID(uint(id), viewerUID)
 	if err != nil {
 		return err
 	}
@@ -104,7 +118,11 @@ func handleListUserCollections(c fiber.Ctx) error {
 	if username == "" {
 		return model.NewRequestError("Username is required")
 	}
-	cols, total, err := service.ListUserCollections(username, page)
+
+	// Get viewer UID (0 if not authenticated)
+	viewerUID, _ := c.Locals("uid").(uint)
+
+	cols, total, err := service.ListUserCollections(username, page, viewerUID)
 	if err != nil {
 		return err
 	}
@@ -127,7 +145,11 @@ func handleListCollectionResources(c fiber.Ctx) error {
 	if err != nil || page < 1 {
 		page = 1
 	}
-	res, total, err := service.ListCollectionResources(uint(id), page)
+
+	// Get viewer UID (0 if not authenticated)
+	viewerUID, _ := c.Locals("uid").(uint)
+
+	res, total, err := service.ListCollectionResources(uint(id), page, viewerUID)
 	if err != nil {
 		return err
 	}
@@ -209,7 +231,11 @@ func handleSearchUserCollections(c fiber.Ctx) error {
 			excludedRID = uint(rid)
 		}
 	}
-	cols, err := service.SearchUserCollections(username, keyword, excludedRID)
+
+	// Get viewer UID (0 if not authenticated)
+	viewerUID, _ := c.Locals("uid").(uint)
+
+	cols, err := service.SearchUserCollections(username, keyword, excludedRID, viewerUID)
 	if err != nil {
 		return err
 	}

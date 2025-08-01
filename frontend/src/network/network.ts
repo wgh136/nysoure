@@ -693,11 +693,13 @@ class Network {
   async createCollection(
     title: string,
     article: string,
+    isPublic: boolean,
   ): Promise<Response<Collection>> {
     return this._callApi(() =>
       axios.postForm(`${this.apiBaseUrl}/collection/create`, {
         title,
         article,
+        public: isPublic,
       }),
     );
   }
@@ -706,12 +708,14 @@ class Network {
     id: number,
     title: string,
     article: string,
+    isPublic: boolean,
   ): Promise<Response<any>> {
     return this._callApi(() =>
       axios.postForm(`${this.apiBaseUrl}/collection/update`, {
         id,
         title,
         article,
+        public: isPublic,
       }),
     );
   }
