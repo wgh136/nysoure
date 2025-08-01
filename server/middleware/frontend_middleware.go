@@ -137,7 +137,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 		collectionIDStr := strings.TrimPrefix(path, "/collection/")
 		collectionID, err := strconv.Atoi(collectionIDStr)
 		if err == nil {
-			coll, err := service.GetCollectionByID(uint(collectionID))
+			coll, err := service.GetCollectionByID(uint(collectionID), 0)
 			if err == nil {
 				title = coll.Title
 				description = utils.ArticleToDescription(coll.Article, 256)
