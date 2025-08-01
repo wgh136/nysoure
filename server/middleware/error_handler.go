@@ -5,6 +5,7 @@ import (
 	"nysoure/server/model"
 
 	"github.com/gofiber/fiber/v3/log"
+	"gorm.io/gorm"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -54,6 +55,12 @@ func ErrorHandler(c fiber.Ctx) error {
 				Success: false,
 				Data:    nil,
 				Message: fiberErr.Message,
+			})
+		} else if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(model.Response[any]{
+				Success: false,
+				Data:    nil,
+				Message: "Not found",
 			})
 		} else {
 			var fiberErr *fiber.Error
