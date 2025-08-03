@@ -47,6 +47,7 @@ func init() {
 		&model.Comment{},
 		&model.Activity{},
 		&model.Collection{},
+		&model.CollectionResource{},
 	)
 }
 

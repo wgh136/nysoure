@@ -4,14 +4,13 @@ import "gorm.io/gorm"
 
 type Collection struct {
 	gorm.Model
-	Title          string     `gorm:"not null"`
-	Article        string     `gorm:"not null"`
-	UserID         uint       `gorm:"not null"`
-	User           User       `gorm:"foreignKey:UserID;references:ID"`
-	ResourcesCount int        `gorm:"default:0"`
-	Images         []Image    `gorm:"many2many:collection_images;"`
-	Resources      []Resource `gorm:"many2many:collection_resources;"`
-	Public         bool       `gorm:"default:false"` // 新增公开/私有字段
+	Title          string  `gorm:"not null"`
+	Article        string  `gorm:"not null"`
+	UserID         uint    `gorm:"not null"`
+	User           User    `gorm:"foreignKey:UserID;references:ID"`
+	ResourcesCount int     `gorm:"default:0"`
+	Images         []Image `gorm:"many2many:collection_images;"`
+	Public         bool    `gorm:"default:false"` // 新增公开/私有字段
 }
 
 type CollectionView struct {

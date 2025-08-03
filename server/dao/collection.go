@@ -13,7 +13,7 @@ func CreateCollection(uid uint, title string, article string, images []uint, pub
 			UserID:  uid,
 			Title:   title,
 			Article: article,
-			Public:  public, // 新增
+			Public:  public,
 		}
 
 		if err := tx.Create(&collection).Error; err != nil {
@@ -73,7 +73,7 @@ func DeleteCollection(id uint) error {
 			return err
 		}
 
-		if err := tx.Model(collection).Association("Resources").Clear(); err != nil {
+		if err := tx.Model(&model.CollectionResource{}).Where("collection_id = ?", id).Delete(&model.CollectionResource{}).Error; err != nil {
 			return err
 		}
 
@@ -97,11 +97,12 @@ func AddResourceToCollection(collectionID uint, resourceID uint) error {
 			return model.NewRequestError("Invalid resource ID")
 		}
 
-		if err := tx.Model(collection).Association("Resources").Append(&model.Resource{
-			Model: gorm.Model{
-				ID: resourceID,
-			},
-		}); err != nil {
+		collectionResource := &model.CollectionResource{
+			CollectionID: collectionID,
+			ResourceID:   resourceID,
+		}
+
+		if err := tx.Save(collectionResource).Error; err != nil {
 			return err
 		}
 
@@ -125,11 +126,7 @@ func RemoveResourceFromCollection(collectionID uint, resourceID uint) error {
 			return model.NewRequestError("Invalid resource ID")
 		}
 
-		if err := tx.Model(collection).Association("Resources").Delete(&model.Resource{
-			Model: gorm.Model{
-				ID: resourceID,
-			},
-		}); err != nil {
+		if err := tx.Where("collection_id = ? AND resource_id = ?", collectionID, resourceID).Delete(&model.CollectionResource{}).Error; err != nil {
 			return err
 		}
 
@@ -143,7 +140,7 @@ func RemoveResourceFromCollection(collectionID uint, resourceID uint) error {
 
 func GetCollectionByID(id uint) (*model.Collection, error) {
 	collection := &model.Collection{}
-	if err := db.Preload("Images").Preload("Resources").Preload("User").Where("id = ?", id).First(collection).Error; err != nil {
+	if err := db.Preload("Images").Preload("User").Where("id = ?", id).First(collection).Error; err != nil {
 		return nil, err
 	}
 	return collection, nil
@@ -164,7 +161,6 @@ func ListUserCollections(uid uint, page int, pageSize int, showPrivate bool) ([]
 
 	if err := query.
 		Preload("Images").
-		Preload("Resources").
 		Offset((page - 1) * pageSize).
 		Limit(pageSize).
 		Find(&collections).Error; err != nil {
@@ -180,9 +176,11 @@ func ListCollectionResources(collectionID uint, page int, pageSize int) ([]*mode
 	var resources []*model.Resource
 	var total int64
 
-	if err := db.Raw(`
-		select count(*) from collection_resources
-		where collection_id = ?`, collectionID).Scan(&total).Error; err != nil {
+	if err := db.
+		Model(&model.Resource{}).
+		Joins("JOIN collection_resources ON collection_resources.resource_id = resources.id").
+		Where("collection_resources.collection_id = ?", collectionID).
+		Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
@@ -193,6 +191,7 @@ func ListCollectionResources(collectionID uint, page int, pageSize int) ([]*mode
 		Preload("Tags").
 		Joins("JOIN collection_resources ON collection_resources.resource_id = resources.id").
 		Where("collection_resources.collection_id = ?", collectionID).
+		Order("collection_resources.created_at DESC").
 		Offset((page - 1) * pageSize).
 		Limit(pageSize).
 		Find(&resources).Error; err != nil {
@@ -229,7 +228,6 @@ func SearchUserCollections(uid uint, keyword string, excludedRID uint, showPriva
 
 	if err := query.
 		Preload("Images").
-		Preload("Resources").
 		Limit(10).
 		Find(&collections).Error; err != nil {
 		return nil, err
