@@ -170,8 +170,8 @@ export default function CollectionPage() {
         </div>
       </div>
       <ResourcesView
-        loader={() => {
-          return network.listCollectionResources(collection!.id);
+        loader={(page) => {
+          return network.listCollectionResources(collection!.id, page);
         }}
         actionBuilder={
           isOwner
