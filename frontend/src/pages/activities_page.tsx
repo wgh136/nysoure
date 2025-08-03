@@ -95,7 +95,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
   ) {
     content = (
       <div className={"mx-1"}>
-        <div className={"font-bold my-4"}>{activity.resource?.title}</div>
+        <div className={"font-bold my-4 break-all"}>{activity.resource?.title}</div>
         {activity.resource?.image && (
           <div>
             <img
@@ -116,7 +116,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
   } else if (activity.type === ActivityType.NewFile) {
     content = (
       <div>
-        <h4 className={"font-bold py-2"}>{activity.file!.filename}</h4>
+        <h4 className={"font-bold py-2 break-all"}>{activity.file!.filename}</h4>
         <div className={"text-sm my-1 comment_tile"}>
           <Markdown>
             {activity.file!.description.replaceAll("\n", "  \n")}
