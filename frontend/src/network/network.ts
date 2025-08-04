@@ -361,7 +361,7 @@ class Network {
     page: number,
   ): Promise<PageResponse<Resource>> {
     return this._callApi(() =>
-      axios.get(`${this.apiBaseUrl}/resource/tag/${tag}`, {
+      axios.get(`${this.apiBaseUrl}/resource/tag/${encodeURIComponent(tag)}`, {
         params: {
           page,
         },

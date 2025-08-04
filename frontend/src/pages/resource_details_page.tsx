@@ -348,7 +348,7 @@ function Tags({ tags }: { tags: Tag[] }) {
                 "m-1 cursor-pointer badge-soft badge-primary shadow-xs"
               }
               onClick={() => {
-                navigate(`/tag/${tag.name}`);
+                navigate(`/tag/${encodeURIComponent(tag.name)}`);
               }}
             >
               {tag.name}
