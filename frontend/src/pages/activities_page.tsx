@@ -170,8 +170,8 @@ function ActivityCard({ activity }: { activity: Activity }) {
             src={network.getUserAvatar(activity.user!)}
           />
         </div>
-        <span className={"mx-2 font-bold"}>{activity.user?.username}</span>
-        <span className={"ml-2 badge badge-primary badge-soft"}>
+        <span className={"mx-2 font-bold text-sm"}>{activity.user?.username}</span>
+        <span className={"ml-2 badge-sm sm:badge-md badge badge-primary badge-soft"}>
           {messages[activity.type]}
         </span>
       </div>
