@@ -445,32 +445,51 @@ func DownloadFile(fid, cfToken string) (string, string, error) {
 }
 
 func testFileUrl(url string) (int64, error) {
-	client := http.Client{
-		Timeout: 10 * time.Second,
+	client := http.Client{Timeout: 10 * time.Second}
+
+	// Try HEAD request first, fallback to GET
+	for _, method := range []string{"HEAD", "GET"} {
+		req, err := http.NewRequest(method, url, nil)
+		if err != nil {
+			return 0, model.NewRequestError("failed to create HTTP request")
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			if method == "GET" {
+				return 0, model.NewRequestError("failed to send HTTP request")
+			}
+			continue // Try GET if HEAD fails
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			if method == "GET" {
+				return 0, model.NewRequestError("URL is not accessible, status code: " + resp.Status)
+			}
+			continue // Try GET if HEAD fails
+		}
+
+		contentLengthStr := resp.Header.Get("Content-Length")
+		if contentLengthStr == "" {
+			if method == "GET" {
+				return 0, model.NewRequestError("URL does not provide content length")
+			}
+			continue // Try GET if HEAD doesn't provide Content-Length
+		}
+
+		contentLength, err := strconv.ParseInt(contentLengthStr, 10, 64)
+		if err != nil || contentLength <= 0 {
+			if method == "GET" {
+				return 0, model.NewRequestError("Content-Length is not valid")
+			}
+			continue // Try GET if HEAD has invalid Content-Length
+		}
+
+		return contentLength, nil
 	}
-	req, err := http.NewRequest("HEAD", url, nil)
-	if err != nil {
-		return 0, model.NewRequestError("failed to create HTTP request")
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return 0, model.NewRequestError("failed to send HTTP request")
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return 0, model.NewRequestError("URL is not accessible, status code: " + resp.Status)
-	}
-	if resp.Header.Get("Content-Length") == "" {
-		return 0, model.NewRequestError("URL does not provide content length")
-	}
-	contentLength, err := strconv.ParseInt(resp.Header.Get("Content-Length"), 10, 64)
-	if err != nil {
-		return 0, model.NewRequestError("failed to parse Content-Length header")
-	}
-	if contentLength <= 0 {
-		return 0, model.NewRequestError("Content-Length is not valid")
-	}
-	return contentLength, nil
+
+	return 0, model.NewRequestError("failed to get valid content length")
 }
 
 // downloadFile return nil if the download is successful or the context is cancelled
