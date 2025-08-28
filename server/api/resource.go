@@ -267,6 +267,21 @@ func handleGetRandomResource(c fiber.Ctx) error {
 	})
 }
 
+func handleGetPinnedResources(c fiber.Ctx) error {
+	views, err := service.GetPinnedResources()
+	if err != nil {
+		return err
+	}
+	if views == nil {
+		views = []model.ResourceView{}
+	}
+	return c.Status(fiber.StatusOK).JSON(model.Response[[]model.ResourceView]{
+		Success: true,
+		Data:    views,
+		Message: "Pinned resources retrieved successfully",
+	})
+}
+
 func AddResourceRoutes(api fiber.Router) {
 	resource := api.Group("/resource")
 	{
@@ -279,5 +294,6 @@ func AddResourceRoutes(api fiber.Router) {
 		resource.Get("/tag/:tag", handleListResourcesWithTag)
 		resource.Get("/user/:username", handleGetResourcesWithUser)
 		resource.Post("/:id", handleUpdateResource)
+		resource.Get("/pinned", handleGetPinnedResources)
 	}
 }

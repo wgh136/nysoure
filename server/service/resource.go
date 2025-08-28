@@ -2,6 +2,7 @@ package service
 
 import (
 	"net/url"
+	"nysoure/server/config"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"strconv"
@@ -285,4 +286,17 @@ func RandomResource(host string) (*model.ResourceDetailView, error) {
 		v.Related = related
 	}
 	return &v, nil
+}
+
+func GetPinnedResources() ([]model.ResourceView, error) {
+	ids := config.PinnedResources()
+	var views []model.ResourceView
+	for _, id := range ids {
+		r, err := dao.GetResourceByID(id)
+		if err != nil {
+			continue
+		}
+		views = append(views, r.ToView())
+	}
+	return views, nil
 }

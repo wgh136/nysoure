@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"nysoure/server/utils"
 	"os"
 	"path/filepath"
@@ -34,6 +35,30 @@ type ServerConfig struct {
 	MaxNormalUserUploadSizeInMB int `json:"max_normal_user_upload_size_in_mb"`
 	// Prompt for upload page
 	UploadPrompt string `json:"upload_prompt"`
+	// PinnedResources is a list of resource IDs that are pinned to the top of the page.
+	PinnedResources []uint `json:"pinned_resources"`
+}
+
+func (c *ServerConfig) Validate() error {
+	if c.MaxUploadingSizeInMB <= 0 {
+		return errors.New("MaxUploadingSizeInMB must be positive")
+	}
+	if c.MaxFileSizeInMB <= 0 {
+		return errors.New("MaxFileSizeInMB must be positive")
+	}
+	if c.MaxDownloadsPerDayForSingleIP <= 0 {
+		return errors.New("MaxDownloadsPerDayForSingleIP must be positive")
+	}
+	if c.ServerName == "" {
+		return errors.New("ServerName must not be empty")
+	}
+	if c.ServerDescription == "" {
+		return errors.New("ServerDescription must not be empty")
+	}
+	if len(c.PinnedResources) > 8 {
+		return errors.New("PinnedResources must not exceed 8 items")
+	}
+	return nil
 }
 
 func init() {
@@ -51,6 +76,7 @@ func init() {
 			AllowNormalUserUpload:         true,
 			MaxNormalUserUploadSizeInMB:   16,
 			UploadPrompt:                  "You can upload your files here.",
+			PinnedResources:               []uint{},
 		}
 	} else {
 		data, err := os.ReadFile(p)
@@ -68,16 +94,17 @@ func GetConfig() ServerConfig {
 	return *config
 }
 
-func SetConfig(newConfig ServerConfig) {
+func SetConfig(newConfig ServerConfig) error {
 	config = &newConfig
 	data, err := json.MarshalIndent(config, "", "  ")
 	if err != nil {
-		panic(err)
+		return err
 	}
 	p := filepath.Join(utils.GetStoragePath(), "config.json")
 	if err := os.WriteFile(p, data, 0644); err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 func MaxUploadingSize() int64 {
@@ -126,4 +153,8 @@ func MaxNormalUserUploadSize() int64 {
 
 func UploadPrompt() string {
 	return config.UploadPrompt
+}
+
+func PinnedResources() []uint {
+	return config.PinnedResources
 }

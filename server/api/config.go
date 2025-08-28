@@ -48,7 +48,13 @@ func setServerConfig(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid request parameters")
 	}
 
-	config.SetConfig(sc)
+	if err := config.SetConfig(sc); err != nil {
+		return model.NewInternalServerError("Failed to save configuration")
+	}
+
+	if err := sc.Validate(); err != nil {
+		return model.NewRequestError(err.Error())
+	}
 
 	return c.JSON(model.Response[any]{
 		Success: true,
