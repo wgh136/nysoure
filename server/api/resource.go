@@ -289,11 +289,11 @@ func AddResourceRoutes(api fiber.Router) {
 		resource.Get("/search", handleSearchResources)
 		resource.Get("/", handleListResources)
 		resource.Get("/random", handleGetRandomResource)
+		resource.Get("/pinned", handleGetPinnedResources)
 		resource.Get("/:id", handleGetResource)
 		resource.Delete("/:id", handleDeleteResource)
 		resource.Get("/tag/:tag", handleListResourcesWithTag)
 		resource.Get("/user/:username", handleGetResourcesWithUser)
 		resource.Post("/:id", handleUpdateResource)
-		resource.Get("/pinned", handleGetPinnedResources)
 	}
 }
