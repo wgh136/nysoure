@@ -217,8 +217,8 @@ export default function ResourcePage() {
           </div>
         </button>
         <Tags tags={resource.tags} />
-        <CollectionDialog rid={resource.id} />
-        <p className={"px-3 mt-2"}>
+        
+        <div className={"px-3 mt-2 flex flex-wrap"}>
           {resource.links &&
             resource.links.map((l) => {
               return (
@@ -238,7 +238,8 @@ export default function ResourcePage() {
                 </a>
               );
             })}
-        </p>
+            <CollectionDialog rid={resource.id} />
+        </div>
 
         <div
           className="tabs tabs-box my-4 mx-2 p-4 shadow"
