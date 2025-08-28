@@ -115,7 +115,7 @@ article {
       ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, system-ui;
   }
 
-  code {
+  pre code {
     width: 100%;
     display: block;
     overflow-x: auto;
