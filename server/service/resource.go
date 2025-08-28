@@ -288,6 +288,22 @@ func RandomResource(host string) (*model.ResourceDetailView, error) {
 	return &v, nil
 }
 
+var lastSuccessCover uint
+
+func RandomCover() (uint, error) {
+	for retries := 0; retries < 5; retries++ {
+		v, err := dao.RandomResource()
+		if err != nil {
+			return 0, err
+		}
+		if len(v.Images) > 0 {
+			lastSuccessCover = v.Images[0].ID
+			return v.Images[0].ID, nil
+		}
+	}
+	return lastSuccessCover, nil
+}
+
 func GetPinnedResources() ([]model.ResourceView, error) {
 	ids := config.PinnedResources()
 	var views []model.ResourceView

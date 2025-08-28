@@ -7,6 +7,7 @@ import { useTranslation } from "../utils/i18n";
 import { useAppContext } from "../components/AppContext.tsx";
 import Select from "../components/select.tsx";
 import { useNavigate } from "react-router";
+import { useNavigator } from "../components/navigator.tsx";
 
 export default function HomePage() {
   useEffect(() => {
@@ -65,6 +66,7 @@ let cachedPinnedResources: Resource[] | null = null;
 
 function PinnedResources() {
   const [pinnedResources, setPinnedResources] = useState<Resource[]>([]);
+  const navigator = useNavigator();
 
   useEffect(() => {
     if (cachedPinnedResources != null) {
@@ -72,6 +74,9 @@ function PinnedResources() {
       return;
     }
     const prefetchData = app.getPreFetchData();
+    if (prefetchData && prefetchData.background) {
+      navigator.setBackground(network.getResampledImageUrl(prefetchData.background));
+    }
     if (prefetchData && prefetchData.pinned) {
       cachedPinnedResources = prefetchData.pinned;
       setPinnedResources(cachedPinnedResources!);
