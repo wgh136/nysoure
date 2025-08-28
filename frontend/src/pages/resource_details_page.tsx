@@ -217,6 +217,7 @@ export default function ResourcePage() {
           </div>
         </button>
         <Tags tags={resource.tags} />
+        <CollectionDialog rid={resource.id} />
         <p className={"px-3 mt-2"}>
           {resource.links &&
             resource.links.map((l) => {
@@ -237,7 +238,6 @@ export default function ResourcePage() {
                 </a>
               );
             })}
-          <CollectionDialog rid={resource.id} />
         </p>
 
         <div

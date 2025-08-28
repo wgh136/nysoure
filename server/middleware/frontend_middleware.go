@@ -155,6 +155,14 @@ func serveIndexHtml(c fiber.Ctx) error {
 				preFetchData = url.PathEscape(string(preFetchDataJson))
 			}
 		}
+	} else if path == "/" || path == "" {
+		pinned, err := service.GetPinnedResources()
+		if err == nil {
+			preFetchDataJson, _ := json.Marshal(map[string]interface{}{
+				"pinned": pinned,
+			})
+			preFetchData = url.PathEscape(string(preFetchDataJson))
+		}
 	}
 
 	content = strings.ReplaceAll(content, "{{SiteName}}", siteName)

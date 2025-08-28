@@ -164,7 +164,8 @@ export default function CollectionPage() {
           <span className="flex-1" />
           {!collection.isPublic && (
             <Badge className="badge-soft badge-error text-xs mr-2 shadow-xs">
-              <MdOutlineLock size={16} className="inline-block" /> {t("Private")}
+              <MdOutlineLock size={16} className="inline-block" />{" "}
+              {t("Private")}
             </Badge>
           )}
         </div>

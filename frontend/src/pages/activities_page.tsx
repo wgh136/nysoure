@@ -95,7 +95,9 @@ function ActivityCard({ activity }: { activity: Activity }) {
   ) {
     content = (
       <div className={"mx-1"}>
-        <div className={"font-bold my-4 break-all"}>{activity.resource?.title}</div>
+        <div className={"font-bold my-4 break-all"}>
+          {activity.resource?.title}
+        </div>
         {activity.resource?.image && (
           <div>
             <img
@@ -116,7 +118,9 @@ function ActivityCard({ activity }: { activity: Activity }) {
   } else if (activity.type === ActivityType.NewFile) {
     content = (
       <div>
-        <h4 className={"font-bold py-2 break-all"}>{activity.file!.filename}</h4>
+        <h4 className={"font-bold py-2 break-all"}>
+          {activity.file!.filename}
+        </h4>
         <div className={"text-sm my-1 comment_tile"}>
           <Markdown>
             {activity.file!.description.replaceAll("\n", "  \n")}
@@ -170,8 +174,12 @@ function ActivityCard({ activity }: { activity: Activity }) {
             src={network.getUserAvatar(activity.user!)}
           />
         </div>
-        <span className={"mx-2 font-bold text-sm"}>{activity.user?.username}</span>
-        <span className={"ml-2 badge-sm sm:badge-md badge badge-primary badge-soft"}>
+        <span className={"mx-2 font-bold text-sm"}>
+          {activity.user?.username}
+        </span>
+        <span
+          className={"ml-2 badge-sm sm:badge-md badge badge-primary badge-soft"}
+        >
           {messages[activity.type]}
         </span>
       </div>

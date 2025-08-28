@@ -415,6 +415,10 @@ class Network {
     );
   }
 
+  async getPinnedResources(): Promise<Response<Resource[]>> {
+    return this._callApi(() => axios.get(`${this.apiBaseUrl}/resource/pinned`));
+  }
+
   async createS3Storage(
     name: string,
     endPoint: string,

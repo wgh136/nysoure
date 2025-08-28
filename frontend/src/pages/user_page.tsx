@@ -527,10 +527,10 @@ function CollectionCard({ collection }: { collection: Collection }) {
         </Badge>
         <span className="flex-1" />
         {!collection.isPublic && (
-                    <Badge className="badge-soft badge-error text-xs mr-2 shadow-xs">
-                      <MdOutlineLock size={16} className="inline-block" /> {t("Private")}
-                    </Badge>
-                  )}
+          <Badge className="badge-soft badge-error text-xs mr-2 shadow-xs">
+            <MdOutlineLock size={16} className="inline-block" /> {t("Private")}
+          </Badge>
+        )}
       </div>
     </div>
   );

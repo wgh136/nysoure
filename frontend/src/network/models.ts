@@ -162,6 +162,7 @@ export interface ServerConfig {
   allow_normal_user_upload: boolean;
   max_normal_user_upload_size_in_mb: number;
   upload_prompt: string;
+  pinned_resources: number[];
 }
 
 export enum RSort {

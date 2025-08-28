@@ -14,12 +14,15 @@ export default function ManageServerConfigPage() {
 
   const [config, setConfig] = useState<ServerConfig | null>(null);
 
+  const [pinnedResources, setPinnedResources] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     network.getServerConfig().then((res) => {
       if (res.success) {
         setConfig(res.data!);
+        setPinnedResources(res.data!.pinned_resources.join(","));
       } else {
         showToast({
           message: res.message,
@@ -56,8 +59,25 @@ export default function ManageServerConfigPage() {
     if (isLoading) {
       return;
     }
+    function isPositiveInteger(str: string) {
+      return /^[1-9]\d*$/.test(str);
+    }
+    for (const e of pinnedResources.split(",")) {
+      if (!isPositiveInteger(e)) {
+        showToast({
+          message: "Pinned resources must be a comma separated list of numbers",
+          type: "error",
+        });
+        return;
+      }
+    }
+    let pinned = pinnedResources.split(",").map((id) => parseInt(id));
+    setConfig({ ...config, pinned_resources: pinned });
     setIsLoading(true);
-    const res = await network.setServerConfig(config);
+    const res = await network.setServerConfig({
+      ...config,
+      pinned_resources: pinned,
+    });
     if (res.success) {
       showToast({
         message: t("Update server config successfully"),
@@ -195,6 +215,14 @@ export default function ManageServerConfigPage() {
         label="Upload prompt"
         onChange={(e) => {
           setConfig({ ...config, upload_prompt: e.target.value });
+        }}
+      ></Input>
+      <Input
+        type="text"
+        value={pinnedResources}
+        label="Pinned resources"
+        onChange={(e) => {
+          setPinnedResources(e.target.value);
         }}
       ></Input>
       <InfoAlert
