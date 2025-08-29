@@ -97,7 +97,7 @@ function PinnedResources() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
       {pinnedResources.map((resource) => (
         <PinnedResourceItem key={resource.id} resource={resource} />
       ))}
@@ -111,7 +111,7 @@ function PinnedResourceItem({ resource }: { resource: Resource }) {
   return (
     <a
       href={`/resources/${resource.id}`}
-      className={"p-2 cursor-pointer block"}
+      className={"cursor-pointer block"}
       onClick={(e) => {
         e.preventDefault();
         navigate(`/resources/${resource.id}`);
@@ -119,7 +119,7 @@ function PinnedResourceItem({ resource }: { resource: Resource }) {
     >
       <div
         className={
-          "card shadow hover:shadow-md transition-shadow bg-base-100-tr82"
+          "shadow hover:shadow-md transition-shadow rounded-2xl overflow-clip relative"
         }
       >
         {resource.image != null && (
@@ -127,12 +127,12 @@ function PinnedResourceItem({ resource }: { resource: Resource }) {
             <img
               src={network.getResampledImageUrl(resource.image.id)}
               alt="cover"
-              className="w-full aspect-[5/2] object-cover"
+              className="w-full aspect-[7/3] object-cover"
             />
           </figure>
         )}
-        <div className="p-4">
-          <h2 className="card-title break-all">{resource.title}</h2>
+        <div className="p-4 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent">
+          <h2 className="break-all card-title text-white">{resource.title}</h2>
         </div>
       </div>
     </a>
