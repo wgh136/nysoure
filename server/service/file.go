@@ -389,7 +389,7 @@ func GetFile(fid string) (*model.FileView, error) {
 }
 
 // DownloadFile handles the file download request. Return a presigned URL or a direct file path.
-func DownloadFile(fid, cfToken string) (string, string, error) {
+func DownloadFile(fid, cfToken string, isRealUser bool) (string, string, error) {
 	file, err := dao.GetFile(fid)
 	if err != nil {
 		log.Error("failed to get file: ", err)
@@ -436,9 +436,11 @@ func DownloadFile(fid, cfToken string) (string, string, error) {
 		return "", "", model.NewInternalServerError("failed to download file from storage")
 	}
 
-	err = dao.AddResourceDownloadCount(file.ResourceID)
-	if err != nil {
-		log.Errorf("failed to add resource download count: %v", err)
+	if isRealUser {
+		err = dao.AddResourceDownloadCount(file.ResourceID)
+		if err != nil {
+			log.Errorf("failed to add resource download count: %v", err)
+		}
 	}
 
 	return path, file.Filename, nil

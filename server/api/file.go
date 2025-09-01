@@ -205,7 +205,7 @@ func deleteFile(c fiber.Ctx) error {
 
 func downloadFile(c fiber.Ctx) error {
 	cfToken := c.Query("cf_token")
-	s, filename, err := service.DownloadFile(c.Params("id"), cfToken)
+	s, filename, err := service.DownloadFile(c.Params("id"), cfToken, c.Locals("real_user") == true)
 	if err != nil {
 		return err
 	}
