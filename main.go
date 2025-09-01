@@ -21,6 +21,8 @@ func main() {
 
 	app.Use(middleware.ErrorHandler)
 
+	app.Use(middleware.RealUserMiddleware)
+
 	app.Use(middleware.JwtMiddleware)
 
 	app.Use(middleware.FrontendMiddleware)

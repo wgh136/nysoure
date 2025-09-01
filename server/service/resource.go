@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/log"
 
 	"gorm.io/gorm"
@@ -122,14 +123,16 @@ func parseResourceIfPresent(line string, host string) *model.ResourceView {
 	return &v
 }
 
-func GetResource(id uint, host string) (*model.ResourceDetailView, error) {
+func GetResource(id uint, host string, ctx fiber.Ctx) (*model.ResourceDetailView, error) {
 	r, err := dao.GetResourceByID(id)
 	if err != nil {
 		return nil, err
 	}
-	err = dao.AddResourceViewCount(id)
-	if err != nil {
-		log.Error("AddResourceViewCount error: ", err)
+	if ctx != nil && ctx.Locals("real_user") == true {
+		err = dao.AddResourceViewCount(id)
+		if err != nil {
+			log.Error("AddResourceViewCount error: ", err)
+		}
 	}
 	v := r.ToDetailView()
 	if host != "" {
@@ -177,7 +180,7 @@ func DeleteResource(uid, id uint) error {
 			return model.NewUnAuthorizedError("You have not permission to delete this resource")
 		}
 	}
-	r, err := GetResource(id, "")
+	r, err := GetResource(id, "", nil)
 	if err != nil {
 		return err
 	}
