@@ -62,7 +62,7 @@ export default function TagsPage() {
             {tags.map((tag) => (
               <Badge
                 onClick={() => {
-                  navigate(`/tag/${tag.name}`);
+                  navigate(`/tag/${encodeURIComponent(tag.name)}`);
                 }}
                 key={tag.name}
                 className={
