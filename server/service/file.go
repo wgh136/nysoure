@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bufio"
 	"context"
 	"crypto/md5"
 	"encoding/hex"
@@ -521,6 +522,7 @@ func downloadFile(ctx context.Context, url string, path string) error {
 		return model.NewInternalServerError("failed to open file for writing")
 	}
 	defer file.Close()
+	writer := bufio.NewWriter(file)
 
 	buf := make([]byte, 64*1024)
 	for {
@@ -530,12 +532,15 @@ func downloadFile(ctx context.Context, url string, path string) error {
 		default:
 			n, readErr := resp.Body.Read(buf)
 			if n > 0 {
-				if _, writeErr := file.Write(buf[:n]); writeErr != nil {
+				if _, writeErr := writer.Write(buf[:n]); writeErr != nil {
 					return model.NewInternalServerError("failed to write to file")
 				}
 			}
 			if readErr != nil {
 				if readErr == io.EOF {
+					if err := writer.Flush(); err != nil {
+						return model.NewInternalServerError("failed to flush writer")
+					}
 					return nil // Download completed successfully
 				}
 				if ctx.Err() != nil {
