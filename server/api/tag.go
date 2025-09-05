@@ -1,12 +1,17 @@
 package api
 
 import (
-	"github.com/gofiber/fiber/v3"
 	"net/url"
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"strconv"
 	"strings"
+
+	"github.com/gofiber/fiber/v3"
+)
+
+const (
+	maxTagNameLength = 20
 )
 
 func handleCreateTag(c fiber.Ctx) error {
@@ -15,6 +20,9 @@ func handleCreateTag(c fiber.Ctx) error {
 		return model.NewRequestError("name is required")
 	}
 	tag = strings.TrimSpace(tag)
+	if len([]rune(tag)) > maxTagNameLength {
+		return model.NewRequestError("Tag name too long")
+	}
 	uid, ok := c.Locals("uid").(uint)
 	if !ok {
 		return model.NewUnAuthorizedError("You must be logged in to create a tag")
@@ -158,6 +166,9 @@ func getOrCreateTags(c fiber.Ctx) error {
 		name = strings.TrimSpace(name)
 		if name == "" {
 			continue
+		}
+		if len([]rune(name)) > maxTagNameLength {
+			return model.NewRequestError("Tag name too long: " + name)
 		}
 		names = append(names, name)
 	}

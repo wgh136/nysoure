@@ -203,7 +203,11 @@ export function QuickAddTagDialog({
       return;
     }
     setError(null);
-    const names = text.split(separator).filter((n) => n.length > 0);
+    let sep: string | RegExp = separator;
+    if (sep === " ") {
+      sep = /\s+/;
+    }
+    const names = text.split(sep).filter((n) => n.length > 0);
     setLoading(true);
     const res = await network.getOrCreateTags(names, type);
     setLoading(false);
