@@ -37,6 +37,8 @@ import {
   MdOutlineFolderSpecial,
   MdOutlineLink,
   MdOutlineOpenInNew,
+  MdOutlineVerified,
+  MdOutlineVerifiedUser,
 } from "react-icons/md";
 import { app } from "../app.ts";
 import { uploadingManager } from "../network/uploading.ts";
@@ -725,6 +727,12 @@ function FileTile({ file }: { file: RFile }) {
               <MdOutlineArchive size={16} className={"inline-block"} />
               {file.is_redirect ? t("Redirect") : fileSizeToString(file.size)}
             </Badge>
+            {
+              file.hash && <Badge className={"badge-soft badge-accent text-xs mr-2"} selectable={true}>
+                <MdOutlineVerifiedUser size={16} className={"inline-block"} />
+                Md5: {file.hash}
+              </Badge>
+            }
             <DeleteFileDialog fileId={file.id} uploaderId={file.user.id} />
             <UpdateFileInfoDialog file={file} />
           </p>

@@ -104,6 +104,7 @@ export interface RFile {
   is_redirect: boolean;
   user: User;
   resource?: Resource;
+  hash?: string;
 }
 
 export interface UploadingFile {
