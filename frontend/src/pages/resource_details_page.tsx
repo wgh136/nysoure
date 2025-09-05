@@ -37,7 +37,6 @@ import {
   MdOutlineFolderSpecial,
   MdOutlineLink,
   MdOutlineOpenInNew,
-  MdOutlineVerified,
   MdOutlineVerifiedUser,
 } from "react-icons/md";
 import { app } from "../app.ts";
