@@ -36,7 +36,9 @@ func GetResourceByID(id uint) (model.Resource, error) {
 	var r model.Resource
 	if err := db.Preload("User").
 		Preload("Images").
-		Preload("Tags").
+		Preload("Tags", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id", "name", "type", "alias_of")
+		}).
 		Preload("Files").
 		Preload("Files.User").
 		First(&r, id).Error; err != nil {
