@@ -236,7 +236,7 @@ func FinishUploadingFile(uid uint, fid uint, md5Str string) (*model.FileView, er
 		return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
 	}
 
-	dbFile, err := dao.CreateFile(uploadingFile.Filename, uploadingFile.Description, uploadingFile.TargetResourceID, &uploadingFile.TargetStorageID, storageKeyUnavailable, "", uploadingFile.TotalSize, uid)
+	dbFile, err := dao.CreateFile(uploadingFile.Filename, uploadingFile.Description, uploadingFile.TargetResourceID, &uploadingFile.TargetStorageID, storageKeyUnavailable, "", uploadingFile.TotalSize, uid, sumStr)
 	if err != nil {
 		log.Error("failed to create file in db: ", err)
 		_ = os.Remove(resultFilePath)
@@ -310,7 +310,7 @@ func CreateRedirectFile(uid uint, filename string, description string, resourceI
 		return nil, model.NewUnAuthorizedError("user cannot upload file")
 	}
 
-	file, err := dao.CreateFile(filename, description, resourceID, nil, "", redirectUrl, 0, uid)
+	file, err := dao.CreateFile(filename, description, resourceID, nil, "", redirectUrl, 0, uid, "")
 	if err != nil {
 		log.Error("failed to create file in db: ", err)
 		return nil, model.NewInternalServerError("failed to create file in db")
@@ -496,57 +496,61 @@ func testFileUrl(url string) (int64, error) {
 }
 
 // downloadFile return nil if the download is successful or the context is cancelled
-func downloadFile(ctx context.Context, url string, path string) error {
+func downloadFile(ctx context.Context, url string, path string) (string, error) {
 	if _, err := os.Stat(path); err == nil {
 		_ = os.Remove(path) // Remove the file if it already exists
 	}
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return model.NewRequestError("failed to create HTTP request")
+		return "", model.NewRequestError("failed to create HTTP request")
 	}
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		// Check if the error is due to context cancellation
 		if ctx.Err() != nil {
-			return nil
+			return "", nil
 		}
-		return model.NewRequestError("failed to send HTTP request")
+		return "", model.NewRequestError("failed to send HTTP request")
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return model.NewRequestError("URL is not accessible, status code: " + resp.Status)
+		return "", model.NewRequestError("URL is not accessible, status code: " + resp.Status)
 	}
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	if err != nil {
-		return model.NewInternalServerError("failed to open file for writing")
+		return "", model.NewInternalServerError("failed to open file for writing")
 	}
 	defer file.Close()
 	writer := bufio.NewWriter(file)
+
+	h := md5.New()
 
 	buf := make([]byte, 64*1024)
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return "", nil
 		default:
 			n, readErr := resp.Body.Read(buf)
 			if n > 0 {
 				if _, writeErr := writer.Write(buf[:n]); writeErr != nil {
-					return model.NewInternalServerError("failed to write to file")
+					return "", model.NewInternalServerError("failed to write to file")
 				}
+				h.Write(buf[:n])
 			}
 			if readErr != nil {
 				if readErr == io.EOF {
 					if err := writer.Flush(); err != nil {
-						return model.NewInternalServerError("failed to flush writer")
+						return "", model.NewInternalServerError("failed to flush writer")
 					}
-					return nil // Download completed successfully
+					md5Sum := hex.EncodeToString(h.Sum(nil))
+					return md5Sum, nil // Download completed successfully
 				}
 				if ctx.Err() != nil {
-					return nil // Context cancelled, return nil
+					return "", nil // Context cancelled, return nil
 				}
-				return model.NewInternalServerError("failed to read response body")
+				return "", model.NewInternalServerError("failed to read response body")
 			}
 		}
 	}
@@ -573,7 +577,7 @@ func CreateServerDownloadTask(uid uint, url, filename, description string, resou
 		return nil, model.NewRequestError("server is busy, please try again later")
 	}
 
-	file, err := dao.CreateFile(filename, description, resourceID, &storageID, storageKeyUnavailable, "", 0, uid)
+	file, err := dao.CreateFile(filename, description, resourceID, &storageID, storageKeyUnavailable, "", 0, uid, "")
 	if err != nil {
 		log.Error("failed to create file in db: ", err)
 		return nil, model.NewInternalServerError("failed to create file in db")
@@ -624,11 +628,14 @@ func CreateServerDownloadTask(uid uint, url, filename, description string, resou
 			}
 		}()
 
+		hash := ""
+
 		for i := range 3 {
 			if done.Load() {
 				return
 			}
-			if err := downloadFile(ctx, url, tempPath); err != nil {
+			hash, err = downloadFile(ctx, url, tempPath)
+			if err != nil {
 				log.Error("failed to download file: ", err)
 				if i == 2 {
 					_ = dao.DeleteFile(file.UUID)
@@ -689,7 +696,7 @@ func CreateServerDownloadTask(uid uint, url, filename, description string, resou
 			_ = os.Remove(tempPath)
 			return
 		}
-		if err := dao.SetFileStorageKeyAndSize(file.UUID, storageKey, size); err != nil {
+		if err := dao.SetFileStorageKeyAndSize(file.UUID, storageKey, size, hash); err != nil {
 			log.Error("failed to set file storage key: ", err)
 			_ = dao.DeleteFile(file.UUID)
 			_ = iStorage.Delete(storageKey)

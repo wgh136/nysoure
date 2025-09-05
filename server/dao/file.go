@@ -73,7 +73,7 @@ func GetUploadingFilesOlderThan(time time.Time) ([]model.UploadingFile, error) {
 	return files, nil
 }
 
-func CreateFile(filename string, description string, resourceID uint, storageID *uint, storageKey string, redirectUrl string, size int64, userID uint) (*model.File, error) {
+func CreateFile(filename string, description string, resourceID uint, storageID *uint, storageKey string, redirectUrl string, size int64, userID uint, hash string) (*model.File, error) {
 	if storageID == nil && redirectUrl == "" {
 		return nil, errors.New("storageID and redirectUrl cannot be both empty")
 	}
@@ -88,6 +88,7 @@ func CreateFile(filename string, description string, resourceID uint, storageID 
 		StorageKey:  storageKey,
 		Size:        size,
 		UserID:      userID,
+		Hash:        hash,
 	}
 
 	err := db.Transaction(func(tx *gorm.DB) error {
@@ -200,13 +201,14 @@ func SetFileStorageKey(id string, storageKey string) error {
 	return nil
 }
 
-func SetFileStorageKeyAndSize(id string, storageKey string, size int64) error {
+func SetFileStorageKeyAndSize(id string, storageKey string, size int64, hash string) error {
 	f := &model.File{}
 	if err := db.Where("uuid = ?", id).First(f).Error; err != nil {
 		return err
 	}
 	f.StorageKey = storageKey
 	f.Size = size
+	f.Hash = hash
 	if err := db.Save(f).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return model.NewNotFoundError("file not found")

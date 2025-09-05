@@ -18,6 +18,7 @@ type File struct {
 	UserID      uint
 	User        User `gorm:"foreignKey:UserID"`
 	Size        int64
+	Hash        string `gorm:"default:null"`
 }
 
 type FileView struct {
@@ -28,6 +29,7 @@ type FileView struct {
 	IsRedirect  bool          `json:"is_redirect"`
 	User        UserView      `json:"user"`
 	Resource    *ResourceView `json:"resource,omitempty"`
+	Hash        string        `json:"hash,omitempty"`
 }
 
 func (f *File) ToView() *FileView {
@@ -38,6 +40,7 @@ func (f *File) ToView() *FileView {
 		Size:        f.Size,
 		IsRedirect:  f.RedirectUrl != "",
 		User:        f.User.ToView(),
+		Hash:        f.Hash,
 	}
 }
 
@@ -56,5 +59,6 @@ func (f *File) ToViewWithResource() *FileView {
 		IsRedirect:  f.RedirectUrl != "",
 		User:        f.User.ToView(),
 		Resource:    resource,
+		Hash:        f.Hash,
 	}
 }
