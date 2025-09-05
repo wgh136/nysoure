@@ -694,8 +694,8 @@ function FileTile({ file }: { file: RFile }) {
   const navigate = useNavigate();
 
   return (
-    <div className={"card shadow bg-base-100 mb-4"}>
-      <div className={"p-4 flex flex-row items-center"}>
+    <div className={"card shadow bg-base-100 mb-4 p-4"}>
+      <div className={"flex flex-row items-center"}>
         <div className={"grow"}>
           <h4 className={"font-bold break-all"}>{file.filename}</h4>
           <div className={"text-sm my-1 comment_tile"}>
@@ -727,7 +727,7 @@ function FileTile({ file }: { file: RFile }) {
               {file.is_redirect ? t("Redirect") : fileSizeToString(file.size)}
             </Badge>
             {
-              file.hash && <Badge className={"badge-soft badge-accent text-xs mr-2"} selectable={true}>
+              file.hash && <Badge className={"badge-soft badge-accent text-xs mr-2 break-all hidden sm:inline-flex"} selectable={true}>
                 <MdOutlineVerifiedUser size={16} className={"inline-block"} />
                 Md5: {file.hash}
               </Badge>
@@ -736,7 +736,7 @@ function FileTile({ file }: { file: RFile }) {
             <UpdateFileInfoDialog file={file} />
           </p>
         </div>
-        <div className={"flex flex-row items-center"}>
+        <div className={`flex-row items-center hidden xs:flex`}>
           {file.size > 10 * 1024 * 1024 ? (
             <button
               ref={buttonRef}
@@ -765,6 +765,11 @@ function FileTile({ file }: { file: RFile }) {
             </a>
           )}
         </div>
+      </div>
+      <div className="flex flex-row-reverse xs:hidden p-2">
+        <button className={"btn btn-primary btn-soft btn-sm"}>
+          <MdOutlineDownload size={20} />
+        </button>
       </div>
     </div>
   );

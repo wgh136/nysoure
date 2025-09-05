@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+@theme {
+  --breakpoint-xs: 30rem;
+}
+
 /* Pink Theme */
 @plugin "daisyui/theme" {
   name: "pink";
