@@ -218,7 +218,7 @@ export default function ResourcePage() {
           </div>
         </button>
         <Tags tags={resource.tags} />
-        
+
         <div className={"px-3 mt-2 flex flex-wrap"}>
           {resource.links &&
             resource.links.map((l) => {
@@ -239,7 +239,7 @@ export default function ResourcePage() {
                 </a>
               );
             })}
-            <CollectionDialog rid={resource.id} />
+          <CollectionDialog rid={resource.id} />
         </div>
 
         <div
@@ -727,7 +727,12 @@ function FileTile({ file }: { file: RFile }) {
               {file.is_redirect ? t("Redirect") : fileSizeToString(file.size)}
             </Badge>
             {
-              file.hash && <Badge className={"badge-soft badge-accent text-xs mr-2 break-all hidden sm:inline-flex"} selectable={true}>
+              <Badge
+                className={
+                  "badge-soft badge-accent text-xs mr-2 break-all hidden sm:inline-flex"
+                }
+                selectable={true}
+              >
                 <MdOutlineVerifiedUser size={16} className={"inline-block"} />
                 Md5: {file.hash}
               </Badge>
@@ -767,9 +772,29 @@ function FileTile({ file }: { file: RFile }) {
         </div>
       </div>
       <div className="flex flex-row-reverse xs:hidden p-2">
-        <button className={"btn btn-primary btn-soft btn-sm"}>
-          <MdOutlineDownload size={20} />
-        </button>
+        {file.size > 10 * 1024 * 1024 ? (
+          <button
+            className={"btn btn-primary btn-soft btn-sm"}
+            onClick={() => {
+              if (!app.cloudflareTurnstileSiteKey) {
+                const link = network.getFileDownloadLink(file.id, "");
+                window.open(link, "_blank");
+              } else {
+                showPopup(<CloudflarePopup file={file} />, buttonRef.current!);
+              }
+            }}
+          >
+            <MdOutlineDownload size={20} />
+          </button>
+        ) : (
+          <a
+            href={network.getFileDownloadLink(file.id, "")}
+            target="_blank"
+            className={"btn btn-primary btn-soft btn-sm"}
+          >
+            <MdOutlineDownload size={24} />
+          </a>
+        )}
       </div>
     </div>
   );

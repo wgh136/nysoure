@@ -75,7 +75,9 @@ function PinnedResources() {
     }
     const prefetchData = app.getPreFetchData();
     if (prefetchData && prefetchData.background) {
-      navigator.setBackground(network.getResampledImageUrl(prefetchData.background));
+      navigator.setBackground(
+        network.getResampledImageUrl(prefetchData.background),
+      );
     }
     if (prefetchData && prefetchData.pinned) {
       cachedPinnedResources = prefetchData.pinned;
