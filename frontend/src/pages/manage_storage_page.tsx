@@ -181,7 +181,7 @@ export default function StorageView() {
                                   handleSetDefault(s.id);
                                 }}
                               >
-                                <a>t("Set as Default")</a>
+                                <a>{t("Set as Default")}</a>
                               </PopupMenuItem>
                             )}
                           </ul>,
