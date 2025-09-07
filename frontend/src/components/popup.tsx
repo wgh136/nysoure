@@ -1,5 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
+import { i18nContext } from "../utils/i18n";
+import { i18nData } from "../i18n.ts";
 
 export default function showPopup(
   content: React.ReactNode,
@@ -43,7 +45,9 @@ export default function showPopup(
   document.body.appendChild(mask);
 
   createRoot(div).render(
-    <context.Provider value={close}>{content}</context.Provider>,
+    <context.Provider value={close}>
+      <i18nContext.Provider value={i18nData}>{content}</i18nContext.Provider>
+    </context.Provider>,
   );
 }
 

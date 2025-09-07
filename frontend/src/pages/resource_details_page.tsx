@@ -686,6 +686,7 @@ function fileSizeToString(size: number) {
 
 function FileTile({ file }: { file: RFile }) {
   const buttonRef = createRef<HTMLButtonElement>();
+  const buttonRef2 = createRef<HTMLButtonElement>();
 
   const { t } = useTranslation();
 
@@ -774,13 +775,14 @@ function FileTile({ file }: { file: RFile }) {
       <div className="flex flex-row-reverse xs:hidden p-2">
         {file.size > 10 * 1024 * 1024 ? (
           <button
+            ref={buttonRef2}
             className={"btn btn-primary btn-soft btn-sm"}
             onClick={() => {
               if (!app.cloudflareTurnstileSiteKey) {
                 const link = network.getFileDownloadLink(file.id, "");
                 window.open(link, "_blank");
               } else {
-                showPopup(<CloudflarePopup file={file} />, buttonRef.current!);
+                showPopup(<CloudflarePopup file={file} />, buttonRef2.current!);
               }
             }}
           >
