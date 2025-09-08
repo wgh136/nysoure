@@ -32,16 +32,10 @@ func createIndex() error {
 			return err
 		}
 		for _, r := range res {
-			title := r.Title
-			title = utils.RemoveSpaces(title)
-			altTitles := make([]string, len(r.AlternativeTitles))
-			for i, t := range r.AlternativeTitles {
-				altTitles[i] = utils.RemoveSpaces(t)
-			}
 			err := index.Index(fmt.Sprintf("%d", r.ID), ResourceParams{
 				Id:        r.ID,
-				Title:     title,
-				Subtitles: altTitles,
+				Title:     r.Title,
+				Subtitles: r.AlternativeTitles,
 				Time:      r.CreatedAt,
 			})
 			if err != nil {
@@ -72,8 +66,6 @@ func init() {
 }
 
 func SearchResource(keyword string) (map[uint]time.Time, error) {
-	keyword = utils.RemoveSpaces(keyword)
-
 	query := bleve.NewMatchQuery(keyword)
 	searchRequest := bleve.NewSearchRequest(query)
 	searchRequest.Size = 10000
@@ -85,6 +77,9 @@ func SearchResource(keyword string) (map[uint]time.Time, error) {
 
 	results := make(map[uint]time.Time)
 	for _, hit := range searchResults.Hits {
+		if hit.Score < 0.5 {
+			continue
+		}
 		id, err := strconv.ParseUint(hit.ID, 10, 32)
 		if err != nil {
 			continue
