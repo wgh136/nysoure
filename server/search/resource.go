@@ -1,6 +1,7 @@
 package search
 
 import (
+	"errors"
 	"fmt"
 	"nysoure/server/dao"
 	"nysoure/server/model"
@@ -20,6 +21,19 @@ type ResourceParams struct {
 
 var index bleve.Index
 
+func AddResourceToIndex(r model.Resource) error {
+	return index.Index(fmt.Sprintf("%d", r.ID), ResourceParams{
+		Id:        r.ID,
+		Title:     r.Title,
+		Subtitles: r.AlternativeTitles,
+		Time:      r.CreatedAt,
+	})
+}
+
+func RemoveResourceFromIndex(id uint) error {
+	return index.Delete(fmt.Sprintf("%d", id))
+}
+
 func createIndex() error {
 	for !dao.IsReady() {
 		time.Sleep(1 * time.Second)
@@ -32,12 +46,7 @@ func createIndex() error {
 			return err
 		}
 		for _, r := range res {
-			err := index.Index(fmt.Sprintf("%d", r.ID), ResourceParams{
-				Id:        r.ID,
-				Title:     r.Title,
-				Subtitles: r.AlternativeTitles,
-				Time:      r.CreatedAt,
-			})
+			err := AddResourceToIndex(r)
 			if err != nil {
 				return err
 			}
@@ -53,7 +62,7 @@ func init() {
 
 	var err error
 	index, err = bleve.Open(indexPath)
-	if err == bleve.ErrorIndexPathDoesNotExist {
+	if errors.Is(err, bleve.ErrorIndexPathDoesNotExist) {
 		mapping := bleve.NewIndexMapping()
 		index, err = bleve.New(indexPath, mapping)
 		if err != nil {
@@ -74,7 +83,6 @@ func SearchResource(keyword string) ([]uint, error) {
 	query := bleve.NewMatchQuery(keyword)
 	searchRequest := bleve.NewSearchRequest(query)
 	searchRequest.Size = 1000
-	searchRequest.Fields = []string{"Time"}
 	searchResults, err := index.Search(searchRequest)
 	if err != nil {
 		return nil, err
@@ -82,7 +90,7 @@ func SearchResource(keyword string) ([]uint, error) {
 
 	results := make([]uint, 0)
 	for _, hit := range searchResults.Hits {
-		if hit.Score < 0.8 {
+		if hit.Score < 0.6 {
 			continue
 		}
 		id, err := strconv.ParseUint(hit.ID, 10, 32)

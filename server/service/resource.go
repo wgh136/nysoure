@@ -73,6 +73,9 @@ func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 	if err != nil {
 		log.Error("AddNewResourceActivity error: ", err)
 	}
+	if err := search.AddResourceToIndex(r); err != nil {
+		log.Error("AddResourceToIndex error: ", err)
+	}
 	return r.ID, nil
 }
 
@@ -297,18 +300,7 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 			return nil, 0, err
 		}
 		if first {
-			for _, id := range res {
-				found := false
-				for _, id2 := range temp {
-					if id == id2 {
-						found = true
-						break
-					}
-				}
-				if !found {
-					temp = append(temp, id)
-				}
-			}
+			temp = utils.RemoveDuplicate(res)
 			first = false
 		} else {
 			temp1 := make([]uint, 0)
@@ -324,21 +316,7 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 		}
 	}
 	resources = append(resources, temp...)
-
-	// remove duplicates
-	temp = make([]uint, 0)
-	for _, id := range resources {
-		found := false
-		for _, id2 := range temp {
-			if id == id2 {
-				found = true
-				break
-			}
-		}
-		if !found {
-			temp = append(temp, id)
-		}
-	}
+	resources = utils.RemoveDuplicate(resources)
 
 	if start >= len(resources) {
 		return []model.ResourceView{}, 0, nil
@@ -392,6 +370,9 @@ func DeleteResource(uid, id uint) error {
 	err = updateCachedTagList()
 	if err != nil {
 		log.Error("Error updating cached tag list:", err)
+	}
+	if err := search.RemoveResourceFromIndex(id); err != nil {
+		log.Error("RemoveResourceFromIndex error: ", err)
 	}
 	return nil
 }
@@ -473,6 +454,9 @@ func EditResource(uid, rid uint, params *ResourceParams) error {
 	err = dao.AddUpdateResourceActivity(uid, r.ID)
 	if err != nil {
 		log.Error("AddUpdateResourceActivity error: ", err)
+	}
+	if err := search.AddResourceToIndex(r); err != nil {
+		log.Error("AddResourceToIndex error: ", err)
 	}
 	return nil
 }
