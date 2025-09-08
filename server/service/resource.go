@@ -325,6 +325,21 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 	}
 	resources = append(resources, temp...)
 
+	// remove duplicates
+	temp = make([]uint, 0)
+	for _, id := range resources {
+		found := false
+		for _, id2 := range temp {
+			if id == id2 {
+				found = true
+				break
+			}
+		}
+		if !found {
+			temp = append(temp, id)
+		}
+	}
+
 	if start >= len(resources) {
 		return []model.ResourceView{}, 0, nil
 	}

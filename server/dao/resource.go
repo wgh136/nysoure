@@ -422,7 +422,11 @@ func GetResourcesIdWithTag(tagID uint) ([]uint, error) {
 		return nil, err
 	}
 
-	return tagIds, nil
+	ids := make([]uint, len(result))
+	for i, r := range result {
+		ids[i] = r.ID
+	}
+	return ids, nil
 }
 
 func BatchGetResources(ids []uint) ([]model.Resource, error) {
