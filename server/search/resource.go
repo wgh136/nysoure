@@ -5,7 +5,6 @@ import (
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/utils"
-	"regexp"
 	"strconv"
 	"time"
 
@@ -21,11 +20,6 @@ type ResourceParams struct {
 
 var index bleve.Index
 
-func removeSpaces(s string) string {
-	reg := regexp.MustCompile(`\s+`)
-	return reg.ReplaceAllString(s, " ")
-}
-
 func createIndex() error {
 	for !dao.IsReady() {
 		time.Sleep(1 * time.Second)
@@ -39,10 +33,10 @@ func createIndex() error {
 		}
 		for _, r := range res {
 			title := r.Title
-			title = removeSpaces(title)
+			title = utils.RemoveSpaces(title)
 			altTitles := make([]string, len(r.AlternativeTitles))
 			for i, t := range r.AlternativeTitles {
-				altTitles[i] = removeSpaces(t)
+				altTitles[i] = utils.RemoveSpaces(t)
 			}
 			err := index.Index(fmt.Sprintf("%d", r.ID), ResourceParams{
 				Id:        r.ID,
@@ -78,7 +72,7 @@ func init() {
 }
 
 func SearchResource(keyword string) (map[uint]time.Time, error) {
-	keyword = removeSpaces(keyword)
+	keyword = utils.RemoveSpaces(keyword)
 
 	query := bleve.NewMatchQuery(keyword)
 	searchRequest := bleve.NewSearchRequest(query)

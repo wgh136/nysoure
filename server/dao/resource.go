@@ -440,7 +440,13 @@ func BatchGetResources(ids []uint) ([]model.Resource, error) {
 	}
 
 	var resources []model.Resource
-	if err := db.Where("id IN ?", uniqueIds).Find(&resources).Error; err != nil {
+	if err := db.
+		Where("id IN ?", uniqueIds).
+		Preload("User").
+		Preload("Images").
+		Preload("Tags").
+		Find(&resources).
+		Error; err != nil {
 		return nil, err
 	}
 	return resources, nil

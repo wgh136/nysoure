@@ -6,6 +6,7 @@ import (
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/search"
+	"nysoure/server/utils"
 	"sort"
 	"strconv"
 	"strings"
@@ -272,7 +273,7 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 	}
 
 	// check tag after removing spaces
-	trimmed := strings.ReplaceAll(query, " ", "")
+	trimmed := utils.RemoveSpaces(query)
 	if trimmed != query {
 		if err := checkTag(trimmed); err != nil {
 			return nil, 0, err
