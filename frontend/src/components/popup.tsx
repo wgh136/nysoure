@@ -11,10 +11,18 @@ export default function showPopup(
 
   const div = document.createElement("div");
   div.style.position = "fixed";
-  if (eRect.x > window.innerWidth / 2) {
-    div.style.right = `${window.innerWidth - eRect.x}px`;
+  if (window.innerWidth > 400) {
+    if (eRect.x > window.innerWidth / 2) {
+      div.style.right = `${window.innerWidth - eRect.x}px`;
+    } else {
+      div.style.left = `${eRect.x}px`;
+    }
   } else {
-    div.style.left = `${eRect.x}px`;
+    if (eRect.x > window.innerWidth / 2) {
+      div.style.right = `8px`;
+    } else {
+      div.style.left = `8px`;
+    }
   }
   if (eRect.y > window.innerHeight / 2) {
     div.style.bottom = `${window.innerHeight - eRect.y}px`;

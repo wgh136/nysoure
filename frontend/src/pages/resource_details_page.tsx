@@ -728,7 +728,7 @@ function FileTile({ file }: { file: RFile }) {
               {file.is_redirect ? t("Redirect") : fileSizeToString(file.size)}
             </Badge>
             {
-              <Badge
+              file.hash && <Badge
                 className={
                   "badge-soft badge-accent text-xs mr-2 break-all hidden sm:inline-flex"
                 }
