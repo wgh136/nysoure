@@ -1,8 +1,6 @@
 package service
 
 import (
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/log"
 	"net/url"
 	"nysoure/server/config"
 	"nysoure/server/dao"
@@ -11,6 +9,9 @@ import (
 	"nysoure/server/utils"
 	"strconv"
 	"strings"
+
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/log"
 
 	"gorm.io/gorm"
 )
@@ -295,6 +296,10 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 		if keyword == "" {
 			continue
 		}
+		if utils.OnlyPunctuation(keyword) {
+			continue
+		}
+
 		res, err := searchWithKeyword(keyword)
 		if err != nil {
 			return nil, 0, err
