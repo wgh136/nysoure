@@ -7,6 +7,7 @@ import (
 	"nysoure/server/model"
 	"nysoure/server/utils"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/blevesearch/bleve"
@@ -80,6 +81,8 @@ func init() {
 }
 
 func SearchResource(keyword string) ([]uint, error) {
+	keyword = strings.Replace(keyword, "-", " ", -1)
+
 	query := bleve.NewMatchQuery(keyword)
 	searchRequest := bleve.NewSearchRequest(query)
 	searchRequest.Size = 1000
