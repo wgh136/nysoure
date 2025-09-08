@@ -323,9 +323,7 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 			temp = temp1
 		}
 	}
-	for id, createdAt := range temp {
-		resources[id] = createdAt
-	}
+	resources = append(resources, temp...)
 
 	if start >= len(resources) {
 		return []model.ResourceView{}, 0, nil
