@@ -59,13 +59,18 @@ func init() {
 		if err != nil {
 			panic("Failed to create search index: " + err.Error())
 		}
-		go createIndex()
+		go func() {
+			err := createIndex()
+			if err != nil {
+				panic("Failed to create search index: " + err.Error())
+			}
+		}()
 	} else if err != nil {
 		panic("Failed to open search index: " + err.Error())
 	}
 }
 
-func SearchResource(keyword string) (map[uint]time.Time, error) {
+func SearchResource(keyword string) ([]uint, error) {
 	query := bleve.NewMatchQuery(keyword)
 	searchRequest := bleve.NewSearchRequest(query)
 	searchRequest.Size = 1000
@@ -75,7 +80,7 @@ func SearchResource(keyword string) (map[uint]time.Time, error) {
 		return nil, err
 	}
 
-	results := make(map[uint]time.Time)
+	results := make([]uint, 0)
 	for _, hit := range searchResults.Hits {
 		if hit.Score < 0.8 {
 			continue
@@ -84,11 +89,7 @@ func SearchResource(keyword string) (map[uint]time.Time, error) {
 		if err != nil {
 			continue
 		}
-		t, err := time.Parse(time.RFC3339Nano, hit.Fields["Time"].(string))
-		if err != nil {
-			continue
-		}
-		results[uint(id)] = t
+		results = append(results, uint(id))
 	}
 
 	return results, nil

@@ -1,21 +1,22 @@
 package service
 
 import (
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/log"
 	"net/url"
 	"nysoure/server/config"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/search"
 	"nysoure/server/utils"
-	"sort"
 	"strconv"
 	"strings"
-	"time"
-
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/log"
 
 	"gorm.io/gorm"
+)
+
+const (
+	maxSearchQueryLength = 100
 )
 
 type ResourceParams struct {
@@ -208,24 +209,24 @@ func splitQuery(query string) []string {
 	return keywords
 }
 
-func searchWithKeyword(keyword string) (map[uint]time.Time, error) {
-	resources := make(map[uint]time.Time)
+func searchWithKeyword(keyword string) ([]uint, error) {
+	resources := make([]uint, 0)
 
-	exists, err := dao.ExistsTag(keyword)
-	if err != nil {
-		return nil, err
-	}
-	if exists {
-		t, err := dao.GetTagByName(keyword)
+	if len([]rune(keyword)) <= maxTagLength {
+		exists, err := dao.ExistsTag(keyword)
 		if err != nil {
 			return nil, err
 		}
-		res, err := dao.GetResourcesIdWithTag(t.ID)
-		if err != nil {
-			return nil, err
-		}
-		for id, createdAt := range res {
-			resources[id] = createdAt
+		if exists {
+			t, err := dao.GetTagByName(keyword)
+			if err != nil {
+				return nil, err
+			}
+			res, err := dao.GetResourcesIdWithTag(t.ID)
+			if err != nil {
+				return nil, err
+			}
+			resources = append(resources, res...)
 		}
 	}
 
@@ -234,19 +235,24 @@ func searchWithKeyword(keyword string) (map[uint]time.Time, error) {
 		return nil, err
 	}
 
-	for id, createdAt := range searchResult {
-		resources[id] = createdAt
-	}
+	resources = append(resources, searchResult...)
 
 	return resources, nil
 }
 
 func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
+	if len([]rune(query)) > maxSearchQueryLength {
+		return nil, 0, model.NewRequestError("Search query is too long")
+	}
+
 	start := (page - 1) * pageSize
 	end := start + pageSize
-	resources := make(map[uint]time.Time)
+	resources := make([]uint, 0)
 
 	checkTag := func(tag string) error {
+		if len([]rune(tag)) > maxTagLength {
+			return nil
+		}
 		exists, err := dao.ExistsTag(tag)
 		if err != nil {
 			return err
@@ -260,9 +266,7 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 			if err != nil {
 				return err
 			}
-			for id, createdAt := range res {
-				resources[id] = createdAt
-			}
+			resources = append(resources, res...)
 		}
 		return nil
 	}
@@ -282,7 +286,7 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 
 	// split query to search
 	keywords := splitQuery(query)
-	temp := make(map[uint]time.Time)
+	var temp []uint
 	first := true
 	for _, keyword := range keywords {
 		if keyword == "" {
@@ -293,16 +297,30 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 			return nil, 0, err
 		}
 		if first {
-			for id, createdAt := range res {
-				temp[id] = createdAt
+			for _, id := range res {
+				found := false
+				for _, id2 := range temp {
+					if id == id2 {
+						found = true
+						break
+					}
+				}
+				if !found {
+					temp = append(temp, id)
+				}
 			}
 			first = false
 		} else {
-			for id := range temp {
-				if _, ok := res[id]; !ok {
-					delete(temp, id)
+			temp1 := make([]uint, 0)
+			for _, id := range temp {
+				for _, id2 := range res {
+					if id == id2 {
+						temp1 = append(temp1, id)
+						break
+					}
 				}
 			}
+			temp = temp1
 		}
 	}
 	for id, createdAt := range temp {
@@ -313,23 +331,7 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 		return []model.ResourceView{}, 0, nil
 	}
 
-	type IDWithTime struct {
-		ID        uint
-		CreatedAt time.Time
-	}
-	var idsWithTime []IDWithTime
-	for id, createdAt := range resources {
-		idsWithTime = append(idsWithTime, IDWithTime{
-			ID:        id,
-			CreatedAt: createdAt,
-		})
-	}
-	// sort by createdAt desc
-	sort.Slice(idsWithTime, func(i, j int) bool {
-		return idsWithTime[i].CreatedAt.After(idsWithTime[j].CreatedAt)
-	})
-
-	total := len(idsWithTime)
+	total := len(resources)
 	totalPages := (total + pageSize - 1) / pageSize
 	if start >= total {
 		return []model.ResourceView{}, totalPages, nil
@@ -337,13 +339,9 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 	if end > total {
 		end = total
 	}
-	idsPage := idsWithTime[start:end]
-	var ids []uint
-	for _, item := range idsPage {
-		ids = append(ids, item.ID)
-	}
+	idsPage := resources[start:end]
 
-	resourcesPage, err := dao.BatchGetResources(ids)
+	resourcesPage, err := dao.BatchGetResources(idsPage)
 	if err != nil {
 		return nil, 0, err
 	}

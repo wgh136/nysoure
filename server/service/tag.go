@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+const (
+	maxTagLength = 20
+)
+
 func init() {
 	// Start a goroutine to delete unused tags every hour
 	go func() {
@@ -25,6 +29,9 @@ func init() {
 }
 
 func CreateTag(uid uint, name string) (*model.TagView, error) {
+	if len([]rune(name)) > maxTagLength {
+		return nil, model.NewRequestError("Tag name too long")
+	}
 	canUpload, err := checkUserCanUpload(uid)
 	if err != nil {
 		log.Error("Error checking user permissions:", err)

@@ -391,7 +391,7 @@ func RandomResource() (model.Resource, error) {
 	}
 }
 
-func GetResourcesIdWithTag(tagID uint) (map[uint]time.Time, error) {
+func GetResourcesIdWithTag(tagID uint) ([]uint, error) {
 	tag, err := GetTagByID(tagID)
 	if err != nil {
 		return nil, err
@@ -422,11 +422,7 @@ func GetResourcesIdWithTag(tagID uint) (map[uint]time.Time, error) {
 		return nil, err
 	}
 
-	resMap := make(map[uint]time.Time)
-	for _, r := range result {
-		resMap[r.ID] = r.CreatedAt
-	}
-	return resMap, nil
+	return tagIds, nil
 }
 
 func BatchGetResources(ids []uint) ([]model.Resource, error) {
