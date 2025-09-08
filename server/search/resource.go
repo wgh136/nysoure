@@ -58,7 +58,7 @@ func createIndex() error {
 }
 
 func init() {
-	indexPath := utils.GetStoragePath() + "/search_index.bleve"
+	indexPath := utils.GetStoragePath() + "/resource_index.bleve"
 
 	var err error
 	index, err = bleve.Open(indexPath)
