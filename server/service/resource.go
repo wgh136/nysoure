@@ -5,8 +5,11 @@ import (
 	"nysoure/server/config"
 	"nysoure/server/dao"
 	"nysoure/server/model"
+	"nysoure/server/search"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/log"
@@ -154,13 +157,194 @@ func GetResourceList(page int, sort model.RSort) ([]model.ResourceView, int, err
 	return views, totalPages, nil
 }
 
-func SearchResource(keyword string, page int) ([]model.ResourceView, int, error) {
-	resources, totalPages, err := dao.Search(keyword, page, pageSize)
+// splitQuery splits the input query string into keywords, treating quoted substrings (single or double quotes)
+// as single keywords and supporting escape characters for quotes. Spaces outside quotes are used as separators.
+func splitQuery(query string) []string {
+	var keywords []string
+
+	query = strings.TrimSpace(query)
+	if query == "" {
+		return keywords
+	}
+
+	l, r := 0, 0
+	inQuote := false
+	quoteChar := byte(0)
+
+	for r < len(query) {
+		if (query[r] == '"' || query[r] == '\'') && (r == 0 || query[r-1] != '\\') {
+			if !inQuote {
+				inQuote = true
+				quoteChar = query[r]
+				l = r + 1
+			} else if query[r] == quoteChar {
+				if r > l {
+					keywords = append(keywords, strings.TrimSpace(query[l:r]))
+				}
+				inQuote = false
+				r++
+				l = r
+				continue
+			}
+		} else if !inQuote && query[r] == ' ' {
+			if r > l {
+				keywords = append(keywords, strings.TrimSpace(query[l:r]))
+			}
+			for r < len(query) && query[r] == ' ' {
+				r++
+			}
+			l = r
+			continue
+		}
+
+		r++
+	}
+
+	if l < len(query) {
+		keywords = append(keywords, strings.TrimSpace(query[l:r]))
+	}
+
+	return keywords
+}
+
+func searchWithKeyword(keyword string) (map[uint]time.Time, error) {
+	resources := make(map[uint]time.Time)
+
+	exists, err := dao.ExistsTag(keyword)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		t, err := dao.GetTagByName(keyword)
+		if err != nil {
+			return nil, err
+		}
+		res, err := dao.GetResourcesIdWithTag(t.ID)
+		if err != nil {
+			return nil, err
+		}
+		for id, createdAt := range res {
+			resources[id] = createdAt
+		}
+	}
+
+	searchResult, err := search.SearchResource(keyword)
+	if err != nil {
+		return nil, err
+	}
+
+	for id, createdAt := range searchResult {
+		resources[id] = createdAt
+	}
+
+	return resources, nil
+}
+
+func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
+	start := (page - 1) * pageSize
+	end := start + pageSize
+	resources := make(map[uint]time.Time)
+
+	checkTag := func(tag string) error {
+		exists, err := dao.ExistsTag(tag)
+		if err != nil {
+			return err
+		}
+		if exists {
+			t, err := dao.GetTagByName(tag)
+			if err != nil {
+				return err
+			}
+			res, err := dao.GetResourcesIdWithTag(t.ID)
+			if err != nil {
+				return err
+			}
+			for id, createdAt := range res {
+				resources[id] = createdAt
+			}
+		}
+		return nil
+	}
+
+	// check tag
+	if err := checkTag(query); err != nil {
+		return nil, 0, err
+	}
+
+	// check tag after removing spaces
+	trimmed := strings.ReplaceAll(query, " ", "")
+	if trimmed != query {
+		if err := checkTag(trimmed); err != nil {
+			return nil, 0, err
+		}
+	}
+
+	// split query to search
+	keywords := splitQuery(query)
+	temp := make(map[uint]time.Time)
+	first := true
+	for _, keyword := range keywords {
+		res, err := searchWithKeyword(keyword)
+		if err != nil {
+			return nil, 0, err
+		}
+		if first {
+			for id, createdAt := range res {
+				temp[id] = createdAt
+			}
+			first = false
+		} else {
+			for id := range temp {
+				if _, ok := res[id]; !ok {
+					delete(temp, id)
+				}
+			}
+		}
+	}
+	for id, createdAt := range temp {
+		resources[id] = createdAt
+	}
+
+	if start >= len(resources) {
+		return []model.ResourceView{}, 0, nil
+	}
+
+	type IDWithTime struct {
+		ID        uint
+		CreatedAt time.Time
+	}
+	var idsWithTime []IDWithTime
+	for id, createdAt := range resources {
+		idsWithTime = append(idsWithTime, IDWithTime{
+			ID:        id,
+			CreatedAt: createdAt,
+		})
+	}
+	// sort by createdAt desc
+	sort.Slice(idsWithTime, func(i, j int) bool {
+		return idsWithTime[i].CreatedAt.After(idsWithTime[j].CreatedAt)
+	})
+
+	total := len(idsWithTime)
+	totalPages := (total + pageSize - 1) / pageSize
+	if start >= total {
+		return []model.ResourceView{}, totalPages, nil
+	}
+	if end > total {
+		end = total
+	}
+	idsPage := idsWithTime[start:end]
+	var ids []uint
+	for _, item := range idsPage {
+		ids = append(ids, item.ID)
+	}
+
+	resourcesPage, err := dao.BatchGetResources(ids)
 	if err != nil {
 		return nil, 0, err
 	}
 	var views []model.ResourceView
-	for _, r := range resources {
+	for _, r := range resourcesPage {
 		views = append(views, r.ToView())
 	}
 	return views, totalPages, nil

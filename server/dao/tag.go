@@ -2,9 +2,10 @@ package dao
 
 import (
 	"errors"
-	"github.com/gofiber/fiber/v3/log"
 	"nysoure/server/model"
 	"strings"
+
+	"github.com/gofiber/fiber/v3/log"
 
 	"gorm.io/gorm"
 )
@@ -170,4 +171,12 @@ func ClearUnusedTags() error {
 		}
 	}
 	return nil
+}
+
+func ExistsTag(name string) (bool, error) {
+	var count int64
+	if err := db.Model(&model.Tag{}).Where("name = ?", name).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }

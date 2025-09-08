@@ -12,6 +12,10 @@ import (
 
 var db *gorm.DB
 
+var (
+	ready = false
+)
+
 func init() {
 	if os.Getenv("DB_PORT") != "" {
 		host := os.Getenv("DB_HOST")
@@ -22,10 +26,18 @@ func init() {
 		dsn := user + ":" + password + "@tcp(" + host + ":" + port + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
 		var err error
 		// wait for mysql to be ready
-		time.Sleep(5 * time.Second)
-		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-		if err != nil {
-			panic("failed to connect database")
+		retrys := 5
+		for {
+			db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+			if err == nil {
+				ready = true
+				break
+			}
+			retrys--
+			if retrys < 0 {
+				panic("failed to connect database: " + err.Error())
+			}
+			time.Sleep(1 * time.Second)
 		}
 	} else {
 		var err error
@@ -53,4 +65,8 @@ func init() {
 
 func GetDB() *gorm.DB {
 	return db
+}
+
+func IsReady() bool {
+	return ready
 }

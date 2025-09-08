@@ -4,7 +4,6 @@ import (
 	"errors"
 	"math/rand"
 	"nysoure/server/model"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -141,180 +140,6 @@ func DeleteResource(id uint) error {
 		}
 		return nil
 	})
-}
-
-func splitQuery(query string) []string {
-	var keywords []string
-
-	query = strings.TrimSpace(query)
-	if query == "" {
-		return keywords
-	}
-
-	l, r := 0, 0
-	inQuote := false
-	quoteChar := byte(0)
-
-	for r < len(query) {
-		if (query[r] == '"' || query[r] == '\'') && (r == 0 || query[r-1] != '\\') {
-			if !inQuote {
-				inQuote = true
-				quoteChar = query[r]
-				l = r + 1
-			} else if query[r] == quoteChar {
-				if r > l {
-					keywords = append(keywords, strings.TrimSpace(query[l:r]))
-				}
-				inQuote = false
-				r++
-				l = r
-				continue
-			}
-		} else if !inQuote && query[r] == ' ' {
-			if r > l {
-				keywords = append(keywords, strings.TrimSpace(query[l:r]))
-			}
-			for r < len(query) && query[r] == ' ' {
-				r++
-			}
-			l = r
-			continue
-		}
-
-		r++
-	}
-
-	if l < len(query) {
-		keywords = append(keywords, strings.TrimSpace(query[l:r]))
-	}
-
-	return keywords
-}
-
-func Search(query string, page, pageSize int) ([]model.Resource, int, error) {
-	query = strings.TrimSpace(query)
-
-	keywords := splitQuery(query)
-	if len(keywords) == 0 {
-		return nil, 0, nil
-	}
-	resource, err := searchWithKeyword(keywords[0])
-	if err != nil {
-		return nil, 0, err
-	}
-	if len(keywords) > 1 {
-		for _, keyword := range keywords[1:] {
-			r := make([]model.Resource, 0, len(resource))
-			for _, res := range resource {
-				if strings.Contains(res.Title, keyword) {
-					r = append(r, res)
-					continue
-				}
-				ok := false
-				for _, at := range res.AlternativeTitles {
-					if strings.Contains(at, keyword) {
-						r = append(r, res)
-						ok = true
-						break
-					}
-				}
-				if ok {
-					continue
-				}
-				for _, tag := range res.Tags {
-					if tag.Name == keyword {
-						r = append(r, res)
-						ok = true
-						break
-					}
-				}
-			}
-			resource = r
-		}
-	}
-
-	startIndex := (page - 1) * pageSize
-	endIndex := startIndex + pageSize
-	if startIndex > len(resource) {
-		return nil, 0, nil
-	}
-	if endIndex > len(resource) {
-		endIndex = len(resource)
-	}
-	totalPages := (len(resource) + pageSize - 1) / pageSize
-
-	result := make([]model.Resource, 0, endIndex-startIndex)
-	for i := startIndex; i < endIndex; i++ {
-		var r model.Resource
-		if err := db.Model(&r).Preload("User").Preload("Images").Preload("Tags").Where("id=?", resource[i].ID).First(&r).Error; err != nil {
-			return nil, 0, err
-		}
-		result = append(result, r)
-	}
-
-	return result, totalPages, nil
-}
-
-func searchWithKeyword(keyword string) ([]model.Resource, error) {
-	if len(keyword) == 0 {
-		return nil, nil
-	} else if len([]rune(keyword)) > 100 {
-		return nil, model.NewRequestError("Keyword is too long")
-	}
-
-	var resources []model.Resource
-
-	if len([]rune(keyword)) < 20 {
-		var tag model.Tag
-		var err error
-		if tag, err = GetTagByName(keyword); err != nil {
-			if !model.IsNotFoundError(err) {
-				return nil, err
-			}
-		} else {
-			if tag.AliasOf != nil {
-				tag, err = GetTagByID(*tag.AliasOf)
-				if err != nil {
-					return nil, err
-				}
-			}
-			var tagIds []uint
-			tagIds = append(tagIds, tag.ID)
-			for _, alias := range tag.Aliases {
-				tagIds = append(tagIds, alias.ID)
-			}
-			subQuery := db.Table("resource_tags").
-				Select("resource_id").
-				Where("tag_id IN ?", tagIds).
-				Group("resource_id")
-			if err := db.Where("id IN (?)", subQuery).Select("id", "title", "alternative_titles").Preload("Tags").Find(&resources).Error; err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	var titleResult []model.Resource
-	if err := db.Where("title LIKE ?", "%"+keyword+"%").Or("alternative_titles LIKE ?", "%"+keyword+"%").Select("id", "title", "alternative_titles").Preload("Tags").Find(&titleResult).Error; err != nil {
-		return nil, err
-	}
-
-	if len(titleResult) > 0 {
-		if len(resources) == 0 {
-			resources = titleResult
-		} else {
-			resourceMap := make(map[uint]model.Resource)
-			for _, res := range resources {
-				resourceMap[res.ID] = res
-			}
-			for _, res := range titleResult {
-				if _, exists := resourceMap[res.ID]; !exists {
-					resources = append(resources, res)
-				}
-			}
-		}
-	}
-
-	return resources, nil
 }
 
 func GetResourceByTag(tagID uint, page int, pageSize int) ([]model.Resource, int, error) {
@@ -564,4 +389,59 @@ func RandomResource() (model.Resource, error) {
 		}
 		return resource, nil // Return the found resource
 	}
+}
+
+func GetResourcesIdWithTag(tagID uint) (map[uint]time.Time, error) {
+	tag, err := GetTagByID(tagID)
+	if err != nil {
+		return nil, err
+	}
+	if tag.AliasOf != nil {
+		tag, err = GetTagByID(*tag.AliasOf)
+		if err != nil {
+			return nil, err
+		}
+	}
+	var tagIds []uint
+	tagIds = append(tagIds, tag.ID)
+	for _, alias := range tag.Aliases {
+		tagIds = append(tagIds, alias.ID)
+	}
+	var result []model.Resource
+	subQuery := db.Table("resource_tags").
+		Select("resource_id").
+		Where("tag_id IN ?", tagIds).
+		Group("resource_id")
+	if err := db.Model(&model.Resource{}).
+		Where("id IN (?)", subQuery).
+		Order("created_at DESC").
+		Limit(10000).
+		Select("id", "created_at").
+		Find(&result).
+		Error; err != nil {
+		return nil, err
+	}
+
+	resMap := make(map[uint]time.Time)
+	for _, r := range result {
+		resMap[r.ID] = r.CreatedAt
+	}
+	return resMap, nil
+}
+
+func BatchGetResources(ids []uint) ([]model.Resource, error) {
+	idMap := make(map[uint]struct{})
+	uniqueIds := make([]uint, 0, len(ids))
+	for _, id := range ids {
+		if _, exists := idMap[id]; !exists {
+			idMap[id] = struct{}{}
+			uniqueIds = append(uniqueIds, id)
+		}
+	}
+
+	var resources []model.Resource
+	if err := db.Where("id IN ?", uniqueIds).Find(&resources).Error; err != nil {
+		return nil, err
+	}
+	return resources, nil
 }
