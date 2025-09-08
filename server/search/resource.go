@@ -68,7 +68,7 @@ func init() {
 func SearchResource(keyword string) (map[uint]time.Time, error) {
 	query := bleve.NewMatchQuery(keyword)
 	searchRequest := bleve.NewSearchRequest(query)
-	searchRequest.Size = 10000
+	searchRequest.Size = 1000
 	searchRequest.Fields = []string{"Time"}
 	searchResults, err := index.Search(searchRequest)
 	if err != nil {
@@ -77,7 +77,7 @@ func SearchResource(keyword string) (map[uint]time.Time, error) {
 
 	results := make(map[uint]time.Time)
 	for _, hit := range searchResults.Hits {
-		if hit.Score < 0.5 {
+		if hit.Score < 0.8 {
 			continue
 		}
 		id, err := strconv.ParseUint(hit.ID, 10, 32)
