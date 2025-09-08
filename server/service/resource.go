@@ -285,6 +285,9 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 	temp := make(map[uint]time.Time)
 	first := true
 	for _, keyword := range keywords {
+		if keyword == "" {
+			continue
+		}
 		res, err := searchWithKeyword(keyword)
 		if err != nil {
 			return nil, 0, err
