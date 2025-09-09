@@ -7,7 +7,7 @@ import (
 
 func RemoveSpaces(s string) string {
 	reg := regexp.MustCompile(`\s+`)
-	return reg.ReplaceAllString(s, " ")
+	return reg.ReplaceAllString(s, "")
 }
 
 func OnlyPunctuation(s string) bool {
