@@ -62,6 +62,7 @@ import KunApi, {
   kunResourceTypeToString,
 } from "../network/kun.ts";
 import { Debounce } from "../utils/debounce.ts";
+import remarkGfm from "remark-gfm";
 
 export default function ResourcePage() {
   const params = useParams();
@@ -448,6 +449,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
   return (
     <article>
       <Markdown
+        remarkPlugins={[remarkGfm]}
         components={{
           p: ({ node, ...props }) => {
             if (
@@ -727,8 +729,8 @@ function FileTile({ file }: { file: RFile }) {
               <MdOutlineArchive size={16} className={"inline-block"} />
               {file.is_redirect ? t("Redirect") : fileSizeToString(file.size)}
             </Badge>
-            {
-              file.hash && <Badge
+            {file.hash && (
+              <Badge
                 className={
                   "badge-soft badge-accent text-xs mr-2 break-all hidden sm:inline-flex"
                 }
@@ -737,7 +739,7 @@ function FileTile({ file }: { file: RFile }) {
                 <MdOutlineVerifiedUser size={16} className={"inline-block"} />
                 Md5: {file.hash}
               </Badge>
-            }
+            )}
             <DeleteFileDialog fileId={file.id} uploaderId={file.user.id} />
             <UpdateFileInfoDialog file={file} />
           </p>
