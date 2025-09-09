@@ -430,24 +430,32 @@ func GetResourcesIdWithTag(tagID uint) ([]uint, error) {
 }
 
 func BatchGetResources(ids []uint) ([]model.Resource, error) {
-	idMap := make(map[uint]struct{})
-	uniqueIds := make([]uint, 0, len(ids))
+	var resources []model.Resource
+
 	for _, id := range ids {
-		if _, exists := idMap[id]; !exists {
-			idMap[id] = struct{}{}
-			uniqueIds = append(uniqueIds, id)
+		var r model.Resource
+		if err := db.
+			Preload("User").
+			Preload("Images").
+			Preload("Tags").
+			First(&r, id).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				continue
+			}
+			return nil, err
 		}
+		for i, tag := range r.Tags {
+			if tag.AliasOf != nil {
+				t, err := GetTagByID(*tag.AliasOf)
+				if err != nil {
+					return nil, err
+				} else {
+					r.Tags[i].Type = t.Type
+				}
+			}
+		}
+		resources = append(resources, r)
 	}
 
-	var resources []model.Resource
-	if err := db.
-		Where("id IN ?", uniqueIds).
-		Preload("User").
-		Preload("Images").
-		Preload("Tags").
-		Find(&resources).
-		Error; err != nil {
-		return nil, err
-	}
 	return resources, nil
 }
