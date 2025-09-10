@@ -291,34 +291,54 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 	// split query to search
 	keywords := splitQuery(query)
 	var temp []uint
-	first := true
+	haveTag := false
 	for _, keyword := range keywords {
-		if keyword == "" {
-			continue
+		if len([]rune(keyword)) <= maxTagLength {
+			exists, err := dao.ExistsTag(keyword)
+			if err != nil {
+				return nil, 0, err
+			}
+			if exists {
+				haveTag = true
+			}
 		}
-		if utils.OnlyPunctuation(keyword) {
-			continue
-		}
+	}
+	if haveTag {
+		first := true
+		for _, keyword := range keywords {
+			if keyword == "" {
+				continue
+			}
+			if utils.OnlyPunctuation(keyword) {
+				continue
+			}
 
-		res, err := searchWithKeyword(keyword)
+			res, err := searchWithKeyword(keyword)
+			if err != nil {
+				return nil, 0, err
+			}
+			if first {
+				temp = utils.RemoveDuplicate(res)
+				first = false
+			} else {
+				temp1 := make([]uint, 0)
+				for _, id := range temp {
+					for _, id2 := range res {
+						if id == id2 {
+							temp1 = append(temp1, id)
+							break
+						}
+					}
+				}
+				temp = temp1
+			}
+		}
+	} else {
+		res, err := searchWithKeyword(query)
 		if err != nil {
 			return nil, 0, err
 		}
-		if first {
-			temp = utils.RemoveDuplicate(res)
-			first = false
-		} else {
-			temp1 := make([]uint, 0)
-			for _, id := range temp {
-				for _, id2 := range res {
-					if id == id2 {
-						temp1 = append(temp1, id)
-						break
-					}
-				}
-			}
-			temp = temp1
-		}
+		temp = res
 	}
 	resources = append(resources, temp...)
 	resources = utils.RemoveDuplicate(resources)
