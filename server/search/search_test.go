@@ -163,3 +163,23 @@ func TestSearchResource(t *testing.T) {
 		})
 	}
 }
+
+func TestIsStopWord(t *testing.T) {
+	Init()
+	defer TearDown()
+
+	stopWords := []string{"the", "is", "at", "which", "on", "and", "a", "an", "in", "to", "of"}
+	nonStopWords := []string{"adventure", "mystery", "romance", "sci-fi", "comedy", "action", "horror"}
+
+	for _, word := range stopWords {
+		if !IsStopWord(word) {
+			t.Errorf("Expected '%s' to be identified as a stop word", word)
+		}
+	}
+
+	for _, word := range nonStopWords {
+		if IsStopWord(word) {
+			t.Errorf("Expected '%s' to not be identified as a stop word", word)
+		}
+	}
+}

@@ -101,3 +101,14 @@ func SearchResource(keyword string) ([]uint, error) {
 
 	return results, nil
 }
+
+func IsStopWord(word string) bool {
+	mapping := bleve.NewIndexMapping()
+	analyzerName := mapping.DefaultAnalyzer
+	analyzer := mapping.AnalyzerNamed(analyzerName)
+	if analyzer == nil {
+		return false
+	}
+	tokens := analyzer.Analyze([]byte(word))
+	return len(tokens) == 0
+}

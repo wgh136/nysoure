@@ -317,6 +317,9 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 			if err != nil {
 				return nil, 0, err
 			}
+			if len(res) == 0 && search.IsStopWord(keyword) {
+				continue
+			}
 			if first {
 				temp = utils.RemoveDuplicate(res)
 				first = false
