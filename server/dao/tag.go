@@ -19,7 +19,7 @@ func CreateTag(tag string) (model.Tag, error) {
 	if err := db.Create(&t).Error; err != nil {
 		return model.Tag{}, err
 	}
-	return t, nil
+	return GetTagByID(t.ID)
 }
 
 func CreateTagWithType(tag string, tagType string) (model.Tag, error) {
@@ -82,13 +82,34 @@ func GetTagByName(name string) (model.Tag, error) {
 }
 
 func SetTagInfo(id uint, description string, aliasOf *uint, tagType string) error {
+	// Get the tag information
 	old, err := GetTagByID(id)
 	if err != nil {
 		return err
 	}
-	if aliasOf != nil && len(old.Aliases) > 0 {
-		return model.NewRequestError("Tag already has aliases, cannot set alias_of")
+
+	// If the alias tag is an alias itself, we need to find its root tag
+	if aliasOf != nil {
+		tag, err := GetTagByID(*aliasOf)
+		if err != nil {
+			return err
+		}
+		if tag.AliasOf != nil {
+			aliasOf = tag.AliasOf
+		}
 	}
+
+	// If the tag has aliases, we need to update their alias_of field
+	if aliasOf != nil && len(old.Aliases) > 0 {
+		for _, alias := range old.Aliases {
+			err := db.Model(&alias).Update("alias_of", *aliasOf).Error
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// Update the tag information
 	t := model.Tag{Model: gorm.Model{
 		ID: id,
 	}, Description: description, Type: tagType, AliasOf: aliasOf}
@@ -113,24 +134,51 @@ func ListTags() ([]model.Tag, error) {
 
 // SetTagAlias sets a tag with the given ID having the given alias.
 func SetTagAlias(tagID uint, alias string) error {
-	// Set a tag as an alias of another tag
-	var t model.Tag
-	if err := db.Where("name = ?", alias).First(&t).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// create
-			newTag, err := CreateTag(alias)
-			if err != nil {
-				return err
-			}
-			t = newTag
-		} else {
+	exists, err := ExistsTagByID(tagID)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return model.NewNotFoundError("Tag not found")
+	}
+
+	exists, err = ExistsTag(alias)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		// Create the alias tag if it does not exist
+		_, err := CreateTag(alias)
+		if err != nil {
 			return err
 		}
 	}
-	if t.ID == tagID {
-		return model.NewRequestError("Tag cannot be an alias of itself")
+	// Get the alias tag
+	tag, err := GetTagByName(alias)
+	if err != nil {
+		return err
 	}
-	return db.Model(&t).Update("alias_of", tagID).Error
+	// If the alias tag is an alias itself, we need to find its root tag
+	if tag.AliasOf != nil {
+		tag, err = GetTagByID(*tag.AliasOf)
+		if err != nil {
+			return err
+		}
+	}
+	// If the tag has aliases, we need to update their alias_of field
+	for _, alias := range tag.Aliases {
+		err := db.Model(&alias).Update("alias_of", tagID).Error
+		if err != nil {
+			return err
+		}
+	}
+	tag.Aliases = nil
+	// A tag cannot be an alias of itself
+	if tag.ID == tagID {
+		return model.NewRequestError("A tag cannot be an alias of itself")
+	}
+	// Set the alias_of field of the tag
+	return db.Model(&tag).Update("alias_of", tagID).Error
 }
 
 // RemoveTagAliasOf sets a tag is an independent tag, removing its alias relationship.
@@ -176,6 +224,14 @@ func ClearUnusedTags() error {
 func ExistsTag(name string) (bool, error) {
 	var count int64
 	if err := db.Model(&model.Tag{}).Where("name = ?", name).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func ExistsTagByID(id uint) (bool, error) {
+	var count int64
+	if err := db.Model(&model.Tag{}).Where("id = ?", id).Count(&count).Error; err != nil {
 		return false, err
 	}
 	return count > 0, nil
