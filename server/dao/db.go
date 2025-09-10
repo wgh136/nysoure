@@ -70,3 +70,11 @@ func GetDB() *gorm.DB {
 func IsReady() bool {
 	return ready
 }
+
+func Close() error {
+	sqlDB, err := db.DB()
+	if err != nil {
+		return err
+	}
+	return sqlDB.Close()
+}

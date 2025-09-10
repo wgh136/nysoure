@@ -104,8 +104,6 @@ func TestTag(t *testing.T) {
 	assert.Nil(t, tag6.AliasOf)
 
 	// cleanup
-	d, err := db.DB()
-	assert.Nil(t, err)
-	_ = d.Close()
+	_ = Close()
 	_ = os.Remove("test.db")
 }
