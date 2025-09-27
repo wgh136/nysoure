@@ -1,13 +1,13 @@
 module nysoure
 
-go 1.24
+go 1.25.0
 
 require (
-	github.com/gofiber/fiber/v3 v3.0.0-beta.4
-	github.com/golang-jwt/jwt/v5 v5.2.2
-	golang.org/x/crypto v0.37.0
-	gorm.io/driver/sqlite v1.5.7
-	gorm.io/gorm v1.26.1
+	github.com/gofiber/fiber/v3 v3.0.0-rc.1
+	github.com/golang-jwt/jwt/v5 v5.3.0
+	golang.org/x/crypto v0.42.0
+	gorm.io/driver/sqlite v1.6.0
+	gorm.io/gorm v1.31.0
 )
 
 require (
@@ -15,10 +15,11 @@ require (
 	github.com/chai2010/webp v1.4.0
 	github.com/disintegration/imaging v1.6.2
 	github.com/stretchr/testify v1.11.1
-	gorm.io/driver/mysql v1.5.7
+	gorm.io/driver/mysql v1.6.0
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/RoaringBitmap/roaring v0.4.23 // indirect
 	github.com/blevesearch/go-porterstemmer v1.0.3 // indirect
 	github.com/blevesearch/mmap-go v1.0.2 // indirect
@@ -32,7 +33,7 @@ require (
 	github.com/couchbase/vellum v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/glycerine/go-unsnap-stream v0.0.0-20181221182339-f9677308dec2 // indirect
-	github.com/go-sql-driver/mysql v1.7.0 // indirect
+	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/mschoch/smat v0.2.0 // indirect
@@ -55,11 +56,10 @@ require (
 )
 
 require (
-	github.com/andybalholm/brotli v1.1.1 // indirect
-	github.com/fxamacker/cbor/v2 v2.8.0 // indirect
-	github.com/gofiber/schema v1.3.0 // indirect
-	github.com/gofiber/utils/v2 v2.0.0-beta.8 // indirect
-	github.com/gomarkdown/markdown v0.0.0-20250311123330-531bef5e742b
+	github.com/andybalholm/brotli v1.2.0 // indirect
+	github.com/gofiber/schema v1.6.0 // indirect
+	github.com/gofiber/utils/v2 v2.0.0-rc.1 // indirect
+	github.com/gomarkdown/markdown v0.0.0-20250810172220-2e2c11897d1a
 	github.com/google/uuid v1.6.0
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
@@ -68,13 +68,12 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-sqlite3 v1.14.28 // indirect
-	github.com/philhofer/fwd v1.1.3-0.20240916144458-20a13a1f6b7c // indirect
-	github.com/tinylib/msgp v1.2.5 // indirect
+	github.com/philhofer/fwd v1.2.0 // indirect
+	github.com/tinylib/msgp v1.3.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.61.0 // indirect
-	github.com/x448/float16 v0.8.4 // indirect
-	golang.org/x/image v0.28.0
-	golang.org/x/net v0.39.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
-	golang.org/x/text v0.26.0 // indirect
+	github.com/valyala/fasthttp v1.65.0 // indirect
+	golang.org/x/image v0.31.0
+	golang.org/x/net v0.43.0 // indirect
+	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/text v0.29.0 // indirect
 )
