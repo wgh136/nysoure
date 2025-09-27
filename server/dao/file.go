@@ -100,6 +100,11 @@ func CreateFile(filename string, description string, resourceID uint, storageID 
 		if err != nil {
 			return err
 		}
+		err = tx.Model(&model.Resource{}).Where("id = ?", resourceID).
+			UpdateColumn("modified_time", time.Now()).Error
+		if err != nil {
+			return err
+		}
 		return nil
 	})
 

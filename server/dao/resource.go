@@ -15,6 +15,7 @@ import (
 
 func CreateResource(r model.Resource) (model.Resource, error) {
 	err := db.Transaction(func(tx *gorm.DB) error {
+		r.ModifiedTime = time.Now()
 		err := tx.Create(&r).Error
 		if err != nil {
 			return err
@@ -71,9 +72,9 @@ func GetResourceList(page, pageSize int, sort model.RSort) ([]model.Resource, in
 	order := ""
 	switch sort {
 	case model.RSortTimeAsc:
-		order = "created_at ASC"
+		order = "modified_time ASC"
 	case model.RSortTimeDesc:
-		order = "created_at DESC"
+		order = "modified_time DESC"
 	case model.RSortViewsAsc:
 		order = "views ASC"
 	case model.RSortViewsDesc:
@@ -83,7 +84,7 @@ func GetResourceList(page, pageSize int, sort model.RSort) ([]model.Resource, in
 	case model.RSortDownloadsDesc:
 		order = "downloads DESC"
 	default:
-		order = "created_at DESC" // Default sort order
+		order = "modified_time DESC" // Default sort order
 	}
 
 	if err := db.Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Preload("Images").Preload("Tags").Order(order).Find(&resources).Error; err != nil {
@@ -102,6 +103,7 @@ func UpdateResource(r model.Resource) error {
 	r.Images = nil
 	r.Tags = nil
 	r.Files = nil
+	r.ModifiedTime = time.Now()
 	if err := db.Save(&r).Error; err != nil {
 		return err
 	}

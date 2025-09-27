@@ -20,6 +20,7 @@ type Resource struct {
 	Views             uint
 	Downloads         uint
 	Comments          uint
+	ModifiedTime      time.Time
 }
 
 type Link struct {
