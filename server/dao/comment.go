@@ -183,6 +183,10 @@ func DeleteCommentByID(commentID uint) error {
 			if err := tx.Model(&model.Resource{}).Where("id = ?", comment.RefID).Update("comments", gorm.Expr("comments - 1")).Error; err != nil {
 				return err
 			}
+		} else if comment.Type == model.CommentTypeReply {
+			if err := tx.Model(&model.Comment{}).Where("id = ?", comment.RefID).Update("reply_count", gorm.Expr("reply_count - 1")).Error; err != nil {
+				return err
+			}
 		}
 		if err := tx.
 			Where("type = ? and ref_id = ?", model.ActivityTypeNewComment, commentID).
