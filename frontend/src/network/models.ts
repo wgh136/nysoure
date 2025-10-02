@@ -138,6 +138,7 @@ export interface CommentWithResource {
   resource: Resource;
   content_truncated: boolean;
   reply_count: number;
+  replies: Comment[];
 }
 
 export interface CommentWithRef {
