@@ -461,3 +461,11 @@ func BatchGetResources(ids []uint) ([]model.Resource, error) {
 
 	return resources, nil
 }
+
+func CountResources() (int64, error) {
+	var count int64
+	if err := db.Model(&model.Resource{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}

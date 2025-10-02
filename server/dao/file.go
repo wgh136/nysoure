@@ -239,3 +239,11 @@ func ListUserFiles(userID uint, page, pageSize int) ([]*model.File, int64, error
 	}
 	return files, count, nil
 }
+
+func CountFiles() (int64, error) {
+	var count int64
+	if err := db.Model(&model.File{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}

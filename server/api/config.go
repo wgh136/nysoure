@@ -61,10 +61,22 @@ func setServerConfig(c fiber.Ctx) error {
 	})
 }
 
+func getStatistics(c fiber.Ctx) error {
+	s, err := service.GetStatistic()
+	if err != nil {
+		return model.NewInternalServerError("Failed to get statistics")
+	}
+	return c.JSON(model.Response[*service.Statistic]{
+		Success: true,
+		Data:    s,
+	})
+}
+
 func AddConfigRoutes(r fiber.Router) {
 	configGroup := r.Group("/config")
 	{
 		configGroup.Get("/", getServerConfig)
 		configGroup.Post("/", setServerConfig)
+		configGroup.Get("/statistics", getStatistics)
 	}
 }
