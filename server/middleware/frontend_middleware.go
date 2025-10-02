@@ -171,6 +171,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 
 	content = strings.ReplaceAll(content, "{{SiteName}}", siteName)
 	content = strings.ReplaceAll(content, "{{Description}}", description)
+	content = strings.ReplaceAll(content, "{{SiteDescription}}", config.ServerDescription())
 	content = strings.ReplaceAll(content, "{{Preview}}", preview)
 	content = strings.ReplaceAll(content, "{{Title}}", title)
 	content = strings.ReplaceAll(content, "{{Url}}", htmlUrl)
