@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo } from "react";
 
 function t(data: any, language: string) {
-  return (key: string) => {
+  return (key: string): string => {
     return data[language]?.["translation"]?.[key] || key;
   };
 }

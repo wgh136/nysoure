@@ -254,6 +254,7 @@ export const i18nData = {
       "You do not have permission to upload files, please contact the administrator.":
         "您没有上传文件的权限，请联系管理员。",
       "Private": "私有",
+      "View {count} more replies": "查看另外 {count} 条回复",
     },
   },
   "zh-TW": {
@@ -511,6 +512,7 @@ export const i18nData = {
       "You do not have permission to upload files, please contact the administrator.":
         "您沒有上傳檔案的權限，請聯繫管理員。",
       "Private": "私有",
+      "View {count} more replies": "查看另外 {count} 條回覆",
     },
   },
 };

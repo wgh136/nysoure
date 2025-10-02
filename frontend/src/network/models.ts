@@ -126,6 +126,7 @@ export interface Comment {
   images: Image[];
   content_truncated: boolean;
   reply_count: number;
+  replies: Comment[];
 }
 
 export interface CommentWithResource {

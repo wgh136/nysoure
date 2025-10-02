@@ -1,6 +1,5 @@
 import { useTranslation } from "../utils/i18n";
 import { useNavigate } from "react-router";
-import { MdOutlineComment } from "react-icons/md";
 import { Comment } from "../network/models";
 import { network } from "../network/network";
 import Badge from "./badge";
@@ -55,29 +54,66 @@ export function CommentTile({
           {new Date(comment.created_at).toLocaleDateString()}
         </Badge>
       </div>
-      <div className={"p-2 comment_tile"}>
+      <div className={"px-2 pt-2 comment_tile"}>
         <CommentContent content={comment.content} />
       </div>
-      <div className={"flex items-center"}>
-        {comment.content_truncated && (
-          <Badge className="badge-ghost">{t("Click to view more")}</Badge>
-        )}
-        <span className={"grow"}></span>
-        {comment.reply_count > 0 && (
-          <Badge className={"badge-soft badge-primary mr-2"}>
-            <MdOutlineComment size={16} className={"inline-block"} />
-            {comment.reply_count}
+      {comment.content_truncated ? (
+        <div className={"pl-2 pb-2"}>
+          <Badge className={"badge-soft badge-info badge-sm"}>
+            {t("Click to view more")}
           </Badge>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className={"h-2"} />
+      )}
+      <CommentReplies comment={comment} />
     </a>
   );
+}
+
+function CommentReplies({ comment }: { comment: Comment }) {
+  const { t } = useTranslation();
+
+  if (!comment.replies) {
+    return null;
+  }
+
+  return (
+    <div className={"bg-base-200 mx-2 p-2 rounded-lg"}>
+      {comment.replies.map((e) => {
+        return (
+          <p className={"text-xs mb-1"}>
+            <span className={"font-bold"}>{e.user.username}: </span>
+            {CommentToPlainText(e.content)}
+          </p>
+        );
+      })}
+      {comment.reply_count > comment.replies.length ? (
+        <p className={"text-xs text-primary mt-1"}>
+          {t("View {count} more replies").replace(
+            "{count}",
+            (comment.reply_count - comment.replies.length).toString(),
+          )}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function CommentToPlainText(content: string) {
+  // Remove Markdown syntax to convert to plain text
+  return content
+    .replace(/!\[.*?]\(.*?\)/g, "") // Remove images
+    .replace(/\[([^\]]+)]\((.*?)\)/g, "$1") // Convert links to just the text
+    .replace(/[#>*_`~-]/g, "") // Remove other Markdown characters
+    .replace(/\n+/g, " ") // Replace newlines with spaces
+    .trim();
 }
 
 export function CommentContent({ content }: { content: string }) {
   const lines = content.split("\n");
   for (let i = 0; i < lines.length; i++) {
-    let line = lines[i];
+    const line = lines[i];
     if (!line.endsWith("  ")) {
       // Ensure that each line ends with two spaces for Markdown to recognize it as a line break
       lines[i] = line + "  ";
