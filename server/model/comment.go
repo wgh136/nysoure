@@ -25,13 +25,14 @@ const (
 )
 
 type CommentView struct {
-	ID               uint        `json:"id"`
-	Content          string      `json:"content"`
-	CreatedAt        time.Time   `json:"created_at"`
-	User             UserView    `json:"user"`
-	Images           []ImageView `json:"images"`
-	ReplyCount       uint        `json:"reply_count"`
-	ContentTruncated bool        `json:"content_truncated"`
+	ID               uint          `json:"id"`
+	Content          string        `json:"content"`
+	CreatedAt        time.Time     `json:"created_at"`
+	User             UserView      `json:"user"`
+	Images           []ImageView   `json:"images"`
+	ReplyCount       uint          `json:"reply_count"`
+	ContentTruncated bool          `json:"content_truncated"`
+	Replies          []CommentView `json:"replies,omitempty"`
 }
 
 func (c *Comment) ToView() *CommentView {

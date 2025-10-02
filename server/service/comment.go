@@ -122,9 +122,18 @@ func ListResourceComments(resourceID uint, page int) ([]model.CommentView, int, 
 	res := make([]model.CommentView, 0, len(comments))
 	for _, c := range comments {
 		v := *c.ToView()
-		var truncated bool
-		v.Content, truncated = restrictCommentLength(v.Content)
-		v.ContentTruncated = truncated
+		v.Content, v.ContentTruncated = restrictCommentLength(v.Content)
+		replies, _, err := dao.GetCommentReplies(c.ID, 1, 3)
+		if err != nil {
+			log.Error("Error getting replies for comment:", err)
+			return nil, 0, model.NewInternalServerError("Error getting replies for comment")
+		}
+		v.Replies = make([]model.CommentView, 0, len(replies))
+		for _, r := range replies {
+			rv := *r.ToView()
+			rv.Content, rv.ContentTruncated = restrictCommentLength(rv.Content)
+			v.Replies = append(v.Replies, rv)
+		}
 		res = append(res, v)
 	}
 	return res, totalPages, nil
