@@ -158,10 +158,12 @@ func serveIndexHtml(c fiber.Ctx) error {
 	} else if path == "/" || path == "" {
 		pinned, err := service.GetPinnedResources()
 		random, err1 := service.RandomCover()
-		if err == nil && err1 == nil {
+		statistic, err2 := service.GetStatistic()
+		if err == nil && err1 == nil && err2 == nil {
 			preFetchDataJson, _ := json.Marshal(map[string]interface{}{
 				"pinned":     pinned,
 				"background": random,
+				"statistic":  statistic,
 			})
 			preFetchData = url.PathEscape(string(preFetchDataJson))
 		}

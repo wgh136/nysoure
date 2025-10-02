@@ -205,3 +205,9 @@ export interface Collection {
   images: Image[];
   isPublic: boolean;
 }
+
+export interface Statistics {
+  total_resources: number;
+  total_files: number;
+  start_time: number;
+}

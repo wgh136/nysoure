@@ -20,6 +20,7 @@ import {
   Activity,
   CommentWithRef,
   Collection,
+  Statistics,
 } from "./models.ts";
 
 class Network {
@@ -793,6 +794,12 @@ class Network {
       axios.get(`${this.apiBaseUrl}/collection/search`, {
         params: { username, keyword, excludedRID },
       }),
+    );
+  }
+
+  async getStatistic(): Promise<Response<Statistics>> {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/config/statistics`),
     );
   }
 }
