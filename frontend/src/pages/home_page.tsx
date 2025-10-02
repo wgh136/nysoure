@@ -126,7 +126,7 @@ function HomeHeader() {
       <div className={"hidden md:block"}>
         <div className={"card w-full shadow p-4 mb-4 bg-base-100-tr82 h-28"}>
           <h2 className={"text-lg font-bold pb-2"}>{app.appName}</h2>
-          <p className={"text-xs"}>{app.siteInfo}</p>
+          <p className={"text-xs"}>{app.siteDescription}</p>
         </div>
         <StatisticCard statistic={statistic} />
       </div>

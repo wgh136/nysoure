@@ -6,6 +6,7 @@ interface MyWindow extends Window {
   siteInfo?: string;
   uploadPrompt?: string;
   allowNormalUserUpload?: string;
+  siteDescription?: string;
 }
 
 class App {
@@ -20,6 +21,8 @@ class App {
   siteInfo = "";
 
   uploadPrompt = "";
+
+  siteDescription = "";
 
   allowNormalUserUpload = true;
 
@@ -44,7 +47,9 @@ class App {
     }
     this.siteInfo = (window as MyWindow).siteInfo || "";
     this.uploadPrompt = (window as MyWindow).uploadPrompt || "";
-    // this.allowNormalUserUpload = (window as MyWindow).allowNormalUserUpload === "true";
+    this.siteDescription = (window as MyWindow).siteDescription || "";
+    this.allowNormalUserUpload =
+      (window as MyWindow).allowNormalUserUpload === "true";
   }
 
   saveData() {
