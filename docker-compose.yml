@@ -15,6 +15,7 @@ services:
       - DB_USER=nysoure
       - DB_PASSWORD=nysoure_password
       - DB_NAME=nysoure
+      - BANNED_REDIRECT_DOMAINS=example.com,example.org
     restart: unless-stopped
 
   db:

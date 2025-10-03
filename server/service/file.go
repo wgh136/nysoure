@@ -5,8 +5,10 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"nysoure/server/config"
 	"nysoure/server/dao"
 	"nysoure/server/model"
@@ -15,6 +17,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -27,6 +30,8 @@ const (
 	storageKeyUnavailable      = "storage_key_unavailable" // Placeholder for unavailable storage key
 	MinUnrequireVerifyFileSize = 10 * 1024 * 1024          // 10MB
 )
+
+var bannedRedirectDomains []string
 
 func getUploadingSize() int64 {
 	return dao.GetStatistic("uploading_size")
@@ -46,6 +51,10 @@ func getTempDir() (string, error) {
 }
 
 func init() {
+	domains := os.Getenv("BANNED_REDIRECT_DOMAINS")
+	if domains != "" {
+		bannedRedirectDomains = strings.Split(domains, ",")
+	}
 	go func() {
 		// Wait for 1 minute to ensure the database is ready
 		time.Sleep(time.Minute)
@@ -301,6 +310,16 @@ func CancelUploadingFile(uid uint, fid uint) error {
 }
 
 func CreateRedirectFile(uid uint, filename string, description string, resourceID uint, redirectUrl string) (*model.FileView, error) {
+	u, err := url.Parse(redirectUrl)
+	if err != nil {
+		return nil, model.NewRequestError("URL is not valid")
+	}
+	for _, domain := range bannedRedirectDomains {
+		if u.Host == domain {
+			return nil, model.NewRequestError(fmt.Sprintf("Domain '%s' is not allowed", domain))
+		}
+	}
+
 	canUpload, err := checkUserCanUpload(uid)
 	if err != nil {
 		log.Error("failed to check user permission: ", err)
