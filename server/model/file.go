@@ -31,6 +31,7 @@ type FileView struct {
 	Resource    *ResourceView `json:"resource,omitempty"`
 	Hash        string        `json:"hash,omitempty"`
 	StorageName string        `json:"storage_name,omitempty"`
+	CreatedAt   int64         `json:"created_at,omitempty"`
 }
 
 func (f *File) ToView() *FileView {
@@ -43,6 +44,7 @@ func (f *File) ToView() *FileView {
 		User:        f.User.ToView(),
 		Hash:        f.Hash,
 		StorageName: f.Storage.Name,
+		CreatedAt:   f.CreatedAt.Unix(),
 	}
 }
 

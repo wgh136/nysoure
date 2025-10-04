@@ -25,7 +25,7 @@ import Markdown from "react-markdown";
 import "../markdown.css";
 import Loading from "../components/loading.tsx";
 import {
-  MdAdd,
+  MdAdd, MdOutlineAccessTime,
   MdOutlineAdd,
   MdOutlineArchive,
   MdOutlineArticle,
@@ -776,6 +776,10 @@ function FileTile({ file }: { file: RFile }) {
                 {file.storage_name}
               </Badge>
             )}
+            <Badge className={"badge-soft badge-info text-xs mr-2"}>
+              <MdOutlineAccessTime size={16} className={"inline-block"} />
+              {new Date(file.created_at).toISOString().substring(0, 10)}
+            </Badge>
             <DeleteFileDialog fileId={file.id} uploaderId={file.user.id} />
             <UpdateFileInfoDialog file={file} />
           </p>

@@ -106,6 +106,7 @@ export interface RFile {
   resource?: Resource;
   hash?: string;
   storage_name?: string;
+  created_at: number; // unix timestamp
 }
 
 export interface UploadingFile {
