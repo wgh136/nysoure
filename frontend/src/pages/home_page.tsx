@@ -67,18 +67,25 @@ export default function HomePage() {
   );
 }
 
-let cachedPinnedResources: Resource[] | null = null;
-
 function HomeHeader() {
   const [pinnedResources, setPinnedResources] = useState<Resource[]>([]);
   const [statistic, setStatistic] = useState<Statistics | null>(null);
   const navigator = useNavigator();
+  const appContext = useAppContext();
 
   useEffect(() => {
-    if (cachedPinnedResources != null) {
-      setPinnedResources(cachedPinnedResources);
+    const pinned = appContext.get("pinned_resources");
+    const stats = appContext.get("site_statistics");
+    if (pinned) {
+      setPinnedResources(pinned);
+    }
+    if (stats) {
+      setStatistic(stats);
+    }
+    if (pinned && stats) {
       return;
     }
+    
     const prefetchData = app.getPreFetchData();
     if (prefetchData && prefetchData.background) {
       navigator.setBackground(
@@ -89,32 +96,36 @@ function HomeHeader() {
     let ok2 = false;
     if (prefetchData && prefetchData.statistics) {
       setStatistic(prefetchData.statistics);
+      appContext.set("site_statistics", prefetchData.statistics);
       ok1 = true;
     }
     if (prefetchData && prefetchData.pinned) {
-      cachedPinnedResources = prefetchData.pinned;
-      setPinnedResources(cachedPinnedResources!);
+      const r = prefetchData.pinned;
+      appContext.set("pinned_resources", r);
+      setPinnedResources(r!);
       ok2 = true;
     }
     if (ok1 && ok2) {
       return;
     }
+
     const fetchPinnedResources = async () => {
       const res = await network.getPinnedResources();
       if (res.success) {
-        cachedPinnedResources = res.data ?? [];
+        appContext.set("pinned_resources", res.data);
         setPinnedResources(res.data ?? []);
       }
     };
     const fetchStatistics = async () => {
       const res = await network.getStatistic();
       if (res.success) {
+        appContext.set("site_statistics", res.data);
         setStatistic(res.data!);
       }
     };
     fetchPinnedResources();
     fetchStatistics();
-  }, [navigator]);
+  }, [appContext, navigator]);
 
   if (pinnedResources.length == 0 || statistic == null) {
     return <></>;
@@ -123,8 +134,8 @@ function HomeHeader() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 p-4 gap-4">
       <PinnedResourceItem resource={pinnedResources[0]} />
-      <div className={"hidden md:block"}>
-        <div className={"card w-full shadow p-4 mb-4 bg-base-100-tr82 h-28"}>
+      <div className={"hidden md:flex h-52 md:h-60 flex-col"}>
+        <div className={"card w-full shadow p-4 mb-4 bg-base-100-tr82 flex-1"}>
           <h2 className={"text-lg font-bold pb-2"}>{app.appName}</h2>
           <p className={"text-xs"}>{app.siteDescription}</p>
         </div>
@@ -156,7 +167,7 @@ function PinnedResourceItem({ resource }: { resource: Resource }) {
             <img
               src={network.getResampledImageUrl(resource.image.id)}
               alt="cover"
-              className="w-full h-52 lg:h-60 object-cover"
+              className="w-full h-52 md:h-60 object-cover"
             />
           </figure>
         )}
