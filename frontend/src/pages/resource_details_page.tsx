@@ -778,7 +778,7 @@ function FileTile({ file }: { file: RFile }) {
             )}
             <Badge className={"badge-soft badge-info text-xs mr-2"}>
               <MdOutlineAccessTime size={16} className={"inline-block"} />
-              {new Date(file.created_at).toISOString().substring(0, 10)}
+              {new Date(file.created_at * 1000).toISOString().substring(0, 10)}
             </Badge>
             <DeleteFileDialog fileId={file.id} uploaderId={file.user.id} />
             <UpdateFileInfoDialog file={file} />
