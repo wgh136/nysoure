@@ -105,6 +105,7 @@ export interface RFile {
   user: User;
   resource?: Resource;
   hash?: string;
+  storage_name?: string;
 }
 
 export interface UploadingFile {

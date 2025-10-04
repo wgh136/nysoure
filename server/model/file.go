@@ -30,6 +30,7 @@ type FileView struct {
 	User        UserView      `json:"user"`
 	Resource    *ResourceView `json:"resource,omitempty"`
 	Hash        string        `json:"hash,omitempty"`
+	StorageName string        `json:"storage_name,omitempty"`
 }
 
 func (f *File) ToView() *FileView {
@@ -41,6 +42,7 @@ func (f *File) ToView() *FileView {
 		IsRedirect:  f.RedirectUrl != "",
 		User:        f.User.ToView(),
 		Hash:        f.Hash,
+		StorageName: f.Storage.Name,
 	}
 }
 

@@ -29,7 +29,9 @@ import {
   MdOutlineAdd,
   MdOutlineArchive,
   MdOutlineArticle,
+  MdOutlineCloud,
   MdOutlineComment,
+  MdOutlineContentCopy,
   MdOutlineDataset,
   MdOutlineDelete,
   MdOutlineDownload,
@@ -730,14 +732,48 @@ function FileTile({ file }: { file: RFile }) {
               {file.is_redirect ? t("Redirect") : fileSizeToString(file.size)}
             </Badge>
             {file.hash && (
-              <Badge
-                className={
-                  "badge-soft badge-accent text-xs mr-2 break-all hidden sm:inline-flex"
-                }
-                selectable={true}
-              >
-                <MdOutlineVerifiedUser size={16} className={"inline-block"} />
-                Md5: {file.hash}
+              <>
+                <Badge
+                  className={
+                    "badge-soft badge-accent text-xs mr-2 break-all hover:shadow-xs cursor-pointer transition-shadow"
+                  }
+                  onClick={() => {
+                    const dialog = document.getElementById(
+                      `file_md5_${file.id}`,
+                    ) as HTMLDialogElement;
+                    dialog.showModal();
+                  }}
+                >
+                  <MdOutlineVerifiedUser size={16} className={"inline-block"} />
+                  Md5
+                </Badge>
+                <dialog id={`file_md5_${file.id}`} className="modal">
+                  <div className="modal-box">
+                    <h3 className="font-bold text-lg mb-4">Md5</h3>
+                    <label className="input input-primary w-full">
+                      <input type="text" readOnly value={file.hash} />
+                      <button
+                        className="btn btn-square btn-ghost btn-sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText(file.hash!);
+                        }}
+                      >
+                        <MdOutlineContentCopy size={18} />
+                      </button>
+                    </label>
+                    <div className="modal-action">
+                      <form method="dialog">
+                        <button className="btn">Close</button>
+                      </form>
+                    </div>
+                  </div>
+                </dialog>
+              </>
+            )}
+            {file.storage_name && (
+              <Badge className={"badge-soft badge-info text-xs mr-2"}>
+                <MdOutlineCloud size={16} className={"inline-block"} />
+                {file.storage_name}
               </Badge>
             )}
             <DeleteFileDialog fileId={file.id} uploaderId={file.user.id} />

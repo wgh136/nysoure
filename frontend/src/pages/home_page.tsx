@@ -85,7 +85,7 @@ function HomeHeader() {
     if (pinned && stats) {
       return;
     }
-    
+
     const prefetchData = app.getPreFetchData();
     if (prefetchData && prefetchData.background) {
       navigator.setBackground(

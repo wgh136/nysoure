@@ -41,6 +41,7 @@ func GetResourceByID(id uint) (model.Resource, error) {
 		}).
 		Preload("Files").
 		Preload("Files.User").
+		Preload("Files.Storage").
 		First(&r, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return model.Resource{}, model.NewNotFoundError("Resource not found")
