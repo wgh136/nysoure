@@ -25,7 +25,8 @@ import Markdown from "react-markdown";
 import "../markdown.css";
 import Loading from "../components/loading.tsx";
 import {
-  MdAdd, MdOutlineAccessTime,
+  MdAdd,
+  MdOutlineAccessTime,
   MdOutlineAdd,
   MdOutlineArchive,
   MdOutlineArticle,
@@ -196,67 +197,70 @@ export default function ResourcePage() {
         <div className="flex">
           <div className="flex-1">
             <h1 className={"text-2xl font-bold px-4 py-2"}>{resource.title}</h1>
-        {resource.alternativeTitles.map((e, i) => {
-          return (
-            <h2
-              key={i}
-              className={"text-lg px-4 py-1 text-gray-700 dark:text-gray-300"}
+            {resource.alternativeTitles.map((e, i) => {
+              return (
+                <h2
+                  key={i}
+                  className={
+                    "text-lg px-4 py-1 text-gray-700 dark:text-gray-300"
+                  }
+                >
+                  {e}
+                </h2>
+              );
+            })}
+            <button
+              onClick={() => {
+                navigate(
+                  `/user/${encodeURIComponent(resource.author.username)}`,
+                );
+              }}
+              className="border-b-2 mx-4 py-1 cursor-pointer border-transparent hover:border-primary transition-colors duration-200 ease-in-out"
             >
-              {e}
-            </h2>
-          );
-        })}
-        <button
-          onClick={() => {
-            navigate(`/user/${encodeURIComponent(resource.author.username)}`);
-          }}
-          className="border-b-2 mx-4 py-1 cursor-pointer border-transparent hover:border-primary transition-colors duration-200 ease-in-out"
-        >
-          <div className="flex items-center ">
-            <div className="avatar">
-              <div className="w-6 rounded-full">
-                <img
-                  src={network.getUserAvatar(resource.author)}
-                  alt={"avatar"}
-                />
+              <div className="flex items-center ">
+                <div className="avatar">
+                  <div className="w-6 rounded-full">
+                    <img
+                      src={network.getUserAvatar(resource.author)}
+                      alt={"avatar"}
+                    />
+                  </div>
+                </div>
+                <div className="w-2"></div>
+                <div className="text-sm">{resource.author.username}</div>
               </div>
-            </div>
-            <div className="w-2"></div>
-            <div className="text-sm">{resource.author.username}</div>
-          </div>
-        </button>
+            </button>
             <Tags tags={resource.tags} />
+            <div className={"px-3 mt-2 flex flex-wrap"}>
+              {resource.links &&
+                resource.links.map((l) => {
+                  return (
+                    <a href={l.url} target={"_blank"}>
+                      <span
+                        className={
+                          "py-1 px-3 inline-flex items-center m-1 border border-base-300 bg-base-100 opacity-90 rounded-2xl hover:bg-base-200 transition-colors cursor-pointer select-none"
+                        }
+                      >
+                        {l.url.includes("steampowered.com") ? (
+                          <BiLogoSteam size={20} />
+                        ) : (
+                          <MdOutlineLink size={20} />
+                        )}
+                        <span className={"ml-2 text-sm"}>{l.label}</span>
+                      </span>
+                    </a>
+                  );
+                })}
+              <CollectionDialog rid={resource.id} />
+            </div>
           </div>
-          <div className="w-md p-4 hidden sm:flex items-center justify-center">
+          <div className="w-96 md:w-md lg:w-lg p-4 hidden sm:flex items-center justify-center">
             <Gallery images={resource.gallery} />
           </div>
         </div>
 
         <div className="w-full p-4 flex sm:hidden items-center justify-center">
           <Gallery images={resource.gallery} />
-        </div>
-
-        <div className={"px-3 mt-2 flex flex-wrap"}>
-          {resource.links &&
-            resource.links.map((l) => {
-              return (
-                <a href={l.url} target={"_blank"}>
-                  <span
-                    className={
-                      "py-1 px-3 inline-flex items-center m-1 border border-base-300 bg-base-100 opacity-90 rounded-2xl hover:bg-base-200 transition-colors cursor-pointer select-none"
-                    }
-                  >
-                    {l.url.includes("steampowered.com") ? (
-                      <BiLogoSteam size={20} />
-                    ) : (
-                      <MdOutlineLink size={20} />
-                    )}
-                    <span className={"ml-2 text-sm"}>{l.label}</span>
-                  </span>
-                </a>
-              );
-            })}
-          <CollectionDialog rid={resource.id} />
         </div>
 
         <div
