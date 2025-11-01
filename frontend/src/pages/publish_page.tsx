@@ -27,6 +27,7 @@ export default function PublishPage() {
   const [article, setArticle] = useState<string>("");
   const [images, setImages] = useState<number[]>([]);
   const [links, setLinks] = useState<{ label: string; url: string }[]>([]);
+  const [galleryImages, setGalleryImages] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
 
@@ -106,6 +107,7 @@ export default function PublishPage() {
       article: article,
       images: images,
       links: links,
+      gallery: galleryImages,
     });
     if (res.success) {
       localStorage.removeItem("publish_data");
@@ -329,6 +331,7 @@ export default function PublishPage() {
               <tr>
                 <td>{t("Preview")}</td>
                 <td>{"Markdown"}</td>
+                <td>{"Gallery"}</td>
                 <td>{t("Action")}</td>
               </tr>
             </thead>
@@ -355,6 +358,22 @@ export default function PublishPage() {
                       >
                         <MdContentCopy />
                       </button>
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="checkbox checkbox-accent"
+                        checked={galleryImages.includes(image)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setGalleryImages((prev) => [...prev, image]);
+                          } else {
+                            setGalleryImages((prev) =>
+                              prev.filter((id) => id !== image),
+                            );
+                          }
+                        }}
+                      />
                     </td>
                     <td>
                       <button

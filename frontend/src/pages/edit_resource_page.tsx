@@ -28,6 +28,7 @@ export default function EditResourcePage() {
   const [article, setArticle] = useState<string>("");
   const [images, setImages] = useState<number[]>([]);
   const [links, setLinks] = useState<{ label: string; url: string }[]>([]);
+  const [galleryImages, setGalleryImages] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
   const [isLoading, setLoading] = useState(true);
@@ -55,6 +56,7 @@ export default function EditResourcePage() {
         setArticle(data.article);
         setImages(data.images.map((i) => i.id));
         setLinks(data.links ?? []);
+        setGalleryImages(data.gallery ?? []);
         setLoading(false);
       } else {
         showToast({ message: t("Failed to load resource"), type: "error" });
@@ -98,6 +100,7 @@ export default function EditResourcePage() {
       article: article,
       images: images,
       links: links,
+      gallery: galleryImages,
     });
     if (res.success) {
       setSubmitting(false);
@@ -318,6 +321,7 @@ export default function EditResourcePage() {
               <tr>
                 <td>{t("Preview")}</td>
                 <td>{"Markdown"}</td>
+                <td>{t("Gallery")}</td>
                 <td>{t("Action")}</td>
               </tr>
             </thead>
@@ -344,6 +348,22 @@ export default function EditResourcePage() {
                       >
                         <MdContentCopy />
                       </button>
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="checkbox checkbox-accent"
+                        checked={galleryImages.includes(image)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setGalleryImages((prev) => [...prev, image]);
+                          } else {
+                            setGalleryImages((prev) =>
+                              prev.filter((id) => id !== image),
+                            );
+                          }
+                        }}
+                      />
                     </td>
                     <td>
                       <button

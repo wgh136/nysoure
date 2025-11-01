@@ -27,6 +27,7 @@ type ResourceParams struct {
 	Tags              []uint       `json:"tags"`
 	Article           string       `json:"article"`
 	Images            []uint       `json:"images"`
+	Gallery           []uint       `json:"gallery"`
 }
 
 func CreateResource(uid uint, params *ResourceParams) (uint, error) {
@@ -62,6 +63,7 @@ func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 		Images:            images,
 		Tags:              tags,
 		UserID:            uid,
+		Gallery:           params.Gallery,
 	}
 	if r, err = dao.CreateResource(r); err != nil {
 		return 0, err
@@ -452,6 +454,7 @@ func EditResource(uid, rid uint, params *ResourceParams) error {
 	r.AlternativeTitles = params.AlternativeTitles
 	r.Article = params.Article
 	r.Links = params.Links
+	r.Gallery = params.Gallery
 
 	images := make([]model.Image, len(params.Images))
 	for i, id := range params.Images {

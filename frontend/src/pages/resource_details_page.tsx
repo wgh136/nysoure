@@ -4,6 +4,7 @@ import {
   createRef,
   ReactElement,
   ReactNode,
+  use,
   useCallback,
   useContext,
   useEffect,
@@ -29,6 +30,8 @@ import {
   MdOutlineAdd,
   MdOutlineArchive,
   MdOutlineArticle,
+  MdOutlineChevronLeft,
+  MdOutlineChevronRight,
   MdOutlineCloud,
   MdOutlineComment,
   MdOutlineContentCopy,
@@ -65,6 +68,7 @@ import KunApi, {
 } from "../network/kun.ts";
 import { Debounce } from "../utils/debounce.ts";
 import remarkGfm from "remark-gfm";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function ResourcePage() {
   const params = useParams();
@@ -190,7 +194,9 @@ export default function ResourcePage() {
   return (
     <context.Provider value={reload}>
       <div className={"pt-2"}>
-        <h1 className={"text-2xl font-bold px-4 py-2"}>{resource.title}</h1>
+        <div className="flex">
+          <div className="flex-1">
+            <h1 className={"text-2xl font-bold px-4 py-2"}>{resource.title}</h1>
         {resource.alternativeTitles.map((e, i) => {
           return (
             <h2
@@ -220,7 +226,16 @@ export default function ResourcePage() {
             <div className="text-sm">{resource.author.username}</div>
           </div>
         </button>
-        <Tags tags={resource.tags} />
+            <Tags tags={resource.tags} />
+          </div>
+          <div className="w-md p-4 hidden sm:flex items-center justify-center">
+            <Gallery images={resource.gallery} />
+          </div>
+        </div>
+
+        <div className="w-full p-4 flex sm:hidden items-center justify-center">
+          <Gallery images={resource.gallery} />
+        </div>
 
         <div className={"px-3 mt-2 flex flex-wrap"}>
           {resource.links &&
@@ -1857,6 +1872,127 @@ function CollectionSelector({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function Gallery({ images }: { images: number[] }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(0); // 方向：1=向右，-1=向左
+  const [isHovered, setIsHovered] = useState(false);
+  const [width, setWidth] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setWidth(containerRef.current.clientWidth);
+      }
+    };
+
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => {
+      window.removeEventListener("resize", updateWidth);
+    };
+  }, []);
+
+  if (!images || images.length === 0) {
+    return <></>;
+  }
+
+  const goToPrevious = () => {
+    setDirection(-1);
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const goToNext = () => {
+    setDirection(1);
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  const goToIndex = (index: number) => {
+    setDirection(index > currentIndex ? 1 : -1);
+    setCurrentIndex(index);
+  };
+
+  return (
+    <div
+      className="relative w-full overflow-hidden rounded-xl bg-base-100-tr82 shadow-sm"
+      style={{ aspectRatio: "16/9" }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* 图片区域 */}
+      <div ref={containerRef} className="w-full h-full relative">
+        {width > 0 && (
+          <AnimatePresence initial={false} custom={direction} mode="sync">
+            <motion.img
+              key={currentIndex}
+              src={network.getImageUrl(images[currentIndex])}
+              alt={`Gallery image ${currentIndex + 1}`}
+              className="absolute w-full h-full object-contain"
+              variants={{
+                enter: (dir: number) => ({
+                  x: dir > 0 ? width : -width,
+                }),
+                center: {
+                  x: 0,
+                  transition: { duration: 0.3, ease: "linear" },
+                },
+                exit: (dir: number) => ({
+                  x: dir > 0 ? -width : width,
+                  transition: { duration: 0.3, ease: "linear" },
+                }),
+              }}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              custom={direction}
+            />
+          </AnimatePresence>
+        )}
+      </div>
+
+      {/* 左右按钮 */}
+      {images.length > 1 && (
+        <>
+          <button
+            className={`absolute left-2 top-1/2 -translate-y-1/2 transition-opacity hover:cursor-pointer ${
+              isHovered ? "opacity-100" : "opacity-0"
+            }`}
+            onClick={goToPrevious}
+          >
+            <MdOutlineChevronLeft size={28} />
+          </button>
+          <button
+            className={`absolute right-2 top-1/2 -translate-y-1/2 transition-opacity hover:cursor-pointer ${
+              isHovered ? "opacity-100" : "opacity-0"
+            }`}
+            onClick={goToNext}
+          >
+            <MdOutlineChevronRight size={28} />
+          </button>
+        </>
+      )}
+
+      {/* 底部圆点 */}
+      {images.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+          {images.map((_, index) => (
+            <button
+              key={index}
+              className={`w-2 h-2 rounded-full transition-all ${
+                index === currentIndex
+                  ? "bg-primary w-4"
+                  : "bg-base-content/30 hover:bg-base-content/50"
+              }`}
+              onClick={() => goToIndex(index)}
+              aria-label={`Go to image ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

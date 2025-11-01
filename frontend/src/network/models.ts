@@ -47,6 +47,7 @@ export interface CreateResourceParams {
   tags: number[];
   article: string;
   images: number[];
+  gallery: number[];
 }
 
 export interface Image {
@@ -84,6 +85,7 @@ export interface ResourceDetails {
   downloads: number;
   comments: number;
   related: Resource[];
+  gallery: number[];
 }
 
 export interface Storage {
