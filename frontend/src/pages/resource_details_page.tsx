@@ -255,12 +255,12 @@ export default function ResourcePage() {
             </div>
           </div>
           <div className="w-96 md:w-md lg:w-lg xl:w-xl p-4 hidden sm:flex items-center justify-center">
-            <Gallery images={resource.gallery} />
+            <Gallery images={resource.gallery} nsfw={resource.galleryNsfw} />
           </div>
         </div>
 
         <div className="w-full p-4 flex sm:hidden items-center justify-center">
-          <Gallery images={resource.gallery} />
+          <Gallery images={resource.gallery} nsfw={resource.galleryNsfw} />
         </div>
 
         <div
@@ -357,18 +357,20 @@ function Tags({ tags }: { tags: Tag[] }) {
     tagsMap.get(type)?.push(tag);
   }
 
+  const compactMode = tags.length > 10;
+
   return (
     <>
       {Array.from(tagsMap.entries()).map(([type, tags]) => (
         <p key={type} className={"px-4"}>
-          <Badge className="shadow-xs" key={type}>
+          <Badge className="shadow-xs mr-0.5" key={type}>
             {type == "" ? t("Other") : type}
           </Badge>
           {tags.map((tag) => (
             <Badge
               key={tag.name}
               className={
-                "m-1 cursor-pointer badge-soft badge-primary shadow-xs"
+                `${compactMode ? "m-0.5" : "m-1"} cursor-pointer badge-soft badge-primary shadow-xs`
               }
               onClick={() => {
                 navigate(`/tag/${encodeURIComponent(tag.name)}`);
@@ -1879,7 +1881,7 @@ function CollectionSelector({
   );
 }
 
-function Gallery({ images }: { images: number[] }) {
+function Gallery({ images, nsfw }: { images: number[], nsfw: number[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0); // 方向：1=向右，-1=向左
   const [isHovered, setIsHovered] = useState(false);
@@ -1919,6 +1921,10 @@ function Gallery({ images }: { images: number[] }) {
     setCurrentIndex(index);
   };
 
+  if (nsfw == null) {
+    nsfw = [];
+  }
+
   return (
     <div
       className="relative w-full overflow-hidden rounded-xl bg-base-100-tr82 shadow-sm"
@@ -1930,10 +1936,8 @@ function Gallery({ images }: { images: number[] }) {
       <div ref={containerRef} className="w-full h-full relative">
         {width > 0 && (
           <AnimatePresence initial={false} custom={direction} mode="sync">
-            <motion.img
+            <motion.div
               key={currentIndex}
-              src={network.getImageUrl(images[currentIndex])}
-              alt={`Gallery image ${currentIndex + 1}`}
               className="absolute w-full h-full object-contain"
               variants={{
                 enter: (dir: number) => ({
@@ -1952,7 +1956,12 @@ function Gallery({ images }: { images: number[] }) {
               animate="center"
               exit="exit"
               custom={direction}
-            />
+            >
+              <GalleryImage
+                src={network.getImageUrl(images[currentIndex])}
+                nfsw={nsfw.includes(images[currentIndex])}
+              />
+            </motion.div>
           </AnimatePresence>
         )}
       </div>
@@ -1995,6 +2004,32 @@ function Gallery({ images }: { images: number[] }) {
             />
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+function GalleryImage({src, nfsw}: {src: string, nfsw: boolean}) {
+  const [show, setShow] = useState(!nfsw);
+
+  return (
+    <div className="relative w-full h-full">
+      <img 
+        src={src} 
+        alt="" 
+        className={`w-full h-full object-contain transition-all duration-300 ${!show ? 'blur-xl' : ''}`}
+      />
+      {!show && (
+        <>
+          <div className="absolute inset-0 bg-base-content/20 cursor-pointer" onClick={() => {
+            setShow(true)
+          }} />
+          <div className="absolute top-4 left-4">
+            <Badge className="badge-error shadow-lg">
+              NSFW
+            </Badge>
+          </div>
+        </>
       )}
     </div>
   );

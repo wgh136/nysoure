@@ -22,6 +22,7 @@ type Resource struct {
 	Comments          uint
 	ModifiedTime      time.Time
 	Gallery           []uint `gorm:"serializer:json"`
+	GalleryNsfw       []uint `gorm:"serializer:json"`
 }
 
 type Link struct {
@@ -54,6 +55,7 @@ type ResourceDetailView struct {
 	Comments          uint           `json:"comments"`
 	Related           []ResourceView `json:"related"`
 	Gallery           []uint         `json:"gallery"`
+	GalleryNsfw       []uint         `json:"galleryNsfw"`
 }
 
 func (r *Resource) ToView() ResourceView {
@@ -107,5 +109,6 @@ func (r *Resource) ToDetailView() ResourceDetailView {
 		Downloads:         r.Downloads,
 		Comments:          r.Comments,
 		Gallery:           r.Gallery,
+		GalleryNsfw:       r.GalleryNsfw,
 	}
 }

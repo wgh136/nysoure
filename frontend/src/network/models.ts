@@ -48,6 +48,7 @@ export interface CreateResourceParams {
   article: string;
   images: number[];
   gallery: number[];
+  gallery_nsfw: number[];
 }
 
 export interface Image {
@@ -86,6 +87,7 @@ export interface ResourceDetails {
   comments: number;
   related: Resource[];
   gallery: number[];
+  galleryNsfw: number[];
 }
 
 export interface Storage {

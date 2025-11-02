@@ -29,6 +29,7 @@ export default function EditResourcePage() {
   const [images, setImages] = useState<number[]>([]);
   const [links, setLinks] = useState<{ label: string; url: string }[]>([]);
   const [galleryImages, setGalleryImages] = useState<number[]>([]);
+  const [galleryNsfw, setGalleryNsfw] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
   const [isLoading, setLoading] = useState(true);
@@ -57,6 +58,7 @@ export default function EditResourcePage() {
         setImages(data.images.map((i) => i.id));
         setLinks(data.links ?? []);
         setGalleryImages(data.gallery ?? []);
+        setGalleryNsfw(data.galleryNsfw ?? []);
         setLoading(false);
       } else {
         showToast({ message: t("Failed to load resource"), type: "error" });
@@ -101,6 +103,7 @@ export default function EditResourcePage() {
       images: images,
       links: links,
       gallery: galleryImages,
+      gallery_nsfw: galleryNsfw,
     });
     if (res.success) {
       setSubmitting(false);
@@ -322,6 +325,7 @@ export default function EditResourcePage() {
                 <td>{t("Preview")}</td>
                 <td>{"Markdown"}</td>
                 <td>{t("Gallery")}</td>
+                <td>{"Nsfw"}</td>
                 <td>{t("Action")}</td>
               </tr>
             </thead>
@@ -359,6 +363,22 @@ export default function EditResourcePage() {
                             setGalleryImages((prev) => [...prev, image]);
                           } else {
                             setGalleryImages((prev) =>
+                              prev.filter((id) => id !== image),
+                            );
+                          }
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="checkbox checkbox-accent"
+                        checked={galleryNsfw.includes(image)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setGalleryNsfw((prev) => [...prev, image]);
+                          } else {
+                            setGalleryNsfw((prev) =>
                               prev.filter((id) => id !== image),
                             );
                           }
