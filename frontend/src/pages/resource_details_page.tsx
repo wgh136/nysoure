@@ -254,7 +254,7 @@ export default function ResourcePage() {
               <CollectionDialog rid={resource.id} />
             </div>
           </div>
-          <div className="w-96 md:w-md lg:w-lg p-4 hidden sm:flex items-center justify-center">
+          <div className="w-96 md:w-md lg:w-lg xl:w-xl p-4 hidden sm:flex items-center justify-center">
             <Gallery images={resource.gallery} />
           </div>
         </div>
