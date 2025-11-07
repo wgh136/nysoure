@@ -7,6 +7,7 @@ import (
 	"nysoure/server/model"
 	"nysoure/server/search"
 	"nysoure/server/utils"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -56,6 +57,18 @@ func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 			},
 		}
 	}
+	gallery := make([]uint, 0, len(params.Gallery))
+	for _, id := range params.Gallery {
+		if slices.Contains(params.Images, id) {
+			gallery = append(gallery, id)
+		}
+	}
+	nsfw := make([]uint, 0, len(params.GalleryNsfw))
+	for _, id := range params.GalleryNsfw {
+		if slices.Contains(gallery, id) {
+			nsfw = append(nsfw, id)
+		}
+	}
 	r := model.Resource{
 		Title:             params.Title,
 		AlternativeTitles: params.AlternativeTitles,
@@ -64,8 +77,8 @@ func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 		Images:            images,
 		Tags:              tags,
 		UserID:            uid,
-		Gallery:           params.Gallery,
-		GalleryNsfw:       params.GalleryNsfw,
+		Gallery:           gallery,
+		GalleryNsfw:       nsfw,
 	}
 	if r, err = dao.CreateResource(r); err != nil {
 		return 0, err
@@ -452,12 +465,25 @@ func EditResource(uid, rid uint, params *ResourceParams) error {
 		return model.NewUnAuthorizedError("You have not permission to edit this resource")
 	}
 
+	gallery := make([]uint, 0, len(params.Gallery))
+	for _, id := range params.Gallery {
+		if slices.Contains(params.Images, id) {
+			gallery = append(gallery, id)
+		}
+	}
+	nsfw := make([]uint, 0, len(params.GalleryNsfw))
+	for _, id := range params.GalleryNsfw {
+		if slices.Contains(gallery, id) {
+			nsfw = append(nsfw, id)
+		}
+	}
+
 	r.Title = params.Title
 	r.AlternativeTitles = params.AlternativeTitles
 	r.Article = params.Article
 	r.Links = params.Links
-	r.Gallery = params.Gallery
-	r.GalleryNsfw = params.GalleryNsfw
+	r.Gallery = gallery
+	r.GalleryNsfw = nsfw
 
 	images := make([]model.Image, len(params.Images))
 	for i, id := range params.Images {
