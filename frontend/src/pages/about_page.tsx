@@ -26,13 +26,13 @@ export default function AboutPage() {
                   return (
                     <a
                       className={
-                        "inline-block card card-border border-base-300 no-underline bg-base-200 hover:shadow transition-shadow"
+                        "inline-block card card-border border-base-200 no-underline bg-base-100 shadow-xs hover:shadow-sm transition-shadow mr-1 sm:mr-2 mb-2 w-52 sm:w-64"
                       }
                       target={"_blank"}
                       href={href}
                     >
-                      <figure className={"max-h-60 max-w-80"}>{img}</figure>
-                      <div className={"card-body text-base-content text-lg"}>
+                      <figure className={"max-h-60 w-full"}>{img}</figure>
+                      <div className={"text-base-content text-lg p-4"}>
                         {second}
                       </div>
                     </a>

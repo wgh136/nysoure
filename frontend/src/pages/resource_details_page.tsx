@@ -1926,6 +1926,27 @@ function Gallery({ images, nsfw }: { images: number[], nsfw: number[] }) {
   }
 
   return (
+    <>
+    <dialog
+      id="fullscreen_image_dialog"
+      onClick={() => {
+      const dialog = document.getElementById("fullscreen_image_dialog") as HTMLDialogElement;
+      dialog.close();
+      }}
+      className="modal"
+    >
+      <div className="modal-box max-w-7xl w-full h-full max-h-screen p-4 bg-transparent shadow-none flex items-center justify-center">
+      <motion.img
+      src={network.getImageUrl(images[currentIndex])}
+      alt=""
+      className="max-w-full max-h-full object-contain rounded-xl"
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      transition={{ duration: 0.2 }}
+      />
+      </div>
+    </dialog>
     <div
       className="relative w-full overflow-hidden rounded-xl bg-base-100-tr82 shadow-sm"
       style={{ aspectRatio: "16/9" }}
@@ -1933,7 +1954,10 @@ function Gallery({ images, nsfw }: { images: number[], nsfw: number[] }) {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* 图片区域 */}
-      <div ref={containerRef} className="w-full h-full relative">
+      <div ref={containerRef} className="w-full h-full relative" onClick={() => {
+        const dialog = document.getElementById("fullscreen_image_dialog") as HTMLDialogElement;
+        dialog.showModal();
+      }}>
         {width > 0 && (
           <AnimatePresence initial={false} custom={direction} mode="sync">
             <motion.div
@@ -2006,6 +2030,7 @@ function Gallery({ images, nsfw }: { images: number[], nsfw: number[] }) {
         </div>
       )}
     </div>
+    </>
   );
 }
 
@@ -2021,8 +2046,9 @@ function GalleryImage({src, nfsw}: {src: string, nfsw: boolean}) {
       />
       {!show && (
         <>
-          <div className="absolute inset-0 bg-base-content/20 cursor-pointer" onClick={() => {
+          <div className="absolute inset-0 bg-base-content/20 cursor-pointer" onClick={(event) => {
             setShow(true)
+            event.stopPropagation();
           }} />
           <div className="absolute top-4 left-4">
             <Badge className="badge-error shadow-lg">
