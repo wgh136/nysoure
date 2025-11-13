@@ -1887,6 +1887,7 @@ function Gallery({ images, nsfw }: { images: number[], nsfw: number[] }) {
   const [isHovered, setIsHovered] = useState(false);
   const [width, setWidth] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     const updateWidth = () => {
@@ -1928,14 +1929,13 @@ function Gallery({ images, nsfw }: { images: number[], nsfw: number[] }) {
   return (
     <>
     <dialog
-      id="fullscreen_image_dialog"
+      ref={dialogRef}
       onClick={() => {
-      const dialog = document.getElementById("fullscreen_image_dialog") as HTMLDialogElement;
-      dialog.close();
+      dialogRef.current?.close();
       }}
       className="modal"
     >
-      <div className="modal-box max-w-7xl w-full h-full max-h-screen p-4 bg-transparent shadow-none flex items-center justify-center">
+      <div className="modal-box w-full h-full max-h-screen max-w-screen p-4 bg-transparent shadow-none flex items-center justify-center">
       <motion.img
       src={network.getImageUrl(images[currentIndex])}
       alt=""
@@ -1955,8 +1955,7 @@ function Gallery({ images, nsfw }: { images: number[], nsfw: number[] }) {
     >
       {/* 图片区域 */}
       <div ref={containerRef} className="w-full h-full relative" onClick={() => {
-        const dialog = document.getElementById("fullscreen_image_dialog") as HTMLDialogElement;
-        dialog.showModal();
+        dialogRef.current?.showModal();
       }}>
         {width > 0 && (
           <AnimatePresence initial={false} custom={direction} mode="sync">
