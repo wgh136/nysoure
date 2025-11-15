@@ -21,8 +21,9 @@ type Resource struct {
 	Downloads         uint
 	Comments          uint
 	ModifiedTime      time.Time
-	Gallery           []uint `gorm:"serializer:json"`
-	GalleryNsfw       []uint `gorm:"serializer:json"`
+	Gallery           []uint      `gorm:"serializer:json"`
+	GalleryNsfw       []uint      `gorm:"serializer:json"`
+	Charactors        []Charactor `gorm:"foreignKey:ResourceID"`
 }
 
 type Link struct {
@@ -40,22 +41,23 @@ type ResourceView struct {
 }
 
 type ResourceDetailView struct {
-	ID                uint           `json:"id"`
-	Title             string         `json:"title"`
-	AlternativeTitles []string       `json:"alternativeTitles"`
-	Links             []Link         `json:"links"`
-	Article           string         `json:"article"`
-	CreatedAt         time.Time      `json:"createdAt"`
-	Tags              []TagView      `json:"tags"`
-	Images            []ImageView    `json:"images"`
-	Files             []FileView     `json:"files"`
-	Author            UserView       `json:"author"`
-	Views             uint           `json:"views"`
-	Downloads         uint           `json:"downloads"`
-	Comments          uint           `json:"comments"`
-	Related           []ResourceView `json:"related"`
-	Gallery           []uint         `json:"gallery"`
-	GalleryNsfw       []uint         `json:"galleryNsfw"`
+	ID                uint            `json:"id"`
+	Title             string          `json:"title"`
+	AlternativeTitles []string        `json:"alternativeTitles"`
+	Links             []Link          `json:"links"`
+	Article           string          `json:"article"`
+	CreatedAt         time.Time       `json:"createdAt"`
+	Tags              []TagView       `json:"tags"`
+	Images            []ImageView     `json:"images"`
+	Files             []FileView      `json:"files"`
+	Author            UserView        `json:"author"`
+	Views             uint            `json:"views"`
+	Downloads         uint            `json:"downloads"`
+	Comments          uint            `json:"comments"`
+	Related           []ResourceView  `json:"related"`
+	Gallery           []uint          `json:"gallery"`
+	GalleryNsfw       []uint          `json:"galleryNsfw"`
+	Charactors        []CharactorView `json:"charactors"`
 }
 
 func (r *Resource) ToView() ResourceView {
@@ -94,6 +96,10 @@ func (r *Resource) ToDetailView() ResourceDetailView {
 	for i, file := range r.Files {
 		files[i] = *file.ToView()
 	}
+	charactors := make([]CharactorView, len(r.Charactors))
+	for i, charactor := range r.Charactors {
+		charactors[i] = *charactor.ToView()
+	}
 	return ResourceDetailView{
 		ID:                r.ID,
 		Title:             r.Title,
@@ -110,5 +116,6 @@ func (r *Resource) ToDetailView() ResourceDetailView {
 		Comments:          r.Comments,
 		Gallery:           r.Gallery,
 		GalleryNsfw:       r.GalleryNsfw,
+		Charactors:        charactors,
 	}
 }

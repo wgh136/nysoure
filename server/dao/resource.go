@@ -16,9 +16,17 @@ import (
 func CreateResource(r model.Resource) (model.Resource, error) {
 	err := db.Transaction(func(tx *gorm.DB) error {
 		r.ModifiedTime = time.Now()
+		charactors := r.Charactors
+		r.Charactors = nil
 		err := tx.Create(&r).Error
 		if err != nil {
 			return err
+		}
+		for _, c := range charactors {
+			c.ResourceID = r.ID
+			if err := tx.Create(&c).Error; err != nil {
+				return err
+			}
 		}
 		if err := tx.Model(&model.User{}).Where("id = ?", r.UserID).Update("resources_count", gorm.Expr("resources_count + ?", 1)).Error; err != nil {
 			return err
@@ -42,6 +50,7 @@ func GetResourceByID(id uint) (model.Resource, error) {
 		Preload("Files").
 		Preload("Files.User").
 		Preload("Files.Storage").
+		Preload("Charactors").
 		First(&r, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return model.Resource{}, model.NewNotFoundError("Resource not found")
@@ -99,22 +108,60 @@ func GetResourceList(page, pageSize int, sort model.RSort) ([]model.Resource, in
 
 func UpdateResource(r model.Resource) error {
 	// Update a resource in the database
-	images := r.Images
-	tags := r.Tags
-	r.Images = nil
-	r.Tags = nil
-	r.Files = nil
-	r.ModifiedTime = time.Now()
-	if err := db.Save(&r).Error; err != nil {
-		return err
-	}
-	if err := db.Model(&r).Association("Images").Replace(images); err != nil {
-		return err
-	}
-	if err := db.Model(&r).Association("Tags").Replace(tags); err != nil {
-		return err
-	}
-	return nil
+	return db.Transaction(func(tx *gorm.DB) error {
+		images := r.Images
+		tags := r.Tags
+		charactors := r.Charactors
+		r.Charactors = nil
+		r.Images = nil
+		r.Tags = nil
+		r.Files = nil
+		r.ModifiedTime = time.Now()
+		oldCharactors := []model.Charactor{}
+		if err := db.Model(&model.Charactor{}).Where("resource_id = ?", r.ID).Find(&oldCharactors).Error; err != nil {
+			return err
+		}
+		if err := db.Save(&r).Error; err != nil {
+			return err
+		}
+		if err := db.Model(&r).Association("Images").Replace(images); err != nil {
+			return err
+		}
+		if err := db.Model(&r).Association("Tags").Replace(tags); err != nil {
+			return err
+		}
+		for _, c := range oldCharactors {
+			shouldDelete := true
+			for _, nc := range charactors {
+				if c.ID == nc.ID {
+					shouldDelete = false
+					break
+				}
+			}
+			if shouldDelete {
+				if err := tx.Delete(&c).Error; err != nil {
+					return err
+				}
+			}
+		}
+		for _, c := range charactors {
+			shouldAdd := true
+			for _, oc := range oldCharactors {
+				if c.Equal(&oc) {
+					shouldAdd = false
+					break
+				}
+			}
+			if shouldAdd {
+				c.ID = 0
+				c.ResourceID = r.ID
+				if err := tx.Create(&c).Error; err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
 }
 
 func DeleteResource(id uint) error {

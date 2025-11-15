@@ -239,7 +239,7 @@ func handleUpdateResource(c fiber.Ctx) error {
 	if !ok {
 		return model.NewUnAuthorizedError("You must be logged in to update a resource")
 	}
-	err = service.EditResource(uid, uint(id), &params)
+	err = service.UpdateResource(uid, uint(id), &params)
 	if err != nil {
 		return err
 	}

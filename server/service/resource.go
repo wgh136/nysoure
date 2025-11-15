@@ -22,14 +22,22 @@ const (
 )
 
 type ResourceParams struct {
-	Title             string       `json:"title" binding:"required"`
-	AlternativeTitles []string     `json:"alternative_titles"`
-	Links             []model.Link `json:"links"`
-	Tags              []uint       `json:"tags"`
-	Article           string       `json:"article"`
-	Images            []uint       `json:"images"`
-	Gallery           []uint       `json:"gallery"`
-	GalleryNsfw       []uint       `json:"gallery_nsfw"`
+	Title             string            `json:"title" binding:"required"`
+	AlternativeTitles []string          `json:"alternative_titles"`
+	Links             []model.Link      `json:"links"`
+	Tags              []uint            `json:"tags"`
+	Article           string            `json:"article"`
+	Images            []uint            `json:"images"`
+	Gallery           []uint            `json:"gallery"`
+	GalleryNsfw       []uint            `json:"gallery_nsfw"`
+	Charactors        []CharactorParams `json:"charactors"`
+}
+
+type CharactorParams struct {
+	Name  string   `json:"name" binding:"required"`
+	Alias []string `json:"alias"`
+	CV    string   `json:"cv"`
+	Image uint     `json:"image"`
 }
 
 func CreateResource(uid uint, params *ResourceParams) (uint, error) {
@@ -69,6 +77,15 @@ func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 			nsfw = append(nsfw, id)
 		}
 	}
+	charactors := make([]model.Charactor, len(params.Charactors))
+	for i, c := range params.Charactors {
+		charactors[i] = model.Charactor{
+			Name:    c.Name,
+			Alias:   c.Alias,
+			CV:      c.CV,
+			ImageID: c.Image,
+		}
+	}
 	r := model.Resource{
 		Title:             params.Title,
 		AlternativeTitles: params.AlternativeTitles,
@@ -79,6 +96,7 @@ func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 		UserID:            uid,
 		Gallery:           gallery,
 		GalleryNsfw:       nsfw,
+		Charactors:        charactors,
 	}
 	if r, err = dao.CreateResource(r); err != nil {
 		return 0, err
@@ -451,7 +469,7 @@ func GetResourcesWithUser(username string, page int) ([]model.ResourceView, int,
 	return views, totalPages, nil
 }
 
-func EditResource(uid, rid uint, params *ResourceParams) error {
+func UpdateResource(uid, rid uint, params *ResourceParams) error {
 	isAdmin, err := checkUserCanUpload(uid)
 	if err != nil {
 		log.Error("checkUserCanUpload error: ", err)
@@ -477,6 +495,15 @@ func EditResource(uid, rid uint, params *ResourceParams) error {
 			nsfw = append(nsfw, id)
 		}
 	}
+	charactors := make([]model.Charactor, len(params.Charactors))
+	for i, c := range params.Charactors {
+		charactors[i] = model.Charactor{
+			Name:    c.Name,
+			Alias:   c.Alias,
+			CV:      c.CV,
+			ImageID: c.Image,
+		}
+	}
 
 	r.Title = params.Title
 	r.AlternativeTitles = params.AlternativeTitles
@@ -484,6 +511,7 @@ func EditResource(uid, rid uint, params *ResourceParams) error {
 	r.Links = params.Links
 	r.Gallery = gallery
 	r.GalleryNsfw = nsfw
+	r.Charactors = charactors
 
 	images := make([]model.Image, len(params.Images))
 	for i, id := range params.Images {
