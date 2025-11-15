@@ -1,6 +1,10 @@
 package service
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
 	"net/url"
 	"nysoure/server/config"
 	"nysoure/server/dao"
@@ -10,6 +14,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/log"
@@ -589,4 +594,162 @@ func GetPinnedResources() ([]model.ResourceView, error) {
 		views = append(views, r.ToView())
 	}
 	return views, nil
+}
+
+func GetCharactorsFromVndb(vnID string) ([]CharactorParams, error) {
+	client := http.Client{}
+	jsonStr := fmt.Sprintf(`
+	{
+		"filters": ["id", "=", "%s"],
+		"fields": "va.character.name, va.staff.name, va.staff.original, va.character.original, va.character.image.url, va.character.vns.role"
+	}
+	`, vnID)
+	jsonStr = strings.TrimSpace(jsonStr)
+	reader := strings.NewReader(jsonStr)
+	resp, err := client.Post("https://api.vndb.org/kana/vn", "application/json", reader)
+	if err != nil {
+		return nil, model.NewInternalServerError("Failed to fetch data from VNDB")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, model.NewInternalServerError("Failed to fetch data from VNDB")
+	}
+	// 定义 VNDB API 响应结构
+	type VndbResponse struct {
+		Results []struct {
+			ID string `json:"id"`
+			VA []struct {
+				Character struct {
+					ID       string `json:"id"`
+					Name     string `json:"name"`
+					Original string `json:"original"`
+					Image    struct {
+						URL string `json:"url"`
+					} `json:"image"`
+					VNS []struct {
+						ID   string `json:"id"`
+						Role string `json:"role"`
+					} `json:"vns"`
+				} `json:"character"`
+				Staff struct {
+					ID       string `json:"id"`
+					Name     string `json:"name"`
+					Original string `json:"original"`
+				} `json:"staff"`
+			} `json:"va"`
+		} `json:"results"`
+	}
+
+	// 解析响应
+	var vndbResp VndbResponse
+	if err := json.NewDecoder(resp.Body).Decode(&vndbResp); err != nil {
+		return nil, model.NewInternalServerError("Failed to parse VNDB response")
+	}
+
+	if len(vndbResp.Results) == 0 {
+		return []CharactorParams{}, nil
+	}
+
+	result := vndbResp.Results[0]
+	var charactors []CharactorParams
+	processedCharacters := make(map[string]bool) // 避免重复角色
+
+	// 遍历声优信息
+	for _, va := range result.VA {
+		// 检查角色是否为主要角色
+		isPrimary := false
+		for _, vn := range va.Character.VNS {
+			if vn.Role == "primary" {
+				isPrimary = true
+				break
+			}
+		}
+
+		// 只处理主要角色
+		if !isPrimary {
+			continue
+		}
+
+		// 避免重复角色
+		if processedCharacters[va.Character.ID] {
+			continue
+		}
+		processedCharacters[va.Character.ID] = true
+
+		// 优先使用 original 字段作为角色名，如果没有则使用 name
+		characterName := strings.ReplaceAll(va.Character.Original, " ", "")
+		if characterName == "" {
+			characterName = va.Character.Name
+		}
+		if characterName == "" {
+			continue // 跳过没有名字的角色
+		}
+
+		// 使用 original 字段作为声优名，如果没有则使用 name
+		cvName := strings.ReplaceAll(va.Staff.Original, " ", "")
+		if cvName == "" {
+			cvName = va.Staff.Name
+		}
+
+		charactor := CharactorParams{
+			Name:  characterName,
+			Alias: []string{}, // 按要求不添加别名
+			CV:    cvName,
+			Image: 0, // 默认值，下面会下载图片
+		}
+
+		// 下载并保存角色图片
+		if va.Character.Image.URL != "" {
+			imageID, err := downloadAndCreateImage(va.Character.Image.URL)
+			if err != nil {
+				log.Error("Failed to download character image:", err)
+				// 继续处理，即使图片下载失败
+			} else {
+				charactor.Image = imageID
+			}
+		}
+
+		charactors = append(charactors, charactor)
+	}
+
+	return charactors, nil
+}
+
+// downloadAndCreateImage 下载图片并使用 CreateImage 保存
+func downloadAndCreateImage(imageURL string) (uint, error) {
+	// 创建 HTTP 客户端
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	// 下载图片
+	resp, err := client.Get(imageURL)
+	if err != nil {
+		return 0, fmt.Errorf("failed to download image: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("failed to download image: HTTP %d", resp.StatusCode)
+	}
+
+	// 读取图片数据
+	imageData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return 0, fmt.Errorf("failed to read image data: %w", err)
+	}
+
+	// 限制图片大小，防止内存溢出
+	if len(imageData) > 8*1024*1024 { // 8MB 限制
+		return 0, fmt.Errorf("image too large")
+	}
+
+	// 使用系统用户ID (假设为1) 创建图片
+	// 注意：这里使用系统账户，实际使用时可能需要调整
+	imageID, err := CreateImage(1, "127.0.0.1", imageData)
+	if err != nil {
+		return 0, fmt.Errorf("failed to create image: %w", err)
+	}
+
+	return imageID, nil
 }
