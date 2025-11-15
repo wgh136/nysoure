@@ -6,7 +6,7 @@ import {
   MdDelete,
   MdOutlineInfo,
 } from "react-icons/md";
-import { CharactorParams, Tag } from "../network/models.ts";
+import { CharacterParams, Tag } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import { useNavigate } from "react-router";
 import { useTranslation } from "../utils/i18n";
@@ -32,7 +32,7 @@ export default function PublishPage() {
   const [galleryNsfw, setGalleryNsfw] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
-  const [charactors, setCharactors] = useState<CharactorParams[]>([]);
+  const [charactors, setCharactors] = useState<CharacterParams[]>([]);
   const isFirstLoad = useRef(true);
 
   useEffect(() => {
@@ -111,7 +111,7 @@ export default function PublishPage() {
       links: links,
       gallery: galleryImages,
       gallery_nsfw: galleryNsfw,
-      charactors: charactors,
+      characters: charactors,
     });
     if (res.success) {
       localStorage.removeItem("publish_data");

@@ -18,7 +18,7 @@ import {
   Tag,
   Resource,
   Collection,
-  CharactorParams,
+  CharacterParams,
 } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import showToast from "../components/toast.ts";
@@ -1931,6 +1931,9 @@ function Gallery({ images, nsfw }: { images: number[], nsfw: number[] }) {
     nsfw = [];
   }
 
+  // 如果图片数量超过8张，显示数字而不是圆点
+  const showDots = images.length <= 8;
+
   return (
     <>
     <dialog
@@ -2016,21 +2019,31 @@ function Gallery({ images, nsfw }: { images: number[], nsfw: number[] }) {
         </>
       )}
 
-      {/* 底部圆点 */}
+      {/* 底部指示器 */}
       {images.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-          {images.map((_, index) => (
-            <button
-              key={index}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentIndex
-                  ? "bg-primary w-4"
-                  : "bg-base-content/30 hover:bg-base-content/50"
-              }`}
-              onClick={() => goToIndex(index)}
-              aria-label={`Go to image ${index + 1}`}
-            />
-          ))}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+          {showDots ? (
+            /* 圆点指示器 */
+            <div className="flex gap-2">
+              {images.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    index === currentIndex
+                      ? "bg-primary w-4"
+                      : "bg-base-content/30 hover:bg-base-content/50"
+                  }`}
+                  onClick={() => goToIndex(index)}
+                  aria-label={`Go to image ${index + 1}`}
+                />
+              ))}
+            </div>
+          ) : (
+            /* 数字指示器 */
+            <div className="bg-base-100/20 px-2 py-1 rounded-full text-xs">
+              {currentIndex + 1} / {images.length}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -2065,7 +2078,7 @@ function GalleryImage({src, nfsw}: {src: string, nfsw: boolean}) {
   );
 }
 
-function Characters({ charactors }: { charactors: CharactorParams[] }) {
+function Characters({ charactors }: { charactors: CharacterParams[] }) {
   const { t } = useTranslation();
 
   if (!charactors || charactors.length === 0) {
@@ -2084,7 +2097,7 @@ function Characters({ charactors }: { charactors: CharactorParams[] }) {
   );
 }
 
-function CharacterCard({ charactor }: { charactor: CharactorParams }) {
+function CharacterCard({ charactor }: { charactor: CharacterParams }) {
   const navigate = useNavigate();
 
   const handleCVClick = (e: React.MouseEvent) => {

@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { CharactorParams } from "../network/models";
+import { CharacterParams } from "../network/models";
 import { network } from "../network/network";
 import showToast from "./toast";
 import { useTranslation } from "../utils/i18n";
+import Button from "./button";
 
 export default function CharactorEditor({charactor, setCharactor, onDelete}: {
-    charactor: CharactorParams;
-    setCharactor: (charactor: CharactorParams) => void;
+    charactor: CharacterParams;
+    setCharactor: (charactor: CharacterParams) => void;
     onDelete: () => void;
 }) {
     const { t } = useTranslation();
@@ -39,7 +40,7 @@ export default function CharactorEditor({charactor, setCharactor, onDelete}: {
       input.click();
     }
 
-    return <div className="h-52 shadow rounded-2xl overflow-clip flex">
+    return <div className="h-52 shadow rounded-2xl overflow-clip flex bg-base-100">
       <div className="w-36 h-full cursor-pointer relative" onClick={uploadImage}>
         {
           isUploading ?
@@ -94,4 +95,37 @@ export default function CharactorEditor({charactor, setCharactor, onDelete}: {
         </div>
       </div>
     </div>;
+}
+
+export function FetchVndbCharactersButton({vnID, onFetch}: {
+    vnID: string;
+    onFetch: (characters: CharacterParams[]) => void;
+}) {
+    const { t } = useTranslation();
+    const [isFetching, setFetching] = useState(false);
+    const fetchCharacters = async () => {
+      // validate vnID (v123456)
+      if (!/^v\d+$/.test(vnID)) {
+        showToast({
+          type: "error",
+          message: t("Invalid VNDB ID format"),
+        });
+        return;
+      }
+      setFetching(true);
+      const res = await network.getCharactersFromVNDB(vnID);
+      setFetching(false);
+      if (res.success && res.data) {
+        onFetch(res.data);
+      } else {
+        showToast({
+          type: "error",
+          message: t("Failed to fetch characters from VNDB"),
+        });
+      }
+    };
+
+    return <Button isLoading={isFetching} onClick={fetchCharacters}>
+      {t("Fetch from VNDB")}
+    </Button>;
 }

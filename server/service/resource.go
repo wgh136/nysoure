@@ -35,7 +35,7 @@ type ResourceParams struct {
 	Images            []uint            `json:"images"`
 	Gallery           []uint            `json:"gallery"`
 	GalleryNsfw       []uint            `json:"gallery_nsfw"`
-	Charactors        []CharactorParams `json:"charactors"`
+	Charactors        []CharactorParams `json:"characters"`
 }
 
 type CharactorParams struct {

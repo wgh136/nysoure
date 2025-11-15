@@ -6,7 +6,7 @@ import {
   MdDelete,
   MdOutlineInfo,
 } from "react-icons/md";
-import { CharactorParams, Tag } from "../network/models.ts";
+import { CharacterParams, Tag } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import { useNavigate, useParams } from "react-router";
 import showToast from "../components/toast.ts";
@@ -20,7 +20,7 @@ import {
   SelectAndUploadImageButton,
   UploadClipboardImageButton,
 } from "../components/image_selector.tsx";
-import CharactorEditor from "../components/charactor_edit.tsx";
+import CharactorEditor, { FetchVndbCharactersButton } from "../components/charactor_edit.tsx";
 
 export default function EditResourcePage() {
   const [title, setTitle] = useState<string>("");
@@ -31,7 +31,7 @@ export default function EditResourcePage() {
   const [links, setLinks] = useState<{ label: string; url: string }[]>([]);
   const [galleryImages, setGalleryImages] = useState<number[]>([]);
   const [galleryNsfw, setGalleryNsfw] = useState<number[]>([]);
-  const [charactors, setCharactors] = useState<CharactorParams[]>([]);
+  const [charactors, setCharactors] = useState<CharacterParams[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
   const [isLoading, setLoading] = useState(true);
@@ -107,7 +107,7 @@ export default function EditResourcePage() {
       links: links,
       gallery: galleryImages,
       gallery_nsfw: galleryNsfw,
-      charactors: charactors,
+      characters: charactors,
     });
     if (res.success) {
       setSubmitting(false);
@@ -444,9 +444,9 @@ export default function EditResourcePage() {
               })
             }
           </div>
-          <div className="flex">
+          <div className="flex my-2">
             <button
-              className={"btn my-2"}
+              className={"btn h-9"}
               type={"button"}
               onClick={() => {
                 setCharactors([...charactors, { name: "", alias: [], cv: "", image: 0 }]);
@@ -455,6 +455,17 @@ export default function EditResourcePage() {
               <MdAdd />
               {t("Add Character")}
             </button>
+            {
+              links.find(link => link.label.toLowerCase() === "vndb") &&
+                <div className="ml-4">
+                  <FetchVndbCharactersButton
+                    vnID={links.find(link => link.label.toLowerCase() === "vndb")?.url.split("/").pop() ?? ""}
+                    onFetch={(fetchedCharacters) => {
+                      setCharactors(fetchedCharacters);
+                    }}
+                  />
+                </div>
+            }
           </div>
         </div>
         {error && (
