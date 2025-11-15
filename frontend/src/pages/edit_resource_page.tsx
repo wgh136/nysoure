@@ -6,7 +6,7 @@ import {
   MdDelete,
   MdOutlineInfo,
 } from "react-icons/md";
-import { Tag } from "../network/models.ts";
+import { CharactorParams, Tag } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import { useNavigate, useParams } from "react-router";
 import showToast from "../components/toast.ts";
@@ -20,6 +20,7 @@ import {
   SelectAndUploadImageButton,
   UploadClipboardImageButton,
 } from "../components/image_selector.tsx";
+import CharactorEditor from "../components/charactor_edit.tsx";
 
 export default function EditResourcePage() {
   const [title, setTitle] = useState<string>("");
@@ -30,6 +31,7 @@ export default function EditResourcePage() {
   const [links, setLinks] = useState<{ label: string; url: string }[]>([]);
   const [galleryImages, setGalleryImages] = useState<number[]>([]);
   const [galleryNsfw, setGalleryNsfw] = useState<number[]>([]);
+  const [charactors, setCharactors] = useState<CharactorParams[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
   const [isLoading, setLoading] = useState(true);
@@ -59,6 +61,7 @@ export default function EditResourcePage() {
         setLinks(data.links ?? []);
         setGalleryImages(data.gallery ?? []);
         setGalleryNsfw(data.galleryNsfw ?? []);
+        setCharactors(data.charactors ?? []);
         setLoading(false);
       } else {
         showToast({ message: t("Failed to load resource"), type: "error" });
@@ -104,6 +107,7 @@ export default function EditResourcePage() {
       links: links,
       gallery: galleryImages,
       gallery_nsfw: galleryNsfw,
+      charactors: charactors,
     });
     if (res.success) {
       setSubmitting(false);
@@ -420,6 +424,39 @@ export default function EditResourcePage() {
           />
         </div>
         <div className={"h-4"}></div>
+        <div>
+          <p className={"my-1"}>{t("Characters")}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 my-2 gap-4">
+            {
+              charactors.map((charactor, index) => {
+                return <CharactorEditor 
+                  charactor={charactor} 
+                  setCharactor={(newCharactor) => {
+                    const newCharactors = [...charactors];
+                    newCharactors[index] = newCharactor;
+                    setCharactors(newCharactors);
+                  }} 
+                  onDelete={() => {
+                    const newCharactors = [...charactors];
+                    newCharactors.splice(index, 1);
+                    setCharactors(newCharactors);
+                  }} />;
+              })
+            }
+          </div>
+          <div className="flex">
+            <button
+              className={"btn my-2"}
+              type={"button"}
+              onClick={() => {
+                setCharactors([...charactors, { name: "", alias: [], cv: "", image: 0 }]);
+              }}
+            >
+              <MdAdd />
+              {t("Add Character")}
+            </button>
+          </div>
+        </div>
         {error && (
           <div role="alert" className="alert alert-error my-2 shadow">
             <svg

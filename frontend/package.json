@@ -22,7 +22,6 @@
     "masonic": "^4.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-i18next": "^15.5.1",
     "react-icons": "^5.5.0",
     "react-markdown": "^10.1.0",
     "react-router": "^7.5.3",

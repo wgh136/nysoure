@@ -256,6 +256,8 @@ export const i18nData = {
       "Private": "私有",
       "View {count} more replies": "查看另外 {count} 条回复",
       "Survival time": "存活时间",
+      "Characters": "角色",
+      "Aliases (one per line)": "别名（每行一个）",
     },
   },
   "zh-TW": {

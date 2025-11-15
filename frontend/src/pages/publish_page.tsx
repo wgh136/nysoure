@@ -6,7 +6,7 @@ import {
   MdDelete,
   MdOutlineInfo,
 } from "react-icons/md";
-import { Tag } from "../network/models.ts";
+import { CharactorParams, Tag } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import { useNavigate } from "react-router";
 import { useTranslation } from "../utils/i18n";
@@ -19,6 +19,7 @@ import {
   SelectAndUploadImageButton,
   UploadClipboardImageButton,
 } from "../components/image_selector.tsx";
+import CharactorEditor from "../components/charactor_edit.tsx";
 
 export default function PublishPage() {
   const [title, setTitle] = useState<string>("");
@@ -31,7 +32,7 @@ export default function PublishPage() {
   const [galleryNsfw, setGalleryNsfw] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
-
+  const [charactors, setCharactors] = useState<CharactorParams[]>([]);
   const isFirstLoad = useRef(true);
 
   useEffect(() => {
@@ -110,6 +111,7 @@ export default function PublishPage() {
       links: links,
       gallery: galleryImages,
       gallery_nsfw: galleryNsfw,
+      charactors: charactors,
     });
     if (res.success) {
       localStorage.removeItem("publish_data");
@@ -429,6 +431,39 @@ export default function PublishPage() {
           />
         </div>
         <div className={"h-4"}></div>
+        <div>
+          <p className={"my-1"}>{t("Characters")}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 my-2 gap-4">
+            {
+              charactors.map((charactor, index) => {
+                return <CharactorEditor 
+                  charactor={charactor} 
+                  setCharactor={(newCharactor) => {
+                    const newCharactors = [...charactors];
+                    newCharactors[index] = newCharactor;
+                    setCharactors(newCharactors);
+                  }} 
+                  onDelete={() => {
+                    const newCharactors = [...charactors];
+                    newCharactors.splice(index, 1);
+                    setCharactors(newCharactors);
+                  }} />;
+              })
+            }
+          </div>
+          <div className="flex">
+            <button
+              className={"btn my-2"}
+              type={"button"}
+              onClick={() => {
+                setCharactors([...charactors, { name: "", alias: [], cv: "", image: 0 }]);
+              }}
+            >
+              <MdAdd />
+              {t("Add Character")}
+            </button>
+          </div>
+        </div>
         {error && (
           <div role="alert" className="alert alert-error my-2 shadow">
             <svg

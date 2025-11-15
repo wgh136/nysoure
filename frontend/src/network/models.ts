@@ -49,6 +49,14 @@ export interface CreateResourceParams {
   images: number[];
   gallery: number[];
   gallery_nsfw: number[];
+  charactors: CharactorParams[];
+}
+
+export interface CharactorParams {
+  name: string;
+  alias: string[];
+  cv: string;
+  image: number;
 }
 
 export interface Image {
@@ -88,6 +96,7 @@ export interface ResourceDetails {
   related: Resource[];
   gallery: number[];
   galleryNsfw: number[];
+  charactors: CharactorParams[];
 }
 
 export interface Storage {
