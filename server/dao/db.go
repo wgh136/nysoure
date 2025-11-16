@@ -60,7 +60,7 @@ func init() {
 		&model.Activity{},
 		&model.Collection{},
 		&model.CollectionResource{},
-		&model.Charactor{},
+		&model.Character{},
 	)
 }
 

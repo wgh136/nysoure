@@ -5,9 +5,9 @@ import showToast from "./toast";
 import { useTranslation } from "../utils/i18n";
 import Button from "./button";
 
-export default function CharacterEditer({charactor, setCharactor, onDelete}: {
-    charactor: CharacterParams;
-    setCharactor: (charactor: CharacterParams) => void;
+export default function CharacterEditer({character, setCharacter, onDelete}: {
+    character: CharacterParams;
+    setCharacter: (character: CharacterParams) => void;
     onDelete: () => void;
 }) {
     const { t } = useTranslation();
@@ -26,8 +26,8 @@ export default function CharacterEditer({charactor, setCharactor, onDelete}: {
         const result = await network.uploadImage(file);
         setUploading(false);
         if (result.success) {
-          setCharactor({
-            ...charactor,
+          setCharacter({
+            ...character,
             image: result.data!,
           });
         } else {
@@ -51,7 +51,7 @@ export default function CharacterEditer({charactor, setCharactor, onDelete}: {
         }
         <img 
           className="w-full h-full object-cover bg-base-200/80 hover:bg-base-200 transition-colors" 
-          src={charactor.image === 0 ? "/cp.webp" : network.getImageUrl(charactor.image)} alt={charactor.name} 
+          src={character.image === 0 ? "/cp.webp" : network.getImageUrl(character.image)} alt={character.name} 
         />
       </div>
       
@@ -61,8 +61,8 @@ export default function CharacterEditer({charactor, setCharactor, onDelete}: {
             type="text"
             className="input input-sm input-bordered flex-1"
             placeholder={t("Name")}
-            value={charactor.name}
-            onChange={(e) => setCharactor({ ...charactor, name: e.target.value })}
+            value={character.name}
+            onChange={(e) => setCharacter({ ...character, name: e.target.value })}
           />
           <button 
             className="btn btn-sm btn-error btn-square"
@@ -78,14 +78,14 @@ export default function CharacterEditer({charactor, setCharactor, onDelete}: {
           type="text"
           className="input input-sm input-bordered"
           placeholder="CV"
-          value={charactor.cv}
-          onChange={(e) => setCharactor({ ...charactor, cv: e.target.value })}
+          value={character.cv}
+          onChange={(e) => setCharacter({ ...character, cv: e.target.value })}
         />
         
         <select
           className="select select-sm select-bordered"
-          value={charactor.role}
-          onChange={(e) => setCharactor({ ...charactor, role: e.target.value as CharacterRole })}
+          value={character.role}
+          onChange={(e) => setCharacter({ ...character, role: e.target.value as CharacterRole })}
         >
           <option value="primary">{t("Primary Role")}</option>
           <option value="side">{t("Side Role")}</option>
@@ -95,9 +95,9 @@ export default function CharacterEditer({charactor, setCharactor, onDelete}: {
           <textarea
             className="textarea textarea-bordered w-full h-full resize-none text-xs"
             placeholder={t("Aliases (one per line)")}
-            value={charactor.alias.join('\n')}
-            onChange={(e) => setCharactor({ 
-              ...charactor, 
+            value={character.alias.join('\n')}
+            onChange={(e) => setCharacter({ 
+              ...character, 
               alias: e.target.value.split('\n').filter(line => line.trim() !== '') 
             })}
           />

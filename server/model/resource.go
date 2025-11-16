@@ -23,7 +23,7 @@ type Resource struct {
 	ModifiedTime      time.Time
 	Gallery           []uint      `gorm:"serializer:json"`
 	GalleryNsfw       []uint      `gorm:"serializer:json"`
-	Charactors        []Charactor `gorm:"foreignKey:ResourceID"`
+	Characters        []Character `gorm:"foreignKey:ResourceID"`
 }
 
 type Link struct {
@@ -57,7 +57,7 @@ type ResourceDetailView struct {
 	Related           []ResourceView  `json:"related"`
 	Gallery           []uint          `json:"gallery"`
 	GalleryNsfw       []uint          `json:"galleryNsfw"`
-	Charactors        []CharactorView `json:"charactors"`
+	Characters        []CharacterView `json:"characters"`
 }
 
 func (r *Resource) ToView() ResourceView {
@@ -96,9 +96,9 @@ func (r *Resource) ToDetailView() ResourceDetailView {
 	for i, file := range r.Files {
 		files[i] = *file.ToView()
 	}
-	charactors := make([]CharactorView, len(r.Charactors))
-	for i, charactor := range r.Charactors {
-		charactors[i] = *charactor.ToView()
+	characters := make([]CharacterView, len(r.Characters))
+	for i, character := range r.Characters {
+		characters[i] = *character.ToView()
 	}
 	return ResourceDetailView{
 		ID:                r.ID,
@@ -116,6 +116,6 @@ func (r *Resource) ToDetailView() ResourceDetailView {
 		Comments:          r.Comments,
 		Gallery:           r.Gallery,
 		GalleryNsfw:       r.GalleryNsfw,
-		Charactors:        charactors,
+		Characters:        characters,
 	}
 }

@@ -32,7 +32,7 @@ export default function PublishPage() {
   const [galleryNsfw, setGalleryNsfw] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
-  const [charactors, setCharactors] = useState<CharacterParams[]>([]);
+  const [characters, setCharacters] = useState<CharacterParams[]>([]);
   const isFirstLoad = useRef(true);
 
   useEffect(() => {
@@ -111,7 +111,7 @@ export default function PublishPage() {
       links: links,
       gallery: galleryImages,
       gallery_nsfw: galleryNsfw,
-      characters: charactors,
+      characters: characters,
     });
     if (res.success) {
       localStorage.removeItem("publish_data");
@@ -435,18 +435,18 @@ export default function PublishPage() {
           <p className={"my-1"}>{t("Characters")}</p>
           <div className="grid grid-cols-1 md:grid-cols-2 my-2 gap-4">
             {
-              charactors.map((charactor, index) => {
+              characters.map((character, index) => {
                 return <CharacterEditer 
-                  charactor={charactor} 
-                  setCharactor={(newCharactor) => {
-                    const newCharactors = [...charactors];
-                    newCharactors[index] = newCharactor;
-                    setCharactors(newCharactors);
+                  character={character} 
+                  setCharacter={(newCharacter) => {
+                    const newCharacters = [...characters];
+                    newCharacters[index] = newCharacter;
+                    setCharacters(newCharacters);
                   }} 
                   onDelete={() => {
-                    const newCharactors = [...charactors];
-                    newCharactors.splice(index, 1);
-                    setCharactors(newCharactors);
+                    const newCharacters = [...characters];
+                    newCharacters.splice(index, 1);
+                    setCharacters(newCharacters);
                   }} />;
               })
             }
@@ -456,7 +456,7 @@ export default function PublishPage() {
               className={"btn my-2"}
               type={"button"}
               onClick={() => {
-                setCharactors([...charactors, { name: "", alias: [], cv: "", image: 0 }]);
+                setCharacters([...characters, { name: "", alias: [], cv: "", image: 0 }]);
               }}
             >
               <MdAdd />

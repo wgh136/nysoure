@@ -35,10 +35,10 @@ type ResourceParams struct {
 	Images            []uint            `json:"images"`
 	Gallery           []uint            `json:"gallery"`
 	GalleryNsfw       []uint            `json:"gallery_nsfw"`
-	Charactors        []CharactorParams `json:"characters"`
+	Characters        []CharacterParams `json:"characters"`
 }
 
-type CharactorParams struct {
+type CharacterParams struct {
 	Name  string   `json:"name" binding:"required"`
 	Alias []string `json:"alias"`
 	CV    string   `json:"cv"`
@@ -83,13 +83,13 @@ func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 			nsfw = append(nsfw, id)
 		}
 	}
-	charactors := make([]model.Charactor, len(params.Charactors))
-	for i, c := range params.Charactors {
+	characters := make([]model.Character, len(params.Characters))
+	for i, c := range params.Characters {
 		role := c.Role
 		if role == "" {
 			role = "primary"
 		}
-		charactors[i] = model.Charactor{
+		characters[i] = model.Character{
 			Name:    c.Name,
 			Alias:   c.Alias,
 			CV:      c.CV,
@@ -107,7 +107,7 @@ func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 		UserID:            uid,
 		Gallery:           gallery,
 		GalleryNsfw:       nsfw,
-		Charactors:        charactors,
+		Characters:        characters,
 	}
 	if r, err = dao.CreateResource(r); err != nil {
 		return 0, err
@@ -506,13 +506,13 @@ func UpdateResource(uid, rid uint, params *ResourceParams) error {
 			nsfw = append(nsfw, id)
 		}
 	}
-	charactors := make([]model.Charactor, len(params.Charactors))
-	for i, c := range params.Charactors {
+	characters := make([]model.Character, len(params.Characters))
+	for i, c := range params.Characters {
 		role := c.Role
 		if role == "" {
 			role = "primary"
 		}
-		charactors[i] = model.Charactor{
+		characters[i] = model.Character{
 			Name:    c.Name,
 			Alias:   c.Alias,
 			CV:      c.CV,
@@ -527,7 +527,7 @@ func UpdateResource(uid, rid uint, params *ResourceParams) error {
 	r.Links = params.Links
 	r.Gallery = gallery
 	r.GalleryNsfw = nsfw
-	r.Charactors = charactors
+	r.Characters = characters
 
 	images := make([]model.Image, len(params.Images))
 	for i, id := range params.Images {
@@ -607,7 +607,7 @@ func GetPinnedResources() ([]model.ResourceView, error) {
 	return views, nil
 }
 
-func GetCharactorsFromVndb(vnID string) ([]CharactorParams, error) {
+func GetCharactersFromVndb(vnID string) ([]CharacterParams, error) {
 	client := http.Client{}
 	jsonStr := fmt.Sprintf(`
 	{
@@ -658,11 +658,11 @@ func GetCharactorsFromVndb(vnID string) ([]CharactorParams, error) {
 	}
 
 	if len(vndbResp.Results) == 0 {
-		return []CharactorParams{}, nil
+		return []CharacterParams{}, nil
 	}
 
 	result := vndbResp.Results[0]
-	var charactors []CharactorParams
+	var characters []CharacterParams
 	processedCharacters := make(map[string]bool) // 避免重复角色
 
 	// 遍历声优信息
@@ -700,7 +700,7 @@ func GetCharactorsFromVndb(vnID string) ([]CharactorParams, error) {
 			cvName = va.Staff.Name
 		}
 
-		charactor := CharactorParams{
+		character := CharacterParams{
 			Name:  characterName,
 			Alias: []string{},
 			CV:    cvName,
@@ -715,14 +715,14 @@ func GetCharactorsFromVndb(vnID string) ([]CharactorParams, error) {
 				log.Error("Failed to download character image:", err)
 				// 继续处理，即使图片下载失败
 			} else {
-				charactor.Image = imageID
+				character.Image = imageID
 			}
 		}
 
-		charactors = append(charactors, charactor)
+		characters = append(characters, character)
 	}
 
-	return charactors, nil
+	return characters, nil
 }
 
 // downloadAndCreateImage 下载图片并使用 CreateImage 保存

@@ -1,6 +1,6 @@
 package model
 
-type Charactor struct {
+type Character struct {
 	ID         uint     `gorm:"primaryKey;autoIncrement"`
 	Name       string   `gorm:"type:varchar(100);not null"`
 	Alias      []string `gorm:"serializer:json"`
@@ -11,7 +11,7 @@ type Charactor struct {
 	Image      *Image `gorm:"foreignKey:ImageID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
-type CharactorView struct {
+type CharacterView struct {
 	Id    uint     `json:"id"`
 	Name  string   `json:"name"`
 	Alias []string `json:"alias"`
@@ -20,8 +20,8 @@ type CharactorView struct {
 	Image uint     `json:"image"`
 }
 
-func (c *Charactor) ToView() *CharactorView {
-	return &CharactorView{
+func (c *Character) ToView() *CharacterView {
+	return &CharacterView{
 		Id:    c.ID,
 		Name:  c.Name,
 		Alias: c.Alias,
@@ -31,7 +31,7 @@ func (c *Charactor) ToView() *CharactorView {
 	}
 }
 
-func (c *Charactor) Equal(other *Charactor) bool {
+func (c *Character) Equal(other *Character) bool {
 	if c.Name != other.Name || c.CV != other.CV || c.Role != other.Role || c.ImageID != other.ImageID {
 		return false
 	}

@@ -600,7 +600,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
       </Markdown>
     </article>
     <div className="border-b border-base-300 h-8"></div>
-    <Characters charactors={resource.charactors} />
+    <Characters characters={resource.characters} />
     </>
   );
 }
@@ -2078,10 +2078,10 @@ function GalleryImage({src, nfsw}: {src: string, nfsw: boolean}) {
   );
 }
 
-function Characters({ charactors }: { charactors: CharacterParams[] }) {
+function Characters({ characters }: { characters: CharacterParams[] }) {
   const { t } = useTranslation();
 
-  if (!charactors || charactors.length === 0) {
+  if (!characters || characters.length === 0) {
     return <></>;
   }
 
@@ -2089,43 +2089,43 @@ function Characters({ charactors }: { charactors: CharacterParams[] }) {
     <div className="mt-8">
       <h3 className="text-xl font-bold mb-4">{t("Characters")}</h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {charactors.map((charactor, index) => (
-          <CharacterCard key={index} charactor={charactor} />
+        {characters.map((character, index) => (
+          <CharacterCard key={index} character={character} />
         ))}
       </div>
     </div>
   );
 }
 
-function CharacterCard({ charactor }: { charactor: CharacterParams }) {
+function CharacterCard({ character }: { character: CharacterParams }) {
   const navigate = useNavigate();
 
   const handleCVClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (charactor.cv) {
-      navigate(`/search?keyword=${encodeURIComponent(charactor.cv)}`);
+    if (character.cv) {
+      navigate(`/search?keyword=${encodeURIComponent(character.cv)}`);
     }
   };
 
   return (
     <div className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-base-200 shadow-sm">
       <img
-        src={network.getImageUrl(charactor.image)}
-        alt={charactor.name}
+        src={network.getImageUrl(character.image)}
+        alt={character.name}
         className="w-full h-full object-cover"
       />
       
       <div className="absolute bottom-1 left-1 right-1 px-2 py-2 border border-base-100/40 rounded-lg bg-base-100/60">
         <h4 className="font-semibold text-sm leading-tight line-clamp border border-transparent px-1">
-          {charactor.name}
+          {character.name}
         </h4>
         
-        {charactor.cv && (
+        {character.cv && (
           <button
             onClick={handleCVClick}
             className="hover:bg-base-200/80 px-1 border border-transparent hover:border-base-300/50 rounded-sm text-xs transition-colors cursor-pointer"
           >
-            CV: {charactor.cv}
+            CV: {character.cv}
           </button>
         )}
       </div>

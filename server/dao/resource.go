@@ -16,13 +16,13 @@ import (
 func CreateResource(r model.Resource) (model.Resource, error) {
 	err := db.Transaction(func(tx *gorm.DB) error {
 		r.ModifiedTime = time.Now()
-		charactors := r.Charactors
-		r.Charactors = nil
+		characters := r.Characters
+		r.Characters = nil
 		err := tx.Create(&r).Error
 		if err != nil {
 			return err
 		}
-		for _, c := range charactors {
+		for _, c := range characters {
 			c.ResourceID = r.ID
 			if err := tx.Create(&c).Error; err != nil {
 				return err
@@ -50,7 +50,7 @@ func GetResourceByID(id uint) (model.Resource, error) {
 		Preload("Files").
 		Preload("Files.User").
 		Preload("Files.Storage").
-		Preload("Charactors").
+		Preload("Characters").
 		First(&r, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return model.Resource{}, model.NewNotFoundError("Resource not found")
@@ -111,14 +111,14 @@ func UpdateResource(r model.Resource) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		images := r.Images
 		tags := r.Tags
-		charactors := r.Charactors
-		r.Charactors = nil
+		characters := r.Characters
+		r.Characters = nil
 		r.Images = nil
 		r.Tags = nil
 		r.Files = nil
 		r.ModifiedTime = time.Now()
-		oldCharactors := []model.Charactor{}
-		if err := db.Model(&model.Charactor{}).Where("resource_id = ?", r.ID).Find(&oldCharactors).Error; err != nil {
+		oldCharacters := []model.Character{}
+		if err := db.Model(&model.Character{}).Where("resource_id = ?", r.ID).Find(&oldCharacters).Error; err != nil {
 			return err
 		}
 		if err := db.Save(&r).Error; err != nil {
@@ -130,9 +130,9 @@ func UpdateResource(r model.Resource) error {
 		if err := db.Model(&r).Association("Tags").Replace(tags); err != nil {
 			return err
 		}
-		for _, c := range oldCharactors {
+		for _, c := range oldCharacters {
 			shouldDelete := true
-			for _, nc := range charactors {
+			for _, nc := range characters {
 				if c.ID == nc.ID {
 					shouldDelete = false
 					break
@@ -144,9 +144,9 @@ func UpdateResource(r model.Resource) error {
 				}
 			}
 		}
-		for _, c := range charactors {
+		for _, c := range characters {
 			shouldAdd := true
-			for _, oc := range oldCharactors {
+			for _, oc := range oldCharacters {
 				if c.Equal(&oc) {
 					shouldAdd = false
 					break

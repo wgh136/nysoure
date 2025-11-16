@@ -47,7 +47,7 @@ func GetUnusedImages() ([]model.Image, error) {
 		Where("NOT EXISTS (SELECT 1 FROM resource_images WHERE image_id = images.id)").
 		Where("NOT EXISTS (SELECT 1 FROM comment_images WHERE image_id = images.id)").
 		Where("NOT EXISTS (SELECT 1 FROM collection_images WHERE image_id = images.id)").
-		Where("NOT EXISTS (SELECT 1 FROM charactors WHERE image_id = images.id)").
+		Where("NOT EXISTS (SELECT 1 FROM characters WHERE image_id = images.id)").
 		Where("created_at < ?", oneDayAgo).
 		Find(&images).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

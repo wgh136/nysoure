@@ -99,7 +99,7 @@ export interface ResourceDetails {
   related: Resource[];
   gallery: number[];
   galleryNsfw: number[];
-  charactors: CharacterParams[];
+  characters: CharacterParams[];
 }
 
 export interface Storage {
