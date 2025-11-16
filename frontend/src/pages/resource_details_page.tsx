@@ -2081,6 +2081,11 @@ function GalleryImage({src, nfsw}: {src: string, nfsw: boolean}) {
 function Characters({ characters }: { characters: CharacterParams[] }) {
   const { t } = useTranslation();
 
+  let main = characters.filter((c) => c.role === "primary");
+  let other1 = characters.filter((c) => c.role !== "primary" && c.image);
+  let other2 = characters.filter((c) => c.role !== "primary" && !c.image);
+  characters = [...main, ...other1, ...other2];
+
   if (!characters || characters.length === 0) {
     return <></>;
   }
@@ -2088,7 +2093,7 @@ function Characters({ characters }: { characters: CharacterParams[] }) {
   return (
     <div className="mt-8">
       <h3 className="text-xl font-bold mb-4">{t("Characters")}</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
         {characters.map((character, index) => (
           <CharacterCard key={index} character={character} />
         ))}
@@ -2099,6 +2104,7 @@ function Characters({ characters }: { characters: CharacterParams[] }) {
 
 function CharacterCard({ character }: { character: CharacterParams }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleCVClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -2110,20 +2116,29 @@ function CharacterCard({ character }: { character: CharacterParams }) {
   return (
     <div className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-base-200 shadow-sm">
       <img
-        src={network.getImageUrl(character.image)}
+        src={character.image ? network.getImageUrl(character.image) : "/cp.webp"}
         alt={character.name}
         className="w-full h-full object-cover"
       />
       
-      <div className="absolute bottom-1 left-1 right-1 px-2 py-2 border border-base-100/40 rounded-lg bg-base-100/60">
-        <h4 className="font-semibold text-sm leading-tight line-clamp border border-transparent px-1">
+      <div className="absolute bottom-1 left-1 right-1 px-1 py-1 border border-base-100/40 rounded-lg bg-base-100/60">
+        <h4 className="font-semibold text-sm leading-tight line-clamp border border-transparent">
           {character.name}
+          {
+            character.role === "primary" ? (
+              <span className="bg-primary/80 rounded-lg px-2 py-0.5 text-primary-content ml-1" style={{
+                fontSize: "10px",
+              }}>
+                Main
+              </span>
+            ) : null
+          }
         </h4>
         
         {character.cv && (
           <button
             onClick={handleCVClick}
-            className="hover:bg-base-200/80 px-1 border border-transparent hover:border-base-300/50 rounded-sm text-xs transition-colors cursor-pointer"
+            className="hover:bg-base-200/80 border border-transparent hover:border-base-300/50 rounded-sm text-xs transition-colors cursor-pointer"
           >
             CV: {character.cv}
           </button>
