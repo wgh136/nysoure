@@ -2104,7 +2104,6 @@ function Characters({ characters }: { characters: CharacterParams[] }) {
 
 function CharacterCard({ character }: { character: CharacterParams }) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
 
   const handleCVClick = (e: React.MouseEvent) => {
     e.stopPropagation();
