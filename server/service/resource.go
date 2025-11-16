@@ -42,6 +42,7 @@ type CharactorParams struct {
 	Name  string   `json:"name" binding:"required"`
 	Alias []string `json:"alias"`
 	CV    string   `json:"cv"`
+	Role  string   `json:"role"`
 	Image uint     `json:"image"`
 }
 
@@ -84,10 +85,15 @@ func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 	}
 	charactors := make([]model.Charactor, len(params.Charactors))
 	for i, c := range params.Charactors {
+		role := c.Role
+		if role == "" {
+			role = "primary"
+		}
 		charactors[i] = model.Charactor{
 			Name:    c.Name,
 			Alias:   c.Alias,
 			CV:      c.CV,
+			Role:    role,
 			ImageID: c.Image,
 		}
 	}
@@ -502,10 +508,15 @@ func UpdateResource(uid, rid uint, params *ResourceParams) error {
 	}
 	charactors := make([]model.Charactor, len(params.Charactors))
 	for i, c := range params.Charactors {
+		role := c.Role
+		if role == "" {
+			role = "primary"
+		}
 		charactors[i] = model.Charactor{
 			Name:    c.Name,
 			Alias:   c.Alias,
 			CV:      c.CV,
+			Role:    role,
 			ImageID: c.Image,
 		}
 	}
@@ -656,17 +667,15 @@ func GetCharactorsFromVndb(vnID string) ([]CharactorParams, error) {
 
 	// 遍历声优信息
 	for _, va := range result.VA {
-		// 检查角色是否为主要角色
-		isPrimary := false
+		role := "Unknown"
 		for _, vn := range va.Character.VNS {
-			if vn.Role == "primary" {
-				isPrimary = true
+			if vn.ID == vnID {
+				role = vn.Role
 				break
 			}
 		}
 
-		// 只处理主要角色
-		if !isPrimary {
+		if role != "primary" && role != "side" {
 			continue
 		}
 
@@ -693,8 +702,9 @@ func GetCharactorsFromVndb(vnID string) ([]CharactorParams, error) {
 
 		charactor := CharactorParams{
 			Name:  characterName,
-			Alias: []string{}, // 按要求不添加别名
+			Alias: []string{},
 			CV:    cvName,
+			Role:  role,
 			Image: 0, // 默认值，下面会下载图片
 		}
 

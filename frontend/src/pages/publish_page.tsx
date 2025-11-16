@@ -19,7 +19,7 @@ import {
   SelectAndUploadImageButton,
   UploadClipboardImageButton,
 } from "../components/image_selector.tsx";
-import CharactorEditor from "../components/charactor_edit.tsx";
+import CharacterEditer from "../components/character_edit.tsx";
 
 export default function PublishPage() {
   const [title, setTitle] = useState<string>("");
@@ -436,7 +436,7 @@ export default function PublishPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 my-2 gap-4">
             {
               charactors.map((charactor, index) => {
-                return <CharactorEditor 
+                return <CharacterEditer 
                   charactor={charactor} 
                   setCharactor={(newCharactor) => {
                     const newCharactors = [...charactors];

@@ -52,11 +52,14 @@ export interface CreateResourceParams {
   characters: CharacterParams[];
 }
 
+export type CharacterRole = 'primary' | 'side';
+
 export interface CharacterParams {
   name: string;
   alias: string[];
   cv: string;
   image: number;
+  role: CharacterRole;
 }
 
 export interface Image {

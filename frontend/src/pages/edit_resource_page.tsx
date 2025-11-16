@@ -20,7 +20,7 @@ import {
   SelectAndUploadImageButton,
   UploadClipboardImageButton,
 } from "../components/image_selector.tsx";
-import CharactorEditor, { FetchVndbCharactersButton } from "../components/charactor_edit.tsx";
+import CharacterEditer, { FetchVndbCharactersButton } from "../components/character_edit.tsx";
 
 export default function EditResourcePage() {
   const [title, setTitle] = useState<string>("");
@@ -429,7 +429,7 @@ export default function EditResourcePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 my-2 gap-4">
             {
               charactors.map((charactor, index) => {
-                return <CharactorEditor 
+                return <CharacterEditer 
                   charactor={charactor} 
                   setCharactor={(newCharactor) => {
                     const newCharactors = [...charactors];

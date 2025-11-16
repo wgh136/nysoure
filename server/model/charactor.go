@@ -5,6 +5,7 @@ type Charactor struct {
 	Name       string   `gorm:"type:varchar(100);not null"`
 	Alias      []string `gorm:"serializer:json"`
 	CV         string   `gorm:"type:varchar(100)"`
+	Role       string   `gorm:"type:varchar(20);default:primary"`
 	ImageID    uint
 	ResourceID uint
 	Image      *Image `gorm:"foreignKey:ImageID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
@@ -15,6 +16,7 @@ type CharactorView struct {
 	Name  string   `json:"name"`
 	Alias []string `json:"alias"`
 	CV    string   `json:"cv"`
+	Role  string   `json:"role"`
 	Image uint     `json:"image"`
 }
 
@@ -24,12 +26,13 @@ func (c *Charactor) ToView() *CharactorView {
 		Name:  c.Name,
 		Alias: c.Alias,
 		CV:    c.CV,
+		Role:  c.Role,
 		Image: c.ImageID,
 	}
 }
 
 func (c *Charactor) Equal(other *Charactor) bool {
-	if c.Name != other.Name || c.CV != other.CV || c.ImageID != other.ImageID {
+	if c.Name != other.Name || c.CV != other.CV || c.Role != other.Role || c.ImageID != other.ImageID {
 		return false
 	}
 	if len(c.Alias) != len(other.Alias) {

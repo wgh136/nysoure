@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { CharacterParams } from "../network/models";
+import { CharacterParams, CharacterRole } from "../network/models";
 import { network } from "../network/network";
 import showToast from "./toast";
 import { useTranslation } from "../utils/i18n";
 import Button from "./button";
 
-export default function CharactorEditor({charactor, setCharactor, onDelete}: {
+export default function CharacterEditer({charactor, setCharactor, onDelete}: {
     charactor: CharacterParams;
     setCharactor: (charactor: CharacterParams) => void;
     onDelete: () => void;
@@ -81,6 +81,15 @@ export default function CharactorEditor({charactor, setCharactor, onDelete}: {
           value={charactor.cv}
           onChange={(e) => setCharactor({ ...charactor, cv: e.target.value })}
         />
+        
+        <select
+          className="select select-sm select-bordered"
+          value={charactor.role}
+          onChange={(e) => setCharactor({ ...charactor, role: e.target.value as CharacterRole })}
+        >
+          <option value="primary">{t("Primary Role")}</option>
+          <option value="side">{t("Side Role")}</option>
+        </select>
         
         <div className="flex-1">
           <textarea
