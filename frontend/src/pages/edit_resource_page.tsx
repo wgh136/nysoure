@@ -449,7 +449,7 @@ export default function EditResourcePage() {
               className={"btn h-9"}
               type={"button"}
               onClick={() => {
-                setCharacters([...characters, { name: "", alias: [], cv: "", image: 0 }]);
+                setCharacters([...characters, { name: "", alias: [], cv: "", image: 0, role: "primary" }]);
               }}
             >
               <MdAdd />

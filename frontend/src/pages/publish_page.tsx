@@ -456,7 +456,7 @@ export default function PublishPage() {
               className={"btn my-2"}
               type={"button"}
               onClick={() => {
-                setCharacters([...characters, { name: "", alias: [], cv: "", image: 0 }]);
+                setCharacters([...characters, { name: "", alias: [], cv: "", image: 0, role: "primary"}]);
               }}
             >
               <MdAdd />
