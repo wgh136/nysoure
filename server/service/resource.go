@@ -763,3 +763,33 @@ func downloadAndCreateImage(imageURL string) (uint, error) {
 
 	return imageID, nil
 }
+
+// UpdateCharacterImage 更新角色的图片ID
+func UpdateCharacterImage(uid, resourceID, characterID, imageID uint) error {
+	// 检查资源是否存在并且用户有权限修改
+	resource, err := dao.GetResourceByID(resourceID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return model.NewNotFoundError("Resource not found")
+		}
+		return err
+	}
+
+	isAdmin, err := CheckUserIsAdmin(uid)
+	if err != nil {
+		return err
+	}
+
+	// 检查用户是否有权限修改这个资源
+	if resource.UserID != uid && !isAdmin {
+		return model.NewUnAuthorizedError("You don't have permission to modify this resource")
+	}
+
+	// 更新角色图片
+	err = dao.UpdateCharacterImage(characterID, imageID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

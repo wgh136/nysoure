@@ -517,3 +517,15 @@ func CountResources() (int64, error) {
 	}
 	return count, nil
 }
+
+// UpdateCharacterImage 更新角色的图片ID
+func UpdateCharacterImage(characterID, imageID uint) error {
+	result := db.Model(&model.Character{}).Where("id = ?", characterID).Update("image_id", imageID)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return model.NewNotFoundError("Character not found")
+	}
+	return nil
+}

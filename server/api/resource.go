@@ -298,6 +298,47 @@ func handleGetCharactersFromVndb(c fiber.Ctx) error {
 	})
 }
 
+func handleUpdateCharacterImage(c fiber.Ctx) error {
+	resourceIdStr := c.Params("resourceId")
+	characterIdStr := c.Params("characterId")
+	if resourceIdStr == "" || characterIdStr == "" {
+		return model.NewRequestError("Resource ID and Character ID are required")
+	}
+	resourceId, err := strconv.Atoi(resourceIdStr)
+	if err != nil {
+		return model.NewRequestError("Invalid resource ID")
+	}
+	characterId, err := strconv.Atoi(characterIdStr)
+	if err != nil {
+		return model.NewRequestError("Invalid character ID")
+	}
+	
+	var params struct {
+		ImageID uint `json:"image_id"`
+	}
+	body := c.Body()
+	err = json.Unmarshal(body, &params)
+	if err != nil {
+		return model.NewRequestError("Invalid request body")
+	}
+	
+	uid, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewUnAuthorizedError("You must be logged in to update a character")
+	}
+	
+	err = service.UpdateCharacterImage(uid, uint(resourceId), uint(characterId), params.ImageID)
+	if err != nil {
+		return err
+	}
+	
+	return c.Status(fiber.StatusOK).JSON(model.Response[any]{
+		Success: true,
+		Data:    nil,
+		Message: "Character image updated successfully",
+	})
+}
+
 func AddResourceRoutes(api fiber.Router) {
 	resource := api.Group("/resource")
 	{
@@ -312,5 +353,6 @@ func AddResourceRoutes(api fiber.Router) {
 		resource.Get("/tag/:tag", handleListResourcesWithTag)
 		resource.Get("/user/:username", handleGetResourcesWithUser)
 		resource.Post("/:id", handleUpdateResource)
+		resource.Put("/:resourceId/character/:characterId/image", handleUpdateCharacterImage)
 	}
 }
