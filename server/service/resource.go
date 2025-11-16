@@ -89,12 +89,16 @@ func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 		if role == "" {
 			role = "primary"
 		}
+		var imageID *uint
+		if c.Image != 0 {
+			imageID = &c.Image
+		}
 		characters[i] = model.Character{
 			Name:    c.Name,
 			Alias:   c.Alias,
 			CV:      c.CV,
 			Role:    role,
-			ImageID: c.Image,
+			ImageID: imageID,
 		}
 	}
 	r := model.Resource{
@@ -512,12 +516,16 @@ func UpdateResource(uid, rid uint, params *ResourceParams) error {
 		if role == "" {
 			role = "primary"
 		}
+		var imageID *uint
+		if c.Image != 0 {
+			imageID = &c.Image
+		}
 		characters[i] = model.Character{
 			Name:    c.Name,
 			Alias:   c.Alias,
 			CV:      c.CV,
 			Role:    role,
-			ImageID: c.Image,
+			ImageID: imageID,
 		}
 	}
 

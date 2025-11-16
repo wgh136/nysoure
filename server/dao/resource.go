@@ -24,6 +24,10 @@ func CreateResource(r model.Resource) (model.Resource, error) {
 		}
 		for _, c := range characters {
 			c.ResourceID = r.ID
+			// If ImageID is 0, set it to nil to avoid foreign key constraint error
+			if c.ImageID != nil && *c.ImageID == 0 {
+				c.ImageID = nil
+			}
 			if err := tx.Create(&c).Error; err != nil {
 				return err
 			}
@@ -155,6 +159,10 @@ func UpdateResource(r model.Resource) error {
 			if shouldAdd {
 				c.ID = 0
 				c.ResourceID = r.ID
+				// If ImageID is 0, set it to nil to avoid foreign key constraint error
+				if c.ImageID != nil && *c.ImageID == 0 {
+					c.ImageID = nil
+				}
 				if err := tx.Create(&c).Error; err != nil {
 					return err
 				}
@@ -520,7 +528,14 @@ func CountResources() (int64, error) {
 
 // UpdateCharacterImage 更新角色的图片ID
 func UpdateCharacterImage(characterID, imageID uint) error {
-	result := db.Model(&model.Character{}).Where("id = ?", characterID).Update("image_id", imageID)
+	var updateValue interface{}
+	if imageID == 0 {
+		updateValue = nil
+	} else {
+		updateValue = imageID
+	}
+
+	result := db.Model(&model.Character{}).Where("id = ?", characterID).Update("image_id", updateValue)
 	if result.Error != nil {
 		return result.Error
 	}
