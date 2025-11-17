@@ -137,7 +137,7 @@ func UpdateResource(r model.Resource) error {
 		for _, c := range oldCharacters {
 			shouldDelete := true
 			for _, nc := range characters {
-				if c.ID == nc.ID {
+				if c.Equal(&nc) {
 					shouldDelete = false
 					break
 				}
