@@ -400,6 +400,108 @@ func handleGetLowResolutionCharacters(c fiber.Ctx) error {
 	})
 }
 
+func handleGetLowResolutionResourceImages(c fiber.Ctx) error {
+	pageStr := c.Query("page")
+	if pageStr == "" {
+		pageStr = "1"
+	}
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return model.NewRequestError("Invalid page number")
+	}
+
+	// 支持自定义页面大小，默认50，最大1000
+	pageSizeStr := c.Query("page_size")
+	if pageSizeStr == "" {
+		pageSizeStr = "50"
+	}
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil {
+		return model.NewRequestError("Invalid page_size parameter")
+	}
+	if pageSize > 1000 {
+		pageSize = 1000 // 限制最大页面大小
+	}
+	if pageSize < 1 {
+		pageSize = 1
+	}
+
+	maxWidthStr := c.Query("max_width")
+	if maxWidthStr == "" {
+		maxWidthStr = "800" // 默认最大宽度800px
+	}
+	maxWidth, err := strconv.Atoi(maxWidthStr)
+	if err != nil {
+		return model.NewRequestError("Invalid max_width parameter")
+	}
+
+	maxHeightStr := c.Query("max_height")
+	if maxHeightStr == "" {
+		maxHeightStr = "800" // 默认最大高度800px
+	}
+	maxHeight, err := strconv.Atoi(maxHeightStr)
+	if err != nil {
+		return model.NewRequestError("Invalid max_height parameter")
+	}
+
+	images, totalPages, err := service.GetLowResolutionResourceImages(page, pageSize, maxWidth, maxHeight)
+	if err != nil {
+		return err
+	}
+
+	if images == nil {
+		images = []model.LowResResourceImageView{}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.PageResponse[model.LowResResourceImageView]{
+		Success:    true,
+		Data:       images,
+		TotalPages: totalPages,
+		Message:    "Low resolution resource images retrieved successfully",
+	})
+}
+
+func handleUpdateResourceImage(c fiber.Ctx) error {
+	resourceIdStr := c.Params("resourceId")
+	oldImageIdStr := c.Params("oldImageId")
+	if resourceIdStr == "" || oldImageIdStr == "" {
+		return model.NewRequestError("Resource ID and Old Image ID are required")
+	}
+	resourceId, err := strconv.Atoi(resourceIdStr)
+	if err != nil {
+		return model.NewRequestError("Invalid resource ID")
+	}
+	oldImageId, err := strconv.Atoi(oldImageIdStr)
+	if err != nil {
+		return model.NewRequestError("Invalid old image ID")
+	}
+
+	var params struct {
+		NewImageID uint `json:"new_image_id"`
+	}
+	body := c.Body()
+	err = json.Unmarshal(body, &params)
+	if err != nil {
+		return model.NewRequestError("Invalid request body")
+	}
+
+	uid, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewUnAuthorizedError("You must be logged in to update a resource image")
+	}
+
+	err = service.UpdateResourceImage(uid, uint(resourceId), uint(oldImageId), params.NewImageID)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.Response[any]{
+		Success: true,
+		Data:    nil,
+		Message: "Resource image updated successfully",
+	})
+}
+
 func AddResourceRoutes(api fiber.Router) {
 	resource := api.Group("/resource")
 	{
@@ -410,11 +512,13 @@ func AddResourceRoutes(api fiber.Router) {
 		resource.Get("/pinned", handleGetPinnedResources)
 		resource.Get("/vndb/characters", handleGetCharactersFromVndb)
 		resource.Get("/characters/low-resolution", handleGetLowResolutionCharacters)
+		resource.Get("/images/low-resolution", handleGetLowResolutionResourceImages)
 		resource.Get("/:id", handleGetResource)
 		resource.Delete("/:id", handleDeleteResource)
 		resource.Get("/tag/:tag", handleListResourcesWithTag)
 		resource.Get("/user/:username", handleGetResourcesWithUser)
 		resource.Post("/:id", handleUpdateResource)
 		resource.Put("/:resourceId/character/:characterId/image", handleUpdateCharacterImage)
+		resource.Put("/:resourceId/image/:oldImageId", handleUpdateResourceImage)
 	}
 }

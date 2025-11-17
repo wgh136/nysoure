@@ -2,6 +2,7 @@ package dao
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"nysoure/server/model"
 	"sync"
@@ -592,4 +593,82 @@ func GetLowResolutionCharactersCount(maxWidth, maxHeight int) (int64, error) {
 	}
 
 	return count, nil
+}
+
+// GetLowResolutionResourceImages 获取低清晰度的资源图片
+// maxWidth和maxHeight定义了低清晰度的阈值
+func GetLowResolutionResourceImages(maxWidth, maxHeight int, limit int, offset int) ([]model.LowResResourceImageView, error) {
+	var results []model.LowResResourceImageView
+
+	query := `
+		SELECT DISTINCT
+			r.id as resource_id,
+			r.title as title,
+			i.id as image_id,
+			i.width as image_width,
+			i.height as image_height
+		FROM resources r
+		INNER JOIN resource_images ri ON r.id = ri.resource_id
+		INNER JOIN images i ON ri.image_id = i.id
+		WHERE (i.width <= ? OR i.height <= ?)
+		ORDER BY r.id, i.id
+		LIMIT ? OFFSET ?
+	`
+
+	err := db.Raw(query, maxWidth, maxHeight, limit, offset).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+// GetLowResolutionResourceImagesCount 获取低清晰度资源图片的总数
+func GetLowResolutionResourceImagesCount(maxWidth, maxHeight int) (int64, error) {
+	var count int64
+
+	query := `
+		SELECT COUNT(DISTINCT ri.resource_id, ri.image_id)
+		FROM resources r
+		INNER JOIN resource_images ri ON r.id = ri.resource_id
+		INNER JOIN images i ON ri.image_id = i.id
+		WHERE (i.width <= ? OR i.height <= ?)
+	`
+
+	err := db.Raw(query, maxWidth, maxHeight).Scan(&count).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+// UpdateResourceImage 更新资源中特定的图片ID
+func UpdateResourceImage(resourceID, oldImageID, newImageID uint) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		// 首先检查关联是否存在
+		var exists bool
+		err := tx.Raw("SELECT EXISTS(SELECT 1 FROM resource_images WHERE resource_id = ? AND image_id = ?)",
+			resourceID, oldImageID).Scan(&exists).Error
+		if err != nil {
+			return err
+		}
+
+		if !exists {
+			return fmt.Errorf("resource %d does not have image %d", resourceID, oldImageID)
+		}
+
+		// 更新resource_images表中的image_id
+		result := tx.Exec("UPDATE resource_images SET image_id = ? WHERE resource_id = ? AND image_id = ?",
+			newImageID, resourceID, oldImageID)
+		if result.Error != nil {
+			return result.Error
+		}
+
+		if result.RowsAffected == 0 {
+			return fmt.Errorf("no resource image association updated")
+		}
+
+		return nil
+	})
 }

@@ -832,3 +832,51 @@ func GetLowResolutionCharacters(page int, pageSize int, maxWidth, maxHeight int)
 
 	return characters, totalPages, nil
 }
+
+// GetLowResolutionResourceImages 获取低清晰度的资源图片
+func GetLowResolutionResourceImages(page int, pageSize int, maxWidth, maxHeight int) ([]model.LowResResourceImageView, int, error) {
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 50 // 默认每页50个图片
+	}
+	if pageSize > 1000 {
+		pageSize = 1000 // 限制最大页面大小
+	}
+
+	offset := (page - 1) * pageSize
+
+	// 获取资源图片列表
+	images, err := dao.GetLowResolutionResourceImages(maxWidth, maxHeight, pageSize, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// 获取总数
+	totalCount, err := dao.GetLowResolutionResourceImagesCount(maxWidth, maxHeight)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalPages := int((totalCount + int64(pageSize) - 1) / int64(pageSize))
+
+	return images, totalPages, nil
+}
+
+// UpdateResourceImage 更新资源图片
+func UpdateResourceImage(uid, resourceID, oldImageID, newImageID uint) error {
+	// 首先检查用户权限 - 确保用户是资源的所有者或管理员
+	resource, err := dao.GetResourceByID(resourceID)
+	if err != nil {
+		return err
+	}
+
+	if resource.UserID != uid {
+		// 可以在这里添加管理员权限检查
+		return model.NewUnAuthorizedError("You don't have permission to update this resource")
+	}
+
+	// 更新资源图片
+	return dao.UpdateResourceImage(resourceID, oldImageID, newImageID)
+}

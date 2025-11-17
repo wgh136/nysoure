@@ -60,6 +60,14 @@ type ResourceDetailView struct {
 	Characters        []CharacterView `json:"characters"`
 }
 
+type LowResResourceImageView struct {
+	ResourceID  uint   `json:"resource_id"`
+	Title       string `json:"title"`
+	ImageID     uint   `json:"image_id"`
+	ImageWidth  int    `json:"image_width"`
+	ImageHeight int    `json:"image_height"`
+}
+
 func (r *Resource) ToView() ResourceView {
 	tags := make([]TagView, len(r.Tags))
 	for i, tag := range r.Tags {
