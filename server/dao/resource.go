@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"nysoure/server/model"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -667,6 +668,26 @@ func UpdateResourceImage(resourceID, oldImageID, newImageID uint) error {
 
 		if result.RowsAffected == 0 {
 			return fmt.Errorf("no resource image association updated")
+		}
+
+		// 更新资源描述中的图片引用
+		var resource model.Resource
+		if err := tx.Select("article").Where("id = ?", resourceID).First(&resource).Error; err != nil {
+			return err
+		}
+
+		// 替换描述中的图片引用
+		oldImageRef := fmt.Sprintf("/api/image/%d)", oldImageID)
+		newImageRef := fmt.Sprintf("/api/image/%d)", newImageID)
+
+		// 使用字符串替换更新文章内容
+		updatedArticle := strings.ReplaceAll(resource.Article, oldImageRef, newImageRef)
+
+		// 如果文章内容有变化，更新数据库
+		if updatedArticle != resource.Article {
+			if err := tx.Model(&model.Resource{}).Where("id = ?", resourceID).Update("article", updatedArticle).Error; err != nil {
+				return err
+			}
 		}
 
 		return nil
