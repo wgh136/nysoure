@@ -801,3 +801,30 @@ func UpdateCharacterImage(uid, resourceID, characterID, imageID uint) error {
 
 	return nil
 }
+
+// GetLowResolutionCharacters 获取低清晰度的角色图片
+func GetLowResolutionCharacters(page int, maxWidth, maxHeight int) ([]model.LowResCharacterView, int, error) {
+	const pageSize = 50 // 每页50个角色
+
+	if page <= 0 {
+		page = 1
+	}
+
+	offset := (page - 1) * pageSize
+
+	// 获取角色列表
+	characters, err := dao.GetLowResolutionCharacters(maxWidth, maxHeight, pageSize, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// 获取总数
+	totalCount, err := dao.GetLowResolutionCharactersCount(maxWidth, maxHeight)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalPages := int((totalCount + int64(pageSize) - 1) / int64(pageSize))
+
+	return characters, totalPages, nil
+}

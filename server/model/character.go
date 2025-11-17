@@ -20,6 +20,15 @@ type CharacterView struct {
 	Image uint     `json:"image"`
 }
 
+type LowResCharacterView struct {
+	CharacterID uint   `json:"character_id"`
+	ResourceID  uint   `json:"resource_id"`
+	Name        string `json:"name"`
+	ImageID     uint   `json:"image_id"`
+	ImageWidth  int    `json:"image_width"`
+	ImageHeight int    `json:"image_height"`
+}
+
 func (c *Character) ToView() *CharacterView {
 	var imageID uint
 	if c.ImageID != nil {

@@ -544,3 +544,52 @@ func UpdateCharacterImage(characterID, imageID uint) error {
 	}
 	return nil
 }
+
+// GetLowResolutionCharacters 获取低清晰度的角色图片
+// maxWidth和maxHeight定义了低清晰度的阈值
+func GetLowResolutionCharacters(maxWidth, maxHeight int, limit int, offset int) ([]model.LowResCharacterView, error) {
+	var results []model.LowResCharacterView
+
+	query := `
+		SELECT 
+			c.id as character_id,
+			c.resource_id as resource_id,
+			c.name as name,
+			i.id as image_id,
+			i.width as image_width,
+			i.height as image_height
+		FROM characters c
+		INNER JOIN images i ON c.image_id = i.id
+		WHERE (i.width <= ? OR i.height <= ?)
+		AND c.image_id IS NOT NULL
+		ORDER BY c.id
+		LIMIT ? OFFSET ?
+	`
+
+	err := db.Raw(query, maxWidth, maxHeight, limit, offset).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+// GetLowResolutionCharactersCount 获取低清晰度角色的总数
+func GetLowResolutionCharactersCount(maxWidth, maxHeight int) (int64, error) {
+	var count int64
+
+	query := `
+		SELECT COUNT(*)
+		FROM characters c
+		INNER JOIN images i ON c.image_id = i.id
+		WHERE (i.width <= ? OR i.height <= ?)
+		AND c.image_id IS NOT NULL
+	`
+
+	err := db.Raw(query, maxWidth, maxHeight).Scan(&count).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

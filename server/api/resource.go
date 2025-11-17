@@ -312,7 +312,7 @@ func handleUpdateCharacterImage(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid character ID")
 	}
-	
+
 	var params struct {
 		ImageID uint `json:"image_id"`
 	}
@@ -321,21 +321,66 @@ func handleUpdateCharacterImage(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid request body")
 	}
-	
+
 	uid, ok := c.Locals("uid").(uint)
 	if !ok {
 		return model.NewUnAuthorizedError("You must be logged in to update a character")
 	}
-	
+
 	err = service.UpdateCharacterImage(uid, uint(resourceId), uint(characterId), params.ImageID)
 	if err != nil {
 		return err
 	}
-	
+
 	return c.Status(fiber.StatusOK).JSON(model.Response[any]{
 		Success: true,
 		Data:    nil,
 		Message: "Character image updated successfully",
+	})
+}
+
+func handleGetLowResolutionCharacters(c fiber.Ctx) error {
+	pageStr := c.Query("page")
+	if pageStr == "" {
+		pageStr = "1"
+	}
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return model.NewRequestError("Invalid page number")
+	}
+
+	maxWidthStr := c.Query("max_width")
+	if maxWidthStr == "" {
+		maxWidthStr = "800" // 默认最大宽度800px
+	}
+	maxWidth, err := strconv.Atoi(maxWidthStr)
+	if err != nil {
+		return model.NewRequestError("Invalid max_width parameter")
+	}
+
+	maxHeightStr := c.Query("max_height")
+	if maxHeightStr == "" {
+		maxHeightStr = "800" // 默认最大高度800px
+	}
+	maxHeight, err := strconv.Atoi(maxHeightStr)
+	if err != nil {
+		return model.NewRequestError("Invalid max_height parameter")
+	}
+
+	characters, totalPages, err := service.GetLowResolutionCharacters(page, maxWidth, maxHeight)
+	if err != nil {
+		return err
+	}
+
+	if characters == nil {
+		characters = []model.LowResCharacterView{}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.PageResponse[model.LowResCharacterView]{
+		Success:    true,
+		Data:       characters,
+		TotalPages: totalPages,
+		Message:    "Low resolution characters retrieved successfully",
 	})
 }
 
@@ -348,6 +393,7 @@ func AddResourceRoutes(api fiber.Router) {
 		resource.Get("/random", handleGetRandomResource)
 		resource.Get("/pinned", handleGetPinnedResources)
 		resource.Get("/vndb/characters", handleGetCharactersFromVndb)
+		resource.Get("/characters/low-resolution", handleGetLowResolutionCharacters)
 		resource.Get("/:id", handleGetResource)
 		resource.Delete("/:id", handleDeleteResource)
 		resource.Get("/tag/:tag", handleListResourcesWithTag)
