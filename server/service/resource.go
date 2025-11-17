@@ -803,11 +803,15 @@ func UpdateCharacterImage(uid, resourceID, characterID, imageID uint) error {
 }
 
 // GetLowResolutionCharacters 获取低清晰度的角色图片
-func GetLowResolutionCharacters(page int, maxWidth, maxHeight int) ([]model.LowResCharacterView, int, error) {
-	const pageSize = 50 // 每页50个角色
-
+func GetLowResolutionCharacters(page int, pageSize int, maxWidth, maxHeight int) ([]model.LowResCharacterView, int, error) {
 	if page <= 0 {
 		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 50 // 默认每页50个角色
+	}
+	if pageSize > 1000 {
+		pageSize = 1000 // 限制最大页面大小
 	}
 
 	offset := (page - 1) * pageSize

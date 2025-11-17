@@ -349,6 +349,22 @@ func handleGetLowResolutionCharacters(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid page number")
 	}
 
+	// 支持自定义页面大小，默认50，最大1000
+	pageSizeStr := c.Query("page_size")
+	if pageSizeStr == "" {
+		pageSizeStr = "50"
+	}
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil {
+		return model.NewRequestError("Invalid page_size parameter")
+	}
+	if pageSize > 1000 {
+		pageSize = 1000 // 限制最大页面大小
+	}
+	if pageSize < 1 {
+		pageSize = 1
+	}
+
 	maxWidthStr := c.Query("max_width")
 	if maxWidthStr == "" {
 		maxWidthStr = "800" // 默认最大宽度800px
@@ -367,7 +383,7 @@ func handleGetLowResolutionCharacters(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid max_height parameter")
 	}
 
-	characters, totalPages, err := service.GetLowResolutionCharacters(page, maxWidth, maxHeight)
+	characters, totalPages, err := service.GetLowResolutionCharacters(page, pageSize, maxWidth, maxHeight)
 	if err != nil {
 		return err
 	}
