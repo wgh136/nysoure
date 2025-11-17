@@ -872,8 +872,12 @@ func UpdateResourceImage(uid, resourceID, oldImageID, newImageID uint) error {
 		return err
 	}
 
-	if resource.UserID != uid {
-		// 可以在这里添加管理员权限检查
+	isAdmin, err := CheckUserIsAdmin(uid)
+	if err != nil {
+		return err
+	}
+
+	if resource.UserID != uid && !isAdmin {
 		return model.NewUnAuthorizedError("You don't have permission to update this resource")
 	}
 
