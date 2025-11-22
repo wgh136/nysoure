@@ -19,6 +19,7 @@ type File struct {
 	User        User `gorm:"foreignKey:UserID"`
 	Size        int64
 	Hash        string `gorm:"default:null"`
+	Tag         string `gorm:"type:text;default:null"`
 }
 
 type FileView struct {
@@ -32,6 +33,7 @@ type FileView struct {
 	Hash        string        `json:"hash,omitempty"`
 	StorageName string        `json:"storage_name,omitempty"`
 	CreatedAt   int64         `json:"created_at,omitempty"`
+	Tag         string        `json:"tag,omitempty"`
 }
 
 func (f *File) ToView() *FileView {
@@ -45,6 +47,7 @@ func (f *File) ToView() *FileView {
 		Hash:        f.Hash,
 		StorageName: f.Storage.Name,
 		CreatedAt:   f.CreatedAt.Unix(),
+		Tag:         f.Tag,
 	}
 }
 
@@ -64,5 +67,6 @@ func (f *File) ToViewWithResource() *FileView {
 		User:        f.User.ToView(),
 		Resource:    resource,
 		Hash:        f.Hash,
+		Tag:         f.Tag,
 	}
 }

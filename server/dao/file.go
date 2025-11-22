@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func CreateUploadingFile(filename string, description string, fileSize int64, blockSize int64, tempPath string, resourceID, storageID, userID uint) (*model.UploadingFile, error) {
+func CreateUploadingFile(filename string, description string, fileSize int64, blockSize int64, tempPath string, resourceID, storageID, userID uint, tag string) (*model.UploadingFile, error) {
 	blocksCount := (fileSize + blockSize - 1) / blockSize
 	uf := &model.UploadingFile{
 		Filename:         filename,
@@ -22,6 +22,7 @@ func CreateUploadingFile(filename string, description string, fileSize int64, bl
 		TargetResourceID: resourceID,
 		TargetStorageID:  storageID,
 		UserID:           userID,
+		Tag:              tag,
 	}
 	if err := db.Create(uf).Error; err != nil {
 		return nil, err
@@ -73,7 +74,7 @@ func GetUploadingFilesOlderThan(time time.Time) ([]model.UploadingFile, error) {
 	return files, nil
 }
 
-func CreateFile(filename string, description string, resourceID uint, storageID *uint, storageKey string, redirectUrl string, size int64, userID uint, hash string) (*model.File, error) {
+func CreateFile(filename string, description string, resourceID uint, storageID *uint, storageKey string, redirectUrl string, size int64, userID uint, hash string, tag string) (*model.File, error) {
 	if storageID == nil && redirectUrl == "" {
 		return nil, errors.New("storageID and redirectUrl cannot be both empty")
 	}
@@ -89,6 +90,7 @@ func CreateFile(filename string, description string, resourceID uint, storageID 
 		Size:        size,
 		UserID:      userID,
 		Hash:        hash,
+		Tag:         tag,
 	}
 
 	err := db.Transaction(func(tx *gorm.DB) error {
@@ -171,7 +173,7 @@ func DeleteFile(id string) error {
 	return nil
 }
 
-func UpdateFile(id string, filename string, description string) (*model.File, error) {
+func UpdateFile(id string, filename string, description string, tag string) (*model.File, error) {
 	f := &model.File{}
 	if err := db.Where("uuid = ?", id).First(f).Error; err != nil {
 		return nil, err
@@ -181,6 +183,9 @@ func UpdateFile(id string, filename string, description string) (*model.File, er
 	}
 	if description != "" {
 		f.Description = description
+	}
+	if tag != "" {
+		f.Tag = tag
 	}
 	if err := db.Save(f).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

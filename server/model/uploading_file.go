@@ -21,6 +21,7 @@ type UploadingFile struct {
 	TempPath         string
 	Resource         Resource `gorm:"foreignKey:TargetResourceID"`
 	Storage          Storage  `gorm:"foreignKey:TargetStorageID"`
+	Tag              string   `gorm:"type:text;default:null"`
 }
 
 func (uf *UploadingFile) BlocksCount() int {

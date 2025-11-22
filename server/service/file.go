@@ -80,7 +80,7 @@ func init() {
 	}()
 }
 
-func CreateUploadingFile(uid uint, filename string, description string, fileSize int64, resourceID, storageID uint) (*model.UploadingFileView, error) {
+func CreateUploadingFile(uid uint, filename string, description string, fileSize int64, resourceID, storageID uint, tag string) (*model.UploadingFileView, error) {
 	if filename == "" {
 		return nil, model.NewRequestError("filename is empty")
 	}
@@ -113,7 +113,7 @@ func CreateUploadingFile(uid uint, filename string, description string, fileSize
 		log.Error("failed to create temp dir: ", err)
 		return nil, model.NewInternalServerError("failed to create temp dir")
 	}
-	uploadingFile, err := dao.CreateUploadingFile(filename, description, fileSize, blockSize, tempPath, resourceID, storageID, uid)
+	uploadingFile, err := dao.CreateUploadingFile(filename, description, fileSize, blockSize, tempPath, resourceID, storageID, uid, tag)
 	if err != nil {
 		log.Error("failed to create uploading file: ", err)
 		_ = os.Remove(tempPath)
@@ -245,7 +245,7 @@ func FinishUploadingFile(uid uint, fid uint, md5Str string) (*model.FileView, er
 		return nil, model.NewInternalServerError("failed to finish uploading file. please re-upload")
 	}
 
-	dbFile, err := dao.CreateFile(uploadingFile.Filename, uploadingFile.Description, uploadingFile.TargetResourceID, &uploadingFile.TargetStorageID, storageKeyUnavailable, "", uploadingFile.TotalSize, uid, sumStr)
+	dbFile, err := dao.CreateFile(uploadingFile.Filename, uploadingFile.Description, uploadingFile.TargetResourceID, &uploadingFile.TargetStorageID, storageKeyUnavailable, "", uploadingFile.TotalSize, uid, sumStr, uploadingFile.Tag)
 	if err != nil {
 		log.Error("failed to create file in db: ", err)
 		_ = os.Remove(resultFilePath)
@@ -309,7 +309,7 @@ func CancelUploadingFile(uid uint, fid uint) error {
 	return nil
 }
 
-func CreateRedirectFile(uid uint, filename string, description string, resourceID uint, redirectUrl string) (*model.FileView, error) {
+func CreateRedirectFile(uid uint, filename string, description string, resourceID uint, redirectUrl string, fileSize int64, md5 string, tag string) (*model.FileView, error) {
 	u, err := url.Parse(redirectUrl)
 	if err != nil {
 		return nil, model.NewRequestError("URL is not valid")
@@ -329,7 +329,7 @@ func CreateRedirectFile(uid uint, filename string, description string, resourceI
 		return nil, model.NewUnAuthorizedError("user cannot upload file")
 	}
 
-	file, err := dao.CreateFile(filename, description, resourceID, nil, "", redirectUrl, 0, uid, "")
+	file, err := dao.CreateFile(filename, description, resourceID, nil, "", redirectUrl, fileSize, uid, md5, tag)
 	if err != nil {
 		log.Error("failed to create file in db: ", err)
 		return nil, model.NewInternalServerError("failed to create file in db")
@@ -373,7 +373,7 @@ func DeleteFile(uid uint, fid string) error {
 	return nil
 }
 
-func UpdateFile(uid uint, fid string, filename string, description string) (*model.FileView, error) {
+func UpdateFile(uid uint, fid string, filename string, description string, tag string) (*model.FileView, error) {
 	file, err := dao.GetFile(fid)
 	if err != nil {
 		log.Error("failed to get file: ", err)
@@ -390,7 +390,7 @@ func UpdateFile(uid uint, fid string, filename string, description string) (*mod
 		return nil, model.NewUnAuthorizedError("user cannot update file")
 	}
 
-	file, err = dao.UpdateFile(fid, filename, description)
+	file, err = dao.UpdateFile(fid, filename, description, tag)
 	if err != nil {
 		log.Error("failed to update file in db: ", err)
 		return nil, model.NewInternalServerError("failed to update file in db")
@@ -575,7 +575,7 @@ func downloadFile(ctx context.Context, url string, path string) (string, error) 
 	}
 }
 
-func CreateServerDownloadTask(uid uint, url, filename, description string, resourceID, storageID uint) (*model.FileView, error) {
+func CreateServerDownloadTask(uid uint, url, filename, description string, resourceID, storageID uint, tag string) (*model.FileView, error) {
 	canUpload, err := checkUserCanUpload(uid)
 	if err != nil {
 		log.Error("failed to check user permission: ", err)
@@ -596,7 +596,7 @@ func CreateServerDownloadTask(uid uint, url, filename, description string, resou
 		return nil, model.NewRequestError("server is busy, please try again later")
 	}
 
-	file, err := dao.CreateFile(filename, description, resourceID, &storageID, storageKeyUnavailable, "", 0, uid, "")
+	file, err := dao.CreateFile(filename, description, resourceID, &storageID, storageKeyUnavailable, "", 0, uid, "", tag)
 	if err != nil {
 		log.Error("failed to create file in db: ", err)
 		return nil, model.NewInternalServerError("failed to create file in db")

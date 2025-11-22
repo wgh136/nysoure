@@ -43,6 +43,7 @@ func initUpload(c fiber.Ctx) error {
 		FileSize    int64  `json:"file_size"`
 		ResourceID  uint   `json:"resource_id"`
 		StorageID   uint   `json:"storage_id"`
+		Tag         string `json:"tag"`
 	}
 
 	var req InitUploadRequest
@@ -50,7 +51,10 @@ func initUpload(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid request parameters")
 	}
 
-	result, err := service.CreateUploadingFile(uid, req.Filename, req.Description, req.FileSize, req.ResourceID, req.StorageID)
+	req.Filename = strings.TrimSpace(req.Filename)
+	req.Tag = strings.TrimSpace(req.Tag)
+
+	result, err := service.CreateUploadingFile(uid, req.Filename, req.Description, req.FileSize, req.ResourceID, req.StorageID, req.Tag)
 	if err != nil {
 		return err
 	}
@@ -136,6 +140,9 @@ func createRedirectFile(c fiber.Ctx) error {
 		Description string `json:"description"`
 		ResourceID  uint   `json:"resource_id"`
 		RedirectURL string `json:"redirect_url"`
+		FileSize    int64  `json:"file_size"`
+		Md5         string `json:"md5"`
+		Tag         string `json:"tag"`
 	}
 
 	var req CreateRedirectFileRequest
@@ -143,7 +150,11 @@ func createRedirectFile(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid request parameters")
 	}
 
-	result, err := service.CreateRedirectFile(uid, req.Filename, req.Description, req.ResourceID, req.RedirectURL)
+	req.Filename = strings.TrimSpace(req.Filename)
+	req.Md5 = strings.TrimSpace(req.Md5)
+	req.Tag = strings.TrimSpace(req.Tag)
+
+	result, err := service.CreateRedirectFile(uid, req.Filename, req.Description, req.ResourceID, req.RedirectURL, req.FileSize, req.Md5, req.Tag)
 	if err != nil {
 		return err
 	}
@@ -172,6 +183,7 @@ func updateFile(c fiber.Ctx) error {
 	type UpdateFileRequest struct {
 		Filename    string `json:"filename"`
 		Description string `json:"description"`
+		Tag         string `json:"tag"`
 	}
 
 	var req UpdateFileRequest
@@ -179,7 +191,10 @@ func updateFile(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid request parameters")
 	}
 
-	result, err := service.UpdateFile(uid, c.Params("id"), req.Filename, req.Description)
+	req.Filename = strings.TrimSpace(req.Filename)
+	req.Tag = strings.TrimSpace(req.Tag)
+
+	result, err := service.UpdateFile(uid, c.Params("id"), req.Filename, req.Description, req.Tag)
 	if err != nil {
 		return err
 	}
@@ -259,13 +274,18 @@ func createServerDownloadTask(c fiber.Ctx) error {
 		Description string `json:"description"`
 		ResourceID  uint   `json:"resource_id"`
 		StorageID   uint   `json:"storage_id"`
+		Tag         string `json:"tag"`
 	}
 
 	var req InitUploadRequest
 	if err := c.Bind().Body(&req); err != nil {
 		return model.NewRequestError("Invalid request parameters")
 	}
-	result, err := service.CreateServerDownloadTask(uid, req.Url, req.Filename, req.Description, req.ResourceID, req.StorageID)
+
+	req.Filename = strings.TrimSpace(req.Filename)
+	req.Tag = strings.TrimSpace(req.Tag)
+
+	result, err := service.CreateServerDownloadTask(uid, req.Url, req.Filename, req.Description, req.ResourceID, req.StorageID, req.Tag)
 	if err != nil {
 		return err
 	}
