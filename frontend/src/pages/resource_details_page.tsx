@@ -199,7 +199,7 @@ export default function ResourcePage() {
         <div className="flex">
           <div className="flex-1">
             <h1 className={"text-2xl font-bold px-4 py-2"}>{resource.title}</h1>
-            {resource.alternativeTitles.map((e, i) => {
+            {resource.alternativeTitles && resource.alternativeTitles.map((e, i) => {
               return (
                 <h2
                   key={i}
