@@ -24,6 +24,7 @@ var (
 type proxyResponse struct {
 	Content     string `json:"content"`
 	ContentType string `json:"content_type"`
+	StatusCode  int    `json:"status_code"`
 }
 
 func init() {
@@ -83,8 +84,9 @@ func handleProxyCall(c fiber.Ctx) error {
 		}
 	}
 
+	c.Status(resp.StatusCode)
 	c.Response().Header.SetContentType(resp.ContentType)
-	return c.Send([]byte(rawVal))
+	return c.SendString(resp.Content)
 }
 
 func proxy(uri *url.URL) (*proxyResponse, error) {
@@ -106,6 +108,7 @@ func proxy(uri *url.URL) (*proxyResponse, error) {
 	proxyResp := &proxyResponse{
 		Content:     string(data),
 		ContentType: contentType,
+		StatusCode:  resp.StatusCode,
 	}
 
 	j, err := json.Marshal(proxyResp)
