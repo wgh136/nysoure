@@ -7,6 +7,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -801,6 +802,11 @@ function FileTile({ file }: { file: RFile }) {
                 {file.storage_name}
               </Badge>
             )}
+            {file.tag && (
+              <Badge className={"badge-soft badge-warning text-xs mr-2"}>
+                {file.tag}
+              </Badge>
+            )}
             <Badge className={"badge-soft badge-info text-xs mr-2"}>
               <MdOutlineAccessTime size={16} className={"inline-block"} />
               {new Date(file.created_at * 1000).toISOString().substring(0, 10)}
@@ -919,11 +925,72 @@ function Files({
   files: RFile[];
   resource: ResourceDetails;
 }) {
+  const { t } = useTranslation();
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+
+  // Extract unique tags from all files
+  const allTags = useMemo(() => {
+    const tags = new Set<string>();
+    files.forEach((file) => {
+      if (file.tag) {
+        tags.add(file.tag);
+      }
+    });
+    return Array.from(tags).sort();
+  }, [files]);
+
+  // Filter files based on selected tags
+  const filteredFiles = useMemo(() => {
+    if (selectedTags.size === 0) {
+      return files;
+    }
+    return files.filter((file) => file.tag && selectedTags.has(file.tag));
+  }, [files, selectedTags]);
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(tag)) {
+        newSet.delete(tag);
+      } else {
+        newSet.add(tag);
+      }
+      return newSet;
+    });
+  };
+
   return (
     <div className={"pt-3"}>
-      {files.map((file) => {
+      {allTags.length > 0 && (
+        <form className="filter mb-4">
+          {allTags.map((tag) => (
+            <input
+              key={tag}
+              className="btn"
+              type="checkbox"
+              aria-label={tag}
+              checked={selectedTags.has(tag)}
+              onChange={() => toggleTag(tag)}
+            />
+          ))}
+          {selectedTags.size > 0 && (
+            <input
+              className="btn btn-square"
+              type="reset"
+              value="×"
+              onClick={() => setSelectedTags(new Set())}
+            />
+          )}
+        </form>
+      )}
+      {filteredFiles.map((file) => {
         return <FileTile file={file} key={file.id}></FileTile>;
       })}
+      {filteredFiles.length === 0 && selectedTags.size > 0 && (
+        <div className="text-center text-base-content/60 py-8">
+          {t("No files match the selected tags")}
+        </div>
+      )}
       <div className={"h-2"}></div>
       {(app.canUpload() || (app.allowNormalUserUpload && app.isLoggedIn())) && (
         <div className={"flex flex-row-reverse"}>
@@ -954,6 +1021,10 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
   const [storage, setStorage] = useState<Storage | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [description, setDescription] = useState<string>("");
+  const [tag, setTag] = useState<string>("");
+  const [fileSize, setFileSize] = useState<string>("");
+  const [fileSizeUnit, setFileSizeUnit] = useState<string>("MB");
+  const [md5, setMd5] = useState<string>("");
 
   const [fileUrl, setFileUrl] = useState<string>("");
 
@@ -985,11 +1056,38 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
         setSubmitting(false);
         return;
       }
+      let fileSizeNum = 0;
+      if (fileSize) {
+        const size = parseFloat(fileSize);
+        if (isNaN(size)) {
+          setError(t("File size must be a number"));
+          setSubmitting(false);
+          return;
+        }
+        // Convert to bytes based on unit
+        switch (fileSizeUnit) {
+          case "B":
+            fileSizeNum = size;
+            break;
+          case "KB":
+            fileSizeNum = size * 1024;
+            break;
+          case "MB":
+            fileSizeNum = size * 1024 * 1024;
+            break;
+          case "GB":
+            fileSizeNum = size * 1024 * 1024 * 1024;
+            break;
+        }
+      }
       const res = await network.createRedirectFile(
         filename,
         description,
         resourceId,
         redirectUrl,
+        fileSizeNum,
+        md5,
+        tag,
       );
       if (res.success) {
         setSubmitting(false);
@@ -1046,6 +1144,7 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
         description,
         resourceId,
         storage.id,
+        tag,
       );
       if (res.success) {
         setSubmitting(false);
@@ -1119,15 +1218,7 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
           <p className={"text-sm font-bold p-2"}>{t("Type")}</p>
           <form className="filter mb-2">
             <input
-              className="btn btn-square"
-              type="reset"
-              value="×"
-              onClick={() => {
-                setFileType(null);
-              }}
-            />
-            <input
-              className="btn text-sm"
+              className="btn"
               type="radio"
               name="type"
               aria-label={t("Redirect")}
@@ -1136,7 +1227,7 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
               }}
             />
             <input
-              className="btn text-sm"
+              className="btn"
               type="radio"
               name="type"
               aria-label={t("Upload")}
@@ -1145,12 +1236,20 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
               }}
             />
             <input
-              className="btn text-sm"
+              className="btn"
               type="radio"
               name="type"
               aria-label={t("File Url")}
               onInput={() => {
                 setFileType(FileType.serverTask);
+              }}
+            />
+            <input
+              className="btn btn-square"
+              type="reset"
+              value="×"
+              onClick={() => {
+                setFileType(null);
               }}
             />
           </form>
@@ -1181,6 +1280,45 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
                 placeholder={t("Description" + " (Markdown)")}
                 onChange={(e) => {
                   setDescription(e.target.value);
+                }}
+              />
+              <input
+                type="text"
+                className="input w-full my-2"
+                placeholder={t("Tag") + " (" + t("Optional") + ")"}
+                onChange={(e) => {
+                  setTag(e.target.value);
+                }}
+              />
+              <div className="join w-full">
+                <input
+                  type="number"
+                  className="input flex-1 join-item"
+                  placeholder={t("File Size") + " (" + t("Optional") + ")"}
+                  value={fileSize}
+                  onChange={(e) => {
+                    setFileSize(e.target.value);
+                  }}
+                />
+                <select
+                  className="select w-24 join-item"
+                  value={fileSizeUnit}
+                  onChange={(e) => {
+                    setFileSizeUnit(e.target.value);
+                  }}
+                >
+                  <option value="B">B</option>
+                  <option value="KB">KB</option>
+                  <option value="MB">MB</option>
+                  <option value="GB">GB</option>
+                </select>
+              </div>
+              <input
+                type="text"
+                className="input w-full my-2"
+                placeholder={"MD5" + " (" + t("Optional") + ")"}
+                onChange={(e) => {
+                  setMd5(e.target.value);
                 }}
               />
             </>
@@ -1237,6 +1375,14 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
                 placeholder={t("Description" + " (Markdown)")}
                 onChange={(e) => {
                   setDescription(e.target.value);
+                }}
+              />
+              <input
+                type="text"
+                className="input w-full my-2"
+                placeholder={t("Tag") + " (" + t("Optional") + ")"}
+                onChange={(e) => {
+                  setTag(e.target.value);
                 }}
               />
             </>
@@ -1311,6 +1457,14 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
                   setDescription(e.target.value);
                 }}
               />
+              <input
+                type="text"
+                className="input w-full my-2"
+                placeholder={t("Tag") + " (" + t("Optional") + ")"}
+                onChange={(e) => {
+                  setTag(e.target.value);
+                }}
+              />
             </>
           )}
 
@@ -1340,6 +1494,8 @@ function UpdateFileInfoDialog({ file }: { file: RFile }) {
 
   const [description, setDescription] = useState(file.description);
 
+  const [tag, setTag] = useState(file.tag || "");
+
   const { t } = useTranslation();
 
   const reload = useContext(context);
@@ -1349,7 +1505,7 @@ function UpdateFileInfoDialog({ file }: { file: RFile }) {
       return;
     }
     setLoading(true);
-    const res = await network.updateFile(file.id, filename, description);
+    const res = await network.updateFile(file.id, filename, description, tag);
     const dialog = document.getElementById(
       `update_file_info_dialog_${file.id}`,
     ) as HTMLDialogElement;
@@ -1396,6 +1552,12 @@ function UpdateFileInfoDialog({ file }: { file: RFile }) {
             label={t("Description")}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+          />
+          <Input
+            type={"text"}
+            label={t("Tag") + " (" + t("Optional") + ")"}
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
           />
           <div className="modal-action">
             <form method="dialog">

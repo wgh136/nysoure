@@ -258,6 +258,9 @@ export const i18nData = {
       "Survival time": "存活时间",
       "Characters": "角色",
       "Aliases (one per line)": "别名（每行一个）",
+      "File Size": "文件大小",
+      "Tag": "标签",
+      "Optional": "可选",
     },
   },
   "zh-TW": {
@@ -517,6 +520,11 @@ export const i18nData = {
       "Private": "私有",
       "View {count} more replies": "查看另外 {count} 條回覆",
       "Survival time": "存活時間",
+      "Characters": "角色",
+      "Aliases (one per line)": "別名（每行一個）",
+      "File Size": "檔案大小",
+      "Tag": "標籤",
+      "Optional": "可選",
     },
   },
 };

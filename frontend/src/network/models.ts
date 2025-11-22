@@ -123,6 +123,7 @@ export interface RFile {
   hash?: string;
   storage_name?: string;
   created_at: number; // unix timestamp
+  tag?: string;
 }
 
 export interface UploadingFile {

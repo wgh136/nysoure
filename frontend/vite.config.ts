@@ -8,8 +8,8 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:3000",
-        // target: "https://res.nyne.dev",
+        // target: "http://localhost:3000",
+        target: "https://nysoure.com",
         changeOrigin: true,
       },
       "https://www.moyu.moe": {

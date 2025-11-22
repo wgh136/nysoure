@@ -479,6 +479,7 @@ class Network {
     fileSize: number,
     resourceId: number,
     storageId: number,
+    tag: string,
   ): Promise<Response<UploadingFile>> {
     return this._callApi(() =>
       axios.post(`${this.apiBaseUrl}/files/upload/init`, {
@@ -487,6 +488,7 @@ class Network {
         file_size: fileSize,
         resource_id: resourceId,
         storage_id: storageId,
+        tag,
       }),
     );
   }
@@ -529,6 +531,9 @@ class Network {
     description: string,
     resourceId: number,
     redirectUrl: string,
+    fileSize: number,
+    md5: string,
+    tag: string,
   ): Promise<Response<RFile>> {
     return this._callApi(() =>
       axios.post(`${this.apiBaseUrl}/files/redirect`, {
@@ -536,6 +541,9 @@ class Network {
         description,
         resource_id: resourceId,
         redirect_url: redirectUrl,
+        file_size: fileSize,
+        md5,
+        tag,
       }),
     );
   }
@@ -546,6 +554,7 @@ class Network {
     description: string,
     resourceId: number,
     storageId: number,
+    tag: string,
   ): Promise<Response<RFile>> {
     return this._callApi(() =>
       axios.post(`${this.apiBaseUrl}/files/upload/url`, {
@@ -554,6 +563,7 @@ class Network {
         description,
         resource_id: resourceId,
         storage_id: storageId,
+        tag,
       }),
     );
   }
@@ -566,11 +576,13 @@ class Network {
     fileId: string,
     filename: string,
     description: string,
+    tag: string,
   ): Promise<Response<RFile>> {
     return this._callApi(() =>
       axios.put(`${this.apiBaseUrl}/files/${fileId}`, {
         filename,
         description,
+        tag,
       }),
     );
   }
