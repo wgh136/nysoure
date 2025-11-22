@@ -38,7 +38,8 @@ func main() {
 		api.AddCommentRoutes(apiG)
 		api.AddConfigRoutes(apiG)
 		api.AddActivityRoutes(apiG)
-		api.AddCollectionRoutes(apiG) // 新增
+		api.AddCollectionRoutes(apiG)
+		api.AddProxyRoutes(apiG)
 	}
 
 	log.Fatal(app.Listen(":3000"))
