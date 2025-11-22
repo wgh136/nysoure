@@ -17,7 +17,7 @@ services:
       - DB_PASSWORD=nysoure_password
       - DB_NAME=nysoure
       - REDIS_HOST=tendis
-      - REDIS_PORT=6379
+      - REDIS_PORT=51002
       - BANNED_REDIRECT_DOMAINS=example.com,example.org
     restart: unless-stopped
     logging:
@@ -43,9 +43,7 @@ services:
         max-file: "3"
 
   tendis:
-    image: tendis/tendis:latest
-    volumes:
-      - tendis_data:/data
+    image: tencentdbforkv/tendisplus:latest
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -56,4 +54,3 @@ services:
 volumes:
   app_data:
   db_data:
-  tendis_data:
