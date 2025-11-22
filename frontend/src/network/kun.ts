@@ -16,8 +16,10 @@ const KunApi = {
           return status === 200 || status === 404; // Accept only 200 and 404 responses
         },
       });
+      const uri = `https://www.moyu.moe/api/hikari?vndb_id=${id}`;
+      const uriBase64 = btoa(uri);
       const res = await client.get(
-        `https://www.moyu.moe/api/hikari?vndb_id=${id}`,
+        `/api/proxy?uri=${uriBase64}`,
       );
       if (res.status === 404) {
         return {
