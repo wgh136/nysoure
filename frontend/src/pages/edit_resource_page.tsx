@@ -156,7 +156,7 @@ export default function EditResourcePage() {
         />
         <div className={"h-4"}></div>
         <p className={"my-1"}>{t("Alternative Titles")}</p>
-        {altTitles.map((title, index) => {
+        {altTitles && altTitles.map((title, index) => {
           return (
             <div key={index} className={"flex items-center my-2"}>
               <input
