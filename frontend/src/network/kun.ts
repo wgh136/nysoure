@@ -3,10 +3,7 @@ import { Response } from "./models.ts";
 
 const KunApi = {
   isAvailable(): boolean {
-    return (
-      window.location.hostname === "res.nyne.dev" ||
-      window.location.hostname.startsWith("localhost")
-    );
+    return true;
   },
 
   async getPatch(id: string): Promise<Response<KunPatchResponse>> {
