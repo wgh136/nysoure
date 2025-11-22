@@ -201,6 +201,7 @@ class UploadingManager extends Listenable {
     resourceID: number,
     storageID: number,
     description: string,
+    tag: string,
     onFinished: () => void,
   ): Promise<Response<void>> {
     const res = await network.initFileUpload(
@@ -209,6 +210,7 @@ class UploadingManager extends Listenable {
       file.size,
       resourceID,
       storageID,
+      tag,
     );
     if (!res.success) {
       return {

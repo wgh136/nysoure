@@ -1112,6 +1112,7 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
         resourceId,
         storage.id,
         description,
+        tag,
         () => {
           if (mounted.current) {
             reload();
