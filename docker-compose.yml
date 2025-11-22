@@ -9,7 +9,7 @@ services:
       - app_data:/var/lib/nysoure
     depends_on:
       - db
-      - tendis
+      - redis
     environment:
       - DB_HOST=db
       - DB_PORT=3306
