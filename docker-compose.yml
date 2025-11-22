@@ -35,8 +35,6 @@ services:
       - MYSQL_DATABASE=nysoure
       - MYSQL_USER=nysoure
       - MYSQL_PASSWORD=nysoure_password
-    ports:
-      - "3306"
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -48,8 +46,6 @@ services:
     image: tendis/tendis:latest
     volumes:
       - tendis_data:/data
-    ports:
-      - "6379"
     restart: unless-stopped
     logging:
       driver: "json-file"
