@@ -683,7 +683,7 @@ func GetCharactersFromVndb(vnID string) ([]CharacterParams, error) {
 			}
 		}
 
-		if role != "primary" && role != "side" {
+		if role != "primary" && role != "side" && role != "main" {
 			continue
 		}
 
