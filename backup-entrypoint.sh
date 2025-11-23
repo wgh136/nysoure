@@ -30,10 +30,6 @@ if [ -z "${S3_BUCKET}" ] || [ -z "${S3_ACCESS_KEY}" ] || [ -z "${S3_SECRET_KEY}"
     exit 1
 fi
 
-# Run initial backup
-log "Running initial backup..."
-/usr/local/bin/backup.sh
-
 # Create crontab
 echo "${BACKUP_SCHEDULE} /bin/bash /usr/local/bin/backup.sh >> /var/log/backup.log 2>&1" > /tmp/crontab
 
@@ -41,4 +37,4 @@ log "Starting scheduled backups with supercronic..."
 log "Logs will be written to /var/log/backup.log"
 
 # Run supercronic with the crontab
-exec supercronic /tmp/crontab
+supercronic /tmp/crontab
