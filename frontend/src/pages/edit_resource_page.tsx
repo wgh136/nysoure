@@ -54,7 +54,7 @@ export default function EditResourcePage() {
       if (res.success) {
         const data = res.data!;
         setTitle(data.title);
-        setAltTitles(data.alternativeTitles);
+        setAltTitles(data.alternativeTitles ?? []);
         setTags(data.tags);
         setArticle(data.article);
         setImages(data.images.map((i) => i.id));
