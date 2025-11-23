@@ -25,4 +25,4 @@ RUN chmod +x /usr/local/bin/backup-entrypoint.sh
 
 WORKDIR /backup
 
-ENTRYPOINT ["/usr/local/bin/backup-entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "/usr/local/bin/backup-entrypoint.sh"]
