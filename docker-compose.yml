@@ -10,15 +10,8 @@ services:
     depends_on:
       - db
       - redis
-    environment:
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_USER=nysoure
-      - DB_PASSWORD=nysoure_password
-      - DB_NAME=nysoure
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - BANNED_REDIRECT_DOMAINS=example.com,example.org
+    env_file:
+      - .env
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -30,11 +23,8 @@ services:
     image: mariadb:latest
     volumes:
       - db_data:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=root_password
-      - MYSQL_DATABASE=nysoure
-      - MYSQL_USER=nysoure
-      - MYSQL_PASSWORD=nysoure_password
+    env_file:
+      - .env
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -51,6 +41,27 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  backup:
+    build:
+      context: .
+      dockerfile: Dockerfile.backup
+    volumes:
+      - app_data:/backup/app_data:ro
+      - db_data:/backup/db_data:ro
+      - backup_data:/backup/local
+    depends_on:
+      - db
+      - app
+    env_file:
+      - .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 volumes:
   app_data:
   db_data:
+  backup_data:

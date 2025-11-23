@@ -1,0 +1,28 @@
+FROM alpine:latest
+
+# Install required packages
+RUN apk add --no-cache \
+    bash \
+    mysql-client \
+    rclone \
+    tzdata \
+    supercronic \
+    && rm -rf /var/cache/apk/*
+
+# Set timezone (optional, adjust as needed)
+ENV TZ=UTC
+
+# Create backup directory
+RUN mkdir -p /backup/local
+
+# Copy backup script
+COPY backup.sh /usr/local/bin/backup.sh
+RUN chmod +x /usr/local/bin/backup.sh
+
+# Copy entrypoint script
+COPY backup-entrypoint.sh /usr/local/bin/backup-entrypoint.sh
+RUN chmod +x /usr/local/bin/backup-entrypoint.sh
+
+WORKDIR /backup
+
+ENTRYPOINT ["/usr/local/bin/backup-entrypoint.sh"]

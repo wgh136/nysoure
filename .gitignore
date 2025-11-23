@@ -3,3 +3,5 @@
 test.db
 .idea/
 build/
+temp/
+.env
