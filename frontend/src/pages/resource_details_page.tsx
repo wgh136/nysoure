@@ -2074,7 +2074,7 @@ function Gallery({ images, nsfw }: { images: number[], nsfw: number[] }) {
 
   // 预加载下一张图片
   useEffect(() => {
-    if (images.length <= 1) return;
+    if (!images || images.length <= 1) return;
     
     const nextIndex = (currentIndex + 1) % images.length;
     const nextImageUrl = network.getImageUrl(images[nextIndex]);
