@@ -34,6 +34,7 @@ import {
   MdOutlineArticle,
   MdOutlineChevronLeft,
   MdOutlineChevronRight,
+  MdOutlineClose,
   MdOutlineCloud,
   MdOutlineComment,
   MdOutlineContentCopy,
@@ -2071,6 +2072,17 @@ function Gallery({ images, nsfw }: { images: number[], nsfw: number[] }) {
     };
   }, []);
 
+  // 预加载下一张图片
+  useEffect(() => {
+    if (images.length <= 1) return;
+    
+    const nextIndex = (currentIndex + 1) % images.length;
+    const nextImageUrl = network.getImageUrl(images[nextIndex]);
+    
+    const img = new Image();
+    img.src = nextImageUrl;
+  }, [currentIndex, images]);
+
   if (!images || images.length === 0) {
     return <></>;
   }
@@ -2099,25 +2111,16 @@ function Gallery({ images, nsfw }: { images: number[], nsfw: number[] }) {
 
   return (
     <>
-    <dialog
-      ref={dialogRef}
-      onClick={() => {
-      dialogRef.current?.close();
-      }}
-      className="modal"
-    >
-      <div className="modal-box w-full h-full max-h-screen max-w-screen p-4 bg-transparent shadow-none flex items-center justify-center">
-      <motion.img
-      src={network.getImageUrl(images[currentIndex])}
-      alt=""
-      className="max-w-full max-h-full object-contain rounded-xl"
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      transition={{ duration: 0.2 }}
-      />
-      </div>
-    </dialog>
+    <GalleryFullscreen
+      dialogRef={dialogRef}
+      images={images}
+      currentIndex={currentIndex}
+      direction={direction}
+      isHovered={isHovered}
+      setIsHovered={setIsHovered}
+      goToPrevious={goToPrevious}
+      goToNext={goToNext}
+    />
     <div
       className="relative w-full overflow-hidden rounded-xl bg-base-100-tr82 shadow-sm"
       style={{ aspectRatio: "16/9" }}
@@ -2211,6 +2214,152 @@ function Gallery({ images, nsfw }: { images: number[], nsfw: number[] }) {
       )}
     </div>
     </>
+  );
+}
+
+function GalleryFullscreen({
+  dialogRef,
+  images,
+  currentIndex,
+  direction,
+  isHovered,
+  setIsHovered,
+  goToPrevious,
+  goToNext,
+}: {
+  dialogRef: React.RefObject<HTMLDialogElement | null>;
+  images: number[];
+  currentIndex: number;
+  direction: number;
+  isHovered: boolean;
+  setIsHovered: (hovered: boolean) => void;
+  goToPrevious: () => void;
+  goToNext: () => void;
+}) {
+  const [width, setWidth] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        console.log(containerRef.current.clientWidth);
+        setWidth(containerRef.current.clientWidth);
+      }
+    };
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => {
+      window.removeEventListener("resize", updateWidth);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (dialogRef.current?.open) {
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          goToPrevious();
+        } else if (e.key === "ArrowRight") {
+          e.preventDefault();
+          goToNext();
+        } else if (e.key === "Escape") {
+          dialogRef.current?.close();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [dialogRef, goToPrevious, goToNext]);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      onClick={() => {
+        dialogRef.current?.close();
+      }}
+      className="modal"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div ref={containerRef} className="modal-box w-full h-full max-h-screen max-w-screen p-4 bg-transparent shadow-none relative overflow-clip">
+        {width > 0 && <AnimatePresence initial={false} custom={direction} mode="sync">
+          <motion.div
+            key={`fullscreen-${currentIndex}`}
+            className="absolute inset-0 w-full h-full"
+            variants={{
+                enter: (dir: number) => ({
+                  x: dir > 0 ? width : -width,
+                }),
+                center: {
+                  x: 0,
+                  transition: { duration: 0.3, ease: "linear" },
+                },
+                exit: (dir: number) => ({
+                  x: dir > 0 ? -width : width,
+                  transition: { duration: 0.3, ease: "linear" },
+                }),
+            }}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            custom={direction}
+          >
+            <img
+              src={network.getImageUrl(images[currentIndex])}
+              alt=""
+              className="w-full h-full object-contain rounded-xl p-4 sm:p-6"
+            />
+          </motion.div>
+        </AnimatePresence>}
+
+        {/* 全屏模式下的左右切换按钮 */}
+        {images.length > 1 && (
+          <>
+            <button
+              className={`absolute left-4 top-1/2 -translate-y-1/2 cursor-pointer hover:bg-base-100/60 rounded-full p-2 transition-colors focus:border-none focus:outline-none`}
+              onClick={(e) => {
+                e.stopPropagation();
+                goToPrevious();
+              }}
+            >
+              <MdOutlineChevronLeft size={24} />
+            </button>
+            <button
+              className={`absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer hover:bg-base-100/60 rounded-full p-2 transition-colors focus:border-none focus:outline-none`}
+              onClick={(e) => {
+                e.stopPropagation();
+                goToNext();
+              }}
+            >
+              <MdOutlineChevronRight size={24} />
+            </button>
+
+            {/* 全屏模式下的指示器 */}
+            <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 transition-opacity ${
+              isHovered ? "opacity-100" : "opacity-0"
+            }`}>
+              <div className="bg-base-100/60 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-medium select-none">
+                {currentIndex + 1} / {images.length}
+              </div>
+            </div>
+
+            {/* 关闭按钮 */}
+            <button
+              className={`absolute top-4 right-4 cursor-pointer hover:bg-base-100/60 rounded-full p-2 transition-colors`}
+              onClick={(e) => {
+                e.stopPropagation();
+                dialogRef.current?.close();
+              }}
+            >
+              <MdOutlineClose size={24} />
+            </button>
+          </>
+        )}
+      </div>
+    </dialog>
   );
 }
 
