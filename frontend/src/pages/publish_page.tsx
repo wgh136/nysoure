@@ -19,7 +19,7 @@ import {
   SelectAndUploadImageButton,
   UploadClipboardImageButton,
 } from "../components/image_selector.tsx";
-import CharacterEditer from "../components/character_edit.tsx";
+import CharacterEditer, { FetchVndbCharactersButton } from "../components/character_edit.tsx";
 
 export default function PublishPage() {
   const [title, setTitle] = useState<string>("");
@@ -436,13 +436,13 @@ export default function PublishPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 my-2 gap-4">
             {
               characters.map((character, index) => {
-                return <CharacterEditer 
-                  character={character} 
+                return <CharacterEditer
+                  character={character}
                   setCharacter={(newCharacter) => {
                     const newCharacters = [...characters];
                     newCharacters[index] = newCharacter;
                     setCharacters(newCharacters);
-                  }} 
+                  }}
                   onDelete={() => {
                     const newCharacters = [...characters];
                     newCharacters.splice(index, 1);
@@ -456,12 +456,23 @@ export default function PublishPage() {
               className={"btn my-2"}
               type={"button"}
               onClick={() => {
-                setCharacters([...characters, { name: "", alias: [], cv: "", image: 0, role: "primary"}]);
+                setCharacters([...characters, { name: "", alias: [], cv: "", image: 0, role: "primary" }]);
               }}
             >
               <MdAdd />
               {t("Add Character")}
             </button>
+            {
+              links.find(link => link.label.toLowerCase() === "vndb") &&
+              <div className="ml-4">
+                <FetchVndbCharactersButton
+                  vnID={links.find(link => link.label.toLowerCase() === "vndb")?.url.split("/").pop() ?? ""}
+                  onFetch={(fetchedCharacters) => {
+                    setCharacters(fetchedCharacters);
+                  }}
+                />
+              </div>
+            }
           </div>
         </div>
         {error && (
