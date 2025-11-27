@@ -878,6 +878,8 @@ function CloudflarePopup({ file }: { file: RFile }) {
 
   const [isLoading, setLoading] = useState(true);
 
+  const [downloadToken, setDownloadToken] = useState<string | null>(null);
+
   const { t } = useTranslation();
 
   return (
@@ -887,31 +889,50 @@ function CloudflarePopup({ file }: { file: RFile }) {
       {isLoading ? (
         <div
           className={
-            "absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center"
+            "absolute top-0 bottom-8 left-0 right-0 flex items-center justify-center"
           }
         >
           <span className={"loading loading-spinner loading-lg"}></span>
         </div>
       ) : null}
-      <h3 className={"font-bold m-2"}>{t("Verifying your request")}</h3>
-      <div className={"h-20 w-full"}>
-        <Turnstile
-          siteKey={app.cloudflareTurnstileSiteKey!}
-          onWidgetLoad={() => {
-            setLoading(false);
-          }}
-          onSuccess={(token) => {
-            closePopup();
-            const link = network.getFileDownloadLink(file.id, token);
-            window.open(link, "_blank");
-          }}
-        ></Turnstile>
-      </div>
-      <p className={"text-xs text-base-content/80 m-2"}>
-        {t(
-          "Please check your network if the verification takes too long or the captcha does not appear.",
-        )}
-      </p>
+      <h3 className={"font-bold m-2"}>
+        {downloadToken ? t("Verification successful") : t("Verifying your request")}
+      </h3>
+      {!downloadToken && (
+        <>
+          <div className={"h-20 w-full"}>
+            <Turnstile
+              siteKey={app.cloudflareTurnstileSiteKey!}
+              onWidgetLoad={() => {
+                setLoading(false);
+              }}
+              onSuccess={(token) => {
+                setDownloadToken(token);
+              }}
+            ></Turnstile>
+          </div>
+          <p className={"text-xs text-base-content/80 m-2"}>
+            {t(
+              "Please check your network if the verification takes too long or the captcha does not appear.",
+            )}
+          </p>
+        </>
+      )}
+      {downloadToken && (
+        <div className="p-2">
+          <a
+            href={network.getFileDownloadLink(file.id, downloadToken)}
+            target="_blank"
+            className="btn btn-primary btn-sm w-full"
+            onClick={() => {
+              closePopup();
+            }}
+          >
+            <MdOutlineDownload size={20} />
+            {t("Download")}
+          </a>
+        </div>
+      )}
     </div>
   );
 }
