@@ -173,10 +173,15 @@ func deleteImage(id uint) error {
 	return nil
 }
 
+// GetResampledImage returns a resampled version of the image if it exceeds the maximum pixel limit, otherwise returns nil.
 func GetResampledImage(id uint) ([]byte, error) {
 	i, err := dao.GetImageByID(id)
 	if err != nil {
 		return nil, err
+	}
+
+	if i.Width*i.Height <= resampledMaxPixels {
+		return nil, nil
 	}
 
 	data, err := getOrCreateResampledImage(i)
