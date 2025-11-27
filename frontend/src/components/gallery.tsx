@@ -282,7 +282,7 @@ function GalleryFullscreen({
               <img
                 src={network.getImageUrl(images[currentIndex])}
                 alt=""
-                className="w-full h-full object-contain rounded-xl p-4 sm:p-6"
+                className="w-full h-full object-contain rounded-xl"
               />
             </motion.div>
           </AnimatePresence>
