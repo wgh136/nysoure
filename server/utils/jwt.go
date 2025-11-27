@@ -3,9 +3,10 @@ package utils
 import (
 	"crypto/rand"
 	"errors"
-	"github.com/golang-jwt/jwt/v5"
 	"os"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var (
@@ -92,4 +93,25 @@ func ParseTemporaryToken(token string) (string, error) {
 		return data, nil
 	}
 	return "", errors.New("invalid token")
+}
+
+func GenerateDownloadToken(fileKey string) (string, error) {
+	secretKeyStr := os.Getenv("DOWNLOAD_SECRET_KEY")
+	var secretKey []byte
+	if secretKeyStr == "" {
+		secretKey = key
+	} else {
+		secretKey = []byte(secretKeyStr)
+	}
+
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		jwt.MapClaims{
+			"fileKey": fileKey,
+			"exp":     time.Now().Add(1 * time.Hour).Unix(),
+		})
+	s, err := t.SignedString(secretKey)
+	if err != nil {
+		return "", err
+	}
+	return s, nil
 }

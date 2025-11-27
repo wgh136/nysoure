@@ -225,7 +225,18 @@ func downloadFile(c fiber.Ctx) error {
 		return err
 	}
 	if strings.HasPrefix(s, "http") {
-		return c.Redirect().Status(fiber.StatusFound).To(s)
+		uri, err := url.Parse(s)
+		if err != nil {
+			return err
+		}
+		token, err := utils.GenerateDownloadToken(s)
+		if err != nil {
+			return err
+		}
+		q := uri.Query()
+		q.Set("token", token)
+		uri.RawQuery = q.Encode()
+		return c.Redirect().Status(fiber.StatusFound).To(uri.String())
 	}
 	data := map[string]string{
 		"path":     s,
