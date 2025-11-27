@@ -43,6 +43,14 @@ func NewStorage(s model.Storage) IStorage {
 			return nil
 		}
 		return &r
+
+	case "ftp":
+		r := FTPStorage{}
+		err := r.FromString(s.Config)
+		if err != nil {
+			return nil
+		}
+		return &r
 	}
 	return nil
 }

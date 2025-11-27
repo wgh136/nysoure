@@ -244,6 +244,7 @@ export default function StorageView() {
 enum StorageType {
   local,
   s3,
+  ftp,
 }
 
 function NewStorageDialog({ onAdded }: { onAdded: () => void }) {
@@ -259,6 +260,10 @@ function NewStorageDialog({ onAdded }: { onAdded: () => void }) {
     bucketName: "",
     maxSizeInMB: 0,
     domain: "",
+    host: "",
+    username: "",
+    password: "",
+    basePath: "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -304,6 +309,28 @@ function NewStorageDialog({ onAdded }: { onAdded: () => void }) {
         params.bucketName,
         params.maxSizeInMB,
         params.domain,
+      );
+    } else if (storageType === StorageType.ftp) {
+      if (
+        params.host === "" ||
+        params.username === "" ||
+        params.password === "" ||
+        params.domain === "" ||
+        params.name === "" ||
+        params.maxSizeInMB <= 0
+      ) {
+        setError(t("All fields are required"));
+        setIsLoading(false);
+        return;
+      }
+      response = await network.createFTPStorage(
+        params.name,
+        params.host,
+        params.username,
+        params.password,
+        params.basePath,
+        params.domain,
+        params.maxSizeInMB,
       );
     }
 
@@ -366,6 +393,15 @@ function NewStorageDialog({ onAdded }: { onAdded: () => void }) {
               aria-label={t("S3")}
               onInput={() => {
                 setStorageType(StorageType.s3);
+              }}
+            />
+            <input
+              className="btn"
+              type="radio"
+              name="type"
+              aria-label={t("FTP")}
+              onInput={() => {
+                setStorageType(StorageType.ftp);
               }}
             />
           </form>
@@ -496,6 +532,114 @@ function NewStorageDialog({ onAdded }: { onAdded: () => void }) {
                 <input
                   type="text"
                   placeholder={t("Optional")}
+                  className="w-full"
+                  value={params.domain}
+                  onChange={(e) => {
+                    setParams({
+                      ...params,
+                      domain: e.target.value,
+                    });
+                  }}
+                />
+              </label>
+              <label className="input w-full my-2">
+                {t("Max Size (MB)")}
+                <input
+                  type="number"
+                  className="validator"
+                  required
+                  min="0"
+                  value={params.maxSizeInMB.toString()}
+                  onChange={(e) => {
+                    setParams({
+                      ...params,
+                      maxSizeInMB: parseInt(e.target.value),
+                    });
+                  }}
+                />
+              </label>
+            </>
+          )}
+
+          {storageType === StorageType.ftp && (
+            <>
+              <label className="input w-full my-2">
+                {t("Name")}
+                <input
+                  type="text"
+                  className="w-full"
+                  value={params.name}
+                  onChange={(e) => {
+                    setParams({
+                      ...params,
+                      name: e.target.value,
+                    });
+                  }}
+                />
+              </label>
+              <label className="input w-full my-2">
+                {t("Host")}
+                <input
+                  type="text"
+                  placeholder="ftp.example.com:21"
+                  className="w-full"
+                  value={params.host}
+                  onChange={(e) => {
+                    setParams({
+                      ...params,
+                      host: e.target.value,
+                    });
+                  }}
+                />
+              </label>
+              <label className="input w-full my-2">
+                {t("Username")}
+                <input
+                  type="text"
+                  className="w-full"
+                  value={params.username}
+                  onChange={(e) => {
+                    setParams({
+                      ...params,
+                      username: e.target.value,
+                    });
+                  }}
+                />
+              </label>
+              <label className="input w-full my-2">
+                {t("Password")}
+                <input
+                  type="password"
+                  className="w-full"
+                  value={params.password}
+                  onChange={(e) => {
+                    setParams({
+                      ...params,
+                      password: e.target.value,
+                    });
+                  }}
+                />
+              </label>
+              <label className="input w-full my-2">
+                {t("Base Path")}
+                <input
+                  type="text"
+                  placeholder="/uploads"
+                  className="w-full"
+                  value={params.basePath}
+                  onChange={(e) => {
+                    setParams({
+                      ...params,
+                      basePath: e.target.value,
+                    });
+                  }}
+                />
+              </label>
+              <label className="input w-full my-2">
+                {t("Domain")}
+                <input
+                  type="text"
+                  placeholder="files.example.com"
                   className="w-full"
                   value={params.domain}
                   onChange={(e) => {

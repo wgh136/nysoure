@@ -457,6 +457,28 @@ class Network {
     );
   }
 
+  async createFTPStorage(
+    name: string,
+    host: string,
+    username: string,
+    password: string,
+    basePath: string,
+    domain: string,
+    maxSizeInMB: number,
+  ): Promise<Response<any>> {
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/storage/ftp`, {
+        name,
+        host,
+        username,
+        password,
+        basePath,
+        domain,
+        maxSizeInMB,
+      }),
+    );
+  }
+
   async listStorages(): Promise<Response<Storage[]>> {
     return this._callApi(() => axios.get(`${this.apiBaseUrl}/storage`));
   }

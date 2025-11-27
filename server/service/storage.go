@@ -78,6 +78,42 @@ func CreateLocalStorage(uid uint, params CreateLocalStorageParams) error {
 	return err
 }
 
+type CreateFTPStorageParams struct {
+	Name        string `json:"name"`
+	Host        string `json:"host"`
+	Username    string `json:"username"`
+	Password    string `json:"password"`
+	BasePath    string `json:"basePath"`
+	Domain      string `json:"domain"`
+	MaxSizeInMB uint   `json:"maxSizeInMB"`
+}
+
+func CreateFTPStorage(uid uint, params CreateFTPStorageParams) error {
+	isAdmin, err := CheckUserIsAdmin(uid)
+	if err != nil {
+		log.Errorf("check user is admin failed: %s", err)
+		return model.NewInternalServerError("check user is admin failed")
+	}
+	if !isAdmin {
+		return model.NewUnAuthorizedError("only admin can create ftp storage")
+	}
+	ftp := storage.FTPStorage{
+		Host:     params.Host,
+		Username: params.Username,
+		Password: params.Password,
+		BasePath: params.BasePath,
+		Domain:   params.Domain,
+	}
+	s := model.Storage{
+		Name:    params.Name,
+		Type:    ftp.Type(),
+		Config:  ftp.ToString(),
+		MaxSize: int64(params.MaxSizeInMB) * 1024 * 1024,
+	}
+	_, err = dao.CreateStorage(s)
+	return err
+}
+
 func ListStorages() ([]model.StorageView, error) {
 	storages, err := dao.GetStorages()
 	if err != nil {

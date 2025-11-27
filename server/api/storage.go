@@ -69,6 +69,37 @@ func handleCreateLocalStorage(c fiber.Ctx) error {
 	})
 }
 
+func handleCreateFTPStorage(c fiber.Ctx) error {
+	var params service.CreateFTPStorageParams
+	if err := c.Bind().JSON(&params); err != nil {
+		return model.NewRequestError("Invalid request body")
+	}
+
+	if params.Name == "" || params.Host == "" || params.Username == "" ||
+		params.Password == "" || params.Domain == "" {
+		return model.NewRequestError("All fields are required")
+	}
+
+	if params.MaxSizeInMB <= 0 {
+		return model.NewRequestError("Max size must be greater than 0")
+	}
+
+	uid, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewUnAuthorizedError("You are not authorized to perform this action")
+	}
+
+	err := service.CreateFTPStorage(uid, params)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(model.Response[any]{
+		Success: true,
+		Message: "FTP storage created successfully",
+	})
+}
+
 func handleListStorages(c fiber.Ctx) error {
 	storages, err := service.ListStorages()
 	if err != nil {
@@ -136,6 +167,7 @@ func AddStorageRoutes(r fiber.Router) {
 	s := r.Group("storage")
 	s.Post("/s3", handleCreateS3Storage)
 	s.Post("/local", handleCreateLocalStorage)
+	s.Post("/ftp", handleCreateFTPStorage)
 	s.Get("/", handleListStorages)
 	s.Delete("/:id", handleDeleteStorage)
 	s.Put("/:id/default", handleSetDefaultStorage)
