@@ -67,7 +67,7 @@ export default function Navigator() {
       {/* Background overlay */}
       {background && (
         <div
-          className="bg-base-100 opacity-60 dark:opacity-40"
+          className="bg-base-100 opacity-20 dark:opacity-40"
           style={{
             position: "fixed",
             top: 0,
