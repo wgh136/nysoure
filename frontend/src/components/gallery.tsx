@@ -80,10 +80,10 @@ export default function Gallery({
         images={images}
         currentIndex={currentIndex}
         direction={direction}
-        isHovered={isHovered}
-        setIsHovered={setIsHovered}
         goToPrevious={goToPrevious}
         goToNext={goToNext}
+        setDirection={setDirection}
+        setCurrentIndex={setCurrentIndex}
       />
       <div
         className="relative w-full overflow-hidden rounded-xl bg-base-100-tr82 shadow-sm"
@@ -190,22 +190,25 @@ function GalleryFullscreen({
   images,
   currentIndex,
   direction,
-  isHovered,
-  setIsHovered,
   goToPrevious,
   goToNext,
+  setDirection,
+  setCurrentIndex,
 }: {
   dialogRef: React.RefObject<HTMLDialogElement | null>;
   images: number[];
   currentIndex: number;
   direction: number;
-  isHovered: boolean;
-  setIsHovered: (hovered: boolean) => void;
   goToPrevious: () => void;
   goToNext: () => void;
+  setDirection: (direction: number) => void;
+  setCurrentIndex: (index: number) => void;
 }) {
   const [width, setWidth] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const thumbnailContainerRef = useRef<HTMLDivElement>(null);
+  const hideTimeoutRef = useRef<number | null>(null);
+  const [isHovered, setIsHovered] = useState(true);
 
   useEffect(() => {
     const updateWidth = () => {
@@ -220,6 +223,29 @@ function GalleryFullscreen({
       window.removeEventListener("resize", updateWidth);
     };
   }, []);
+
+  useEffect(() => {
+    const handleMouseMove = () => {
+      setIsHovered(true);
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+      hideTimeoutRef.current = setTimeout(() => {
+        setIsHovered(false);
+      }, 2000);
+    };
+
+    if (dialogRef.current?.open) {
+      window.addEventListener("mousemove", handleMouseMove);
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+    };
+  }, [dialogRef.current?.open, setIsHovered]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -242,6 +268,15 @@ function GalleryFullscreen({
     };
   }, [dialogRef, goToPrevious, goToNext]);
 
+  useEffect(() => {
+    if (thumbnailContainerRef.current && dialogRef.current?.open) {
+      const thumbnail = thumbnailContainerRef.current.children[currentIndex] as HTMLElement;
+      if (thumbnail) {
+        thumbnail.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      }
+    }
+  }, [currentIndex, dialogRef]);
+
   return (
     <dialog
       ref={dialogRef}
@@ -249,7 +284,6 @@ function GalleryFullscreen({
         dialogRef.current?.close();
       }}
       className="modal"
-      onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
@@ -310,14 +344,39 @@ function GalleryFullscreen({
               <MdOutlineChevronRight size={24} />
             </button>
 
-            {/* 全屏模式下的指示器 */}
+            {/* 图片缩略图列表 */}
             <div
               className={`absolute bottom-4 left-1/2 -translate-x-1/2 transition-opacity ${
                 isHovered ? "opacity-100" : "opacity-0"
               }`}
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="bg-base-100/20 px-2 py-1 rounded-full text-xs">
-                {currentIndex + 1} / {images.length}
+              <div
+                ref={thumbnailContainerRef}
+                className="flex gap-2 overflow-x-auto max-w-[80vw] px-2 py-2 bg-base-100/60 rounded-xl scrollbar-thin scrollbar-thumb-base-content/30 scrollbar-track-transparent"
+              >
+                {images.map((imageId, index) => (
+                  <button
+                    key={index}
+                    className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden transition-all ${
+                      index === currentIndex
+                        ? "ring-2 ring-primary scale-110"
+                        : "opacity-60 hover:opacity-100"
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newDirection = index > currentIndex ? 1 : -1;
+                      setDirection(newDirection);
+                      setCurrentIndex(index);
+                    }}
+                  >
+                    <img
+                      src={network.getResampledImageUrl(imageId)}
+                      alt={`Thumbnail ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
               </div>
             </div>
 
