@@ -70,6 +70,7 @@ export default function HomePage() {
 function HomeHeader() {
   const [pinnedResources, setPinnedResources] = useState<Resource[]>([]);
   const [statistic, setStatistic] = useState<Statistics | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const navigator = useNavigator();
   const appContext = useAppContext();
 
@@ -127,13 +128,30 @@ function HomeHeader() {
     fetchStatistics();
   }, [appContext, navigator]);
 
+  // Auto-scroll carousel every 5 seconds
+  useEffect(() => {
+    if (pinnedResources.length <= 1) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % pinnedResources.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [pinnedResources.length, currentIndex]);
+
   if (pinnedResources.length == 0 || statistic == null) {
     return <></>;
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 p-4 gap-4">
-      <PinnedResourceItem resource={pinnedResources[0]} />
+      <PinnedResourcesCarousel
+        resources={pinnedResources}
+        currentIndex={currentIndex}
+        onIndexChange={setCurrentIndex}
+      />
       <div className={"hidden md:flex h-52 md:h-60 flex-col"}>
         <div className={"card w-full shadow p-4 mb-4 bg-base-100-tr82 flex-1"}>
           <h2 className={"text-lg font-bold pb-2"}>{app.appName}</h2>
@@ -141,6 +159,49 @@ function HomeHeader() {
         </div>
         <StatisticCard statistic={statistic} />
       </div>
+    </div>
+  );
+}
+
+function PinnedResourcesCarousel({
+  resources,
+  currentIndex,
+  onIndexChange,
+}: {
+  resources: Resource[];
+  currentIndex: number;
+  onIndexChange: (index: number) => void;
+}) {
+  return (
+    <div className="relative">
+      <div className="overflow-hidden rounded-2xl">
+        <div
+          className="flex transition-transform duration-500 ease-in-out"
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
+          {resources.map((resource) => (
+            <div key={resource.id} className="w-full flex-shrink-0">
+              <PinnedResourceItem resource={resource} />
+            </div>
+          ))}
+        </div>
+      </div>
+      {resources.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
+          {resources.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => onIndexChange(index)}
+              className={`w-2 h-2 rounded-full transition-all ${
+                index === currentIndex
+                  ? "bg-white w-6"
+                  : "bg-white/50 hover:bg-white/75"
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
