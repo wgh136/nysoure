@@ -410,7 +410,7 @@ function GalleryImage({ src, nfsw }: { src: string; nfsw: boolean }) {
       <img
         src={src}
         alt=""
-        className={`w-full h-full object-contain transition-all duration-300 ${!show ? "blur-xl" : ""}`}
+        className={`w-full h-full object-cover transition-all duration-300 ${!show ? "blur-xl" : ""}`}
       />
       {!show && (
         <>

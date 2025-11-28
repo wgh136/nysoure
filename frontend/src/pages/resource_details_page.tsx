@@ -909,12 +909,7 @@ function CloudflarePopup({ file }: { file: RFile }) {
           }}
         ></Turnstile>
       </div>
-      <p className={"text-xs text-base-content/80 m-2"}>
-        {t(
-          "Please check your network if the verification takes too long or the captcha does not appear.",
-        )}
-      </p>
-      {downloadToken && (
+      {downloadToken ? (
         <div className="p-2">
           <a
             href={network.getFileDownloadLink(file.id, downloadToken)}
@@ -928,7 +923,11 @@ function CloudflarePopup({ file }: { file: RFile }) {
             {t("Download")}
           </a>
         </div>
-      )}
+      ) : <p className={"text-xs text-base-content/80 m-2"}>
+        {t(
+          "Please check your network if the verification takes too long or the captcha does not appear.",
+        )}
+      </p>}
     </div>
   );
 }
