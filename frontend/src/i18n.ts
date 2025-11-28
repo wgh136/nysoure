@@ -261,6 +261,7 @@ export const i18nData = {
       "File Size": "文件大小",
       "Tag": "标签",
       "Optional": "可选",
+      "Download": "下载",
     },
   },
   "zh-TW": {
@@ -525,6 +526,7 @@ export const i18nData = {
       "File Size": "檔案大小",
       "Tag": "標籤",
       "Optional": "可選",
+      "Download": "下載",
     },
   },
 };

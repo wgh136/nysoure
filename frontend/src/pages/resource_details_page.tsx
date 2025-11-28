@@ -465,141 +465,141 @@ function DeleteResourceDialog({
   );
 }
 
-const context = createContext<() => void>(() => {});
+const context = createContext<() => void>(() => { });
 
 function Article({ resource }: { resource: ResourceDetails }) {
   return (
     <>
-    <article>
-      <Markdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          p: ({ node, ...props }) => {
-            if (
-              typeof props.children === "object" &&
-              (props.children as ReactElement).type === "strong"
-            ) {
-              // @ts-ignore
-              const child = (
-                props.children as ReactElement
-              ).props.children.toString() as string;
-              if (child.startsWith("<iframe")) {
+      <article>
+        <Markdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            p: ({ node, ...props }) => {
+              if (
+                typeof props.children === "object" &&
+                (props.children as ReactElement).type === "strong"
+              ) {
                 // @ts-ignore
-                let html = child;
-                let splits = html.split(" ");
-                splits = splits.filter((s: string) => {
-                  return !(
-                    s.startsWith("width") ||
-                    s.startsWith("height") ||
-                    s.startsWith("class") ||
-                    s.startsWith("style")
-                  );
-                });
-                html = splits.join(" ");
-                return (
-                  <div
-                    className={`w-full my-3 max-w-xl rounded-xl overflow-clip ${html.includes("youtube") ? "aspect-video" : "h-48 sm:h-64"}`}
-                    dangerouslySetInnerHTML={{
-                      __html: html,
-                    }}
-                  ></div>
-                );
-              }
-            } else if (
-              typeof props.children === "object" &&
-              // @ts-ignore
-              props.children?.props &&
-              // @ts-ignore
-              props.children?.props.href
-            ) {
-              const a = props.children as ReactElement;
-              const childProps = a.props as any;
-              const href = childProps.href as string;
-              // @ts-ignore
-              if (childProps.children?.length === 2) {
-                // @ts-ignore
-                const first = childProps.children[0] as ReactNode;
-                // @ts-ignore
-                const second = childProps.children[1] as ReactNode;
-
-                if (
-                  typeof first === "object" &&
-                  (typeof second === "string" || typeof second === "object")
-                ) {
-                  const img = first as ReactElement;
+                const child = (
+                  props.children as ReactElement
+                ).props.children.toString() as string;
+                if (child.startsWith("<iframe")) {
                   // @ts-ignore
-                  if (img.type === "img") {
-                    return (
-                      <a
-                        className={
-                          "inline-block card shadow bg-base-100 no-underline hover:shadow-md transition-shadow my-2"
-                        }
-                        target={"_blank"}
-                        href={href}
-                      >
-                        <figure className={"max-h-96 min-w-48 min-h-24"}>
-                          {img}
-                        </figure>
-                        <div className={"card-body text-base-content text-lg"}>
-                          <div className={"flex items-center"}>
-                            <span className={"flex-1"}>{second}</span>
-                            <span>
-                              <MdOutlineOpenInNew size={24} />
-                            </span>
+                  let html = child;
+                  let splits = html.split(" ");
+                  splits = splits.filter((s: string) => {
+                    return !(
+                      s.startsWith("width") ||
+                      s.startsWith("height") ||
+                      s.startsWith("class") ||
+                      s.startsWith("style")
+                    );
+                  });
+                  html = splits.join(" ");
+                  return (
+                    <div
+                      className={`w-full my-3 max-w-xl rounded-xl overflow-clip ${html.includes("youtube") ? "aspect-video" : "h-48 sm:h-64"}`}
+                      dangerouslySetInnerHTML={{
+                        __html: html,
+                      }}
+                    ></div>
+                  );
+                }
+              } else if (
+                typeof props.children === "object" &&
+                // @ts-ignore
+                props.children?.props &&
+                // @ts-ignore
+                props.children?.props.href
+              ) {
+                const a = props.children as ReactElement;
+                const childProps = a.props as any;
+                const href = childProps.href as string;
+                // @ts-ignore
+                if (childProps.children?.length === 2) {
+                  // @ts-ignore
+                  const first = childProps.children[0] as ReactNode;
+                  // @ts-ignore
+                  const second = childProps.children[1] as ReactNode;
+
+                  if (
+                    typeof first === "object" &&
+                    (typeof second === "string" || typeof second === "object")
+                  ) {
+                    const img = first as ReactElement;
+                    // @ts-ignore
+                    if (img.type === "img") {
+                      return (
+                        <a
+                          className={
+                            "inline-block card shadow bg-base-100 no-underline hover:shadow-md transition-shadow my-2"
+                          }
+                          target={"_blank"}
+                          href={href}
+                        >
+                          <figure className={"max-h-96 min-w-48 min-h-24"}>
+                            {img}
+                          </figure>
+                          <div className={"card-body text-base-content text-lg"}>
+                            <div className={"flex items-center"}>
+                              <span className={"flex-1"}>{second}</span>
+                              <span>
+                                <MdOutlineOpenInNew size={24} />
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </a>
+                        </a>
+                      );
+                    }
+                  }
+                }
+                if (href.startsWith("https://store.steampowered.com/app/")) {
+                  const appId = href
+                    .substring("https://store.steampowered.com/app/".length)
+                    .split("/")[0];
+                  if (!Number.isNaN(Number(appId))) {
+                    return (
+                      <div className={"max-w-xl h-52 sm:h-48 my-2"}>
+                        <iframe
+                          className={"scheme-light"}
+                          src={`https://store.steampowered.com/widget/${appId}/`}
+                        ></iframe>
+                      </div>
                     );
                   }
                 }
               }
-              if (href.startsWith("https://store.steampowered.com/app/")) {
-                const appId = href
-                  .substring("https://store.steampowered.com/app/".length)
-                  .split("/")[0];
-                if (!Number.isNaN(Number(appId))) {
-                  return (
-                    <div className={"max-w-xl h-52 sm:h-48 my-2"}>
-                      <iframe
-                        className={"scheme-light"}
-                        src={`https://store.steampowered.com/widget/${appId}/`}
-                      ></iframe>
-                    </div>
-                  );
-                }
-              }
-            }
-            return <p {...props}>{props.children}</p>;
-          },
-          a: ({ node, ...props }) => {
-            const href = props.href as string;
-            const origin = window.location.origin;
+              return <p {...props}>{props.children}</p>;
+            },
+            a: ({ node, ...props }) => {
+              const href = props.href as string;
+              const origin = window.location.origin;
 
-            if (href.startsWith(origin) || href.startsWith("/")) {
-              let path = href;
-              if (path.startsWith(origin)) {
-                path = path.substring(origin.length);
-              }
-              const content = props.children?.toString();
-              if (path.startsWith("/resources/")) {
-                const id = path.substring("/resources/".length);
-                for (const r of resource.related ?? []) {
-                  if (r.id.toString() === id) {
-                    return <RelatedResourceCard r={r} content={content} />;
+              if (href.startsWith(origin) || href.startsWith("/")) {
+                let path = href;
+                if (path.startsWith(origin)) {
+                  path = path.substring(origin.length);
+                }
+                const content = props.children?.toString();
+                if (path.startsWith("/resources/")) {
+                  const id = path.substring("/resources/".length);
+                  for (const r of resource.related ?? []) {
+                    if (r.id.toString() === id) {
+                      return <RelatedResourceCard r={r} content={content} />;
+                    }
                   }
                 }
               }
-            }
 
-            return <a target={"_blank"} {...props}></a>;
-          },
-        }}
-      >
-        {resource.article.replaceAll("\n", "  \n")}
-      </Markdown>
-    </article>
-    <div className="border-b border-base-300 h-8"></div>
-    <Characters characters={resource.characters} />
+              return <a target={"_blank"} {...props}></a>;
+            },
+          }}
+        >
+          {resource.article.replaceAll("\n", "  \n")}
+        </Markdown>
+      </article>
+      <div className="border-b border-base-300 h-8"></div>
+      <Characters characters={resource.characters} />
     </>
   );
 }
@@ -898,26 +898,22 @@ function CloudflarePopup({ file }: { file: RFile }) {
       <h3 className={"font-bold m-2"}>
         {downloadToken ? t("Verification successful") : t("Verifying your request")}
       </h3>
-      {!downloadToken && (
-        <>
-          <div className={"h-20 w-full"}>
-            <Turnstile
-              siteKey={app.cloudflareTurnstileSiteKey!}
-              onWidgetLoad={() => {
-                setLoading(false);
-              }}
-              onSuccess={(token) => {
-                setDownloadToken(token);
-              }}
-            ></Turnstile>
-          </div>
-          <p className={"text-xs text-base-content/80 m-2"}>
-            {t(
-              "Please check your network if the verification takes too long or the captcha does not appear.",
-            )}
-          </p>
-        </>
-      )}
+      <div className={"h-20 w-full"}>
+        <Turnstile
+          siteKey={app.cloudflareTurnstileSiteKey!}
+          onWidgetLoad={() => {
+            setLoading(false);
+          }}
+          onSuccess={(token) => {
+            setDownloadToken(token);
+          }}
+        ></Turnstile>
+      </div>
+      <p className={"text-xs text-base-content/80 m-2"}>
+        {t(
+          "Please check your network if the verification takes too long or the captcha does not appear.",
+        )}
+      </p>
       {downloadToken && (
         <div className="p-2">
           <a
@@ -2109,7 +2105,7 @@ function CharacterCard({ character }: { character: CharacterParams }) {
         alt={character.name}
         className="w-full h-full object-cover"
       />
-      
+
       <div className="absolute bottom-1 left-1 right-1 px-1 py-1 border border-base-100/40 rounded-lg bg-base-100/60">
         <h4 className="font-semibold text-sm leading-tight line-clamp border border-transparent">
           {character.name}
@@ -2123,7 +2119,7 @@ function CharacterCard({ character }: { character: CharacterParams }) {
             ) : null
           }
         </h4>
-        
+
         {character.cv && (
           <button
             onClick={handleCVClick}
