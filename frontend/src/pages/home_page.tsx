@@ -232,7 +232,7 @@ function PinnedResourceItem({ resource }: { resource: Resource }) {
             />
           </figure>
         )}
-        <div className="p-4 absolute bottom-2 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent">
+        <div className="p-4 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent">
           <h2 className="break-all card-title text-white">{resource.title}</h2>
         </div>
       </div>
