@@ -240,10 +240,12 @@ function GalleryFullscreen({
 
     if (dialogRef.current?.open) {
       window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("touchstart", handleMouseMove);
     }
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchstart", handleMouseMove);
       if (hideTimeoutRef.current) {
         clearTimeout(hideTimeoutRef.current);
       }
