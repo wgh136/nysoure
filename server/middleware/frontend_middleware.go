@@ -32,6 +32,7 @@ func FrontendMiddleware(c fiber.Ctx) error {
 	}
 
 	if _, err := os.Stat(file); path == "/" || os.IsNotExist(err) {
+		c.Set("Cache-Control", "no-cache")
 		return serveIndexHtml(c)
 	} else {
 		c.Set("Cache-Control", "public, max-age=31536000, immutable")
