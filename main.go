@@ -19,6 +19,8 @@ func main() {
 		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
 	}))
 
+	app.Use(middleware.UnsupportedRegionMiddleware)
+
 	app.Use(middleware.ErrorHandler)
 
 	app.Use(middleware.RealUserMiddleware)
