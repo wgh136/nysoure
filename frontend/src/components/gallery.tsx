@@ -78,6 +78,7 @@ export default function Gallery({
       <GalleryFullscreen
         dialogRef={dialogRef}
         images={images}
+        nsfw={nsfw}
         currentIndex={currentIndex}
         direction={direction}
         goToPrevious={goToPrevious}
@@ -124,7 +125,7 @@ export default function Gallery({
               >
                 <GalleryImage
                   src={network.getImageUrl(images[currentIndex])}
-                  nfsw={nsfw.includes(currentIndex)}
+                  nfsw={nsfw.includes(images[currentIndex])}
                 />
               </motion.div>
             </AnimatePresence>
@@ -188,6 +189,7 @@ export default function Gallery({
 function GalleryFullscreen({
   dialogRef,
   images,
+  nsfw,
   currentIndex,
   direction,
   goToPrevious,
@@ -197,6 +199,7 @@ function GalleryFullscreen({
 }: {
   dialogRef: React.RefObject<HTMLDialogElement | null>;
   images: number[];
+  nsfw: number[];
   currentIndex: number;
   direction: number;
   goToPrevious: () => void;
@@ -316,7 +319,7 @@ function GalleryFullscreen({
               <img
                 src={network.getImageUrl(images[currentIndex])}
                 alt=""
-                className="w-full h-full object-contain rounded-xl"
+                className="w-full h-full object-contain rounded-xl select-none"
               />
             </motion.div>
           </AnimatePresence>
@@ -360,8 +363,8 @@ function GalleryFullscreen({
                     key={index}
                     className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden transition-all ${
                       index === currentIndex
-                        ? "ring-2 ring-primary scale-110"
-                        : "opacity-60 hover:opacity-100"
+                        ? "ring-2 ring-primary scale-110 "
+                        : `${nsfw.includes(imageId) ? "blur-sm hover:blur-none" : "opacity-60 hover:opacity-100"}`
                     }`}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -373,7 +376,7 @@ function GalleryFullscreen({
                     <img
                       src={network.getResampledImageUrl(imageId)}
                       alt={`Thumbnail ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover select-none`}
                     />
                   </button>
                 ))}
