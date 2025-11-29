@@ -231,6 +231,7 @@ func downloadFile(c fiber.Ctx) error {
 		}
 		q := uri.Query()
 		if len(q) != 0 {
+			// If there are already query parameters, assume the URL is signed
 			return c.Redirect().Status(fiber.StatusFound).To(uri.String())
 		}
 		token, err := utils.GenerateDownloadToken(s)
