@@ -229,11 +229,14 @@ func downloadFile(c fiber.Ctx) error {
 		if err != nil {
 			return err
 		}
+		q := uri.Query()
+		if len(q) != 0 {
+			return c.Redirect().Status(fiber.StatusFound).To(uri.String())
+		}
 		token, err := utils.GenerateDownloadToken(s)
 		if err != nil {
 			return err
 		}
-		q := uri.Query()
 		q.Set("token", token)
 		uri.RawQuery = q.Encode()
 		return c.Redirect().Status(fiber.StatusFound).To(uri.String())
