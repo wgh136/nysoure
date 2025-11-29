@@ -31,7 +31,77 @@ import (
 
 const (
 	resampledMaxPixels = 1280 * 720
+	subdirsCount       = 256 // Number of subdirectories (0-255)
 )
+
+// getImageSubdir returns the subdirectory name for an image filename
+// Uses the first 2 characters of the filename to distribute across 256 subdirs
+func getImageSubdir(filename string) string {
+	if len(filename) < 2 {
+		return "00"
+	}
+	// Use first 2 hex chars to determine subdir (e.g., "a1b2c3..." -> "a1")
+	return filename[:2]
+}
+
+// getImagePath returns the full path to an image, checking new subdirectory structure first,
+// then falling back to legacy flat structure for backward compatibility
+func getImagePath(filename string) string {
+	baseDir := utils.GetStoragePath() + "/images/"
+
+	// Try new subdirectory structure first
+	subdir := getImageSubdir(filename)
+	newPath := baseDir + subdir + "/" + filename
+	if _, err := os.Stat(newPath); err == nil {
+		return newPath
+	}
+
+	// Fall back to legacy flat structure
+	legacyPath := baseDir + filename
+	return legacyPath
+}
+
+// ensureImageSubdir creates the subdirectory for a filename if it doesn't exist
+func ensureImageSubdir(filename string) error {
+	baseDir := utils.GetStoragePath() + "/images/"
+	subdir := getImageSubdir(filename)
+	subdirPath := baseDir + subdir
+
+	if _, err := os.Stat(subdirPath); os.IsNotExist(err) {
+		if err := os.MkdirAll(subdirPath, 0755); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// getResampledImagePath returns the full path to a resampled image using subdirectory structure
+// Subdirectory is based on image ID modulo 256 (e.g., id=1234 -> subdir="d2" from 1234%256=210=0xd2)
+func getResampledImagePath(imageID uint) string {
+	baseDir := utils.GetStoragePath() + "/resampled/"
+	subdir := strconv.FormatUint(uint64(imageID%subdirsCount), 16)
+	if len(subdir) == 1 {
+		subdir = "0" + subdir
+	}
+	return baseDir + subdir + "/" + strconv.Itoa(int(imageID)) + ".webp"
+}
+
+// ensureResampledSubdir creates the subdirectory for a resampled image if it doesn't exist
+func ensureResampledSubdir(imageID uint) error {
+	baseDir := utils.GetStoragePath() + "/resampled/"
+	subdir := strconv.FormatUint(uint64(imageID%subdirsCount), 16)
+	if len(subdir) == 1 {
+		subdir = "0" + subdir
+	}
+	subdirPath := baseDir + subdir
+
+	if _, err := os.Stat(subdirPath); os.IsNotExist(err) {
+		if err := os.MkdirAll(subdirPath, 0755); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func init() {
 	// Start a goroutine to delete unused images every hour
@@ -108,13 +178,24 @@ func CreateImage(uid uint, ip string, data []byte) (uint, error) {
 	}
 
 	filename := uuid.New().String()
-	if err := os.WriteFile(imageDir+filename, data, 0644); err != nil {
+
+	// Create subdirectory for new storage structure
+	if err := ensureImageSubdir(filename); err != nil {
+		return 0, errors.New("failed to create image subdirectory")
+	}
+
+	// Save to new subdirectory structure
+	subdir := getImageSubdir(filename)
+	filepath := imageDir + subdir + "/" + filename
+	if err := os.WriteFile(filepath, data, 0644); err != nil {
 		return 0, errors.New("failed to save image file")
 	}
 
 	i, err := dao.CreateImage(filename, img.Bounds().Dx(), img.Bounds().Dy())
 	if err != nil {
-		_ = os.Remove(imageDir + filename)
+		// Clean up the file if database creation fails
+		subdir := getImageSubdir(filename)
+		_ = os.Remove(imageDir + subdir + "/" + filename)
 		return 0, err
 	}
 
@@ -127,11 +208,11 @@ func GetImage(id uint) ([]byte, error) {
 		return nil, err
 	}
 
-	imageDir := utils.GetStoragePath() + "/images/"
-	if _, err := os.Stat(imageDir); os.IsNotExist(err) {
+	filepath := getImagePath(i.FileName)
+	if _, err := os.Stat(filepath); os.IsNotExist(err) {
 		return nil, model.NewNotFoundError("Image not found")
 	}
-	data, err := os.ReadFile(imageDir + i.FileName)
+	data, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, errors.New("failed to read image file")
 	}
@@ -161,11 +242,13 @@ func deleteImage(id uint) error {
 		return err
 	}
 
-	imageDir := utils.GetStoragePath() + "/images/"
-	_ = os.Remove(imageDir + i.FileName)
+	// Delete from both potential locations (new subdir and legacy flat)
+	filepath := getImagePath(i.FileName)
+	_ = os.Remove(filepath)
 
-	resampledDir := utils.GetStoragePath() + "/resampled/"
-	_ = os.Remove(resampledDir + strconv.Itoa(int(i.ID)) + ".webp")
+	// Delete resampled image from subdirectory structure
+	resampledPath := getResampledImagePath(i.ID)
+	_ = os.Remove(resampledPath)
 
 	if err := dao.DeleteImage(id); err != nil {
 		return err
@@ -190,14 +273,8 @@ func GetResampledImage(id uint) ([]byte, error) {
 }
 
 func getOrCreateResampledImage(i model.Image) ([]byte, error) {
-	baseDir := utils.GetStoragePath() + "/resampled/"
-	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(baseDir, 0755); err != nil {
-			return nil, err
-		}
-	}
-
-	resampledFilepath := baseDir + strconv.Itoa(int(i.ID)) + ".webp"
+	// Check if resampled image already exists
+	resampledFilepath := getResampledImagePath(i.ID)
 	if _, err := os.Stat(resampledFilepath); err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
@@ -206,7 +283,7 @@ func getOrCreateResampledImage(i model.Image) ([]byte, error) {
 		return os.ReadFile(resampledFilepath)
 	}
 
-	originalFilepath := utils.GetStoragePath() + "/images/" + i.FileName
+	originalFilepath := getImagePath(i.FileName)
 	if _, err := os.Stat(originalFilepath); os.IsNotExist(err) {
 		return nil, model.NewNotFoundError("Original image not found")
 	}
@@ -237,6 +314,12 @@ func getOrCreateResampledImage(i model.Image) ([]byte, error) {
 	if err := webp.Encode(buf, dstImg, &webp.Options{Quality: 80}); err != nil {
 		return nil, errors.New("failed to encode resampled image data to webp format")
 	}
+
+	// Ensure subdirectory exists before saving
+	if err := ensureResampledSubdir(i.ID); err != nil {
+		return nil, errors.New("failed to create resampled image subdirectory")
+	}
+
 	if err := os.WriteFile(resampledFilepath, buf.Bytes(), 0644); err != nil {
 		return nil, errors.New("failed to save resampled image file")
 	}
