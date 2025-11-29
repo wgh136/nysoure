@@ -180,10 +180,6 @@ func GetResampledImage(id uint) ([]byte, error) {
 		return nil, err
 	}
 
-	if i.Width*i.Height <= resampledMaxPixels {
-		return nil, nil
-	}
-
 	data, err := getOrCreateResampledImage(i)
 	if err != nil {
 		log.Error("Error getting or creating resampled image:", err)

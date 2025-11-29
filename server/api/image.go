@@ -88,10 +88,6 @@ func handleGetResampledImage(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	if image == nil {
-		// No resampled image, redirect to original
-		return c.Redirect().To("/api/image/" + idStr)
-	}
 	contentType := http.DetectContentType(image)
 	c.Set("Content-Type", contentType)
 	c.Set("Cache-Control", "public, max-age=31536000")
