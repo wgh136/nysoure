@@ -95,7 +95,7 @@ func GetUserNotifications(userID uint, offset, limit int) ([]model.Activity, int
 	var activities []model.Activity
 	var total int64
 
-	if err := db.Model(&model.Activity{}).Count(&total).Error; err != nil {
+	if err := db.Model(&model.Activity{}).Where("notify_to = ?", userID).Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
