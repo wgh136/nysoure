@@ -19,6 +19,7 @@ import CreateCollectionPage from "./pages/create_collection_page.tsx";
 import CollectionPage from "./pages/collection_page.tsx";
 import { i18nData } from "./i18n.ts";
 import { i18nContext } from "./utils/i18n.ts";
+import NotificationPage from "./pages/notification_page.tsx";
 
 export default function App() {
   return (
@@ -49,6 +50,7 @@ export default function App() {
               element={<CreateCollectionPage />}
             />
             <Route path={"/collection/:id"} element={<CollectionPage />} />
+            <Route path={"/notifications"} element={<NotificationPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

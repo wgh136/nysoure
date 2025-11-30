@@ -730,6 +730,26 @@ class Network {
     );
   }
 
+  async getUserNotifications(page: number = 1): Promise<PageResponse<Activity>> {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/notification`, {
+        params: { page },
+      }),
+    );
+  }
+
+  async resetUserNotificationsCount(): Promise<Response<void>> {
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/notification/reset`),
+    );
+  }
+
+  async getUserNotificationsCount(): Promise<Response<number>> {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/notification/count`),
+    );
+  }
+
   async createCollection(
     title: string,
     article: string,

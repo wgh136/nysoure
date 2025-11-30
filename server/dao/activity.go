@@ -2,9 +2,10 @@ package dao
 
 import (
 	"errors"
-	"gorm.io/gorm"
 	"nysoure/server/model"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 func AddNewResourceActivity(userID, resourceID uint) error {
@@ -42,13 +43,20 @@ func AddUpdateResourceActivity(userID, resourceID uint) error {
 	return db.Create(activity).Error
 }
 
-func AddNewCommentActivity(userID, commentID uint) error {
-	activity := &model.Activity{
-		UserID: userID,
-		Type:   model.ActivityTypeNewComment,
-		RefID:  commentID,
-	}
-	return db.Create(activity).Error
+func AddNewCommentActivity(userID, commentID, notifyTo uint) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		activity := &model.Activity{
+			UserID:   userID,
+			Type:     model.ActivityTypeNewComment,
+			RefID:    commentID,
+			NotifyTo: notifyTo,
+		}
+		err := tx.Create(activity).Error
+		if err != nil {
+			return err
+		}
+		return tx.Model(&model.User{}).Where("id = ?", notifyTo).UpdateColumn("unread_notifications_count", gorm.Expr("unread_notifications_count + ?", 1)).Error
+	})
 }
 
 func AddNewFileActivity(userID, fileID uint) error {
@@ -77,6 +85,21 @@ func GetActivityList(offset, limit int) ([]model.Activity, int, error) {
 	}
 
 	if err := db.Offset(offset).Limit(limit).Order("id DESC").Find(&activities).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return activities, int(total), nil
+}
+
+func GetUserNotifications(userID uint, offset, limit int) ([]model.Activity, int, error) {
+	var activities []model.Activity
+	var total int64
+
+	if err := db.Model(&model.Activity{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := db.Where("notify_to = ?", userID).Offset(offset).Limit(limit).Order("id DESC").Find(&activities).Error; err != nil {
 		return nil, 0, err
 	}
 

@@ -262,6 +262,7 @@ export const i18nData = {
       "Tag": "标签",
       "Optional": "可选",
       "Download": "下载",
+      "Notifications": "通知",
     },
   },
   "zh-TW": {
@@ -527,6 +528,7 @@ export const i18nData = {
       "Tag": "標籤",
       "Optional": "可選",
       "Download": "下載",
+      "Notifications": "通知",
     },
   },
 };

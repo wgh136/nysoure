@@ -9,16 +9,17 @@ import (
 
 type User struct {
 	gorm.Model
-	Username       string `gorm:"uniqueIndex;not null"`
-	PasswordHash   []byte
-	IsAdmin        bool
-	CanUpload      bool
-	AvatarVersion  int
-	ResourcesCount int
-	FilesCount     int
-	CommentsCount  int
-	Resources      []Resource `gorm:"foreignKey:UserID"`
-	Bio            string
+	Username                 string `gorm:"uniqueIndex;not null"`
+	PasswordHash             []byte
+	IsAdmin                  bool
+	CanUpload                bool
+	AvatarVersion            int
+	ResourcesCount           int
+	FilesCount               int
+	CommentsCount            int
+	Resources                []Resource `gorm:"foreignKey:UserID"`
+	Bio                      string
+	UnreadNotificationsCount uint
 }
 
 type UserView struct {

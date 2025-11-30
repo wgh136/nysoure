@@ -390,3 +390,11 @@ func validateUsername(username string) error {
 	}
 	return nil
 }
+
+func ResetUserNotificationsCount(userID uint) error {
+	return dao.ResetUserNotificationsCount(userID)
+}
+
+func GetUserNotificationsCount(userID uint) (uint, error) {
+	return dao.GetUserNotificationCount(userID)
+}

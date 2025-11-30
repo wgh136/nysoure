@@ -2,8 +2,9 @@ package dao
 
 import (
 	"errors"
-	"gorm.io/gorm"
 	"nysoure/server/model"
+
+	"gorm.io/gorm"
 )
 
 func CreateUser(username string, hashedPassword []byte) (model.User, error) {
@@ -131,4 +132,16 @@ func DeleteUser(id uint) error {
 		return err
 	}
 	return db.Delete(&model.User{}, id).Error
+}
+
+func ResetUserNotificationsCount(userID uint) error {
+	return db.Model(&model.User{}).Where("id = ?", userID).Update("unread_notifications_count", 0).Error
+}
+
+func GetUserNotificationCount(userID uint) (uint, error) {
+	var count uint
+	if err := db.Model(&model.User{}).Where("id = ?", userID).Select("unread_notifications_count").Scan(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }

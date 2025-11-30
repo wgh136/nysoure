@@ -2,11 +2,10 @@ import { app } from "../app.ts";
 import { network } from "../network/network.ts";
 import { useNavigate, useOutlet } from "react-router";
 import { createContext, useContext, useEffect, useState } from "react";
-import { MdArrowUpward, MdOutlinePerson, MdSearch } from "react-icons/md";
+import { MdArrowUpward, MdOutlinePerson, MdSearch, MdNotifications } from "react-icons/md";
 import { useTranslation } from "../utils/i18n";
 import UploadingSideBar from "./uploading_side_bar.tsx";
 import { ThemeSwitcher } from "./theme_switcher.tsx";
-import { IoLogoGithub } from "react-icons/io";
 import { useAppContext } from "./AppContext.tsx";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -234,16 +233,7 @@ export default function Navigator() {
               <SearchBar />
               <UploadingSideBar />
               <ThemeSwitcher />
-              <a
-                className={"hidden sm:inline"}
-                href="https://github.com/wgh136/nysoure"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <button className={"btn btn-circle btn-ghost"}>
-                  <IoLogoGithub size={24} />
-                </button>
-              </a>
+              {app.isLoggedIn() && <NotificationButton />}
               {app.isLoggedIn() ? (
                 <UserButton />
               ) : (
@@ -552,5 +542,45 @@ function FloatingToTopButton() {
     >
       <MdArrowUpward size={20} />
     </button>
+  );
+}
+
+function NotificationButton() {
+  const [count, setCount] = useState(0);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      if (!app.isLoggedIn()) {
+        return;
+      }
+      const res = await network.getUserNotificationsCount();
+      if (res.success && res.data !== undefined) {
+        setCount(res.data);
+      }
+    };
+
+    fetchCount();
+    const interval = setInterval(fetchCount, 60000); // 每分钟请求一次
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="indicator">
+      {count > 0 && (
+        <span className="indicator-item badge badge-secondary badge-sm">
+          {count > 99 ? "99+" : count}
+        </span>
+      )}
+      <button
+        className="btn btn-ghost btn-circle"
+        onClick={() => {
+          navigate("/notifications");
+        }}
+      >
+        <MdNotifications size={24} />
+      </button>
+    </div>
   );
 }

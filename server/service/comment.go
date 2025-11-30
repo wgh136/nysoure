@@ -29,6 +29,8 @@ func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType
 		return nil, model.NewRequestError("Comment content exceeds maximum length of 1024 characters")
 	}
 
+	var notifyTo uint
+
 	switch cType {
 	case model.CommentTypeResource:
 		resourceExists, err := dao.ExistsResource(refID)
@@ -39,12 +41,18 @@ func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType
 		if !resourceExists {
 			return nil, model.NewNotFoundError("Resource not found")
 		}
+		notifyTo, err = dao.GetResourceOwnerID(refID)
+		if err != nil {
+			log.Error("Error getting resource owner ID:", err)
+			return nil, model.NewInternalServerError("Error getting resource owner ID")
+		}
 	case model.CommentTypeReply:
-		_, err := dao.GetCommentByID(refID)
+		comment, err := dao.GetCommentByID(refID)
 		if err != nil {
 			log.Error("Error getting reply comment:", err)
 			return nil, model.NewNotFoundError("Reply comment not found")
 		}
+		notifyTo = comment.UserID
 	}
 
 	userExists, err := dao.ExistsUserByID(userID)
@@ -63,7 +71,7 @@ func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType
 		log.Error("Error creating comment:", err)
 		return nil, model.NewInternalServerError("Error creating comment")
 	}
-	err = dao.AddNewCommentActivity(userID, c.ID)
+	err = dao.AddNewCommentActivity(userID, c.ID, notifyTo)
 	if err != nil {
 		log.Error("Error creating comment activity:", err)
 	}

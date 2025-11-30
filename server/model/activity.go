@@ -18,9 +18,10 @@ const (
 
 type Activity struct {
 	gorm.Model
-	UserID uint         `gorm:"not null"`
-	Type   ActivityType `gorm:"not null;index:idx_type_refid"`
-	RefID  uint         `gorm:"not null;index:idx_type_refid"`
+	UserID   uint         `gorm:"not null"`
+	Type     ActivityType `gorm:"not null;index:idx_type_refid"`
+	RefID    uint         `gorm:"not null;index:idx_type_refid"`
+	NotifyTo uint         `gorm:"default:null;index"`
 }
 
 type ActivityView struct {

@@ -693,3 +693,14 @@ func UpdateResourceImage(resourceID, oldImageID, newImageID uint) error {
 		return nil
 	})
 }
+
+func GetResourceOwnerID(resourceID uint) (uint, error) {
+	var uid uint
+	if err := db.Model(&model.Resource{}).Select("user_id").Where("id = ?", resourceID).First(&uid).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return 0, model.NewNotFoundError("Resource not found")
+		}
+		return 0, err
+	}
+	return uid, nil
+}
