@@ -568,11 +568,9 @@ function NotificationButton() {
 
   return (
     <div className="indicator">
-      {count > 0 && (
-        <span className="indicator-item badge badge-secondary badge-sm">
-          {count > 99 ? "99+" : count}
-        </span>
-      )}
+      {count > 0 && <span className="bg-error text-white text-xs rounded-full px-1 indicator-item">
+        {count > 99 ? "99+" : count}
+      </span>}
       <button
         className="btn btn-ghost btn-circle"
         onClick={() => {

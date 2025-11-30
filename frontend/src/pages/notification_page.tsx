@@ -11,6 +11,7 @@ import Badge from "../components/badge.tsx";
 import Markdown from "react-markdown";
 import { ErrorAlert } from "../components/alert.tsx";
 import { app } from "../app.ts";
+import { useNavigator } from "../components/navigator.tsx";
 
 export default function NotificationPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -18,6 +19,7 @@ export default function NotificationPage() {
   const maxPageRef = useRef(1);
   const isLoadingRef = useRef(false);
   const { t } = useTranslation();
+  const navigator = useNavigator();
 
   const fetchNextPage = useCallback(async () => {
     if (isLoadingRef.current || pageRef.current >= maxPageRef.current) return;
@@ -42,7 +44,8 @@ export default function NotificationPage() {
 
   useEffect(() => {
     network.resetUserNotificationsCount();
-  }, []);
+    navigator.refresh();
+  }, [navigator]);
 
   useEffect(() => {
     document.title = t("Notifications");
