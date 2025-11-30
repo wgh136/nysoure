@@ -19,7 +19,7 @@ type User struct {
 	CommentsCount            int
 	Resources                []Resource `gorm:"foreignKey:UserID"`
 	Bio                      string
-	UnreadNotificationsCount uint
+	UnreadNotificationsCount uint `gorm:"not null;default:0"`
 }
 
 type UserView struct {
