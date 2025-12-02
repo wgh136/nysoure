@@ -22,7 +22,7 @@ type FTPStorage struct {
 
 func (f *FTPStorage) Upload(filePath string, fileName string) (string, error) {
 	// 连接到FTP服务器
-	conn, err := ftp.Dial(f.Host, ftp.DialWithTimeout(10*time.Second))
+	conn, err := ftp.Dial(f.Host, ftp.DialWithTimeout(10*time.Second), ftp.DialWithExplicitTLS(nil))
 	if err != nil {
 		log.Error("Failed to connect to FTP server: ", err)
 		return "", errors.New("failed to connect to FTP server")
@@ -76,7 +76,7 @@ func (f *FTPStorage) Download(storageKey string, fileName string) (string, error
 
 func (f *FTPStorage) Delete(storageKey string) error {
 	// 连接到FTP服务器
-	conn, err := ftp.Dial(f.Host, ftp.DialWithTimeout(10*time.Second))
+	conn, err := ftp.Dial(f.Host, ftp.DialWithTimeout(10*time.Second), ftp.DialWithExplicitTLS(nil))
 	if err != nil {
 		log.Error("Failed to connect to FTP server: ", err)
 		return errors.New("failed to connect to FTP server")
