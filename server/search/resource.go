@@ -71,7 +71,11 @@ func createIndex() error {
 			return err
 		}
 		for _, r := range res {
-			err := AddResourceToIndex(r)
+			r, err := dao.GetResourceByID(r.ID)
+			if err != nil {
+				return err
+			}
+			err = AddResourceToIndex(r)
 			if err != nil {
 				return err
 			}
