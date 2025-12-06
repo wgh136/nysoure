@@ -615,7 +615,15 @@ func GetPinnedResources() ([]model.ResourceView, error) {
 	return views, nil
 }
 
-func GetCharactersFromVndb(vnID string) ([]CharacterParams, error) {
+func GetCharactersFromVndb(vnID string, uid uint) ([]CharacterParams, error) {
+	canUpload, err := checkUserCanUpload(uid)
+	if err != nil {
+		return nil, err
+	}
+	if !canUpload {
+		return nil, model.NewUnAuthorizedError("You have not permission to fetch characters from VNDB")
+	}
+
 	client := http.Client{}
 	jsonStr := fmt.Sprintf(`
 	{

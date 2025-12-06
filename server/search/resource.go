@@ -6,10 +6,17 @@ import (
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/utils"
+	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/blevesearch/bleve"
+)
+
+var (
+	index bleve.Index
+	mu    = sync.RWMutex{}
 )
 
 type ResourceParams struct {
@@ -26,9 +33,9 @@ type ResourceCharacter struct {
 	CV    string
 }
 
-var index bleve.Index
-
 func AddResourceToIndex(r model.Resource) error {
+	mu.RLock()
+	defer mu.RUnlock()
 	cs := make([]ResourceCharacter, 0, len(r.Characters))
 	for _, c := range r.Characters {
 		cs = append(cs, ResourceCharacter{
@@ -96,6 +103,8 @@ func init() {
 }
 
 func SearchResource(keyword string) ([]uint, error) {
+	mu.RLock()
+	defer mu.RUnlock()
 	query := bleve.NewMatchQuery(keyword)
 	searchRequest := bleve.NewSearchRequest(query)
 	searchResults, err := index.Search(searchRequest)
@@ -127,4 +136,18 @@ func IsStopWord(word string) bool {
 	}
 	tokens := analyzer.Analyze([]byte(word))
 	return len(tokens) == 0
+}
+
+func RebuildSearchIndex() error {
+	mu.Lock()
+	defer mu.Unlock()
+	err := index.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close search index: %w", err)
+	}
+	err = os.Remove(utils.GetStoragePath() + "/resource_index.bleve")
+	if err != nil {
+		return fmt.Errorf("failed to remove search index: %w", err)
+	}
+	return createIndex()
 }

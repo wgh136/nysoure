@@ -287,7 +287,11 @@ func handleGetCharactersFromVndb(c fiber.Ctx) error {
 	if vnID == "" {
 		return model.NewRequestError("VNDB ID is required")
 	}
-	characters, err := service.GetCharactersFromVndb(vnID)
+	uid, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewUnAuthorizedError("You must be logged in to get characters from VNDB")
+	}
+	characters, err := service.GetCharactersFromVndb(vnID, uid)
 	if err != nil {
 		return err
 	}
