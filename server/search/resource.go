@@ -151,9 +151,15 @@ func RebuildSearchIndex() error {
 	if err != nil {
 		return fmt.Errorf("failed to close search index: %w", err)
 	}
-	err = os.RemoveAll(utils.GetStoragePath() + "/resource_index.bleve")
+	indexPath := utils.GetStoragePath() + "/resource_index.bleve"
+	err = os.RemoveAll(indexPath)
 	if err != nil {
 		return fmt.Errorf("failed to remove search index: %w", err)
+	}
+	mapping := bleve.NewIndexMapping()
+	index, err = bleve.New(indexPath, mapping)
+	if err != nil {
+		return fmt.Errorf("failed to create search index: %w", err)
 	}
 	go createIndex()
 	return nil
