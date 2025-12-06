@@ -149,5 +149,6 @@ func RebuildSearchIndex() error {
 	if err != nil {
 		return fmt.Errorf("failed to remove search index: %w", err)
 	}
-	return createIndex()
+	go createIndex()
+	return nil
 }
