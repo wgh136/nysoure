@@ -13,20 +13,36 @@ import (
 )
 
 type ResourceParams struct {
-	Id        uint
-	Title     string
-	Subtitles []string
-	Time      time.Time
+	Id         uint
+	Title      string
+	Subtitles  []string
+	Time       time.Time
+	Characters []ResourceCharacter
+}
+
+type ResourceCharacter struct {
+	Name  string
+	Alias []string
+	CV    string
 }
 
 var index bleve.Index
 
 func AddResourceToIndex(r model.Resource) error {
+	cs := make([]ResourceCharacter, 0, len(r.Characters))
+	for _, c := range r.Characters {
+		cs = append(cs, ResourceCharacter{
+			Name:  c.Name,
+			Alias: c.Alias,
+			CV:    c.CV,
+		})
+	}
 	return index.Index(fmt.Sprintf("%d", r.ID), ResourceParams{
-		Id:        r.ID,
-		Title:     r.Title,
-		Subtitles: r.AlternativeTitles,
-		Time:      r.CreatedAt,
+		Id:         r.ID,
+		Title:      r.Title,
+		Subtitles:  r.AlternativeTitles,
+		Time:       r.CreatedAt,
+		Characters: cs,
 	})
 }
 
