@@ -42,6 +42,7 @@ func main() {
 		api.AddActivityRoutes(apiG)
 		api.AddCollectionRoutes(apiG)
 		api.AddProxyRoutes(apiG)
+		api.AddDevAPI(apiG)
 	}
 
 	log.Fatal(app.Listen(":3000"))
