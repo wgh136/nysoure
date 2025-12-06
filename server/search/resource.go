@@ -145,7 +145,7 @@ func RebuildSearchIndex() error {
 	if err != nil {
 		return fmt.Errorf("failed to close search index: %w", err)
 	}
-	err = os.Remove(utils.GetStoragePath() + "/resource_index.bleve")
+	err = os.RemoveAll(utils.GetStoragePath() + "/resource_index.bleve")
 	if err != nil {
 		return fmt.Errorf("failed to remove search index: %w", err)
 	}
