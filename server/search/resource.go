@@ -3,6 +3,7 @@ package search
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/utils"
@@ -63,6 +64,7 @@ func createIndex() error {
 	}
 	page := 1
 	total := 1
+	current := 0
 	for page <= total {
 		res, totalPages, err := dao.GetResourceList(page, 100, model.RSortTimeAsc)
 		if err != nil {
@@ -72,6 +74,10 @@ func createIndex() error {
 			err := AddResourceToIndex(r)
 			if err != nil {
 				return err
+			}
+			current++
+			if current%20 == 0 {
+				slog.Info("Rebuilding search index", "current", current, "total", totalPages*100)
 			}
 		}
 		page++
