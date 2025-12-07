@@ -25,6 +25,7 @@ import CharacterEditer, { FetchVndbCharactersButton } from "../components/charac
 export default function EditResourcePage() {
   const [title, setTitle] = useState<string>("");
   const [altTitles, setAltTitles] = useState<string[]>([]);
+  const [releaseDate, setReleaseDate] = useState<string | undefined>(undefined);
   const [tags, setTags] = useState<Tag[]>([]);
   const [article, setArticle] = useState<string>("");
   const [images, setImages] = useState<number[]>([]);
@@ -61,6 +62,7 @@ export default function EditResourcePage() {
         setLinks(data.links ?? []);
         setGalleryImages(data.gallery ?? []);
         setGalleryNsfw(data.galleryNsfw ?? []);
+        setReleaseDate(data.releaseDate ?? undefined);
         setCharacters(data.characters ?? []);
         setLoading(false);
       } else {
@@ -108,6 +110,7 @@ export default function EditResourcePage() {
       gallery: galleryImages,
       gallery_nsfw: galleryNsfw,
       characters: characters,
+      release_date: releaseDate,
     });
     if (res.success) {
       setSubmitting(false);
@@ -194,6 +197,14 @@ export default function EditResourcePage() {
           {t("Add Alternative Title")}
         </button>
         <div className={"h-2"}></div>
+        <p className={"my-1"}>{t("Release Date")}</p>
+        <input
+          type="date"
+          className="input"
+          value={releaseDate || ""}
+          onChange={(e) => setReleaseDate(e.target.value || undefined)}
+        />
+        <div className={"h-4"}></div>
         <p className={"my-1"}>{t("Links")}</p>
         <div className={"flex flex-col"}>
           {links.map((link, index) => {

@@ -24,6 +24,7 @@ import CharacterEditer, { FetchVndbCharactersButton } from "../components/charac
 export default function PublishPage() {
   const [title, setTitle] = useState<string>("");
   const [altTitles, setAltTitles] = useState<string[]>([]);
+  const [releaseDate, setReleaseDate] = useState<string | undefined>(undefined);
   const [tags, setTags] = useState<Tag[]>([]);
   const [article, setArticle] = useState<string>("");
   const [images, setImages] = useState<number[]>([]);
@@ -43,9 +44,14 @@ export default function PublishPage() {
           const data = JSON.parse(oldData);
           setTitle(data.title || "");
           setAltTitles(data.alternative_titles || []);
+          setReleaseDate(data.release_date || undefined);
           setTags(data.tags || []);
           setArticle(data.article || "");
           setImages(data.images || []);
+          setLinks(data.links || []);
+          setGalleryImages(data.gallery || []);
+          setGalleryNsfw(data.gallery_nsfw || []);
+          setCharacters(data.characters || []);
         } catch (e) {
           console.error("Failed to parse publish_data from localStorage", e);
         }
@@ -58,11 +64,16 @@ export default function PublishPage() {
         tags: tags,
         article: article,
         images: images,
+        links: links,
+        gallery: galleryImages,
+        gallery_nsfw: galleryNsfw,
+        characters: characters,
+        release_date: releaseDate,
       };
       const dataString = JSON.stringify(data);
       localStorage.setItem("publish_data", dataString);
     }
-  }, [altTitles, article, images, tags, title]);
+  }, [altTitles, article, images, tags, title, links, galleryImages, galleryNsfw, characters, releaseDate]);
 
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -105,6 +116,7 @@ export default function PublishPage() {
     const res = await network.createResource({
       title: title,
       alternative_titles: altTitles,
+      release_date: releaseDate,
       tags: tags.map((tag) => tag.id),
       article: article,
       images: images,
@@ -201,6 +213,14 @@ export default function PublishPage() {
           {t("Add Alternative Title")}
         </button>
         <div className={"h-2"}></div>
+        <p className={"my-1"}>{t("Release Date")}</p>
+        <input
+          type="date"
+          className="input"
+          value={releaseDate || ""}
+          onChange={(e) => setReleaseDate(e.target.value || undefined)}
+        />
+        <div className={"h-4"}></div>
         <p className={"my-1"}>{t("Links")}</p>
         <div className={"flex flex-col"}>
           {links.map((link, index) => {
