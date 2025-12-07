@@ -29,7 +29,7 @@ func updateResourceReleaseDate(c fiber.Ctx) error {
 		ReleaseDate string `json:"release_date"`
 	}
 	var req Request
-	if err := c.Bind().JSON(req); err != nil {
+	if err := c.Bind().JSON(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid request body: " + err.Error(),
 		})
