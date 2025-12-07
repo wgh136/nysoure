@@ -704,3 +704,14 @@ func GetResourceOwnerID(resourceID uint) (uint, error) {
 	}
 	return uid, nil
 }
+
+func UpdateResourceReleaseDate(resourceID uint, releaseDate time.Time) error {
+	result := db.Model(&model.Resource{}).Where("id = ?", resourceID).Update("release_date", releaseDate)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return model.NewNotFoundError("Resource not found")
+	}
+	return nil
+}
