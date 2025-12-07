@@ -11,6 +11,7 @@ type Resource struct {
 	Title             string
 	AlternativeTitles []string `gorm:"serializer:json"`
 	Links             []Link   `gorm:"serializer:json"`
+	ReleaseDate       *time.Time
 	Article           string
 	Images            []Image `gorm:"many2many:resource_images;"`
 	Tags              []Tag   `gorm:"many2many:resource_tags;"`
@@ -32,12 +33,13 @@ type Link struct {
 }
 
 type ResourceView struct {
-	ID        uint       `json:"id"`
-	Title     string     `json:"title"`
-	CreatedAt time.Time  `json:"created_at"`
-	Tags      []TagView  `json:"tags"`
-	Image     *ImageView `json:"image"`
-	Author    UserView   `json:"author"`
+	ID          uint       `json:"id"`
+	Title       string     `json:"title"`
+	CreatedAt   time.Time  `json:"created_at"`
+	ReleaseDate *time.Time `json:"release_date,omitempty"`
+	Tags        []TagView  `json:"tags"`
+	Image       *ImageView `json:"image"`
+	Author      UserView   `json:"author"`
 }
 
 type ResourceDetailView struct {
@@ -47,6 +49,7 @@ type ResourceDetailView struct {
 	Links             []Link          `json:"links"`
 	Article           string          `json:"article"`
 	CreatedAt         time.Time       `json:"createdAt"`
+	ReleaseDate       *time.Time      `json:"releaseDate,omitempty"`
 	Tags              []TagView       `json:"tags"`
 	Images            []ImageView     `json:"images"`
 	Files             []FileView      `json:"files"`
@@ -81,12 +84,13 @@ func (r *Resource) ToView() ResourceView {
 	}
 
 	return ResourceView{
-		ID:        r.ID,
-		Title:     r.Title,
-		CreatedAt: r.CreatedAt,
-		Tags:      tags,
-		Image:     image,
-		Author:    r.User.ToView(),
+		ID:          r.ID,
+		Title:       r.Title,
+		CreatedAt:   r.CreatedAt,
+		ReleaseDate: r.ReleaseDate,
+		Tags:        tags,
+		Image:       image,
+		Author:      r.User.ToView(),
 	}
 }
 
@@ -115,6 +119,7 @@ func (r *Resource) ToDetailView() ResourceDetailView {
 		Links:             r.Links,
 		Article:           r.Article,
 		CreatedAt:         r.CreatedAt,
+		ReleaseDate:       r.ReleaseDate,
 		Tags:              tags,
 		Images:            images,
 		Files:             files,

@@ -30,6 +30,7 @@ type ResourceParams struct {
 	Title             string            `json:"title" binding:"required"`
 	AlternativeTitles []string          `json:"alternative_titles"`
 	Links             []model.Link      `json:"links"`
+	ReleaseDate       *time.Time        `json:"release_date"`
 	Tags              []uint            `json:"tags"`
 	Article           string            `json:"article"`
 	Images            []uint            `json:"images"`
@@ -106,6 +107,7 @@ func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 		AlternativeTitles: params.AlternativeTitles,
 		Article:           params.Article,
 		Links:             params.Links,
+		ReleaseDate:       params.ReleaseDate,
 		Images:            images,
 		Tags:              tags,
 		UserID:            uid,
@@ -533,6 +535,7 @@ func UpdateResource(uid, rid uint, params *ResourceParams) error {
 	r.AlternativeTitles = params.AlternativeTitles
 	r.Article = params.Article
 	r.Links = params.Links
+	r.ReleaseDate = params.ReleaseDate
 	r.Gallery = gallery
 	r.GalleryNsfw = nsfw
 	r.Characters = characters

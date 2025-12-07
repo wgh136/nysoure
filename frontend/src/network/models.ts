@@ -44,6 +44,7 @@ export interface CreateResourceParams {
   title: string;
   alternative_titles: string[];
   links: RLink[];
+  release_date?: string;
   tags: number[];
   article: string;
   images: number[];
@@ -77,6 +78,7 @@ export interface Resource {
   id: number;
   title: string;
   created_at: string;
+  release_date?: string;
   tags: Tag[];
   image?: Image;
   author: User;
@@ -89,6 +91,7 @@ export interface ResourceDetails {
   links: RLink[];
   article: string;
   createdAt: string;
+  releaseDate?: string;
   tags: Tag[];
   images: Image[];
   files: RFile[];
