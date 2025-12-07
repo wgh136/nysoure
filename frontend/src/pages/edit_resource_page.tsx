@@ -62,7 +62,7 @@ export default function EditResourcePage() {
         setLinks(data.links ?? []);
         setGalleryImages(data.gallery ?? []);
         setGalleryNsfw(data.galleryNsfw ?? []);
-        setReleaseDate(data.releaseDate ?? undefined);
+        setReleaseDate(data.releaseDate?.split("T")[0] ?? undefined);
         setCharacters(data.characters ?? []);
         setLoading(false);
       } else {
