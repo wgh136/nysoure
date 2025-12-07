@@ -48,6 +48,8 @@ export default function HomePage() {
             t("Views Descending"),
             t("Downloads Ascending"),
             t("Downloads Descending"),
+            t("Release Date Ascending"),
+            t("Release Date Descending"),
           ]}
           current={order}
           onSelected={(index) => {

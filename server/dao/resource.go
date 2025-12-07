@@ -99,6 +99,10 @@ func GetResourceList(page, pageSize int, sort model.RSort) ([]model.Resource, in
 		order = "downloads ASC"
 	case model.RSortDownloadsDesc:
 		order = "downloads DESC"
+	case model.RSortReleaseDateAsc:
+		order = "release_date ASC"
+	case model.RSortReleaseDateDesc:
+		order = "release_date DESC"
 	default:
 		order = "modified_time DESC" // Default sort order
 	}

@@ -109,7 +109,7 @@ func handleListResources(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid sort parameter")
 	}
-	if sortInt < 0 || sortInt > 5 {
+	if sortInt < 0 || sortInt > 7 {
 		return model.NewRequestError("Sort parameter out of range")
 	}
 	sort := model.RSort(sortInt)

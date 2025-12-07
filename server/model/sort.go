@@ -9,4 +9,6 @@ const (
 	RSortViewsDesc
 	RSortDownloadsAsc
 	RSortDownloadsDesc
+	RSortReleaseDateAsc
+	RSortReleaseDateDesc
 )

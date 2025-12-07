@@ -197,6 +197,8 @@ export enum RSort {
   ViewsDesc = 3,
   DownloadsAsc = 4,
   DownloadsDesc = 5,
+  ReleaseDateAsc = 6,
+  ReleaseDateDesc = 7,
 }
 
 export enum ActivityType {
