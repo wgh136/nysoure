@@ -263,6 +263,7 @@ export const i18nData = {
       "Optional": "可选",
       "Download": "下载",
       "Notifications": "通知",
+      "Release Date": "发售日期",
     },
   },
   "zh-TW": {
@@ -529,6 +530,7 @@ export const i18nData = {
       "Optional": "可選",
       "Download": "下載",
       "Notifications": "通知",
+      "Release Date": "發售日期",
     },
   },
 };

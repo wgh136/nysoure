@@ -209,6 +209,14 @@ export default function ResourcePage() {
                 </h2>
               );
             })}
+            {
+              resource.releaseDate ? (
+                <div className={"px-4 py-1 text-sm text-gray-600 dark:text-gray-400 flex items-center"}>
+                  <MdOutlineAccessTime size={18} className={"inline-block mr-1"} />
+                  {t("Release Date")}: {resource.releaseDate.split("T")[0]}
+                </div>
+              ) : null
+            }
             <button
               onClick={() => {
                 navigate(
