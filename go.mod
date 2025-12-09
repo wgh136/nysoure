@@ -14,8 +14,10 @@ require (
 	github.com/blevesearch/bleve v1.0.14
 	github.com/chai2010/webp v1.4.0
 	github.com/disintegration/imaging v1.6.2
+	github.com/jlaffaye/ftp v0.2.0
 	github.com/redis/go-redis/v9 v9.17.0
 	github.com/stretchr/testify v1.11.1
+	github.com/wgh136/cloudflare-error-page v0.0.1
 	gorm.io/driver/mysql v1.6.0
 )
 
@@ -41,7 +43,6 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/jlaffaye/ftp v0.2.0 // indirect
 	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/steveyen/gtreap v0.1.0 // indirect
