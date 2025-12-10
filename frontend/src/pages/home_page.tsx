@@ -5,7 +5,6 @@ import { app } from "../app.ts";
 import { Resource, RSort, Statistics } from "../network/models.ts";
 import { useTranslation } from "../utils/i18n";
 import { useAppContext } from "../components/AppContext.tsx";
-import Select from "../components/select.tsx";
 import { useNavigate } from "react-router";
 import { useNavigator } from "../components/navigator.tsx";
 import {
