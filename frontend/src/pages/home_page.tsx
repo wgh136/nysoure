@@ -40,8 +40,18 @@ export default function HomePage() {
     <>
       <HomeHeader />
       <div className={"flex pt-4 px-4 items-center"}>
-        <Select
-          values={[
+        <select
+          value={order}
+          className="select select-primary max-w-72"
+          onChange={(e) => {
+            const order = parseInt(e.target.value);
+            setOrder(order);
+            if (appContext) {
+              appContext.set("home_page_order", order);
+            }
+          }}
+        >
+          {[
             t("Time Ascending"),
             t("Time Descending"),
             t("Views Ascending"),
@@ -50,15 +60,12 @@ export default function HomePage() {
             t("Downloads Descending"),
             t("Release Date Ascending"),
             t("Release Date Descending"),
-          ]}
-          current={order}
-          onSelected={(index) => {
-            setOrder(index);
-            if (appContext) {
-              appContext.set("home_page_order", index);
-            }
-          }}
-        />
+          ].map((label, idx) => (
+            <option key={idx} value={idx}>
+              {label}
+            </option>
+          ))}
+        </select>
       </div>
       <ResourcesView
         key={`home_page_${order}`}
