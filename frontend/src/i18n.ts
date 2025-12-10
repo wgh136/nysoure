@@ -156,8 +156,8 @@ export const i18nData = {
       "Cloudflare Turnstile Secret Key": "Cloudflare Turnstile 密钥",
       "If the cloudflare turnstile keys are not empty, the turnstile will be used for register and download.":
         "如果设置了 Cloudflare Turnstile 密钥，将在注册和下载时启用验证",
-      "The first image will be used as the cover image":
-        "第一张图片将用作封面图片",
+      "You can select a cover image using the radio button in the Cover column":
+        "您可以使用封面列中的单选按钮选择封面图片",
       "Please enter a search keyword": "请输入搜索关键词",
       "Searching...": "搜索中...",
       "Create Tag": "创建标签",
@@ -425,8 +425,8 @@ export const i18nData = {
       "Cloudflare Turnstile Secret Key": "Cloudflare Turnstile 密鑰",
       "If the cloudflare turnstile keys are not empty, the turnstile will be used for register and download.":
         "如果設置了 Cloudflare Turnstile 密鑰，將在註冊和下載時啟用驗證",
-      "The first image will be used as the cover image":
-        "第一張圖片將用作封面圖片",
+      "You can select a cover image using the radio button in the Cover column":
+        "您可以使用封面列中的單選按鈕選擇封面圖片",
       "Please enter a search keyword": "請輸入搜尋關鍵字",
       "Searching...": "搜尋中...",
       "Create Tag": "創建標籤",

@@ -29,6 +29,7 @@ export default function EditResourcePage() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [article, setArticle] = useState<string>("");
   const [images, setImages] = useState<number[]>([]);
+  const [coverId, setCoverId] = useState<number | undefined>(undefined);
   const [links, setLinks] = useState<{ label: string; url: string }[]>([]);
   const [galleryImages, setGalleryImages] = useState<number[]>([]);
   const [galleryNsfw, setGalleryNsfw] = useState<number[]>([]);
@@ -59,6 +60,7 @@ export default function EditResourcePage() {
         setTags(data.tags);
         setArticle(data.article);
         setImages(data.images.map((i) => i.id));
+        setCoverId(data.coverId);
         setLinks(data.links ?? []);
         setGalleryImages(data.gallery ?? []);
         setGalleryNsfw(data.galleryNsfw ?? []);
@@ -106,6 +108,7 @@ export default function EditResourcePage() {
       tags: tags.map((tag) => tag.id),
       article: article,
       images: images,
+      cover_id: coverId,
       links: links,
       gallery: galleryImages,
       gallery_nsfw: galleryNsfw,
@@ -328,7 +331,7 @@ export default function EditResourcePage() {
                 "Images will not be displayed automatically, you need to reference them in the description",
               )}
             </p>
-            <p>{t("The first image will be used as the cover image")}</p>
+            <p>{t("You can select a cover image using the radio button in the Cover column")}</p>
           </div>
         </div>
         <div
@@ -339,6 +342,7 @@ export default function EditResourcePage() {
               <tr>
                 <td>{t("Preview")}</td>
                 <td>{"Markdown"}</td>
+                <td>{t("Cover")}</td>
                 <td>{t("Gallery")}</td>
                 <td>{"Nsfw"}</td>
                 <td>{t("Action")}</td>
@@ -367,6 +371,15 @@ export default function EditResourcePage() {
                       >
                         <MdContentCopy />
                       </button>
+                    </td>
+                    <td>
+                      <input
+                        type="radio"
+                        name="cover"
+                        className="radio radio-accent"
+                        checked={coverId === image}
+                        onChange={() => setCoverId(image)}
+                      />
                     </td>
                     <td>
                       <input
@@ -409,6 +422,9 @@ export default function EditResourcePage() {
                           const newImages = [...images];
                           newImages.splice(index, 1);
                           setImages(newImages);
+                          if (coverId === id) {
+                            setCoverId(undefined);
+                          }
                           network.deleteImage(id);
                         }}
                       >

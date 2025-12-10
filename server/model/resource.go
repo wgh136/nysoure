@@ -14,8 +14,9 @@ type Resource struct {
 	ReleaseDate       *time.Time
 	Article           string
 	Images            []Image `gorm:"many2many:resource_images;"`
-	Tags              []Tag   `gorm:"many2many:resource_tags;"`
-	Files             []File  `gorm:"foreignKey:ResourceID"`
+	CoverID           *uint
+	Tags              []Tag  `gorm:"many2many:resource_tags;"`
+	Files             []File `gorm:"foreignKey:ResourceID"`
 	UserID            uint
 	User              User
 	Views             uint
@@ -52,6 +53,7 @@ type ResourceDetailView struct {
 	ReleaseDate       *time.Time      `json:"releaseDate,omitempty"`
 	Tags              []TagView       `json:"tags"`
 	Images            []ImageView     `json:"images"`
+	CoverID           *uint           `json:"coverId,omitempty"`
 	Files             []FileView      `json:"files"`
 	Author            UserView        `json:"author"`
 	Views             uint            `json:"views"`
@@ -78,7 +80,18 @@ func (r *Resource) ToView() ResourceView {
 	}
 
 	var image *ImageView
-	if len(r.Images) > 0 {
+	if r.CoverID != nil {
+		// Use the cover image if specified
+		for _, img := range r.Images {
+			if img.ID == *r.CoverID {
+				v := img.ToView()
+				image = &v
+				break
+			}
+		}
+	}
+	// If no cover is set or cover image not found, use the first image
+	if image == nil && len(r.Images) > 0 {
 		v := r.Images[0].ToView()
 		image = &v
 	}
@@ -122,6 +135,7 @@ func (r *Resource) ToDetailView() ResourceDetailView {
 		ReleaseDate:       r.ReleaseDate,
 		Tags:              tags,
 		Images:            images,
+		CoverID:           r.CoverID,
 		Files:             files,
 		Author:            r.User.ToView(),
 		Views:             r.Views,

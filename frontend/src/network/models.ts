@@ -48,6 +48,7 @@ export interface CreateResourceParams {
   tags: number[];
   article: string;
   images: number[];
+  cover_id?: number;
   gallery: number[];
   gallery_nsfw: number[];
   characters: CharacterParams[];
@@ -94,6 +95,7 @@ export interface ResourceDetails {
   releaseDate?: string;
   tags: Tag[];
   images: Image[];
+  coverId?: number;
   files: RFile[];
   author: User;
   views: number;

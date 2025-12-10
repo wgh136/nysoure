@@ -34,6 +34,7 @@ type ResourceParams struct {
 	Tags              []uint            `json:"tags"`
 	Article           string            `json:"article"`
 	Images            []uint            `json:"images"`
+	CoverID           *uint             `json:"cover_id"`
 	Gallery           []uint            `json:"gallery"`
 	GalleryNsfw       []uint            `json:"gallery_nsfw"`
 	Characters        []CharacterParams `json:"characters"`
@@ -110,6 +111,14 @@ func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 		}
 		date = &parsedDate
 	}
+	// Validate CoverID if provided
+	var coverID *uint
+	if params.CoverID != nil && *params.CoverID != 0 {
+		if !slices.Contains(params.Images, *params.CoverID) {
+			return 0, model.NewRequestError("Cover ID must be one of the resource images")
+		}
+		coverID = params.CoverID
+	}
 	r := model.Resource{
 		Title:             params.Title,
 		AlternativeTitles: params.AlternativeTitles,
@@ -117,6 +126,7 @@ func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 		Links:             params.Links,
 		ReleaseDate:       date,
 		Images:            images,
+		CoverID:           coverID,
 		Tags:              tags,
 		UserID:            uid,
 		Gallery:           gallery,
@@ -548,11 +558,21 @@ func UpdateResource(uid, rid uint, params *ResourceParams) error {
 		date = &parsedDate
 	}
 
+	// Validate CoverID if provided
+	var coverID *uint
+	if params.CoverID != nil && *params.CoverID != 0 {
+		if !slices.Contains(params.Images, *params.CoverID) {
+			return model.NewRequestError("Cover ID must be one of the resource images")
+		}
+		coverID = params.CoverID
+	}
+
 	r.Title = params.Title
 	r.AlternativeTitles = params.AlternativeTitles
 	r.Article = params.Article
 	r.Links = params.Links
 	r.ReleaseDate = date
+	r.CoverID = coverID
 	r.Gallery = gallery
 	r.GalleryNsfw = nsfw
 	r.Characters = characters
