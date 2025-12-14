@@ -6,7 +6,9 @@ import (
 	"nysoure/server/middleware"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/adaptor"
 	"github.com/gofiber/fiber/v3/middleware/logger"
+	prom "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -28,6 +30,8 @@ func main() {
 	app.Use(middleware.JwtMiddleware)
 
 	app.Use(middleware.FrontendMiddleware)
+
+	app.Get("/metrics", adaptor.HTTPHandler(prom.Handler()))
 
 	apiG := app.Group("/api")
 	{

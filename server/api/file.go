@@ -8,6 +8,7 @@ import (
 	"nysoure/server/middleware"
 	"nysoure/server/model"
 	"nysoure/server/service"
+	"nysoure/server/stat"
 	"nysoure/server/utils"
 	"strconv"
 	"strings"
@@ -240,6 +241,7 @@ func downloadFile(c fiber.Ctx) error {
 		}
 		q.Set("token", token)
 		uri.RawQuery = q.Encode()
+		stat.RecordDownload()
 		return c.Redirect().Status(fiber.StatusFound).To(uri.String())
 	}
 	data := map[string]string{
@@ -251,6 +253,7 @@ func downloadFile(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewInternalServerError("Failed to generate download token")
 	}
+	stat.RecordDownload()
 	return c.Redirect().Status(fiber.StatusFound).To(fmt.Sprintf("%s/api/files/download/local?token=%s", c.BaseURL(), token))
 }
 

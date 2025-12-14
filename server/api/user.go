@@ -7,6 +7,7 @@ import (
 	"nysoure/server/middleware"
 	"nysoure/server/model"
 	"nysoure/server/service"
+	"nysoure/server/stat"
 	"strconv"
 	"time"
 
@@ -24,6 +25,7 @@ func handleUserRegister(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+	stat.RecordRegister()
 	return c.Status(fiber.StatusOK).JSON(model.Response[model.UserViewWithToken]{
 		Success: true,
 		Data:    user,
