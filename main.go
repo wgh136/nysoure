@@ -31,6 +31,8 @@ func main() {
 
 	app.Use(middleware.FrontendMiddleware)
 
+	app.Use(middleware.StatMiddleware)
+
 	app.Get("/metrics", adaptor.HTTPHandler(prom.Handler()))
 
 	apiG := app.Group("/api")
