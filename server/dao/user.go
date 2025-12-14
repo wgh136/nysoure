@@ -22,9 +22,7 @@ func CreateUser(username string, hashedPassword []byte) (model.User, error) {
 		return user, err
 	}
 	if exists {
-		return user, &model.RequestError{
-			Message: "User already exists",
-		}
+		return user, model.NewRequestError("User already exists")
 	}
 	if err := db.Create(&user).Error; err != nil {
 		return user, err
