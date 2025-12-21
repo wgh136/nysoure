@@ -108,7 +108,7 @@ export default function CharacterEditer({character, setCharacter, onDelete}: {
 
 export function FetchVndbCharactersButton({vnID, onFetch}: {
     vnID: string;
-    onFetch: (characters: CharacterParams[]) => void;
+    onFetch: (characters: CharacterParams[], releaseDate?: string) => void;
 }) {
     const { t } = useTranslation();
     const [isFetching, setFetching] = useState(false);
@@ -122,10 +122,10 @@ export function FetchVndbCharactersButton({vnID, onFetch}: {
         return;
       }
       setFetching(true);
-      const res = await network.getCharactersFromVNDB(vnID);
+      const res = await network.getInfoFromVNDB(vnID);
       setFetching(false);
       if (res.success && res.data) {
-        onFetch(res.data);
+        onFetch(res.data.characters, res.data.release_date);
       } else {
         showToast({
           type: "error",

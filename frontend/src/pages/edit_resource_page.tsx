@@ -484,11 +484,14 @@ export default function EditResourcePage() {
             </button>
             {
               links.find(link => link.label.toLowerCase() === "vndb") &&
-                <div className="ml-4">
+                <div className="ml-4 my-2">
                   <FetchVndbCharactersButton
                     vnID={links.find(link => link.label.toLowerCase() === "vndb")?.url.split("/").pop() ?? ""}
-                    onFetch={(fetchedCharacters) => {
+                    onFetch={(fetchedCharacters, fetchedReleaseDate) => {
                       setCharacters(fetchedCharacters);
+                      if (fetchedReleaseDate) {
+                        setReleaseDate(fetchedReleaseDate);
+                      }
                     }}
                   />
                 </div>

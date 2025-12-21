@@ -64,6 +64,11 @@ export interface CharacterParams {
   role: CharacterRole;
 }
 
+export interface VndbInfo {
+  characters: CharacterParams[];
+  release_date: string;
+}
+
 export interface Image {
   id: number;
   width: number;

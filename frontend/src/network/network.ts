@@ -21,7 +21,7 @@ import {
   CommentWithRef,
   Collection,
   Statistics,
-  CharacterParams,
+  VndbInfo,
 } from "./models.ts";
 
 class Network {
@@ -858,9 +858,9 @@ class Network {
     );
   }
 
-  async getCharactersFromVNDB(vnID: string): Promise<Response<CharacterParams[]>> {
+  async getInfoFromVNDB(vnID: string): Promise<Response<VndbInfo>> {
     return this._callApi(() =>
-      axios.get(`${this.apiBaseUrl}/resource/vndb/characters`, {
+      axios.get(`${this.apiBaseUrl}/resource/vndb/info`, {
         params: { vnid: vnID },
       }),
     );

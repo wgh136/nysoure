@@ -282,7 +282,7 @@ func handleGetPinnedResources(c fiber.Ctx) error {
 	})
 }
 
-func handleGetCharactersFromVndb(c fiber.Ctx) error {
+func handleGetInfoFromVndb(c fiber.Ctx) error {
 	vnID := c.Query("vnid")
 	if vnID == "" {
 		return model.NewRequestError("VNDB ID is required")
@@ -295,9 +295,16 @@ func handleGetCharactersFromVndb(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	return c.Status(fiber.StatusOK).JSON(model.Response[[]service.CharacterParams]{
+	releaseDate, err := service.GetReleaseDateFromVndb(vnID)
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(model.Response[map[string]any]{
 		Success: true,
-		Data:    characters,
+		Data: map[string]any{
+			"characters":   characters,
+			"release_date": releaseDate,
+		},
 		Message: "Characters retrieved successfully",
 	})
 }
@@ -514,7 +521,7 @@ func AddResourceRoutes(api fiber.Router) {
 		resource.Get("/", handleListResources)
 		resource.Get("/random", handleGetRandomResource)
 		resource.Get("/pinned", handleGetPinnedResources)
-		resource.Get("/vndb/characters", handleGetCharactersFromVndb)
+		resource.Get("/vndb/info", handleGetInfoFromVndb)
 		resource.Get("/characters/low-resolution", handleGetLowResolutionCharacters)
 		resource.Get("/images/low-resolution", handleGetLowResolutionResourceImages)
 		resource.Get("/:id", handleGetResource)

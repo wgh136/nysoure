@@ -820,6 +820,42 @@ func downloadAndCreateImage(imageURL string) (uint, error) {
 	return imageID, nil
 }
 
+func GetReleaseDateFromVndb(vnID string) (string, error) {
+	client := http.Client{}
+	jsonStr := fmt.Sprintf(`
+	{
+		"filters": ["id", "=", "%s"],
+		"fields": "released"
+	}
+	`, vnID)
+	jsonStr = strings.TrimSpace(jsonStr)
+	reader := strings.NewReader(jsonStr)
+	resp, err := client.Post("https://api.vndb.org/kana/vn", "application/json", reader)
+	if err != nil {
+		return "", model.NewInternalServerError("Failed to fetch data from VNDB")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", model.NewInternalServerError("Failed to fetch data from VNDB")
+	}
+	// 定义 VNDB API 响应结构
+	type VndbResponse struct {
+		Results []struct {
+			Released string `json:"released"`
+		} `json:"results"`
+	}
+	// 解析响应
+	var vndbResp VndbResponse
+	if err := json.NewDecoder(resp.Body).Decode(&vndbResp); err != nil {
+		return "", model.NewInternalServerError("Failed to parse VNDB response")
+	}
+	if len(vndbResp.Results) == 0 {
+		return "", nil
+	}
+	released := vndbResp.Results[0].Released
+	return released, nil
+}
+
 // UpdateCharacterImage 更新角色的图片ID
 func UpdateCharacterImage(uid, resourceID, characterID, imageID uint) error {
 	// 检查资源是否存在并且用户有权限修改
