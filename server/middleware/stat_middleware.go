@@ -16,6 +16,6 @@ func StatMiddleware(c fiber.Ctx) error {
 			status = "500"
 		}
 	}
-	stat.RecordRequest(c.Method(), c.Route().Path, status)
+	stat.RecordRequest(c.Method(), c.Route().Path, status, c.IP())
 	return err
 }
