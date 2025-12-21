@@ -214,6 +214,8 @@ github.com/valyala/fasthttp v1.65.0 h1:j/u3uzFEGFfRxw79iYzJN+TteTJwbYkru9uDp3d0Y
 github.com/valyala/fasthttp v1.65.0/go.mod h1:P/93/YkKPMsKSnATEeELUCkG8a7Y+k99uxNHVbKINr4=
 github.com/wgh136/cloudflare-error-page v0.0.1 h1:OZ2JWfEF85JlwSVE71Jx0f+++HkotvZZ1Fb6YUyoFcQ=
 github.com/wgh136/cloudflare-error-page v0.0.1/go.mod h1:/0dw1xavAlZLFlJla5qeLIh1/hv0irtR8oN7SBVMD8s=
+github.com/wgh136/gopkg/ip_stat v0.0.0-20251217035259-a91d74413600 h1:tEx2Wj/mM+XykNCOhQvGY3f7kWjcrubq+ut1NCXHg54=
+github.com/wgh136/gopkg/ip_stat v0.0.0-20251217035259-a91d74413600/go.mod h1:V13HPere7JH7Pab5KemEHOC1BlE8g3WCVwmwtKsn5+o=
 github.com/willf/bitset v1.1.10 h1:NotGKqX0KwQ72NUzqrjZq5ipPNDQex9lo3WpaS8L2sc=
 github.com/willf/bitset v1.1.10/go.mod h1:RjeCKbqT1RxIR/KWY6phxZiaY1IyutSBfGjNPySAYV4=
 github.com/x448/float16 v0.8.4 h1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=

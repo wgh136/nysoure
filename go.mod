@@ -1,6 +1,6 @@
 module nysoure
 
-go 1.25.0
+go 1.25.4
 
 require (
 	github.com/gofiber/fiber/v3 v3.0.0-rc.1
@@ -18,6 +18,7 @@ require (
 	github.com/redis/go-redis/v9 v9.17.0
 	github.com/stretchr/testify v1.11.1
 	github.com/wgh136/cloudflare-error-page v0.0.1
+	github.com/wgh136/gopkg/ip_stat v0.0.0-20251217035259-a91d74413600
 	gorm.io/driver/mysql v1.6.0
 )
 
