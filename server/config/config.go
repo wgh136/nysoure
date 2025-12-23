@@ -162,3 +162,7 @@ func PinnedResources() []uint {
 func PrivateDeployment() bool {
 	return os.Getenv("PRIVATE_DEPLOYMENT") == "true"
 }
+
+func UpdateModifiedTimeAfterNewFileUpload() bool {
+	return os.Getenv("UPDATE_MODIFIED_TIME_AFTER_NEW_FILE_UPLOAD") != "false"
+}
