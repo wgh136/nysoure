@@ -3,6 +3,7 @@ import { network } from "../network/network.ts";
 import { app } from "../app.ts";
 import { useNavigate } from "react-router";
 import { useTranslation } from "../utils/i18n";
+import { MdOutlineInfo } from "react-icons/md";
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -45,7 +46,7 @@ export default function LoginPage() {
         <form onSubmit={onSubmit}>
           <div className={"card-body"}>
             <h1 className={"text-2xl font-bold"}>{t("Login")}</h1>
-            {error && (
+            {error ? (
               <div role="alert" className="alert alert-error my-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -62,7 +63,12 @@ export default function LoginPage() {
                 </svg>
                 <span>{error}</span>
               </div>
-            )}
+            ) : app.privateDeployment ? (
+              <div role="alert" className="alert alert-info my-2">
+                <MdOutlineInfo className="h-6 w-6 shrink-0 stroke-current" />
+                <span>{t("This is a private website. Please log in to continue.")}</span>
+              </div>
+            ) : null}
             <fieldset className="fieldset w-full">
               <legend className="fieldset-legend">{t("Username")}</legend>
               <input
@@ -85,15 +91,17 @@ export default function LoginPage() {
               {isLoading && <span className="loading loading-spinner"></span>}
               {t("Continue")}
             </button>
-            <button
-              className="btn"
-              type={"button"}
-              onClick={() => {
-                navigate("/register", { replace: true });
-              }}
-            >
-              {t("Don't have an account? Register")}
-            </button>
+            {
+              !app.privateDeployment && <button
+                className="btn"
+                type={"button"}
+                onClick={() => {
+                  navigate("/register", { replace: true });
+                }}
+              >
+                {t("Don't have an account? Register")}
+              </button>
+            }
           </div>
         </form>
       </div>

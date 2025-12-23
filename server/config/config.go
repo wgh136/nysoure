@@ -158,3 +158,7 @@ func UploadPrompt() string {
 func PinnedResources() []uint {
 	return config.PinnedResources
 }
+
+func PrivateDeployment() bool {
+	return os.Getenv("PRIVATE_DEPLOYMENT") == "true"
+}

@@ -33,6 +33,12 @@ export default function Navigator() {
 
   const { t } = useTranslation();
 
+  useEffect(() => {
+    if (app.privateDeployment && !app.isLoggedIn()) {
+      navigate("/login", { replace: true });
+    }
+  }, []);
+
   return (
     <>
       {/* background */}

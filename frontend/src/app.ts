@@ -7,6 +7,7 @@ interface MyWindow extends Window {
   uploadPrompt?: string;
   allowNormalUserUpload?: string;
   siteDescription?: string;
+  privateDeployment?: string;
 }
 
 class App {
@@ -25,6 +26,8 @@ class App {
   siteDescription = "";
 
   allowNormalUserUpload = true;
+
+  privateDeployment = false;
 
   constructor() {
     this.init();
@@ -50,6 +53,8 @@ class App {
     this.siteDescription = (window as MyWindow).siteDescription || "";
     this.allowNormalUserUpload =
       (window as MyWindow).allowNormalUserUpload === "true";
+    this.privateDeployment =
+      (window as MyWindow).privateDeployment === "true";
   }
 
   saveData() {

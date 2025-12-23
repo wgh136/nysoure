@@ -36,6 +36,7 @@ func main() {
 	app.Get("/metrics", adaptor.HTTPHandler(prom.Handler()))
 
 	apiG := app.Group("/api")
+	apiG.Use(middleware.PrivateMiddleware)
 	{
 		api.AddUserRoutes(apiG)
 		api.AddTagRoutes(apiG)

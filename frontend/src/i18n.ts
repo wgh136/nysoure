@@ -266,6 +266,8 @@ export const i18nData = {
       "Download": "下载",
       "Notifications": "通知",
       "Release Date": "发售日期",
+      "This is a private website. Please log in to continue.":
+        "这是一个私有网站。请登录以继续。",
     },
   },
   "zh-TW": {
@@ -535,6 +537,8 @@ export const i18nData = {
       "Download": "下載",
       "Notifications": "通知",
       "Release Date": "發售日期",
+      "This is a private website. Please log in to continue.":
+        "這是一個私有網站。請登入以繼續。",
     },
   },
 };

@@ -184,6 +184,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 	content = strings.ReplaceAll(content, "{{SiteInfo}}", siteInfo)
 	content = strings.ReplaceAll(content, "{{UploadPrompt}}", config.UploadPrompt())
 	content = strings.ReplaceAll(content, "{{AllowNormalUserUpload}}", strconv.FormatBool(config.AllowNormalUserUpload()))
+	content = strings.ReplaceAll(content, "{{PrivateDeployment}}", strconv.FormatBool(config.PrivateDeployment()))
 	content = strings.ReplaceAll(content, "<script id=\"pre_fetch_data\"></script>", fmt.Sprintf("<script type=\"application/json\" id=\"pre_fetch_data\">%s</script>", preFetchData))
 
 	c.Set("Content-Type", "text/html; charset=utf-8")
