@@ -75,7 +75,7 @@ func CreateUser(username, password, cfToken string) (model.UserViewWithToken, er
 	if len(password) < 6 || len(password) > 20 {
 		return model.UserViewWithToken{}, model.NewRequestError("Password must be between 6 and 20 characters")
 	}
-	passed, err := verifyCfToken(cfToken)
+	passed, err := VerifyCfToken(cfToken)
 	if err != nil {
 		log.Error("Error verifying Cloudflare token:", err)
 		return model.UserViewWithToken{}, model.NewInternalServerError("Failed to verify Cloudflare token")

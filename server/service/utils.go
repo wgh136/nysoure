@@ -26,7 +26,7 @@ func CheckUserIsAdmin(uid uint) (bool, error) {
 	return user.IsAdmin, nil
 }
 
-func verifyCfToken(cfToken string) (bool, error) {
+func VerifyCfToken(cfToken string) (bool, error) {
 	if config.CloudflareTurnstileSecretKey() == "" {
 		return true, nil
 	}

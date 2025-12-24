@@ -20,3 +20,20 @@ func DevMiddleware() func(c fiber.Ctx) error {
 		return c.Next()
 	}
 }
+
+func GlobalDevMiddleware() func(c fiber.Ctx) error {
+	AccessKey := os.Getenv("DEV_ACCESS_KEY")
+	return func(c fiber.Ctx) error {
+		if AccessKey == "" {
+			c.Locals("dev_access", false)
+			return c.Next()
+		}
+		providedKey := c.Get("X-DEV-ACCESS-KEY")
+		if providedKey != AccessKey {
+			c.Locals("dev_access", false)
+			return c.Next()
+		}
+		c.Locals("dev_access", true)
+		return c.Next()
+	}
+}

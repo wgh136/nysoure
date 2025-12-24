@@ -221,7 +221,19 @@ func deleteFile(c fiber.Ctx) error {
 
 func downloadFile(c fiber.Ctx) error {
 	cfToken := c.Query("cf_token")
-	s, filename, err := service.DownloadFile(c.Params("id"), cfToken, c.Locals("real_user") == true)
+	verified := false
+	if cfToken != "" {
+		var err error
+		verified, err = service.VerifyCfToken(cfToken)
+		if err != nil {
+			return model.NewInternalServerError("Internal Error")
+		}
+	}
+	devAccess := c.Locals("dev_access").(bool)
+	if devAccess {
+		verified = true
+	}
+	s, filename, err := service.DownloadFile(c.Params("id"), verified, c.Locals("real_user") == true)
 	if err != nil {
 		return err
 	}

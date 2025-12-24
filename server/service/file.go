@@ -409,7 +409,7 @@ func GetFile(fid string) (*model.FileView, error) {
 }
 
 // DownloadFile handles the file download request. Return a presigned URL or a direct file path.
-func DownloadFile(fid, cfToken string, isRealUser bool) (string, string, error) {
+func DownloadFile(fid string, verified, isRealUser bool) (string, string, error) {
 	file, err := dao.GetFile(fid)
 	if err != nil {
 		log.Error("failed to get file: ", err)
@@ -419,12 +419,7 @@ func DownloadFile(fid, cfToken string, isRealUser bool) (string, string, error) 
 		return "", "", model.NewRequestError("file is not available, please try again later")
 	}
 
-	passed, err := verifyCfToken(cfToken)
-	if err != nil {
-		log.Error("failed to verify cf token: ", err)
-		return "", "", model.NewRequestError("failed to verify cf token")
-	}
-	if !passed && file.Size > MinUnrequireVerifyFileSize {
+	if !verified && file.Size > MinUnrequireVerifyFileSize {
 		log.Info("cf token verification failed")
 		return "", "", model.NewRequestError("cf token verification failed")
 	}
