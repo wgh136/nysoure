@@ -1,20 +1,32 @@
 package utils
 
 import (
+	"hash/fnv"
 	"sync"
 	"time"
 )
 
-type RequestLimiter struct {
-	limit        func() int
-	requestsByIP map[string]int
+const numShards = 32
+
+type shard struct {
 	mu           sync.Mutex
+	requestsByIP map[string]int
+}
+
+type RequestLimiter struct {
+	limit  func() int
+	shards [numShards]*shard
 }
 
 func NewRequestLimiter(limit func() int, duration time.Duration) *RequestLimiter {
 	l := &RequestLimiter{
-		limit:        limit,
-		requestsByIP: make(map[string]int),
+		limit: limit,
+	}
+
+	for i := 0; i < numShards; i++ {
+		l.shards[i] = &shard{
+			requestsByIP: make(map[string]int),
+		}
 	}
 
 	if duration > 0 {
@@ -29,11 +41,18 @@ func NewRequestLimiter(limit func() int, duration time.Duration) *RequestLimiter
 	return l
 }
 
-func (rl *RequestLimiter) AllowRequest(ip string) bool {
-	rl.mu.Lock()
-	defer rl.mu.Unlock()
+func (rl *RequestLimiter) getShard(ip string) *shard {
+	h := fnv.New32a()
+	h.Write([]byte(ip))
+	return rl.shards[h.Sum32()%numShards]
+}
 
-	count, exists := rl.requestsByIP[ip]
+func (rl *RequestLimiter) AllowRequest(ip string) bool {
+	shard := rl.getShard(ip)
+	shard.mu.Lock()
+	defer shard.mu.Unlock()
+
+	count, exists := shard.requestsByIP[ip]
 	if !exists {
 		count = 0
 	}
@@ -42,13 +61,20 @@ func (rl *RequestLimiter) AllowRequest(ip string) bool {
 		return false // Exceeded request limit for this IP
 	}
 
-	rl.requestsByIP[ip] = count + 1
+	shard.requestsByIP[ip] = count + 1
 	return true // Request allowed
 }
 
 func (rl *RequestLimiter) resetCounts() {
-	rl.mu.Lock()
-	defer rl.mu.Unlock()
-
-	rl.requestsByIP = make(map[string]int) // Reset all counts
+	var wg sync.WaitGroup
+	for i := 0; i < numShards; i++ {
+		wg.Add(1)
+		go func(s *shard) {
+			defer wg.Done()
+			s.mu.Lock()
+			defer s.mu.Unlock()
+			s.requestsByIP = make(map[string]int)
+		}(rl.shards[i])
+	}
+	wg.Wait()
 }
