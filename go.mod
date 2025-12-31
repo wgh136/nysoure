@@ -18,7 +18,7 @@ require (
 	github.com/redis/go-redis/v9 v9.17.0
 	github.com/stretchr/testify v1.11.1
 	github.com/wgh136/cloudflare-error-page v0.0.1
-	github.com/wgh136/gopkg/ip_stat v0.0.0-20251217035259-a91d74413600
+	github.com/wgh136/gopkg/ip_stat v0.0.0-20251231110953-7b6a855b995e
 	gorm.io/driver/mysql v1.6.0
 )
 
