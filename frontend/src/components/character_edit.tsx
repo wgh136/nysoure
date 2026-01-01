@@ -125,7 +125,7 @@ export function FetchVndbCharactersButton({vnID, onFetch}: {
       const res = await network.getInfoFromVNDB(vnID);
       setFetching(false);
       if (res.success && res.data) {
-        onFetch(res.data.characters, res.data.release_date);
+        onFetch(res.data.characters ?? [], res.data.release_date);
       } else {
         showToast({
           type: "error",
