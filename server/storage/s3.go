@@ -59,7 +59,7 @@ func (s *S3Storage) Download(storageKey string, fileName string) (string, error)
 	}
 	reqParams := make(url.Values)
 	reqParams.Set("response-content-disposition", "attachment; filename=\""+url.QueryEscape(fileName)+"\"")
-	presignedURL, err := minioClient.PresignedGetObject(context.Background(), s.BucketName, storageKey, 20*time.Second, reqParams)
+	presignedURL, err := minioClient.PresignedGetObject(context.Background(), s.BucketName, storageKey, 2*time.Hour, reqParams)
 	if err != nil {
 		fmt.Println(err)
 		return "", errors.New("failed to generate presigned URL")
