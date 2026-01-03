@@ -78,11 +78,61 @@ func (s *S3Storage) Delete(storageKey string) error {
 	}
 
 	ctx := context.Background()
-	err = minioClient.RemoveObject(ctx, s.BucketName, storageKey, minio.RemoveObjectOptions{})
-	if err != nil {
-		log.Error("Failed to delete file from S3: ", err)
-		return errors.New("failed to delete file from S3")
+
+	// Try to list all versions of the object
+	opts := minio.ListObjectsOptions{
+		Prefix:       storageKey,
+		Recursive:    true,
+		WithVersions: true,
 	}
+
+	var objectsToDelete []minio.ObjectInfo
+	useFallback := false
+
+	// ListObjects returns a channel. Check for errors.
+	for object := range minioClient.ListObjects(ctx, s.BucketName, opts) {
+		if object.Err != nil {
+			log.Error("Failed to list versions (S3 compatibility mode?): ", object.Err)
+			useFallback = true
+			break
+		}
+		if object.Key == storageKey {
+			objectsToDelete = append(objectsToDelete, object)
+		}
+	}
+
+	// If listing failed or fallback is needed, use standard RemoveObject
+	if useFallback {
+		err = minioClient.RemoveObject(ctx, s.BucketName, storageKey, minio.RemoveObjectOptions{})
+		if err != nil {
+			log.Error("Failed to delete file from S3 (fallback): ", err)
+			return errors.New("failed to delete file from S3")
+		}
+		return nil
+	}
+
+	// If versions were found, delete them all using RemoveObjects (bulk delete)
+	if len(objectsToDelete) > 0 {
+		objectsCh := make(chan minio.ObjectInfo, len(objectsToDelete))
+		for _, obj := range objectsToDelete {
+			objectsCh <- obj
+		}
+		close(objectsCh)
+
+		errorCh := minioClient.RemoveObjects(ctx, s.BucketName, objectsCh, minio.RemoveObjectsOptions{
+			GovernanceBypass: true,
+		})
+
+		errCount := 0
+		for e := range errorCh {
+			log.Error("Failed to delete object version: ", e.Err)
+			errCount++
+		}
+		if errCount > 0 {
+			return errors.New("failed to delete file versions from S3")
+		}
+	}
+
 	return nil
 }
 
