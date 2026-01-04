@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"errors"
 	"os"
 	"time"
 
@@ -9,8 +10,9 @@ import (
 )
 
 var (
-	client *redis.Client
-	ctx    = context.Background()
+	client      *redis.Client
+	ctx         = context.Background()
+	ErrNotFound = errors.New("not found")
 )
 
 func init() {
@@ -32,6 +34,9 @@ func init() {
 func Get(key string) (string, error) {
 	val, err := client.Get(ctx, key).Result()
 	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return "", ErrNotFound
+		}
 		return "", err
 	}
 	return val, nil

@@ -16,7 +16,7 @@ type Statistic struct {
 
 var (
 	startTime int64
-	cache     = utils.NewMemValueCache[*Statistic](1 * time.Minute)
+	statCache = utils.NewMemValueCache[*Statistic](1 * time.Minute)
 )
 
 func init() {
@@ -59,5 +59,5 @@ func getStatistic() (*Statistic, error) {
 }
 
 func GetStatistic() (*Statistic, error) {
-	return cache.Get(getStatistic)
+	return statCache.Get(getStatistic)
 }

@@ -20,6 +20,7 @@ import {
   Resource,
   Collection,
   CharacterParams,
+  RLink,
 } from "../network/models.ts";
 import { network } from "../network/network.ts";
 import showToast from "../components/toast.ts";
@@ -42,6 +43,7 @@ import {
   MdOutlineFolderSpecial,
   MdOutlineLink,
   MdOutlineOpenInNew,
+  MdOutlineStar,
   MdOutlineVerifiedUser,
 } from "react-icons/md";
 import { app } from "../app.ts";
@@ -242,22 +244,7 @@ export default function ResourcePage() {
             <div className={"px-3 mt-2 flex flex-wrap"}>
               {resource.links &&
                 resource.links.map((l) => {
-                  return (
-                    <a href={l.url} target={"_blank"}>
-                      <span
-                        className={
-                          "py-1 px-3 inline-flex items-center m-1 border border-base-300 bg-base-100 opacity-90 rounded-2xl hover:bg-base-200 transition-colors cursor-pointer select-none"
-                        }
-                      >
-                        {l.url.includes("steampowered.com") ? (
-                          <BiLogoSteam size={20} />
-                        ) : (
-                          <MdOutlineLink size={20} />
-                        )}
-                        <span className={"ml-2 text-sm"}>{l.label}</span>
-                      </span>
-                    </a>
-                  );
+                  return <Link link={l} ratings={resource.ratings} />
                 })}
               <CollectionDialog rid={resource.id} />
             </div>
@@ -347,6 +334,31 @@ export default function ResourcePage() {
         <div className="h-4"></div>
       </div>
     </context.Provider>
+  );
+}
+
+function Link({ link, ratings }: { link: RLink, ratings: Record<string, number> }) {
+  return (
+    <a href={link.url} target={"_blank"}>
+      <span
+        className={
+          "py-1 px-3 inline-flex items-center m-1 border border-base-300 bg-base-100 opacity-90 rounded-2xl hover:bg-base-200 transition-colors cursor-pointer select-none"
+        }
+      >
+        {link.url.includes("steampowered.com") ? (
+          <BiLogoSteam size={20} />
+        ) : (
+          <MdOutlineLink size={20} />
+        )}
+        <span className={"ml-2 text-sm"}>{link.label}</span>
+        {ratings[link.label] && ratings[link.label] > 0 ? (
+          <>
+            <MdOutlineStar size={16} className={"inline-block mx-1 text-yellow-500 dark:text-yellow-400"} />
+            <span className={"ml-2 text-sm text-yellow-500 dark:text-yellow-400"}>{(ratings[link.label]/10).toFixed(1)}</span>
+          </>
+        ) : null}
+      </span>
+    </a>
   );
 }
 

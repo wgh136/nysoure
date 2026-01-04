@@ -63,6 +63,7 @@ type ResourceDetailView struct {
 	Gallery           []uint          `json:"gallery"`
 	GalleryNsfw       []uint          `json:"galleryNsfw"`
 	Characters        []CharacterView `json:"characters"`
+	Ratings           map[string]int  `json:"ratings"`
 }
 
 type LowResResourceImageView struct {

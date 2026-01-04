@@ -2,10 +2,12 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"nysoure/server/cache"
 	"nysoure/server/config"
 	"nysoure/server/dao"
 	"nysoure/server/model"
@@ -218,6 +220,7 @@ func GetResource(id uint, host string, ctx fiber.Ctx) (*model.ResourceDetailView
 		related := findRelatedResources(r, host)
 		v.Related = related
 	}
+	fillRatings(&v)
 	return &v, nil
 }
 
@@ -623,6 +626,7 @@ func RandomResource(host string) (*model.ResourceDetailView, error) {
 		related := findRelatedResources(r, host)
 		v.Related = related
 	}
+	fillRatings(&v)
 	return &v, nil
 }
 
@@ -967,4 +971,78 @@ func UpdateResourceImage(uid, resourceID, oldImageID, newImageID uint) error {
 
 	// 更新资源图片
 	return dao.UpdateResourceImage(resourceID, oldImageID, newImageID)
+}
+
+func getVNDBRating(vnID string) (int, error) {
+	client := http.Client{}
+	jsonStr := fmt.Sprintf(`
+	{
+		"filters": ["id", "=", "%s"],
+		"fields": "rating"
+	}
+	`, vnID)
+	jsonStr = strings.TrimSpace(jsonStr)
+	reader := strings.NewReader(jsonStr)
+	resp, err := client.Post("https://api.vndb.org/kana/vn", "application/json", reader)
+	if err != nil {
+		return 0, model.NewInternalServerError("Failed to fetch data from VNDB")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return 0, model.NewInternalServerError("Failed to fetch data from VNDB")
+	}
+	type VndbResponse struct {
+		Results []struct {
+			Rating int `json:"rating"`
+		} `json:"results"`
+	}
+	var vndbResp VndbResponse
+	if err := json.NewDecoder(resp.Body).Decode(&vndbResp); err != nil {
+		return 0, model.NewInternalServerError("Failed to parse VNDB response")
+	}
+	if len(vndbResp.Results) == 0 {
+		return 0, nil
+	}
+	rating := vndbResp.Results[0].Rating
+	return rating, nil
+}
+
+func getVNDBRatingWithCache(vnID string) (int, error) {
+	cacheKey := fmt.Sprintf("vndb_rating_%s", vnID)
+	ratingStr, err := cache.Get(cacheKey)
+	if err != nil && !errors.Is(err, cache.ErrNotFound) {
+		return 0, err
+	} else if errors.Is(err, cache.ErrNotFound) {
+		rating, err := getVNDBRating(vnID)
+		if err != nil {
+			return 0, err
+		}
+		err = cache.Set(cacheKey, strconv.Itoa(rating), 24*time.Hour)
+		if err != nil {
+			log.Error("Failed to set VNDB rating cache: ", err)
+		}
+		return rating, nil
+	}
+	rating, err := strconv.Atoi(ratingStr)
+	if err != nil {
+		return 0, model.NewInternalServerError("Failed to parse VNDB rating")
+	}
+	return rating, nil
+}
+
+func fillRatings(resource *model.ResourceDetailView) {
+	ratings := make(map[string]int)
+	for _, link := range resource.Links {
+		if link.Label == "" {
+			continue
+		}
+		if vnID, ok := strings.CutPrefix(link.URL, "https://vndb.org/v"); ok {
+			vnID = strings.TrimSpace(vnID)
+			rating, err := getVNDBRatingWithCache(vnID)
+			if err == nil {
+				ratings[link.Label] = rating
+			}
+		}
+	}
+	resource.Ratings = ratings
 }

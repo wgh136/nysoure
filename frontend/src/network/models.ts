@@ -110,6 +110,7 @@ export interface ResourceDetails {
   gallery: number[];
   galleryNsfw: number[];
   characters: CharacterParams[];
+  ratings: Record<string, number>;
 }
 
 export interface Storage {
