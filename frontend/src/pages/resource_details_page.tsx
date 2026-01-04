@@ -353,8 +353,8 @@ function Link({ link, ratings }: { link: RLink, ratings: Record<string, number> 
         <span className={"ml-2 text-sm"}>{link.label}</span>
         {ratings[link.label] && ratings[link.label] > 0 ? (
           <>
-            <MdOutlineStar size={16} className={"inline-block mx-1 text-yellow-500 dark:text-yellow-400"} />
-            <span className={"ml-2 text-sm text-yellow-500 dark:text-yellow-400"}>{(ratings[link.label]/10).toFixed(1)}</span>
+            <MdOutlineStar size={16} className={"inline-block ml-2 mr-0.5 text-yellow-500 dark:text-yellow-400"} />
+            <span className={"text-sm text-yellow-500 dark:text-yellow-400"}>{(ratings[link.label]/10).toFixed(1)}</span>
           </>
         ) : null}
       </span>

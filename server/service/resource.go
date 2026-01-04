@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
 	"nysoure/server/cache"
@@ -993,18 +994,18 @@ func getVNDBRating(vnID string) (int, error) {
 	}
 	type VndbResponse struct {
 		Results []struct {
-			Rating int `json:"rating"`
+			Rating float32 `json:"rating"`
 		} `json:"results"`
 	}
 	var vndbResp VndbResponse
 	if err := json.NewDecoder(resp.Body).Decode(&vndbResp); err != nil {
-		return 0, model.NewInternalServerError("Failed to parse VNDB response")
+		return 0, model.NewInternalServerError("Failed to parse VNDB response: " + err.Error())
 	}
 	if len(vndbResp.Results) == 0 {
 		return 0, nil
 	}
 	rating := vndbResp.Results[0].Rating
-	return rating, nil
+	return int(math.Round(float64(rating))), nil
 }
 
 func getVNDBRatingWithCache(vnID string) (int, error) {
@@ -1041,6 +1042,8 @@ func fillRatings(resource *model.ResourceDetailView) {
 			rating, err := getVNDBRatingWithCache(vnID)
 			if err == nil {
 				ratings[link.Label] = rating
+			} else {
+				log.Error("Failed to get VNDB rating: ", err)
 			}
 		}
 	}
