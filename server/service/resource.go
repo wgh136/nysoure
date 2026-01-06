@@ -222,6 +222,10 @@ func GetResource(id uint, host string, ctx fiber.Ctx) (*model.ResourceDetailView
 		v.Related = related
 	}
 	fillRatings(&v)
+	_, ok := ctx.Locals("uid").(uint)
+	if !ok {
+		removeNsfwImages(&v)
+	}
 	return &v, nil
 }
 
@@ -1048,4 +1052,31 @@ func fillRatings(resource *model.ResourceDetailView) {
 		}
 	}
 	resource.Ratings = ratings
+}
+
+func removeNsfwImages(r *model.ResourceDetailView) {
+	if len(r.GalleryNsfw) == 0 || len(r.Gallery) < len(r.GalleryNsfw) || len(r.Images) < len(r.GalleryNsfw) {
+		return
+	}
+	nsfwImageIDs := make(map[uint]struct{}, len(r.GalleryNsfw))
+	for _, id := range r.GalleryNsfw {
+		nsfwImageIDs[id] = struct{}{}
+	}
+	newGalleryIDs := make([]uint, 0, len(r.Gallery)-len(r.GalleryNsfw))
+	for _, id := range r.Gallery {
+		if _, ok := nsfwImageIDs[id]; ok {
+			continue
+		}
+		newGalleryIDs = append(newGalleryIDs, id)
+	}
+	newImages := make([]model.ImageView, 0, len(r.Images)-len(r.GalleryNsfw))
+	for _, i := range r.Images {
+		if _, ok := nsfwImageIDs[i.ID]; ok {
+			continue
+		}
+		newImages = append(newImages, i)
+	}
+	r.Images = newImages
+	r.Gallery = newGalleryIDs
+	r.GalleryNsfw = []uint{}
 }
