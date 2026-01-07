@@ -995,6 +995,11 @@ function Files({
 
   return (
     <div className={"pt-3"}>
+      {app.supportEmailAddress && (
+        <div className="text-center text-base-content/60 py-8">
+          <span className="mr-1">{t("All files are uploaded by users, if you find any issue, please contact us via email:")}</span> <a className="link link-primary" href={`mailto:${app.supportEmailAddress}`}>{app.supportEmailAddress}</a>
+        </div>
+      )}
       {allTags.length > 0 && (
         <form className="filter mb-4">
           {allTags.map((tag) => (

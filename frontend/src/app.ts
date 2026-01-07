@@ -8,6 +8,7 @@ interface MyWindow extends Window {
   allowNormalUserUpload?: string;
   siteDescription?: string;
   privateDeployment?: string;
+  supportEmailAddress?: string;
 }
 
 class App {
@@ -28,6 +29,8 @@ class App {
   allowNormalUserUpload = true;
 
   privateDeployment = false;
+
+  supportEmailAddress = "";
 
   constructor() {
     this.init();
@@ -55,6 +58,8 @@ class App {
       (window as MyWindow).allowNormalUserUpload === "true";
     this.privateDeployment =
       (window as MyWindow).privateDeployment === "true";
+    this.supportEmailAddress =
+      (window as MyWindow).supportEmailAddress || "";
   }
 
   saveData() {

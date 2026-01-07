@@ -166,3 +166,7 @@ func PrivateDeployment() bool {
 func UpdateModifiedTimeAfterNewFileUpload() bool {
 	return os.Getenv("UPDATE_MODIFIED_TIME_AFTER_NEW_FILE_UPLOAD") != "false"
 }
+
+func SupportEmailAddress() string {
+	return os.Getenv("SUPPORT_EMAIL_ADDR")
+}
