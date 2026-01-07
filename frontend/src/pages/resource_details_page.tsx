@@ -41,6 +41,7 @@ import {
   MdOutlineDownload,
   MdOutlineEdit,
   MdOutlineFolderSpecial,
+  MdOutlineInfo,
   MdOutlineLink,
   MdOutlineOpenInNew,
   MdOutlineStar,
@@ -996,8 +997,9 @@ function Files({
   return (
     <div className={"pt-3"}>
       {app.supportEmailAddress && (
-        <div className="text-center text-base-content/60 py-8">
-          <span className="mr-1">{t("All files are uploaded by users, if you find any issue, please contact us via email:")}</span> <a className="link link-primary" href={`mailto:${app.supportEmailAddress}`}>{app.supportEmailAddress}</a>
+        <div className="alert alert-info alert-soft mb-4">
+          <MdOutlineInfo size={18} className={"inline-block"} />
+          <span>{t("All files are uploaded by users, if you find any issue, please contact us via email:")}<a className="text-primary" href={`mailto:${app.supportEmailAddress}`}>{app.supportEmailAddress}</a></span>
         </div>
       )}
       {allTags.length > 0 && (
