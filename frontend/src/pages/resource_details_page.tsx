@@ -2105,7 +2105,7 @@ function Characters({ characters }: { characters: CharacterParams[] }) {
   return (
     <div className="mt-8">
       <h3 className="text-xl font-bold mb-4">{t("Characters")}</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
         {characters.map((character, index) => (
           <CharacterCard key={index} character={character} />
         ))}
@@ -2133,7 +2133,7 @@ function CharacterCard({ character }: { character: CharacterParams }) {
       />
 
       <div className="absolute bottom-1 left-1 right-1 px-1 py-1 border border-base-100/40 rounded-lg bg-base-100/60">
-        <h4 className="font-semibold text-sm leading-tight line-clamp border border-transparent">
+        <h4 className="font-semibold text-xs sm:text-sm leading-tight line-clamp border border-transparent">
           {character.name}
           {
             character.role === "primary" ? (
