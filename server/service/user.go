@@ -1,8 +1,12 @@
 package service
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"image"
+	"math"
+	"net/http"
 	"nysoure/server/config"
 	"nysoure/server/dao"
 	"nysoure/server/model"
@@ -14,9 +18,18 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/chai2010/webp"
+	"github.com/disintegration/imaging"
 	"github.com/gofiber/fiber/v3/log"
 
 	"golang.org/x/crypto/bcrypt"
+
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
+
+	_ "golang.org/x/image/bmp"
+	_ "golang.org/x/image/webp"
 )
 
 const (
@@ -144,14 +157,53 @@ func ChangePassword(id uint, oldPassword, newPassword string) (model.UserViewWit
 	return user.ToView().WithToken(token), nil
 }
 
-func ChangeAvatar(id uint, image []byte) (model.UserView, error) {
+func ChangeAvatar(id uint, imageData []byte) (model.UserView, error) {
 	user, err := dao.GetUserByID(id)
 	if err != nil {
 		return model.UserView{}, err
 	}
-	if len(image) > 4*1024*1024 {
+	if len(imageData) > 4*1024*1024 {
 		return model.UserView{}, errors.New("image size is too large")
 	}
+	if len(imageData) == 0 {
+		return model.UserView{}, errors.New("image data is empty")
+	}
+
+	// Validate image format
+	contentType := http.DetectContentType(imageData)
+	if contentType != "image/jpeg" && contentType != "image/png" && contentType != "image/gif" && contentType != "image/webp" && contentType != "image/bmp" {
+		return model.UserView{}, errors.New("invalid image format")
+	}
+
+	// Decode image
+	img, _, err := image.Decode(bytes.NewReader(imageData))
+	if err != nil {
+		return model.UserView{}, errors.New("failed to decode image data")
+	}
+	if img.Bounds().Dx() == 0 || img.Bounds().Dy() == 0 {
+		return model.UserView{}, errors.New("invalid image dimensions")
+	}
+
+	// Resize image if necessary (max 512x512)
+	const maxAvatarSize = 512
+	width := img.Bounds().Dx()
+	height := img.Bounds().Dy()
+	if width > maxAvatarSize || height > maxAvatarSize {
+		// Calculate scale to fit within 512x512 while maintaining aspect ratio
+		scale := math.Min(float64(maxAvatarSize)/float64(width), float64(maxAvatarSize)/float64(height))
+		dstWidth := int(float64(width) * scale)
+		dstHeight := int(float64(height) * scale)
+		img = imaging.Resize(img, dstWidth, dstHeight, imaging.Lanczos)
+	}
+
+	// Encode to webp format
+	buf := new(bytes.Buffer)
+	if err := webp.Encode(buf, img, &webp.Options{Quality: 80}); err != nil {
+		return model.UserView{}, errors.New("failed to encode image to webp format")
+	}
+	imageData = buf.Bytes()
+
+	// Save avatar
 	avatarDir := utils.GetStoragePath() + "/avatar"
 	if _, err := os.Stat(avatarDir); os.IsNotExist(err) {
 		if err := os.MkdirAll(avatarDir, os.ModePerm); err != nil {
@@ -159,7 +211,7 @@ func ChangeAvatar(id uint, image []byte) (model.UserView, error) {
 		}
 	}
 	avatarPath := avatarDir + "/" + strconv.Itoa(int(user.ID))
-	if err := os.WriteFile(avatarPath, image, 0644); err != nil {
+	if err := os.WriteFile(avatarPath, imageData, 0644); err != nil {
 		return model.UserView{}, errors.New("failed to save avatar")
 	}
 	user.AvatarVersion++
