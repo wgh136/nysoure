@@ -126,9 +126,6 @@ func DeleteUser(id uint) error {
 		}
 		return err
 	}
-	if err := db.Model(&user).Update("username", "_deleted_").Error; err != nil {
-		return err
-	}
 	return db.Delete(&model.User{}, id).Error
 }
 
