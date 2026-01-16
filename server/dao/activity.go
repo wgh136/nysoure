@@ -105,3 +105,13 @@ func GetUserNotifications(userID uint, offset, limit int) ([]model.Activity, int
 
 	return activities, int(total), nil
 }
+
+// DeleteActivitiesByUserID deletes all activities created by a user
+func DeleteActivitiesByUserID(userID uint) error {
+	return db.Where("user_id = ?", userID).Delete(&model.Activity{}).Error
+}
+
+// DeleteActivitiesNotifyingUser deletes all activities that notify a specific user
+func DeleteActivitiesNotifyingUser(userID uint) error {
+	return db.Where("notify_to = ?", userID).Delete(&model.Activity{}).Error
+}

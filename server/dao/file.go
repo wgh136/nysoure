@@ -255,3 +255,12 @@ func CountFiles() (int64, error) {
 	}
 	return count, nil
 }
+
+// CountFilesByUserID counts the number of files uploaded by a user
+func CountFilesByUserID(userID uint) (int64, error) {
+	var count int64
+	if err := db.Model(&model.File{}).Where("user_id = ?", userID).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}

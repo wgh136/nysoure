@@ -370,6 +370,39 @@ func DeleteUser(adminID uint, targetUserID uint) error {
 		return err
 	}
 
+	// 1. Check if user has published resources or files - if so, prevent deletion
+	resourceCount, err := dao.CountResourcesByUserID(targetUserID)
+	if err != nil {
+		return err
+	}
+	if resourceCount > 0 {
+		return model.NewRequestError("Cannot delete user: user has published resources")
+	}
+
+	fileCount, err := dao.CountFilesByUserID(targetUserID)
+	if err != nil {
+		return err
+	}
+	if fileCount > 0 {
+		return model.NewRequestError("Cannot delete user: user has uploaded files")
+	}
+
+	// 2. Delete all comments by the user
+	if err := dao.DeleteCommentsByUserID(targetUserID); err != nil {
+		return err
+	}
+
+	// 3. Delete all activities related to the user
+	// Delete activities created by the user
+	if err := dao.DeleteActivitiesByUserID(targetUserID); err != nil {
+		return err
+	}
+	// Delete activities notifying the user
+	if err := dao.DeleteActivitiesNotifyingUser(targetUserID); err != nil {
+		return err
+	}
+
+	// Finally, delete the user
 	return dao.DeleteUser(targetUserID)
 }
 

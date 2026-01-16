@@ -226,3 +226,49 @@ func GetCommentReplies(commentID uint, page, pageSize int) ([]model.Comment, int
 
 	return replies, totalPages, nil
 }
+
+// DeleteCommentsByUserID deletes all comments created by a user
+func DeleteCommentsByUserID(userID uint) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		// First, get all comments by the user
+		var comments []model.Comment
+		if err := tx.Where("user_id = ?", userID).Find(&comments).Error; err != nil {
+			return err
+		}
+
+		for _, comment := range comments {
+			// Clear image associations for each comment
+			if err := tx.Model(&comment).Association("Images").Clear(); err != nil {
+				return err
+			}
+
+			// Update counters based on comment type
+			if comment.Type == model.CommentTypeResource {
+				// Decrease resource comment count
+				if err := tx.Model(&model.Resource{}).Where("id = ?", comment.RefID).
+					Update("comments", gorm.Expr("comments - 1")).Error; err != nil {
+					return err
+				}
+			} else if comment.Type == model.CommentTypeReply {
+				// Decrease parent comment reply count
+				if err := tx.Model(&model.Comment{}).Where("id = ?", comment.RefID).
+					Update("reply_count", gorm.Expr("reply_count - 1")).Error; err != nil {
+					return err
+				}
+			}
+
+			// Delete related activities
+			if err := tx.Where("type = ? AND ref_id = ?", model.ActivityTypeNewComment, comment.ID).
+				Delete(&model.Activity{}).Error; err != nil {
+				return err
+			}
+		}
+
+		// Delete all comments by the user
+		if err := tx.Where("user_id = ?", userID).Delete(&model.Comment{}).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
