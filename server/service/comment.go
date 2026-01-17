@@ -56,13 +56,13 @@ func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType
 		notifyTo = comment.UserID
 	}
 
-	userExists, err := dao.ExistsUserByID(userID)
+	user, err := dao.GetUserByID(userID)
 	if err != nil {
-		log.Error("Error checking user existence:", err)
-		return nil, model.NewInternalServerError("Error checking user existence")
-	}
-	if !userExists {
+		log.Error("Error getting user:", err)
 		return nil, model.NewNotFoundError("User not found")
+	}
+	if user.Banned {
+		return nil, model.NewUnAuthorizedError("Your account has been banned")
 	}
 
 	images := findImagesInContent(req.Content, host)
@@ -216,6 +216,16 @@ func UpdateComment(commentID, userID uint, req CommentRequest, host string) (*mo
 	}
 	if len([]rune(req.Content)) > maxCommentLength {
 		return nil, model.NewRequestError("Comment content exceeds maximum length of 1024 characters")
+	}
+
+	// Check if user is banned
+	user, err := dao.GetUserByID(userID)
+	if err != nil {
+		log.Error("Error getting user:", err)
+		return nil, model.NewNotFoundError("User not found")
+	}
+	if user.Banned {
+		return nil, model.NewUnAuthorizedError("Your account has been banned")
 	}
 
 	comment, err := dao.GetCommentByID(commentID)
