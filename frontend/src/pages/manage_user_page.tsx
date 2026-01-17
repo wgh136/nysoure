@@ -310,7 +310,7 @@ function BannedUserRow({ user, onChanged }: { user: User; onChanged: () => void 
     <tr key={user.id} className={"hover"}>
       <td>
         <a
-          href={`/user/${user.id}`}
+          href={`/user/${encodeURIComponent(user.username)}`}
           target="_blank"
           className="link link-hover text-primary"
         >
