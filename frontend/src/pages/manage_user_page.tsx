@@ -285,24 +285,85 @@ function BannedUserRow({ user, onChanged }: { user: User; onChanged: () => void 
     setIsLoading(false);
   };
 
+  const handleDelete = async () => {
+    if (isLoading) {
+      return;
+    }
+    setIsLoading(true);
+    const res = await network.deleteUser(user.id);
+    if (res.success) {
+      showToast({
+        type: "success",
+        message: t("User deleted successfully"),
+      });
+      onChanged();
+    } else {
+      showToast({
+        type: "error",
+        message: res.message,
+      });
+    }
+    setIsLoading(false);
+  };
+
   return (
     <tr key={user.id} className={"hover"}>
-      <td>{user.username}</td>
+      <td>
+        <a
+          href={`/user/${user.id}`}
+          target="_blank"
+          className="link link-hover text-primary"
+        >
+          {user.username}
+        </a>
+      </td>
       <td>{new Date(user.created_at).toLocaleDateString()}</td>
       <td>{user.resources_count}</td>
       <td>{user.comments_count}</td>
       <td>
-        <button
-          className="btn btn-sm btn-primary"
-          onClick={handleUnban}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <span className="loading loading-spinner loading-sm"></span>
-          ) : (
-            t("Unban")
-          )}
-        </button>
+        <div className="flex flex-row gap-2">
+          <button
+            className="btn btn-sm btn-primary"
+            onClick={handleUnban}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span className="loading loading-spinner loading-sm"></span>
+            ) : (
+              t("Unban")
+            )}
+          </button>
+          <button
+            className="btn btn-sm btn-error"
+            onClick={() => {
+              const dialog = document.getElementById(
+                `delete_banned_user_dialog_${user.id}`,
+              ) as HTMLDialogElement;
+              dialog.showModal();
+            }}
+            disabled={isLoading}
+          >
+            {t("Delete")}
+          </button>
+        </div>
+        <dialog id={`delete_banned_user_dialog_${user.id}`} className="modal">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">{t("Delete User")}</h3>
+            <p className="py-4">
+              {t("Are you sure you want to delete user")}{" "}
+              <span className="font-bold">{user.username}</span>?{" "}
+              {t("This action cannot be undone.")}
+            </p>
+            <div className="modal-action">
+              <form method="dialog">
+                <button className="btn btn-ghost">{t("Close")}</button>
+                <button className="btn btn-error" onClick={handleDelete}>
+                  {t("Delete")}
+                </button>
+              </form>
+            </div>
+          </div>
+        </dialog>
       </td>
     </tr>
   );
