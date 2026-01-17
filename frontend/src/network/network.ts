@@ -235,6 +235,22 @@ class Network {
     );
   }
 
+  async listBannedUsers(page: number): Promise<PageResponse<User>> {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/user/banned`, {
+        params: { page },
+      }),
+    );
+  }
+
+  async unbanUser(userId: number): Promise<Response<User>> {
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/user/unban`, {
+        user_id: userId,
+      }),
+    );
+  }
+
   async getAllTags(): Promise<Response<TagWithCount[]>> {
     return this._callApi(() => axios.get(`${this.apiBaseUrl}/tag`));
   }

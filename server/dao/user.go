@@ -140,3 +140,27 @@ func GetUserNotificationCount(userID uint) (uint, error) {
 	}
 	return count, nil
 }
+
+func BanUser(userID uint) error {
+	return db.Model(&model.User{}).Where("id = ?", userID).Update("banned", true).Error
+}
+
+func UnbanUser(userID uint) error {
+	return db.Model(&model.User{}).Where("id = ?", userID).Update("banned", false).Error
+}
+
+func ListBannedUsers(page, pageSize int) ([]model.User, int64, error) {
+	var users []model.User
+	var total int64
+
+	if err := db.Model(&model.User{}).Where("banned = ?", true).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * pageSize
+	if err := db.Where("banned = ?", true).Offset(offset).Limit(pageSize).Order("id desc").Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return users, total, nil
+}

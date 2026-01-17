@@ -1,6 +1,7 @@
 package service
 
 import (
+	aireview "nysoure/server/ai_review"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"regexp"
@@ -75,6 +76,17 @@ func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType
 	if err != nil {
 		log.Error("Error creating comment activity:", err)
 	}
+	
+	// Asynchronously check if the comment is an ad
+	go func() {
+		if aireview.IsAd(req.Content) {
+			log.Info("Comment detected as ad, banning user", "userID", userID, "commentID", c.ID)
+			if err := dao.BanUser(userID); err != nil {
+				log.Error("Error banning user:", err)
+			}
+		}
+	}()
+	
 	return c.ToView(), nil
 }
 
@@ -129,6 +141,10 @@ func ListResourceComments(resourceID uint, page int) ([]model.CommentView, int, 
 	}
 	res := make([]model.CommentView, 0, len(comments))
 	for _, c := range comments {
+		// Filter out comments from banned users
+		if c.User.Banned {
+			continue
+		}
 		v := *c.ToView()
 		v.Content, v.ContentTruncated = restrictCommentLength(v.Content)
 		replies, _, err := dao.GetCommentReplies(c.ID, 1, 3)
@@ -138,6 +154,10 @@ func ListResourceComments(resourceID uint, page int) ([]model.CommentView, int, 
 		}
 		v.Replies = make([]model.CommentView, 0, len(replies))
 		for _, r := range replies {
+			// Filter out replies from banned users
+			if r.User.Banned {
+				continue
+			}
 			rv := *r.ToView()
 			rv.Content, rv.ContentTruncated = restrictCommentLength(rv.Content)
 			v.Replies = append(v.Replies, rv)
@@ -155,6 +175,10 @@ func ListCommentReplies(commentID uint, page int) ([]model.CommentView, int, err
 	}
 	res := make([]model.CommentView, 0, len(replies))
 	for _, r := range replies {
+		// Filter out replies from banned users
+		if r.User.Banned {
+			continue
+		}
 		v := *r.ToView()
 		var truncated bool
 		v.Content, truncated = restrictCommentLength(v.Content)

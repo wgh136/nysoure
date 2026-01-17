@@ -20,6 +20,7 @@ type User struct {
 	Resources                []Resource `gorm:"foreignKey:UserID"`
 	Bio                      string
 	UnreadNotificationsCount uint `gorm:"not null;default:0"`
+	Banned                   bool `gorm:"default:false"`
 }
 
 type UserView struct {
@@ -33,6 +34,7 @@ type UserView struct {
 	FilesCount     int       `json:"files_count"`
 	CommentsCount  int       `json:"comments_count"`
 	Bio            string    `json:"bio"`
+	Banned         bool      `json:"banned"`
 }
 
 type UserViewWithToken struct {
@@ -52,6 +54,7 @@ func (u User) ToView() UserView {
 		FilesCount:     u.FilesCount,
 		CommentsCount:  u.CommentsCount,
 		Bio:            u.Bio,
+		Banned:         u.Banned,
 	}
 }
 

@@ -13,6 +13,7 @@ import { ErrorAlert } from "../components/alert";
 export default function UserView() {
   const { t } = useTranslation();
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [activeTab, setActiveTab] = useState<"all" | "banned">("all");
 
   const [page, setPage] = useState(1);
 
@@ -38,35 +39,72 @@ export default function UserView() {
 
   return (
     <>
-      <div className={"flex flex-row justify-between items-center mx-4 my-4"}>
-        <form
-          className={"flex flex-row gap-2 items-center w-64"}
-          onSubmit={(e) => {
-            e.preventDefault();
-            setPage(0);
-            const input = e.currentTarget.querySelector(
-              "input[type=search]",
-            ) as HTMLInputElement;
-            setSearchKeyword(input.value);
-          }}
-        >
-          <label className="input">
-            <MdSearch size={20} className="opacity-50" />
-            <input
-              type="search"
-              className="grow"
-              placeholder={t("Search")}
-              id="search"
-            />
-          </label>
-        </form>
+      <div className={"flex flex-col gap-4 mx-4 my-4"}>
+        <div role="tablist" className="tabs tabs-lifted">
+          <a
+            role="tab"
+            className={`tab ${activeTab === "all" ? "tab-active" : ""}`}
+            onClick={() => {
+              setActiveTab("all");
+              setPage(1);
+              setSearchKeyword("");
+            }}
+          >
+            {t("All Users")}
+          </a>
+          <a
+            role="tab"
+            className={`tab ${activeTab === "banned" ? "tab-active" : ""}`}
+            onClick={() => {
+              setActiveTab("banned");
+              setPage(1);
+              setSearchKeyword("");
+            }}
+          >
+            {t("Banned Users")}
+          </a>
+        </div>
+
+        {activeTab === "all" && (
+          <form
+            className={"flex flex-row gap-2 items-center w-64"}
+            onSubmit={(e) => {
+              e.preventDefault();
+              setPage(1);
+              const input = e.currentTarget.querySelector(
+                "input[type=search]",
+              ) as HTMLInputElement;
+              setSearchKeyword(input.value);
+            }}
+          >
+            <label className="input">
+              <MdSearch size={20} className="opacity-50" />
+              <input
+                type="search"
+                className="grow"
+                placeholder={t("Search")}
+                id="search"
+              />
+            </label>
+          </form>
+        )}
       </div>
-      <UserTable
-        page={page}
-        searchKeyword={searchKeyword}
-        key={`${page}&${searchKeyword}`}
-        totalPagesCallback={setTotalPages}
-      />
+
+      {activeTab === "all" ? (
+        <UserTable
+          page={page}
+          searchKeyword={searchKeyword}
+          key={`all-${page}&${searchKeyword}`}
+          totalPagesCallback={setTotalPages}
+        />
+      ) : (
+        <BannedUserTable
+          page={page}
+          key={`banned-${page}`}
+          totalPagesCallback={setTotalPages}
+        />
+      )}
+
       <div className={"flex flex-row justify-center items-center my-4"}>
         {totalPages ? (
           <Pagination page={page} setPage={setPage} totalPages={totalPages} />
@@ -150,6 +188,123 @@ function UserTable({
         </tbody>
       </table>
     </div>
+  );
+}
+
+function BannedUserTable({
+  page,
+  totalPagesCallback,
+}: {
+  page: number;
+  totalPagesCallback: (totalPages: number) => void;
+}) {
+  const { t } = useTranslation();
+  const [users, setUsers] = useState<User[] | null>(null);
+
+  const fetchUsers = useCallback(() => {
+    network.listBannedUsers(page).then((response) => {
+      if (response.success) {
+        setUsers(response.data!);
+        totalPagesCallback(response.totalPages!);
+      } else {
+        showToast({
+          type: "error",
+          message: response.message,
+        });
+      }
+    });
+  }, [page, totalPagesCallback]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  const handleChanged = useCallback(async () => {
+    setUsers(null);
+    fetchUsers();
+  }, [fetchUsers]);
+
+  if (users === null) {
+    return <Loading />;
+  }
+
+  if (users.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <p className="text-base-content/50">{t("No banned users found")}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`rounded-box border border-base-content/10 bg-base-100 mx-4 mb-4 overflow-x-auto`}
+    >
+      <table className={"table"}>
+        <thead>
+          <tr>
+            <td>{t("Username")}</td>
+            <td>{t("Created At")}</td>
+            <td>{t("Resources")}</td>
+            <td>{t("Comments")}</td>
+            <td>{t("Actions")}</td>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((u) => {
+            return <BannedUserRow key={u.id} user={u} onChanged={handleChanged} />;
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function BannedUserRow({ user, onChanged }: { user: User; onChanged: () => void }) {
+  const { t } = useTranslation();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleUnban = async () => {
+    if (isLoading) {
+      return;
+    }
+    setIsLoading(true);
+    const res = await network.unbanUser(user.id);
+    if (res.success) {
+      showToast({
+        type: "success",
+        message: t("User unbanned successfully"),
+      });
+      onChanged();
+    } else {
+      showToast({
+        type: "error",
+        message: res.message,
+      });
+    }
+    setIsLoading(false);
+  };
+
+  return (
+    <tr key={user.id} className={"hover"}>
+      <td>{user.username}</td>
+      <td>{new Date(user.created_at).toLocaleDateString()}</td>
+      <td>{user.resources_count}</td>
+      <td>{user.comments_count}</td>
+      <td>
+        <button
+          className="btn btn-sm btn-primary"
+          onClick={handleUnban}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <span className="loading loading-spinner loading-sm"></span>
+          ) : (
+            t("Unban")
+          )}
+        </button>
+      </td>
+    </tr>
   );
 }
 
@@ -266,7 +421,12 @@ function UserRow({ user, onChanged }: { user: User; onChanged: () => void }) {
 
   return (
     <tr key={user.id} className={"hover"}>
-      <td>{user.username}</td>
+      <td>
+        {user.username}
+        {user.banned && (
+          <span className="badge badge-error badge-sm ml-2">{t("Banned")}</span>
+        )}
+      </td>
       <td>{new Date(user.created_at).toLocaleDateString()}</td>
       <td>{user.is_admin ? t("Yes") : t("No")}</td>
       <td>{user.can_upload ? t("Yes") : t("No")}</td>

@@ -344,6 +344,59 @@ func handleGetMe(c fiber.Ctx) error {
 	})
 }
 
+func handleListBannedUsers(c fiber.Ctx) error {
+	adminID, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewUnAuthorizedError("Unauthorized")
+	}
+
+	pageStr := c.Query("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	users, totalPages, err := service.ListBannedUsers(adminID, page)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.PageResponse[model.UserView]{
+		Success:    true,
+		TotalPages: totalPages,
+		Data:       users,
+		Message:    "Banned users retrieved successfully",
+	})
+}
+
+func handleUnbanUser(c fiber.Ctx) error {
+	adminID, ok := c.Locals("uid").(uint)
+	if !ok {
+		return model.NewUnAuthorizedError("Unauthorized")
+	}
+
+	userIDStr := c.FormValue("user_id")
+	if userIDStr == "" {
+		return model.NewRequestError("User ID is required")
+	}
+
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		return model.NewRequestError("Invalid user ID")
+	}
+
+	user, err := service.UnbanUser(adminID, uint(userID))
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.Response[model.UserView]{
+		Success: true,
+		Data:    user,
+		Message: "User unbanned successfully",
+	})
+}
+
 func AddUserRoutes(r fiber.Router) {
 	u := r.Group("user")
 	u.Post("/register", handleUserRegister, middleware.NewRequestLimiter(5, time.Hour))
@@ -360,4 +413,6 @@ func AddUserRoutes(r fiber.Router) {
 	u.Post("/username", handleChangeUsername)
 	u.Post("/bio", handleSetUserBio)
 	u.Get("/me", handleGetMe)
+	u.Get("/banned", handleListBannedUsers)
+	u.Post("/unban", handleUnbanUser)
 }

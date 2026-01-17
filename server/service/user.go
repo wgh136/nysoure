@@ -483,3 +483,64 @@ func ResetUserNotificationsCount(userID uint) error {
 func GetUserNotificationsCount(userID uint) (uint, error) {
 	return dao.GetUserNotificationCount(userID)
 }
+
+func ListBannedUsers(adminID uint, page int) ([]model.UserView, int, error) {
+	admin, err := dao.GetUserByID(adminID)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if !admin.IsAdmin {
+		return nil, 0, model.NewUnAuthorizedError("Only administrators can list banned users")
+	}
+
+	if page < 1 {
+		page = 1
+	}
+	pageSize := 10
+
+	users, total, err := dao.ListBannedUsers(page, pageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	userViews := make([]model.UserView, len(users))
+	for i, user := range users {
+		userViews[i] = user.ToView()
+	}
+
+	totalPages := int((total + int64(pageSize) - 1) / int64(pageSize))
+	return userViews, totalPages, nil
+}
+
+func UnbanUser(adminID uint, targetUserID uint) (model.UserView, error) {
+	admin, err := dao.GetUserByID(adminID)
+	if err != nil {
+		return model.UserView{}, err
+	}
+
+	if !admin.IsAdmin {
+		return model.UserView{}, model.NewUnAuthorizedError("Only administrators can unban users")
+	}
+
+	targetUser, err := dao.GetUserByID(targetUserID)
+	if err != nil {
+		return model.UserView{}, err
+	}
+
+	if !targetUser.Banned {
+		return model.UserView{}, model.NewRequestError("User is not banned")
+	}
+
+	if err := dao.UnbanUser(targetUserID); err != nil {
+		return model.UserView{}, err
+	}
+
+	// Reload user to get updated banned status
+	targetUser, err = dao.GetUserByID(targetUserID)
+	if err != nil {
+		return model.UserView{}, err
+	}
+
+	return targetUser.ToView(), nil
+}

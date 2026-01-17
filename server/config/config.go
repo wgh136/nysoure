@@ -170,3 +170,15 @@ func UpdateModifiedTimeAfterNewFileUpload() bool {
 func SupportEmailAddress() string {
 	return os.Getenv("SUPPORT_EMAIL_ADDR")
 }
+
+func OpenAIUrl() string {
+	return os.Getenv("OPENAI_URL")
+}
+
+func OpenAIApiKey() string {
+	return os.Getenv("OPENAI_API_KEY")
+}
+
+func OpenAIModel() string {
+	return os.Getenv("OPENAI_MODEL")
+}

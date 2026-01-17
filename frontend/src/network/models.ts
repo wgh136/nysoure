@@ -9,6 +9,7 @@ export interface User {
   files_count: number;
   comments_count: number;
   bio: string;
+  banned: boolean;
 }
 
 export interface UserWithToken extends User {
