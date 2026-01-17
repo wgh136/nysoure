@@ -2,6 +2,7 @@ package aireview
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"log/slog"
@@ -9,6 +10,8 @@ import (
 	"nysoure/server/config"
 	"strings"
 	"time"
+
+	"google.golang.org/genai"
 )
 
 // OpenAI types
@@ -26,30 +29,6 @@ type OpenAIResponse struct {
 	Choices []struct {
 		Message OpenAIMessage `json:"message"`
 	} `json:"choices"`
-	Error *struct {
-		Message string `json:"message"`
-	} `json:"error,omitempty"`
-}
-
-// Google AI types
-type GoogleAIRequest struct {
-	Contents []GoogleAIContent `json:"contents"`
-}
-
-type GoogleAIContent struct {
-	Parts []GoogleAIPart `json:"parts"`
-}
-
-type GoogleAIPart struct {
-	Text string `json:"text"`
-}
-
-type GoogleAIResponse struct {
-	Candidates []struct {
-		Content struct {
-			Parts []GoogleAIPart `json:"parts"`
-		} `json:"content"`
-	} `json:"candidates"`
 	Error *struct {
 		Message string `json:"message"`
 	} `json:"error,omitempty"`
@@ -162,79 +141,47 @@ func chatWithOpenAI(apiUrl, apiKey, model, content string) string {
 	return openAIResp.Choices[0].Message.Content
 }
 
-// chatWithGoogleAI sends a message to Google AI API
+// chatWithGoogleAI sends a message to Google AI API using official SDK
 func chatWithGoogleAI(apiUrl, apiKey, model, content string) string {
-	// Google AI uses API key in URL query parameter
-	fullUrl := apiUrl
-	if !strings.Contains(apiUrl, "?") {
-		fullUrl += "?key=" + apiKey
-	} else if !strings.Contains(apiUrl, "key=") {
-		fullUrl += "&key=" + apiKey
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Create client with API key
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{
+		APIKey:  apiKey,
+		Backend: genai.BackendGeminiAPI,
+	})
+	if err != nil {
+		slog.Error("Failed to create Google AI client", "error", err)
+		return ""
 	}
 
-	reqBody := GoogleAIRequest{
-		Contents: []GoogleAIContent{
-			{
-				Parts: []GoogleAIPart{
-					{
-						Text: content,
-					},
-				},
-			},
+	// Create content for the request
+	genaiContent := &genai.Content{
+		Parts: []*genai.Part{
+			{Text: content},
 		},
 	}
 
-	jsonData, err := json.Marshal(reqBody)
+	// Generate content using the model
+	resp, err := client.Models.GenerateContent(ctx, model, []*genai.Content{genaiContent}, nil)
 	if err != nil {
-		slog.Error("Failed to marshal Google AI request", "error", err)
+		slog.Error("Failed to generate content with Google AI", "error", err)
 		return ""
 	}
 
-	req, err := http.NewRequest("POST", fullUrl, bytes.NewBuffer(jsonData))
-	if err != nil {
-		slog.Error("Failed to create Google AI request", "error", err)
-		return ""
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{
-		Timeout: 30 * time.Second,
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		slog.Error("Failed to send Google AI request", "error", err)
-		return ""
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		slog.Error("Failed to read Google AI response", "error", err)
-		return ""
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		slog.Error("Google AI API returned error", "status", resp.StatusCode, "body", string(body))
-		return ""
-	}
-
-	var googleResp GoogleAIResponse
-	if err := json.Unmarshal(body, &googleResp); err != nil {
-		slog.Error("Failed to unmarshal Google AI response", "error", err)
-		return ""
-	}
-
-	if googleResp.Error != nil {
-		slog.Error("Google AI API error", "message", googleResp.Error.Message)
-		return ""
-	}
-
-	if len(googleResp.Candidates) == 0 || len(googleResp.Candidates[0].Content.Parts) == 0 {
+	// Extract text from response
+	if len(resp.Candidates) == 0 {
 		slog.Error("No candidates in Google AI response")
 		return ""
 	}
 
-	return googleResp.Candidates[0].Content.Parts[0].Text
+	var resultText strings.Builder
+	for _, part := range resp.Candidates[0].Content.Parts {
+		if part.Text != "" {
+			resultText.WriteString(part.Text)
+		}
+	}
+
+	return resultText.String()
 }
