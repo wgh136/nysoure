@@ -375,6 +375,7 @@ function UserButton() {
                   app.user = null;
                   app.token = null;
                   app.saveData();
+                  document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                   navigate(`/login`, { replace: true });
                 }}
               >
