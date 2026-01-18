@@ -72,11 +72,43 @@ func getStatistics(c fiber.Ctx) error {
 	})
 }
 
+func getFrontendConfig(c fiber.Ctx) error {
+	sc := config.GetConfig()
+	uid, ok := c.Locals("uid").(uint)
+	var user *model.UserView
+	clearCookie := false
+	if ok {
+		u, err := service.GetMe(uid)
+		if err != nil {
+			clearCookie = true
+		}
+		user = &u.UserView
+	}
+	if clearCookie {
+		c.ClearCookie("token")
+	}
+	return c.JSON(model.Response[any]{
+		Success: true,
+		Data: map[string]any{
+			"user":                              user,
+			"server_name":                       sc.ServerName,
+			"pinned_resources":                  sc.PinnedResources,
+			"allow_register":                    sc.AllowRegister,
+			"allow_normal_user_upload":          sc.AllowNormalUserUpload,
+			"max_normal_user_upload_size_in_mb": sc.MaxNormalUserUploadSizeInMB,
+			"upload_prompt":                     sc.UploadPrompt,
+			"site_info":                         sc.SiteInfo,
+			"private_deployment":                config.PrivateDeployment(),
+		},
+	})
+}
+
 func AddConfigRoutes(r fiber.Router) {
 	configGroup := r.Group("/config")
 	{
 		configGroup.Get("/", getServerConfig)
 		configGroup.Post("/", setServerConfig)
+		configGroup.Get("/frontend", getFrontendConfig)
 		configGroup.Get("/statistics", getStatistics)
 	}
 }
