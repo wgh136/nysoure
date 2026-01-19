@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Response } from "./models.ts";
+import type { Response } from "./models.ts";
 
 const KunApi = {
   isAvailable(): boolean {

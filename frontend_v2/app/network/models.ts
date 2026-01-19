@@ -251,4 +251,5 @@ export interface Config {
   isLoggedIn: boolean;
   user: User | null;
   background: number | null;
+  pinned_resources: Resource[];
 }

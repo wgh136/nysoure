@@ -1,5 +1,5 @@
 import SparkMD5 from "spark-md5";
-import { Response } from "./models.ts";
+import type { Response } from "./models.ts";
 import { network } from "./network.ts";
 
 enum UploadingStatus {
