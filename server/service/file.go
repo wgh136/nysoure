@@ -373,7 +373,7 @@ func DeleteFile(uid uint, fid string) error {
 	return nil
 }
 
-func UpdateFile(uid uint, fid string, filename string, description string, tag string) (*model.FileView, error) {
+func UpdateFile(uid uint, fid string, filename string, description string, tag string, size int64) (*model.FileView, error) {
 	file, err := dao.GetFile(fid)
 	if err != nil {
 		log.Error("failed to get file: ", err)
@@ -390,7 +390,7 @@ func UpdateFile(uid uint, fid string, filename string, description string, tag s
 		return nil, model.NewUnAuthorizedError("user cannot update file")
 	}
 
-	file, err = dao.UpdateFile(fid, filename, description, tag)
+	file, err = dao.UpdateFile(fid, filename, description, tag, size)
 	if err != nil {
 		log.Error("failed to update file in db: ", err)
 		return nil, model.NewInternalServerError("failed to update file in db")
@@ -419,7 +419,7 @@ func DownloadFile(fid string, verified, isRealUser bool) (string, string, error)
 		return "", "", model.NewRequestError("file is not available, please try again later")
 	}
 
-	if !verified && file.Size > MinUnrequireVerifyFileSize {
+	if !verified && file.Size > MinUnrequireVerifyFileSize && file.RedirectUrl == "" {
 		log.Info("cf token verification failed")
 		return "", "", model.NewRequestError("cf token verification failed")
 	}

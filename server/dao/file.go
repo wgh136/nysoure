@@ -176,7 +176,7 @@ func DeleteFile(id string) error {
 	return nil
 }
 
-func UpdateFile(id string, filename string, description string, tag string) (*model.File, error) {
+func UpdateFile(id string, filename string, description string, tag string, size int64) (*model.File, error) {
 	f := &model.File{}
 	if err := db.Where("uuid = ?", id).First(f).Error; err != nil {
 		return nil, err
@@ -189,6 +189,9 @@ func UpdateFile(id string, filename string, description string, tag string) (*mo
 	}
 	if tag != "" {
 		f.Tag = tag
+	}
+	if size > 0 {
+		f.Size = size
 	}
 	if err := db.Save(f).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

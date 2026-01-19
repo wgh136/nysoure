@@ -185,6 +185,7 @@ func updateFile(c fiber.Ctx) error {
 		Filename    string `json:"filename"`
 		Description string `json:"description"`
 		Tag         string `json:"tag"`
+		FileSize    int64  `json:"file_size"`
 	}
 
 	var req UpdateFileRequest
@@ -195,7 +196,7 @@ func updateFile(c fiber.Ctx) error {
 	req.Filename = strings.TrimSpace(req.Filename)
 	req.Tag = strings.TrimSpace(req.Tag)
 
-	result, err := service.UpdateFile(uid, c.Params("id"), req.Filename, req.Description, req.Tag)
+	result, err := service.UpdateFile(uid, c.Params("id"), req.Filename, req.Description, req.Tag, req.FileSize)
 	if err != nil {
 		return err
 	}
