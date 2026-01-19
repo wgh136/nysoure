@@ -87,6 +87,10 @@ func getFrontendConfig(c fiber.Ctx) error {
 	if clearCookie {
 		c.ClearCookie("token")
 	}
+	random, err := service.RandomCover()
+	if err != nil {
+		return model.NewInternalServerError("Failed to get random cover")
+	}
 	return c.JSON(model.Response[any]{
 		Success: true,
 		Data: map[string]any{
@@ -99,6 +103,7 @@ func getFrontendConfig(c fiber.Ctx) error {
 			"upload_prompt":                     sc.UploadPrompt,
 			"site_info":                         sc.SiteInfo,
 			"private_deployment":                config.PrivateDeployment(),
+			"background":                        random,
 		},
 	})
 }
