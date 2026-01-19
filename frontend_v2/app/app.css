@@ -330,3 +330,7 @@ body {
     background-color: rgb(var(--color-base-100-rgb) / 0.82);
   }
 }
+
+.max-w-8xl {
+  max-width: 1440px;
+}

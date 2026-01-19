@@ -35,7 +35,7 @@ function Navigator({appName}: {appName: string}) {
     <div
       className="navbar shadow-sm fixed top-0 z-3 lg:z-10 bg-transparent h-16"
     >
-      <div className={"flex-1 max-w-7xl mx-auto flex items-center"}>
+      <div className={"flex-1 max-w-8xl mx-auto flex items-center"}>
         <div className="dropdown">
           <div
             tabIndex={0}
