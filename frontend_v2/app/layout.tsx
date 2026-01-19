@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router";
-import { MdArrowUpward, MdOutlinePerson, MdOutlinePublish } from "react-icons/md";
+import { MdArrowUpward, MdMenu, MdOutlinePerson, MdOutlinePublish, MdShuffle, MdTimeline, MdInfoOutline, MdOutlineLabel } from "react-icons/md";
 import { useTranslation } from "./hook/i18n.js";
 import { useConfig } from "./hook/config.js";
 import { ThemeSwitcher } from "./components/theme_switcher.js";
 import { network } from "./network/network.js";
+import { Background } from "./components/background.js";
 
 export default function Layout() {
   const { server_name } = useConfig();
@@ -23,144 +24,155 @@ function Navigator({appName}: {appName: string}) {
   const { t } = useTranslation();
 
   return (
-    <div
-    style={{
-      position: "relative",
-      zIndex: 1,
-    }}
-  >
-    <FloatingToTopButton />
-    <div className="z-1 fixed top-0 w-full backdrop-blur h-16" />
-    <div className="z-2 fixed top-0 w-full h-16 bg-base-100 opacity-80" />
-    <div
-      className="navbar shadow-sm fixed top-0 z-3 lg:z-10 bg-transparent h-16"
+    <Background>
+      <div
+      style={{
+        position: "relative",
+        zIndex: 1,
+      }}
     >
-      <div className={"flex-1 max-w-8xl mx-auto flex items-center"}>
-        <div className="dropdown">
-          <div
-            tabIndex={0}
-            role="button"
-            className="btn btn-ghost btn-circle lg:hidden"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+      <FloatingToTopButton />
+      <div className="z-1 fixed top-0 w-full backdrop-blur-xs h-16" />
+      <div className="z-2 fixed top-0 w-full h-16 bg-base-100 opacity-60" />
+      <div
+        className="navbar shadow-xs fixed top-0 z-3 lg:z-10 bg-transparent h-16"
+      >
+        <div className={"flex-1 max-w-8xl mx-auto flex items-center"}>
+          <div className="dropdown">
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn btn-ghost btn-circle lg:hidden"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16M4 18h7"
-              />
-            </svg>
-          </div>
-          <ul
-            id={"navi_menu"}
-            tabIndex={0}
-            className="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
-          >
-            <li
-              onClick={() => {
-                const menu = document.getElementById(
-                  "navi_menu",
-                ) as HTMLElement;
-                menu.blur();
-                navigate("/tags");
-              }}
+              <MdMenu size={24} />
+            </div>
+            <ul
+              id={"navi_menu"}
+              tabIndex={0}
+              className="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
             >
-              <a>{t("Tags")}</a>
-            </li>
-            <li>
-              <a
+              <li
                 onClick={() => {
                   const menu = document.getElementById(
                     "navi_menu",
                   ) as HTMLElement;
                   menu.blur();
+                  navigate("/tags");
+                }}
+              >
+                <a>
+                  <MdOutlineLabel size={18} />
+                  {t("Tags")}
+                </a>
+              </li>
+              <li>
+                <a
+                  onClick={() => {
+                    const menu = document.getElementById(
+                      "navi_menu",
+                    ) as HTMLElement;
+                    menu.blur();
+                    navigate("/activity");
+                  }}
+                >
+                  <MdTimeline size={18} />
+                  {t("Activity")}
+                </a>
+              </li>
+              <li
+                onClick={() => {
+                  const menu = document.getElementById(
+                    "navi_menu",
+                  ) as HTMLElement;
+                  menu.blur();
+                  navigate("/random");
+                }}
+              >
+                <a>
+                  <MdShuffle size={18} />
+                  {t("Random")}
+                </a>
+              </li>
+              <li
+                onClick={() => {
+                  const menu = document.getElementById(
+                    "navi_menu",
+                  ) as HTMLElement;
+                  menu.blur();
+                  navigate("/about");
+                }}
+              >
+                <a>
+                  <MdInfoOutline size={18} />
+                  {t("About")}
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <button
+              className="btn btn-ghost text-xl"
+              onClick={() => {
+                navigate(`/`, { replace: true });
+              }}
+            >
+              {appName}
+            </button>
+          </div>
+          <div className="hidden lg:flex">
+            <ul className="menu menu-horizontal px-1">
+              <li
+                onClick={() => {
+                  navigate("/tags");
+                }}
+              >
+                <a>
+                  <MdOutlineLabel size={18} />
+                  {t("Tags")}
+                </a>
+              </li>
+              <li
+                onClick={() => {
+                  navigate("/random");
+                }}
+              >
+                <a>
+                  <MdShuffle size={18} />
+                  {t("Random")}
+                </a>
+              </li>
+              <li
+                onClick={() => {
                   navigate("/activity");
                 }}
               >
-                {t("Activity")}
-              </a>
-            </li>
-            <li
-              onClick={() => {
-                const menu = document.getElementById(
-                  "navi_menu",
-                ) as HTMLElement;
-                menu.blur();
-                navigate("/random");
-              }}
-            >
-              <a>{t("Random")}</a>
-            </li>
-            <li
-              onClick={() => {
-                const menu = document.getElementById(
-                  "navi_menu",
-                ) as HTMLElement;
-                menu.blur();
-                navigate("/about");
-              }}
-            >
-              <a>{t("About")}</a>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <button
-            className="btn btn-ghost text-xl"
-            onClick={() => {
-              navigate(`/`, { replace: true });
-            }}
-          >
-            {appName}
-          </button>
-        </div>
-        <div className="hidden lg:flex">
-          <ul className="menu menu-horizontal px-1">
-            <li
-              onClick={() => {
-                navigate("/tags");
-              }}
-            >
-              <a>{t("Tags")}</a>
-            </li>
-            <li
-              onClick={() => {
-                navigate("/random");
-              }}
-            >
-              <a>{t("Random")}</a>
-            </li>
-            <li
-              onClick={() => {
-                navigate("/activity");
-              }}
-            >
-              <a>{t("Activity")}</a>
-            </li>
-            <li
-              onClick={() => {
-                navigate("/about");
-              }}
-            >
-              <a>{t("About")}</a>
-            </li>
-          </ul>
-        </div>
-        <div className={"flex-1"}></div>
-        <div className="flex gap-2">
-          <PublishButton />
-          <ThemeSwitcher />
-          <UserButton />
+                <a>
+                  <MdTimeline size={18} />
+                  {t("Activity")}
+                </a>
+              </li>
+              <li
+                onClick={() => {
+                  navigate("/about");
+                }}
+              >
+                <a>
+                  <MdInfoOutline size={18} />
+                  {t("About")}
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div className={"flex-1"}></div>
+          <div className="flex gap-2">
+            <PublishButton />
+            <ThemeSwitcher />
+            <UserButton />
+          </div>
         </div>
       </div>
-    </div>
-    </div>
+      </div>
+    </Background>
   )
 }
 
@@ -224,7 +236,7 @@ function UserButton() {
   const { t } = useTranslation();
   if (!config.user) {
     return <button
-      className="btn btn-primary btn-circle btn-soft"
+      className="btn btn-primary btn-square btn-soft"
       onClick={() => {
         navigate("/login");
       }}
@@ -235,7 +247,7 @@ function UserButton() {
 
   return (
     <button
-      className="btn btn-ghost btn-circle avatar"
+      className="btn btn-ghost btn-square avatar"
       onClick={() => {
         navigate(`/user/${encodeURIComponent(config.user!.username)}`);
       }}

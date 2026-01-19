@@ -59,12 +59,12 @@ export function ThemeSwitcher() {
 
   return (
     <div className="dropdown dropdown-end">
-      <div tabIndex={0} role="button" className="btn btn-circle btn-ghost">
+      <div tabIndex={0} role="button" className="btn btn-square btn-ghost">
         <MdPalette size={24} />
       </div>
       <ul
         tabIndex={0}
-        className="dropdown-content menu bg-base-100 rounded-box z-[1] w-max min-w-35 p-2 shadow"
+        className="dropdown-content menu bg-base-100 rounded-box z-1 w-max min-w-35 p-2 shadow"
       >
         {themeOptions.map((theme) => (
           <li key={theme.name}>

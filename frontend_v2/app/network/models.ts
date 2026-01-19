@@ -250,4 +250,5 @@ export interface Config {
   private_deployment: boolean;
   isLoggedIn: boolean;
   user: User | null;
+  background: number | null;
 }
