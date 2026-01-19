@@ -772,10 +772,22 @@ function FileTile({ file }: { file: RFile }) {
                 {file.user.username}
               </Badge>
             </a>
-            <Badge className={"badge-soft badge-secondary text-xs mr-2"}>
-              <MdOutlineArchive size={16} className={"inline-block"} />
-              {file.is_redirect ? t("Redirect") : fileSizeToString(file.size)}
-            </Badge>
+            {
+              file.is_redirect && (
+                <Badge className={"badge-soft badge-secondary text-xs mr-2"}>
+                  <MdOutlineOpenInNew size={16} className={"inline-block"} />
+                  {t("Redirect")}
+                </Badge>
+              )
+            }
+            {
+              file.size > 0 && (
+                <Badge className={"badge-soft badge-secondary text-xs mr-2"}>
+                  <MdOutlineArchive size={16} className={"inline-block"} />
+                  {fileSizeToString(file.size)}
+                </Badge>
+              )
+            }
             {file.hash && (
               <>
                 <Badge
@@ -835,7 +847,7 @@ function FileTile({ file }: { file: RFile }) {
           </p>
         </div>
         <div className={`flex-row items-center hidden xs:flex`}>
-          {file.size > 10 * 1024 * 1024 ? (
+          {!file.is_redirect ? (
             <button
               ref={buttonRef}
               className={"btn btn-primary btn-soft btn-square"}
@@ -865,7 +877,7 @@ function FileTile({ file }: { file: RFile }) {
         </div>
       </div>
       <div className="flex flex-row-reverse xs:hidden p-2">
-        {file.size > 10 * 1024 * 1024 ? (
+        {!file.is_redirect ? (
           <button
             ref={buttonRef2}
             className={"btn btn-primary btn-soft btn-sm"}
