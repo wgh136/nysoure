@@ -32,12 +32,12 @@ function Navigator({appName}: {appName: string}) {
       }}
     >
       <FloatingToTopButton />
-      <div className="z-1 fixed top-0 w-full backdrop-blur-xs h-16" />
-      <div className="z-2 fixed top-0 w-full h-16 bg-base-100 opacity-60" />
+      <div className="z-1 fixed top-2 left-2 right-2 backdrop-blur-xs h-16 rounded-box max-w-8xl mx-auto" />
+      <div className="z-2 fixed top-2 left-2 right-2 h-16 bg-base-100 opacity-60 rounded-box max-w-8xl mx-auto" />
       <div
-        className="navbar shadow-xs fixed top-0 z-3 lg:z-10 bg-transparent h-16"
+        className="shadow-lg fixed top-2 left-2 right-2 z-3 lg:z-10 bg-transparent h-16 rounded-box px-2 lg:px-4 flex items-center max-w-8xl mx-auto"
       >
-        <div className={"flex-1 max-w-8xl mx-auto flex items-center"}>
+        <div className={"flex-1 flex items-center w-full"}>
           <div className="dropdown">
             <div
               tabIndex={0}
