@@ -191,7 +191,7 @@ export function QuickAddTagDialog({
 
   const [error, setError] = useState<string | null>(null);
 
-  const [separator, setSeparator] = useState<string>(",");
+  const [separator, setSeparator] = useState<string>(" ");
 
   const [isLoading, setLoading] = useState(false);
 
