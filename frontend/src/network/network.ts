@@ -290,7 +290,7 @@ class Network {
   }
 
   async getTagByName(name: string): Promise<Response<Tag>> {
-    return this._callApi(() => axios.get(`${this.apiBaseUrl}/tag/${name}`));
+    return this._callApi(() => axios.get(`${this.apiBaseUrl}/tag/${encodeURIComponent(name)}`));
   }
 
   async setTagInfo(
