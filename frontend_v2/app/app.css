@@ -342,3 +342,7 @@ body {
   background-position: center;
   background-repeat: no-repeat;
 }
+
+.site-card:dark {
+  background-image: url('/site_image_dark.webp');
+}

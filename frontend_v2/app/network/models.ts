@@ -243,11 +243,12 @@ export interface Statistics {
   total_resources: number;
   total_files: number;
   start_time: number;
+  storage: number;
 }
 
 export interface Config {
   server_name: string;
-  server_description: string;
+  site_description: string;
   private_deployment: boolean;
   isLoggedIn: boolean;
   user: User | null;
