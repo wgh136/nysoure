@@ -247,6 +247,7 @@ export interface Statistics {
 
 export interface Config {
   server_name: string;
+  server_description: string;
   private_deployment: boolean;
   isLoggedIn: boolean;
   user: User | null;

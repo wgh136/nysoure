@@ -335,3 +335,10 @@ body {
 .max-w-8xl {
   max-width: 1440px;
 }
+
+.site-card {
+  background-image: url('/site_image.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}

@@ -13,7 +13,9 @@ export default function Layout() {
   return (
     <>
       <Navigator appName={server_name} />
-      <Outlet />
+      <div className="pt-20 max-w-8xl mx-auto px-2">
+        <Outlet />
+      </div>
     </>
   )
 }
