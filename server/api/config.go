@@ -108,6 +108,7 @@ func getFrontendConfig(c fiber.Ctx) error {
 			"max_normal_user_upload_size_in_mb": sc.MaxNormalUserUploadSizeInMB,
 			"upload_prompt":                     sc.UploadPrompt,
 			"site_info":                         sc.SiteInfo,
+			"site_description":                  sc.ServerDescription,
 			"private_deployment":                config.PrivateDeployment(),
 			"background":                        random,
 		},
