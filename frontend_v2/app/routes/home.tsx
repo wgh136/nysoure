@@ -1,13 +1,13 @@
 import type { Route } from "./+types/home";
 import { useTranslation } from "../hook/i18n";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { RSort } from "~/network/models";
 import type { Resource, Statistics } from "../network/models";
 import ResourcesView from "~/components/resources_view.tsx";
 import { network } from "../network/network";
 import { useConfig } from "../hook/config";
 import { useLoaderData, useNavigate } from "react-router";
-import { MdOutlineClass, MdOutlineArchive, MdOutlineAccessTime, MdOutlineStorage } from "react-icons/md";
+import { MdOutlineClass, MdOutlineArchive, MdOutlineAccessTime, MdOutlineStorage, MdChevronLeft, MdChevronRight } from "react-icons/md";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -38,6 +38,7 @@ export default function Home() {
   return (
     <>
       <HomeHeader />
+      <PinnedResources />
       <div className={"flex pt-4 items-center"}>
         <select
           value={order}
@@ -74,23 +75,9 @@ export default function Home() {
 
 function HomeHeader() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const config = useConfig();
-  const { pinnedResources, statistic } = useLoaderData<typeof loader>();
+  const { statistic } = useLoaderData<typeof loader>();
 
-  // Auto-scroll carousel every 5 seconds
-  useEffect(() => {
-    if (pinnedResources.length <= 1) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % pinnedResources.length);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [pinnedResources.length, currentIndex]);
-
-  if (pinnedResources.length == 0 || statistic == null) {
+  if (statistic == null) {
     return <></>;
   }
 
@@ -168,5 +155,135 @@ function StatisticCard({ statistic }: { statistic: Statistics }) {
         <div className="stat-value">{storage}</div>
       </div>
     </div>
+  );
+}
+
+function PinnedResourceCard({
+  resource,
+  action,
+}: {
+  resource: Resource;
+  action?: React.ReactNode;
+}) {
+  const navigate = useNavigate();
+
+  return (
+    <a
+      href={`/resources/${resource.id}`}
+      className={"cursor-pointer block"}
+      onClick={(e) => {
+        e.preventDefault();
+        navigate(`/resources/${resource.id}`);
+      }}
+    >
+      <div
+        className={
+          "card shadow hover:shadow-md transition-shadow bg-base-100/40 backdrop-blur-xs relative h-52 overflow-hidden"
+        }
+      >
+        {resource.image != null && (
+          <figure className="absolute inset-0">
+            <img
+              src={network.getResampledImageUrl(resource.image.id)}
+              alt="cover"
+              className="w-full h-full object-cover"
+            />
+          </figure>
+        )}
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-black/70 to-transparent">
+          <h2 className="text-lg font-bold line-clamp-2 overflow-hidden text-white">{resource.title}</h2>
+        </div>
+      </div>
+    </a>
+  );
+}
+
+function PinnedResources() {
+  const { pinnedResources } = useLoaderData<typeof loader>();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  useEffect(() => {
+    updateScrollButtons();
+    window.addEventListener('resize', updateScrollButtons);
+    return () => window.removeEventListener('resize', updateScrollButtons);
+  }, [pinnedResources]);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 400;
+      const newScrollLeft = direction === 'left' 
+        ? scrollContainerRef.current.scrollLeft - scrollAmount
+        : scrollContainerRef.current.scrollLeft + scrollAmount;
+      
+      scrollContainerRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  if (pinnedResources.length == 0) {
+    return <></>;
+  }
+
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+          .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `
+      }} />
+      <div className="relative pb-4">
+        {canScrollLeft && (
+          <button
+            onClick={() => scroll('left')}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-sm shadow-lg bg-base-100/90 hover:bg-base-100"
+            aria-label="Scroll left"
+          >
+            <MdChevronLeft size={24} />
+          </button>
+        )}
+        
+        <div 
+          ref={scrollContainerRef}
+          className="overflow-x-auto hide-scrollbar"
+          onScroll={updateScrollButtons}
+        >
+          <div className="flex gap-4">
+            {pinnedResources.map((resource) => (
+              <div key={resource.id} className="shrink-0 w-96">
+                <PinnedResourceCard resource={resource} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {canScrollRight && (
+          <button
+            onClick={() => scroll('right')}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-sm shadow-lg bg-base-100/90 hover:bg-base-100"
+            aria-label="Scroll right"
+          >
+            <MdChevronRight size={24} />
+          </button>
+        )}
+      </div>
+    </>
   );
 }

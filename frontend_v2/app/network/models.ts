@@ -253,5 +253,7 @@ export interface Config {
   isLoggedIn: boolean;
   user: User | null;
   background: number | null;
-  pinned_resources: Resource[];
+  support_email_address: string;
+  allow_normal_user_upload: boolean;
+  upload_prompt: string;
 }
