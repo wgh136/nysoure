@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"nysoure/server/cache"
@@ -644,6 +645,18 @@ func RandomCover() (uint, error) {
 		v, err := dao.RandomResource()
 		if err != nil {
 			return 0, err
+		}
+		if len(v.Gallery) > 0 {
+			galleryWithoutNsfw := make([]uint, 0, len(v.Gallery))
+			for _, id := range v.Gallery {
+				if !slices.Contains(v.GalleryNsfw, id) {
+					galleryWithoutNsfw = append(galleryWithoutNsfw, id)
+				}
+			}
+			if len(galleryWithoutNsfw) > 0 {
+				lastSuccessCover = galleryWithoutNsfw[rand.Intn(len(galleryWithoutNsfw))]
+				return lastSuccessCover, nil
+			}
 		}
 		if len(v.Images) > 0 {
 			lastSuccessCover = v.Images[0].ID

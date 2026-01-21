@@ -27,10 +27,6 @@ Dockerfile*
 docker-compose.yml
 .dockerignore
 
-# 备份脚本（backup 服务使用单独的 Dockerfile）
-backup.sh
-backup-entrypoint.sh
-
 # IDE 和编辑器
 .vscode/
 .idea/
