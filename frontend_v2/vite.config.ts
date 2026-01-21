@@ -6,6 +6,8 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
   server: {
+    allowedHosts: ["debug.nysoure.com"],
+    host: "0.0.0.0",
     proxy: {
       "/api": {
         // target: "http://localhost:3000",
