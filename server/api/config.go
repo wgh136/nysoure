@@ -107,10 +107,19 @@ func getFrontendConfig(c fiber.Ctx) error {
 			"allow_normal_user_upload":          sc.AllowNormalUserUpload,
 			"max_normal_user_upload_size_in_mb": sc.MaxNormalUserUploadSizeInMB,
 			"upload_prompt":                     sc.UploadPrompt,
-			"site_info":                         sc.SiteInfo,
 			"site_description":                  sc.ServerDescription,
 			"private_deployment":                config.PrivateDeployment(),
 			"background":                        random,
+		},
+	})
+}
+
+func getSiteInfo(c fiber.Ctx) error {
+	sc := config.GetConfig()
+	return c.JSON(model.Response[any]{
+		Success: true,
+		Data: map[string]any{
+			"site_info": sc.SiteInfo,
 		},
 	})
 }
@@ -122,5 +131,6 @@ func AddConfigRoutes(r fiber.Router) {
 		configGroup.Post("/", setServerConfig)
 		configGroup.Get("/frontend", getFrontendConfig)
 		configGroup.Get("/statistics", getStatistics)
+		configGroup.Get("/site-info", getSiteInfo)
 	}
 }
