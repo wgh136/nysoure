@@ -7,7 +7,8 @@ export default [
         layout("layout.tsx", { id: "layout" }, [
             index("routes/home.tsx"),
             route("activity", "routes/activity.tsx"),
-            route("tags", "routes/tags.tsx")
+            route("tags", "routes/tags.tsx"),
+            route("search", "routes/search.tsx")
         ])
     ])
 ] satisfies RouteConfig;

@@ -43,7 +43,7 @@ export default function Home() {
       <div className={"flex pt-4 items-center"}>
         <select
           value={order}
-          className="select select-primary max-w-72"
+          className="select select-primary max-w-72 bg-base-100/60! shadow-xs backdrop-blur-sm"
           onChange={(e) => {
             const order = parseInt(e.target.value);
             setOrder(order);

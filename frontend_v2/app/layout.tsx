@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Outlet, NavLink } from "react-router";
-import { MdArrowUpward, MdMenu, MdOutlinePerson, MdOutlinePublish, MdShuffle, MdTimeline, MdInfoOutline, MdOutlineLabel } from "react-icons/md";
+import { Outlet, NavLink, useNavigate } from "react-router";
+import { MdArrowUpward, MdMenu, MdOutlinePerson, MdOutlinePublish, MdShuffle, MdTimeline, MdInfoOutline, MdOutlineLabel, MdSearch } from "react-icons/md";
 import { useTranslation } from "./hook/i18n.js";
 import { useConfig } from "./hook/config.js";
 import { ThemeSwitcher } from "./components/theme_switcher.js";
@@ -131,6 +131,7 @@ function Navigator({appName}: {appName: string}) {
           </div>
           <div className={"flex-1"}></div>
           <div className="flex gap-2">
+            <SearchBar />
             <PublishButton />
             <ThemeSwitcher />
             <UserButton />
@@ -222,4 +223,125 @@ function UserButton() {
       </div>
     </NavLink>
   )
+}
+
+function SearchBar() {
+  const [small, setSmall] = useState(false);
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    const handleResize = () => {
+      setSmall(window.innerWidth < 640);
+    };
+    
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const doSearch = () => {
+    if (search.length === 0) {
+      return;
+    }
+    const replace = window.location.pathname === "/search";
+    navigate(`/search?keyword=${search}`, { replace: replace });
+  };
+
+  const searchField = (
+    <label className={`input input-primary ${small ? "w-full" : "w-64"} bg-base-100/60! shadow-xs`}>
+      <svg
+        className="h-[1em] opacity-50"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+      >
+        <g
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          strokeWidth="2.5"
+          fill="none"
+          stroke="currentColor"
+        >
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+        </g>
+      </svg>
+      <form
+        className="w-full"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (search.length === 0) {
+            return;
+          }
+          const dialog = document.getElementById(
+            "search_dialog",
+          ) as HTMLDialogElement;
+          if (dialog) {
+            dialog.close();
+          }
+          doSearch();
+        }}
+      >
+        <input
+          type="search"
+          className="w-full"
+          required
+          placeholder={t("Search")}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </form>
+    </label>
+  );
+
+  if (small) {
+    return (
+      <>
+        <button
+          className="btn btn-circle btn-ghost"
+          onClick={() => {
+            const dialog = document.getElementById(
+              "search_dialog",
+            ) as HTMLDialogElement;
+            dialog.showModal();
+          }}
+        >
+          <MdSearch size={24} />
+        </button>
+        <dialog id="search_dialog" className="modal">
+          <div className="modal-box">
+            <form method="dialog">
+              <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                ✕
+              </button>
+            </form>
+            <h3 className="text-lg font-bold">{t("Search")}</h3>
+            <div className="h-4" />
+            {searchField}
+            <div className="h-4" />
+            <div className="flex flex-row-reverse">
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  if (search.length === 0) {
+                    return;
+                  }
+                  const dialog = document.getElementById(
+                    "search_dialog",
+                  ) as HTMLDialogElement;
+                  dialog.close();
+                  doSearch();
+                }}
+              >
+                {t("Search")}
+              </button>
+            </div>
+          </div>
+        </dialog>
+      </>
+    );
+  }
+
+  return searchField;
 }
