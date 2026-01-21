@@ -47,16 +47,12 @@ function Navigator({appName}: {appName: string}) {
               <MdMenu size={24} />
             </div>
             <ul
-              id={"navi_menu"}
               tabIndex={0}
               className="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
             >
               <li
                 onClick={() => {
-                  const menu = document.getElementById(
-                    "navi_menu",
-                  ) as HTMLElement;
-                  menu.blur();
+                  (document.activeElement as HTMLElement)?.blur();
                 }}
               >
                 <NavLink to="/tags">
@@ -66,10 +62,7 @@ function Navigator({appName}: {appName: string}) {
               </li>
               <li
                 onClick={() => {
-                  const menu = document.getElementById(
-                    "navi_menu",
-                  ) as HTMLElement;
-                  menu.blur();
+                  (document.activeElement as HTMLElement)?.blur();
                 }}
               >
                 <NavLink to="/activity">
@@ -79,10 +72,7 @@ function Navigator({appName}: {appName: string}) {
               </li>
               <li
                 onClick={() => {
-                  const menu = document.getElementById(
-                    "navi_menu",
-                  ) as HTMLElement;
-                  menu.blur();
+                  (document.activeElement as HTMLElement)?.blur();
                 }}
               >
                 <NavLink to="/random">
@@ -92,10 +82,7 @@ function Navigator({appName}: {appName: string}) {
               </li>
               <li
                 onClick={() => {
-                  const menu = document.getElementById(
-                    "navi_menu",
-                  ) as HTMLElement;
-                  menu.blur();
+                  (document.activeElement as HTMLElement)?.blur();
                 }}
               >
                 <NavLink to="/about">
