@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @plugin "daisyui";
 @import "nprogress/nprogress.css";
+@import "./markdown.css";
 
 #nprogress .bar {
   background: var(--color-primary) !important;

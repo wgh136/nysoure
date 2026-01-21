@@ -873,6 +873,10 @@ class Network {
       headers: this.getHeaders(cookie ? { Cookie: cookie } : undefined),
     }));
   }
+
+  async getSiteInfo(): Promise<Response<any>> {
+    return this._callApi(() => axios.get(`${this.apiBaseUrl}/config/site-info`));
+  }
 }
 
 export const network = new Network();

@@ -9,7 +9,8 @@ export default [
             route("activity", "routes/activity.tsx"),
             route("tags", "routes/tags.tsx"),
             route("tag/:name", "routes/tag.$name.tsx"),
-            route("search", "routes/search.tsx")
+            route("search", "routes/search.tsx"),
+            route("about", "routes/about.tsx")
         ])
     ])
 ] satisfies RouteConfig;
