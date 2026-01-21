@@ -1,13 +1,15 @@
 import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router";
 import { MdOutlineInfo } from "react-icons/md";
-import { useTranslation } from "~/hook/i18n";
-import { useConfig } from "~/hook/config";
+import { translationFromMatches, useTranslation } from "~/hook/i18n";
+import { configFromMatches, useConfig } from "~/hook/config";
 import { network } from "~/network/network";
 import type { Route } from "./+types/login";
 
-export function meta({}: Route.MetaArgs) {
-  return [{ title: "Login" }];
+export function meta({ matches}: Route.MetaArgs) {
+  const config = configFromMatches(matches);
+  const { t } = translationFromMatches(matches);
+  return [{ title: t("Login") + " | " + config.server_name }];
 }
 
 export default function LoginPage() {

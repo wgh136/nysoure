@@ -1,6 +1,7 @@
 import { type FormEvent, useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router";
-import { useTranslation } from "~/hook/i18n";
+import { translationFromMatches, useTranslation } from "~/hook/i18n";
+import { configFromMatches, useConfig } from "~/hook/config";
 import { network } from "~/network/network";
 import type { Route } from "./+types/register";
 
@@ -9,8 +10,10 @@ const Turnstile = lazy(() =>
   import("@marsidev/react-turnstile").then((mod) => ({ default: mod.Turnstile }))
 );
 
-export function meta({}: Route.MetaArgs) {
-  return [{ title: "Register" }];
+export function meta({ matches}: Route.MetaArgs) {
+  const config = configFromMatches(matches);
+  const { t } = translationFromMatches(matches);
+  return [{ title: t("Register") + " | " + config.server_name }];
 }
 
 export default function RegisterPage() {

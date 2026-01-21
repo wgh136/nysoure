@@ -5,14 +5,15 @@ import { RSort } from "~/network/models";
 import type { Resource, Statistics } from "../network/models";
 import ResourcesView from "~/components/resources_view.tsx";
 import { network } from "../network/network";
-import { useConfig } from "../hook/config";
+import { configFromMatches, useConfig } from "../hook/config";
 import { useLoaderData, useNavigate } from "react-router";
 import { MdOutlineClass, MdOutlineArchive, MdOutlineAccessTime, MdOutlineStorage, MdChevronLeft, MdChevronRight } from "react-icons/md";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ matches}: Route.MetaArgs) {
+  const config = configFromMatches(matches);
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: config.server_name },
+    { name: "description", content: config.site_description },
   ];
 }
 

@@ -9,11 +9,16 @@ import { CommentContent } from "~/components/comment_tile";
 import { MdOutlineArchive, MdOutlinePhotoAlbum } from "react-icons/md";
 import Badge from "~/components/badge";
 import Markdown from "react-markdown";
+import { configFromMatches } from "~/hook/config";
+import { translationFromMatches } from "~/hook/i18n";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ matches}: Route.MetaArgs) {
+  const config = configFromMatches(matches);
+  const { t } = translationFromMatches(matches);
+
   return [
-    { title: "Activity" },
-    { name: "description", content: "View recent activities" },
+    { title: t("Activity") + " | " + config.server_name },
+    { name: "description", content: config.site_description },
   ];
 }
 

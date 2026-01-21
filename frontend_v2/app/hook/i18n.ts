@@ -25,3 +25,19 @@ export function useTranslation() {
     t: t,
   }
 }
+
+function i18nFromMatches(matches: any[]) {
+  const match = matches.find((m) => m.id === "app");
+  return match!.loaderData.i18n as object;
+}
+
+function tFromMatches(matches: any[]) {
+  const i18n = i18nFromMatches(matches);
+  return (key: string) => (i18n[key as keyof typeof i18n] as string) || key;
+}
+
+export function translationFromMatches(matches: any[]) {
+  return {
+    t: tFromMatches(matches),
+  }
+}
