@@ -1,6 +1,6 @@
 import { useTranslation } from "~/hook/i18n";
 import { useNavigate } from "react-router";
-import { Comment } from "~/network/models";
+import { type Comment } from "~/network/models";
 import { network } from "~/network/network";
 import Badge from "./badge";
 import Markdown from "react-markdown";
