@@ -5,5 +5,13 @@ test.db
 build/
 temp/
 .env
-frontend_v2/node_modules/
+
 frontend_v2/dist/
+frontend_v2/node_modules/
+frontend_v2/.vite
+frontend_v2/.react-router
+
+# data
+app_data/
+backup_data/
+db_data/

@@ -87,18 +87,30 @@ func getFrontendConfig(c fiber.Ctx) error {
 	if clearCookie {
 		c.ClearCookie("token")
 	}
+	random, err := service.RandomCover()
+	if err != nil {
+		log.Error("Failed to get random cover: ", err)
+		random = 0
+	}
+	pinned, err := service.GetPinnedResources()
+	if err != nil {
+		log.Error("Failed to get pinned resources: ", err)
+		pinned = []model.ResourceView{}
+	}
 	return c.JSON(model.Response[any]{
 		Success: true,
 		Data: map[string]any{
 			"user":                              user,
 			"server_name":                       sc.ServerName,
-			"pinned_resources":                  sc.PinnedResources,
+			"pinned_resources":                  pinned,
 			"allow_register":                    sc.AllowRegister,
 			"allow_normal_user_upload":          sc.AllowNormalUserUpload,
 			"max_normal_user_upload_size_in_mb": sc.MaxNormalUserUploadSizeInMB,
 			"upload_prompt":                     sc.UploadPrompt,
 			"site_info":                         sc.SiteInfo,
+			"site_description":                  sc.ServerDescription,
 			"private_deployment":                config.PrivateDeployment(),
+			"background":                        random,
 		},
 	})
 }

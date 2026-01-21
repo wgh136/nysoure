@@ -124,9 +124,6 @@ func SearchResource(keyword string) ([]uint, error) {
 
 	results := make([]uint, 0)
 	for _, hit := range searchResults.Hits {
-		if hit.Score < 0.2 {
-			break
-		}
 		id, err := strconv.ParseUint(hit.ID, 10, 32)
 		if err != nil {
 			continue

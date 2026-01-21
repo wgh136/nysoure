@@ -6,7 +6,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - app_data:/var/lib/nysoure
+      - ./app_data:/var/lib/nysoure
     depends_on:
       - db
       - redis
@@ -22,7 +22,7 @@ services:
   db:
     image: mariadb:latest
     volumes:
-      - db_data:/var/lib/mysql
+      - ./db_data:/var/lib/mysql
     env_file:
       - .env
     restart: unless-stopped
@@ -46,22 +46,17 @@ services:
       context: .
       dockerfile: Dockerfile.backup
     volumes:
-      - app_data:/backup/app_data:ro
-      - db_data:/backup/db_data:ro
-      - backup_data:/backup/local
+      - ./app_data:/backup/app_data:ro
+      - ./db_data:/backup/db_data:ro
+      - ./backup_data:/backup/local
     depends_on:
       - db
       - app
     env_file:
       - .env
-    restart: unless-stopped
+    restart: no
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-
-volumes:
-  app_data:
-  db_data:
-  backup_data:

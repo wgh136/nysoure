@@ -222,9 +222,11 @@ func GetResource(id uint, host string, ctx fiber.Ctx) (*model.ResourceDetailView
 		v.Related = related
 	}
 	fillRatings(&v)
-	_, ok := ctx.Locals("uid").(uint)
-	if !ok {
-		removeNsfwImages(&v)
+	if ctx != nil {
+		_, ok := ctx.Locals("uid").(uint)
+		if !ok {
+			removeNsfwImages(&v)
+		}
 	}
 	return &v, nil
 }

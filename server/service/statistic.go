@@ -12,6 +12,7 @@ type Statistic struct {
 	TotalResources int64 `json:"total_resources"`
 	TotalFiles     int64 `json:"total_files"`
 	StartTime      int64 `json:"start_time"`
+	Storage        int64 `json:"storage"`
 }
 
 var (
@@ -51,10 +52,15 @@ func getStatistic() (*Statistic, error) {
 	if err != nil {
 		return nil, err
 	}
+	storage, err := dao.SumFileSize()
+	if err != nil {
+		return nil, err
+	}
 	return &Statistic{
 		TotalResources: totalResources,
 		TotalFiles:     totalFiles,
 		StartTime:      startTime,
+		Storage:        storage,
 	}, nil
 }
 

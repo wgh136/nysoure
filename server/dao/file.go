@@ -4,12 +4,29 @@ import (
 	"errors"
 	"nysoure/server/config"
 	"nysoure/server/model"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
+
+var (
+	fileSizeCache struct {
+		sync.RWMutex
+		value      int64
+		expireTime time.Time
+	}
+	fileSizeCacheTTL = 1 * time.Hour
+)
+
+// invalidateFileSizeCache 清除文件大小缓存
+func invalidateFileSizeCache() {
+	fileSizeCache.Lock()
+	fileSizeCache.expireTime = time.Time{}
+	fileSizeCache.Unlock()
+}
 
 func CreateUploadingFile(filename string, description string, fileSize int64, blockSize int64, tempPath string, resourceID, storageID, userID uint, tag string) (*model.UploadingFile, error) {
 	blocksCount := (fileSize + blockSize - 1) / blockSize
@@ -119,6 +136,9 @@ func CreateFile(filename string, description string, resourceID uint, storageID 
 
 	_ = AddNewFileActivity(userID, f.ID)
 
+	// 清除文件大小缓存
+	invalidateFileSizeCache()
+
 	return f, nil
 }
 
@@ -173,6 +193,9 @@ func DeleteFile(id string) error {
 		return err
 	}
 
+	// 清除文件大小缓存
+	invalidateFileSizeCache()
+
 	return nil
 }
 
@@ -199,6 +222,12 @@ func UpdateFile(id string, filename string, description string, tag string, size
 		}
 		return nil, err
 	}
+
+	// 如果修改了文件大小，清除缓存
+	if size > 0 {
+		invalidateFileSizeCache()
+	}
+
 	return f, nil
 }
 
@@ -231,6 +260,10 @@ func SetFileStorageKeyAndSize(id string, storageKey string, size int64, hash str
 		}
 		return err
 	}
+
+	// 清除文件大小缓存
+	invalidateFileSizeCache()
+
 	return nil
 }
 
@@ -266,4 +299,29 @@ func CountFilesByUserID(userID uint) (int64, error) {
 		return 0, err
 	}
 	return count, nil
+}
+
+func SumFileSize() (int64, error) {
+	// 先尝试读取缓存
+	fileSizeCache.RLock()
+	if time.Now().Before(fileSizeCache.expireTime) {
+		cachedValue := fileSizeCache.value
+		fileSizeCache.RUnlock()
+		return cachedValue, nil
+	}
+	fileSizeCache.RUnlock()
+
+	// 缓存已过期或不存在，查询数据库
+	var size int64
+	if err := db.Model(&model.File{}).Select("SUM(size)").Scan(&size).Error; err != nil {
+		return 0, err
+	}
+
+	// 更新缓存
+	fileSizeCache.Lock()
+	fileSizeCache.value = size
+	fileSizeCache.expireTime = time.Now().Add(fileSizeCacheTTL)
+	fileSizeCache.Unlock()
+
+	return size, nil
 }
