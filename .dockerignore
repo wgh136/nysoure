@@ -1,0 +1,64 @@
+# 数据目录 - 这些通过 volumes 挂载，不需要复制到镜像
+app_data/
+db_data/
+backup_data/
+
+# Git 相关
+.git/
+.gitignore
+
+# 前端相关（已单独处理）
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+frontend_v2/node_modules/
+frontend_v2/dist/
+frontend_v2/.vite/
+
+# 开发和测试文件
+*.md
+LICENSE
+.env
+.env.example
+
+# Docker 相关
+Dockerfile*
+docker-compose.yml
+.dockerignore
+
+# 备份脚本（backup 服务使用单独的 Dockerfile）
+backup.sh
+backup-entrypoint.sh
+
+# IDE 和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.log
+*.tmp
+tmp/
+temp/
+
+# 构建产物（Go）
+main
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Python 构建脚本（如果有）
+build.py
+__pycache__/
+*.pyc
