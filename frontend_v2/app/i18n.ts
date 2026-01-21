@@ -270,6 +270,8 @@ export const i18nData = {
         "这是一个私有网站。请登录以继续。",
       "All files are uploaded by users, if you find any issue, please contact us via email:":
         "所有文件均由用户上传，如果您发现任何问题，请通过电子邮件联系我们：",
+      "No changes made": "没有修改",
+      "Edit Alias": "编辑别名",
     },
   },
   "zh-TW": {
@@ -543,6 +545,8 @@ export const i18nData = {
         "這是一個私有網站。請登入以繼續。",
       "All files are uploaded by users, if you find any issue, please contact us via email:":
         "所有檔案均由用戶上傳，如果您發現任何問題，請通過電子郵件聯繫我們：",
+      "No changes made": "沒有修改",
+      "Edit Alias": "編輯別名",
     },
   },
 };
