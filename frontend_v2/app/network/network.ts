@@ -50,6 +50,12 @@ class Network {
     }
   }
 
+  private getHeaders(additionalHeaders?: Record<string, string>) {
+    return {
+      ...additionalHeaders,
+    };
+  }
+
   init() {
     axios.defaults.validateStatus = (_) => true;
     axios.interceptors.response.use(
@@ -862,8 +868,10 @@ class Network {
     );
   }
 
-  async getFrontendConfig(): Promise<Response<Config>> {
-    return this._callApi(() => axios.get(`${this.apiBaseUrl}/config/frontend`));
+  async getFrontendConfig(cookie?: string): Promise<Response<Config>> {
+    return this._callApi(() => axios.get(`${this.apiBaseUrl}/config/frontend`, {
+      headers: this.getHeaders(cookie ? { Cookie: cookie } : undefined),
+    }));
   }
 }
 
