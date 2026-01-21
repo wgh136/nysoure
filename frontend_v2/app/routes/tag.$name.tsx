@@ -36,7 +36,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 export default function TaggedResourcesPage() {
   const { t } = useTranslation();
   const { tagName, tag: initialTag } = useLoaderData<typeof loader>();
-  const [tag, setTag] = useState<Tag | null>(initialTag);
+  const [tag, setTag] = useState<Tag | null>(initialTag ?? null);
 
   if (!tagName) {
     return (
