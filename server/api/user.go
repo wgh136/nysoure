@@ -66,6 +66,22 @@ func handleUserLogin(c fiber.Ctx) error {
 	})
 }
 
+func handleUserLogout(c fiber.Ctx) error {
+	c.Cookie(&fiber.Cookie{
+		Name:     "token",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: "Strict",
+		MaxAge:   -1,
+	})
+	return c.Status(fiber.StatusOK).JSON(model.Response[any]{
+		Success: true,
+		Message: "Logout successful",
+	})
+}
+
 func handleUserChangePassword(c fiber.Ctx) error {
 	uid, ok := c.Locals("uid").(uint)
 	if !ok {
@@ -433,6 +449,7 @@ func AddUserRoutes(r fiber.Router) {
 	u := r.Group("user")
 	u.Post("/register", handleUserRegister, middleware.NewRequestLimiter(5, time.Hour))
 	u.Post("/login", handleUserLogin)
+	u.Post("/logout", handleUserLogout)
 	u.Put("/avatar", handleUserChangeAvatar)
 	u.Post("/password", handleUserChangePassword)
 	u.Get("/avatar/:id", handleGetUserAvatar)
