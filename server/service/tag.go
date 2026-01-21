@@ -1,12 +1,13 @@
 package service
 
 import (
-	"github.com/gofiber/fiber/v3/log"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/gofiber/fiber/v3/log"
 )
 
 const (
@@ -138,16 +139,41 @@ func updateCachedTagList() error {
 	if err != nil {
 		return err
 	}
-	cachedTagList = make([]model.TagViewWithCount, 0, len(tags))
+
+	// Group tags by type with their resource counts
+	tagsByType := make(map[string][]model.TagViewWithCount)
+
 	for _, tag := range tags {
 		count, err := dao.CountResourcesByTag(tag.ID)
 		if err != nil {
 			return err
 		}
 		if count > 0 {
-			cachedTagList = append(cachedTagList, *tag.ToView().WithCount(int(count)))
+			tagType := tag.Type
+			if tagType == "" {
+				tagType = "default"
+			}
+			tagWithCount := *tag.ToView().WithCount(int(count))
+			tagsByType[tagType] = append(tagsByType[tagType], tagWithCount)
 		}
 	}
+
+	// Sort each type by resource count (descending) and keep top 50
+	cachedTagList = make([]model.TagViewWithCount, 0)
+	for _, tagsOfType := range tagsByType {
+		// Sort by resource count in descending order
+		slices.SortFunc(tagsOfType, func(a, b model.TagViewWithCount) int {
+			return b.ResourceCount - a.ResourceCount
+		})
+
+		// Keep only top 50 tags for this type
+		limit := 50
+		if len(tagsOfType) < limit {
+			limit = len(tagsOfType)
+		}
+		cachedTagList = append(cachedTagList, tagsOfType[:limit]...)
+	}
+
 	return nil
 }
 
