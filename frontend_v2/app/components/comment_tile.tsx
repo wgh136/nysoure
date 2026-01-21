@@ -99,7 +99,7 @@ function CommentReplies({ comment }: { comment: Comment }) {
   );
 }
 
-function CommentToPlainText(content: string) {
+export function CommentToPlainText(content: string) {
   // Remove Markdown syntax to convert to plain text
   return content
     .replace(/!\[.*?]\(.*?\)/g, "") // Remove images
