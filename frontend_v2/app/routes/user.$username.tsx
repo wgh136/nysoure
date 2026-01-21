@@ -106,7 +106,7 @@ export default function UserPage({ loaderData }: Route.ComponentProps) {
   return (
     <div>
       <UserCard user={user} />
-      <div className="bg-base-100/40 backdrop-blur-sm rounded-box mt-4 shadow mb-4 p-4">
+      <div className="bg-base-100/80 backdrop-blur-sm rounded-box mt-4 shadow mb-4 p-4">
       <div
         role="tablist"
         className="border-b border-base-300 mx-2 flex tabs tabs-border"
@@ -181,7 +181,7 @@ function UserCard({ user }: { user: User }) {
   const haveBio = user.bio.trim() !== "";
 
   return (
-    <div className="bg-base-100/60 backdrop-blur-sm rounded-box mt-4 shadow mb-4 p-2">
+    <div className="bg-base-100/80 backdrop-blur-sm rounded-box mt-4 shadow mb-4 p-2">
       <div className={"flex m-4 items-center"}>
         <div className={"avatar py-2"}>
           <div className="w-24 rounded-full ring-2 ring-offset-2 ring-primary ring-offset-base-100">

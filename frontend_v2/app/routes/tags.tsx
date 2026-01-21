@@ -46,7 +46,7 @@ export default function TagsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 bg-base-100/80 backdrop-blur-sm rounded-box mt-4 shadow mb-4">
       <h1 className="text-2xl font-bold py-2">{t("Tags")}</h1>
       {Array.from(tagsMap.entries()).map(([type, tagList]) => (
         <div key={type} className="flex flex-col gap-2">
