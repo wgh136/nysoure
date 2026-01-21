@@ -6,7 +6,8 @@ export default [
         route("register", "routes/register.tsx"),
         layout("layout.tsx", { id: "layout" }, [
             index("routes/home.tsx"),
-            route("activity", "routes/activity.tsx")
+            route("activity", "routes/activity.tsx"),
+            route("tags", "routes/tags.tsx")
         ])
     ])
 ] satisfies RouteConfig;
