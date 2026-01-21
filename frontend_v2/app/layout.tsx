@@ -196,13 +196,21 @@ function PublishButton() {
   }
 
   return (
+    <>
     <NavLink
       to="/publish"
-      className="btn btn-primary btn-soft"
+      className="btn btn-primary hidden lg:flex"
     >
       <MdOutlinePublish size={24} />
-      <span className="hidden lg:block">{t("Publish")}</span>
+      <span>{t("Publish")}</span>
     </NavLink>
+    <NavLink
+      to="/publish"
+      className="btn btn-primary btn-square lg:hidden"
+    >
+      <MdOutlinePublish size={24} />
+    </NavLink>
+    </>
   )
 }
 

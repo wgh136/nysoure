@@ -10,6 +10,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     const config = await network.getFrontendConfig(cookie || undefined);
     return {
       ...config.data,
+      isLoggedIn: config.data?.user !== null,
       i18n: getI18nData(request.headers.get("accept-language")),
     }
   }
