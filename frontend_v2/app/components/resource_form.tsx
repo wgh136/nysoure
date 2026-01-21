@@ -157,7 +157,7 @@ export default function ResourceForm({
         setImages((prev) => [...prev, ...images]);
       }}
     >
-      <div className={"p-4"}>
+      <div className={"p-4 bg-base-100/80 backdrop-blur-sm rounded-box mt-4 shadow mb-4"}>
         <h1 className={"text-2xl font-bold my-4"}>{pageTitle}</h1>
         <div role="alert" className="alert alert-info mb-2 alert-dash">
           <MdOutlineInfo size={24} />
