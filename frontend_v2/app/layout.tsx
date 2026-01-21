@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, NavLink } from "react-router";
 import { MdArrowUpward, MdMenu, MdOutlinePerson, MdOutlinePublish, MdShuffle, MdTimeline, MdInfoOutline, MdOutlineLabel } from "react-icons/md";
 import { useTranslation } from "./hook/i18n.js";
 import { useConfig } from "./hook/config.js";
@@ -21,8 +21,6 @@ export default function Layout() {
 }
 
 function Navigator({appName}: {appName: string}) {
-  const navigate = useNavigate();
-
   const { t } = useTranslation();
 
   return (
@@ -59,27 +57,25 @@ function Navigator({appName}: {appName: string}) {
                     "navi_menu",
                   ) as HTMLElement;
                   menu.blur();
-                  navigate("/tags");
                 }}
               >
-                <a>
+                <NavLink to="/tags">
                   <MdOutlineLabel size={18} />
                   {t("Tags")}
-                </a>
+                </NavLink>
               </li>
-              <li>
-                <a
-                  onClick={() => {
-                    const menu = document.getElementById(
-                      "navi_menu",
-                    ) as HTMLElement;
-                    menu.blur();
-                    navigate("/activity");
-                  }}
-                >
+              <li
+                onClick={() => {
+                  const menu = document.getElementById(
+                    "navi_menu",
+                  ) as HTMLElement;
+                  menu.blur();
+                }}
+              >
+                <NavLink to="/activity">
                   <MdTimeline size={18} />
                   {t("Activity")}
-                </a>
+                </NavLink>
               </li>
               <li
                 onClick={() => {
@@ -87,13 +83,12 @@ function Navigator({appName}: {appName: string}) {
                     "navi_menu",
                   ) as HTMLElement;
                   menu.blur();
-                  navigate("/random");
                 }}
               >
-                <a>
+                <NavLink to="/random">
                   <MdShuffle size={18} />
                   {t("Random")}
-                </a>
+                </NavLink>
               </li>
               <li
                 onClick={() => {
@@ -101,67 +96,49 @@ function Navigator({appName}: {appName: string}) {
                     "navi_menu",
                   ) as HTMLElement;
                   menu.blur();
-                  navigate("/about");
                 }}
               >
-                <a>
+                <NavLink to="/about">
                   <MdInfoOutline size={18} />
                   {t("About")}
-                </a>
+                </NavLink>
               </li>
             </ul>
           </div>
           <div>
-            <button
+            <NavLink
+              to="/"
+              replace
               className="btn btn-ghost text-xl"
-              onClick={() => {
-                navigate(`/`, { replace: true });
-              }}
             >
               {appName}
-            </button>
+            </NavLink>
           </div>
           <div className="hidden lg:flex">
             <ul className="menu menu-horizontal px-1">
-              <li
-                onClick={() => {
-                  navigate("/tags");
-                }}
-              >
-                <a>
+              <li>
+                <NavLink to="/tags">
                   <MdOutlineLabel size={18} />
                   {t("Tags")}
-                </a>
+                </NavLink>
               </li>
-              <li
-                onClick={() => {
-                  navigate("/random");
-                }}
-              >
-                <a>
+              <li>
+                <NavLink to="/random">
                   <MdShuffle size={18} />
                   {t("Random")}
-                </a>
+                </NavLink>
               </li>
-              <li
-                onClick={() => {
-                  navigate("/activity");
-                }}
-              >
-                <a>
+              <li>
+                <NavLink to="/activity">
                   <MdTimeline size={18} />
                   {t("Activity")}
-                </a>
+                </NavLink>
               </li>
-              <li
-                onClick={() => {
-                  navigate("/about");
-                }}
-              >
-                <a>
+              <li>
+                <NavLink to="/about">
                   <MdInfoOutline size={18} />
                   {t("About")}
-                </a>
+                </NavLink>
               </li>
             </ul>
           </div>
@@ -213,50 +190,41 @@ function FloatingToTopButton() {
 
 function PublishButton() {
   const config = useConfig();
-  const navigate = useNavigate();
   const { t } = useTranslation();
   if (!config.isLoggedIn) {
     return <></>
   }
 
   return (
-    <button
+    <NavLink
+      to="/publish"
       className="btn btn-primary btn-soft"
-      onClick={() => {
-        navigate("/publish");
-      }}
     >
       <MdOutlinePublish size={24} />
       <span className="hidden lg:block">{t("Publish")}</span>
-    </button>
+    </NavLink>
   )
 }
 
 function UserButton() {
   const config = useConfig();
-  const navigate = useNavigate();
-  const { t } = useTranslation();
   if (!config.user) {
-    return <button
+    return <NavLink
+      to="/login"
       className="btn btn-primary btn-square btn-soft"
-      onClick={() => {
-        navigate("/login");
-      }}
     >
       <MdOutlinePerson size={24} />
-    </button>
+    </NavLink>
   }
 
   return (
-    <button
+    <NavLink
+      to={`/user/${encodeURIComponent(config.user!.username)}`}
       className="btn btn-ghost btn-square avatar"
-      onClick={() => {
-        navigate(`/user/${encodeURIComponent(config.user!.username)}`);
-      }}
     >
       <div className="w-10 rounded-full">
         <img alt="Avatar" src={network.getUserAvatar(config.user!)} />
       </div>
-    </button>
+    </NavLink>
   )
 }
