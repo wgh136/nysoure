@@ -99,6 +99,10 @@ class Network {
     );
   }
 
+  async logout(): Promise<Response<void>> {
+    return this._callApi(() => axios.post(`${this.apiBaseUrl}/user/logout`));
+  }
+
   async getMe(): Promise<Response<UserWithToken>> {
     return this._callApi(() => axios.get(`${this.apiBaseUrl}/user/me`));
   }
