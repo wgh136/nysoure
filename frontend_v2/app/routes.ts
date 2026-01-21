@@ -10,7 +10,9 @@ export default [
             route("tags", "routes/tags.tsx"),
             route("tag/:name", "routes/tag.$name.tsx"),
             route("search", "routes/search.tsx"),
-            route("about", "routes/about.tsx")
+            route("about", "routes/about.tsx"),
+            route("publish", "routes/publish.tsx"),
+            route("resources/:id/edit", "routes/resources.$id.edit.tsx")
         ])
     ])
 ] satisfies RouteConfig;
