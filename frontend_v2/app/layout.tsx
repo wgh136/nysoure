@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router";
-import { MdArrowUpward, MdMenu, MdOutlinePerson, MdOutlinePublish, MdShuffle, MdTimeline, MdInfoOutline, MdOutlineLabel, MdSearch } from "react-icons/md";
+import { MdArrowUpward, MdMenu, MdOutlinePerson, MdOutlinePublish, MdShuffle, MdTimeline, MdInfoOutline, MdOutlineLabel, MdSearch, MdLogout } from "react-icons/md";
 import { useTranslation } from "./hook/i18n.js";
 import { useConfig } from "./hook/config.js";
 import { ThemeSwitcher } from "./components/theme_switcher.js";
@@ -204,6 +204,9 @@ function PublishButton() {
 
 function UserButton() {
   const config = useConfig();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
   if (!config.user) {
     return <NavLink
       to="/login"
@@ -213,15 +216,53 @@ function UserButton() {
     </NavLink>
   }
 
+  const handleLogout = async () => {
+    const result = await network.logout();
+    if (result.success) {
+      // 退出成功，跳转到首页并刷新
+      navigate("/", { replace: true });
+      window.location.reload();
+    }
+  };
+
   return (
-    <NavLink
-      to={`/user/${encodeURIComponent(config.user!.username)}`}
-      className="btn btn-ghost btn-square avatar"
-    >
-      <div className="w-10 rounded-full">
-        <img alt="Avatar" src={network.getUserAvatar(config.user!)} />
+    <div className="dropdown dropdown-end">
+      <div
+        tabIndex={0}
+        role="button"
+        className="btn btn-ghost btn-square avatar"
+      >
+        <div className="w-10 rounded-full">
+          <img alt="Avatar" src={network.getUserAvatar(config.user!)} />
+        </div>
       </div>
-    </NavLink>
+      <ul
+        tabIndex={0}
+        className="menu menu-md dropdown-content bg-base-100 rounded-box z-50 mt-3 w-52 p-2 shadow"
+      >
+        <li
+          onClick={() => {
+            (document.activeElement as HTMLElement)?.blur();
+          }}
+        >
+          <NavLink to={`/user/${encodeURIComponent(config.user!.username)}`}>
+            <MdOutlinePerson size={18} />
+            {t("My Profile")}
+          </NavLink>
+        </li>
+        <li
+          onClick={() => {
+            (document.activeElement as HTMLElement)?.blur();
+            handleLogout();
+          }}
+        >
+          <a>
+            <MdLogout size={18} />
+            {t("Log out")}
+          </a>
+        </li>
+      </ul>
+    </div>
   )
 }
 
