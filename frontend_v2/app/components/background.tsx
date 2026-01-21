@@ -24,7 +24,7 @@ export function Background({ children }: { children: React.ReactNode }) {
         width: "100%",
         height: "100%",
         zIndex: -2,
-        opacity: 0.3,
+        opacity: 0.6,
       }}
     >
       <AnimatePresence mode="wait">
