@@ -732,10 +732,11 @@ class Network {
     );
   }
 
-  async getUserNotifications(page: number = 1): Promise<PageResponse<Activity>> {
+  async getUserNotifications(page: number = 1, cookie?: string): Promise<PageResponse<Activity>> {
     return this._callApi(() =>
       axios.get(`${this.apiBaseUrl}/notification`, {
         params: { page },
+        headers: this.getHeaders(cookie ? { Cookie: cookie } : undefined),
       }),
     );
   }

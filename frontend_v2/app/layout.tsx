@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Outlet, NavLink, useNavigate } from "react-router";
-import { MdArrowUpward, MdMenu, MdOutlinePerson, MdOutlinePublish, MdShuffle, MdTimeline, MdInfoOutline, MdOutlineLabel, MdSearch, MdLogout } from "react-icons/md";
+import { Outlet, NavLink, useNavigate, useLocation } from "react-router";
+import { MdArrowUpward, MdMenu, MdOutlinePerson, MdOutlinePublish, MdShuffle, MdTimeline, MdInfoOutline, MdOutlineLabel, MdSearch, MdLogout, MdNotifications } from "react-icons/md";
 import { useTranslation } from "./hook/i18n.js";
 import { useConfig } from "./hook/config.js";
 import { ThemeSwitcher } from "./components/theme_switcher.js";
@@ -204,8 +204,39 @@ function PublishButton() {
 
 function UserButton() {
   const config = useConfig();
-  const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      if (!config.isLoggedIn) {
+        return;
+      }
+      const res = await network.getUserNotificationsCount();
+      if (res.success && res.data !== undefined) {
+        setNotificationCount(res.data);
+      }
+    };
+
+    fetchNotificationCount();
+    const interval = setInterval(fetchNotificationCount, 60000); // 每分钟请求一次
+
+    return () => clearInterval(interval);
+  }, [config.isLoggedIn]);
+
+  // Reset notification count when navigating away from notifications page
+  useEffect(() => {
+    if (config.isLoggedIn && location.pathname !== '/notifications') {
+      const fetchCount = async () => {
+        const res = await network.getUserNotificationsCount();
+        if (res.success && res.data !== undefined) {
+          setNotificationCount(res.data);
+        }
+      };
+      fetchCount();
+    }
+  }, [location.pathname, config.isLoggedIn]);
 
   if (!config.user) {
     return <NavLink
@@ -220,22 +251,32 @@ function UserButton() {
     const result = await network.logout();
     if (result.success) {
       // 退出成功，跳转到首页并刷新
-      navigate("/", { replace: true });
-      window.location.reload();
+      window.location.replace("/");
     }
   };
 
   return (
     <div className="dropdown dropdown-end">
-      <div
-        tabIndex={0}
-        role="button"
-        className="btn btn-ghost btn-square avatar"
-      >
-        <div className="w-10 rounded-full">
-          <img alt="Avatar" src={network.getUserAvatar(config.user!)} />
+      <div className="indicator">
+          {notificationCount > 0 && (
+            <span className="indicator-item badge badge-error badge-xs"></span>
+          )}
+          <div
+            tabIndex={0}
+            role="button"
+            className="btn btn-square avatar overflow-clip"
+            onMouseDown={(e) => {
+              const target = e.currentTarget;
+              // 如果已经有焦点（菜单已打开），则阻止默认行为并手动关闭
+              if (document.activeElement === target) {
+                e.preventDefault();
+                target.blur();
+              }
+            }}
+          >
+            <img alt="Avatar" className="w-10 object-cover" src={network.getUserAvatar(config.user!)} />
+          </div>
         </div>
-      </div>
       <ul
         tabIndex={0}
         className="menu menu-md dropdown-content bg-base-100 rounded-box z-50 mt-3 w-52 p-2 shadow"
@@ -248,6 +289,21 @@ function UserButton() {
           <NavLink to={`/user/${encodeURIComponent(config.user!.username)}`}>
             <MdOutlinePerson size={18} />
             {t("My Profile")}
+          </NavLink>
+        </li>
+        <li
+          onClick={() => {
+            (document.activeElement as HTMLElement)?.blur();
+          }}
+        >
+          <NavLink to="/notifications">
+            <MdNotifications size={18} />
+            {t("Notifications")}
+            {notificationCount > 0 && (
+              <span className="badge badge-error badge-sm ml-auto">
+                {notificationCount > 99 ? "99+" : notificationCount}
+              </span>
+            )}
           </NavLink>
         </li>
         <li
@@ -267,20 +323,9 @@ function UserButton() {
 }
 
 function SearchBar() {
-  const [small, setSmall] = useState(false);
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const { t } = useTranslation();
-
-  useEffect(() => {
-    const handleResize = () => {
-      setSmall(window.innerWidth < 640);
-    };
-    
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const doSearch = () => {
     if (search.length === 0) {
@@ -291,7 +336,7 @@ function SearchBar() {
   };
 
   const searchField = (
-    <label className={`input input-primary ${small ? "w-full" : "w-64"} bg-base-100/60! shadow-xs`}>
+    <label className="input input-primary w-full sm:w-64 bg-base-100/60! shadow-xs">
       <svg
         className="h-[1em] opacity-50"
         xmlns="http://www.w3.org/2000/svg"
@@ -336,9 +381,15 @@ function SearchBar() {
     </label>
   );
 
-  if (small) {
-    return (
-      <>
+  return (
+    <>
+      {/* Desktop: show search field directly */}
+      <div className="hidden sm:block">
+        {searchField}
+      </div>
+
+      {/* Mobile: show search button and dialog */}
+      <div className="sm:hidden">
         <button
           className="btn btn-circle btn-ghost"
           onClick={() => {
@@ -380,9 +431,7 @@ function SearchBar() {
             </div>
           </div>
         </dialog>
-      </>
-    );
-  }
-
-  return searchField;
+      </div>
+    </>
+  );
 }

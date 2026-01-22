@@ -7,6 +7,8 @@ export default [
         layout("layout.tsx", { id: "layout" }, [
             index("routes/home.tsx"),
             route("activity", "routes/activity.tsx"),
+            route("notifications", "routes/notifications.tsx"),
+            route("random", "routes/random.tsx"),
             route("tags", "routes/tags.tsx"),
             route("tag/:name", "routes/tag.$name.tsx"),
             route("search", "routes/search.tsx"),
