@@ -5,7 +5,7 @@ import { configFromMatches, useConfig } from "~/hook/config";
 import { createRef, useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { MdAdd, MdOutlineAccessTime, MdOutlineAdd, MdOutlineArchive, MdOutlineArticle, MdOutlineCloud, MdOutlineComment, MdOutlineContentCopy, MdOutlineDataset, MdOutlineDelete, MdOutlineDownload, MdOutlineEdit, MdOutlineFolderSpecial, MdOutlineInfo, MdOutlineLink, MdOutlineOpenInNew, MdOutlineStar, MdOutlineVerifiedUser } from "react-icons/md";
 import { useTranslation } from "~/hook/i18n";
-import { useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import type { CharacterParams, Collection, Resource, ResourceDetails, RFile, RLink, Tag, Storage as RStorage, Comment as RComment } from "~/network/models";
 import Badge from "~/components/badge";
 import { BiLogoSteam } from "react-icons/bi";
@@ -61,12 +61,13 @@ export function meta({ loaderData, matches }: Route.MetaArgs) {
   return meta;
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const id = parseInt(params.id);
   if (isNaN(id)) {
     throw new Error("Invalid resource ID");
   }
-  const res = await network.getResourceDetails(id);
+  const cookie = request.headers.get("Cookie");
+  const res = await network.getResourceDetails(id, cookie || undefined);
   if (!res.success || !res.data) {
     throw new Error("Failed to load resource");
   }
@@ -114,7 +115,7 @@ export default function ResourcePage({ loaderData }: Route.ComponentProps) {
   };
 
   return <div>
-    <div className="flex bg-base-100/40 backdrop-blur-sm rounded-box mt-4 shadow mb-2 p-2">
+    <div className="flex bg-base-100/60 backdrop-blur-sm rounded-box mt-4 shadow mb-2 p-2">
       <div className="flex-1">
         <h1 className={"text-2xl font-bold px-4 py-2"}>{resource.title}</h1>
         {resource.alternativeTitles && resource.alternativeTitles.map((e, i) => {
@@ -173,7 +174,7 @@ export default function ResourcePage({ loaderData }: Route.ComponentProps) {
     </div>
 
     <div
-      className="tabs tabs-box my-2 p-4 shadow rounded-box! bg-base-100/40 backdrop-blur-sm"
+      className="tabs tabs-box my-2 p-4 shadow rounded-box! bg-base-100/60 backdrop-blur-sm"
     >
       <label className="tab transition-all">
         <input
@@ -653,8 +654,6 @@ function RelatedResourceCard({
   r: Resource;
   content?: string;
 }) {
-  const navigate = useNavigate();
-
   const [articleWidth, setArticleWidth] = useState<number | null>(null);
 
   useEffect(() => {
@@ -685,15 +684,11 @@ function RelatedResourceCard({
 
   return (
     <span className={"inline-flex max-w-full"}>
-      <a
-        href={"/resources/" + r.id}
+      <NavLink
+        to={"/resources/" + r.id}
         className={
           "mr-2 mb-2 max-w-full cursor-pointer inline-flex min-w-0 flex-col bg-base-100 shadow hover:shadow-md transition-shadow rounded-xl no-underline"
         }
-        onClick={(e) => {
-          e.preventDefault();
-          navigate(`/resources/${r.id}`);
-        }}
       >
         {r.image && (
           <img
@@ -737,7 +732,7 @@ function RelatedResourceCard({
             {content}
           </span>
         </span>
-      </a>
+      </NavLink>
     </span>
   );
 }

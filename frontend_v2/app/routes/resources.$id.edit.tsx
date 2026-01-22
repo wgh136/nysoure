@@ -16,13 +16,14 @@ export function meta({ matches }: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const id = parseInt(params.id);
   if (isNaN(id)) {
     throw new Error("Invalid resource ID");
   }
 
-  const res = await network.getResourceDetails(id);
+  const cookie = request.headers.get("Cookie");
+  const res = await network.getResourceDetails(id, cookie || undefined);
   if (!res.success || !res.data) {
     throw new Error("Failed to load resource");
   }

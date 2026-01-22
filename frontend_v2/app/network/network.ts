@@ -403,9 +403,11 @@ class Network {
     );
   }
 
-  async getResourceDetails(id: number): Promise<Response<ResourceDetails>> {
+  async getResourceDetails(id: number, cookie?: string): Promise<Response<ResourceDetails>> {
     return this._callApi<Response<ResourceDetails>>(() =>
-      axios.get(`${this.apiBaseUrl}/resource/${id}`),
+      axios.get(`${this.apiBaseUrl}/resource/${id}`, {
+        headers: this.getHeaders(cookie ? { Cookie: cookie } : undefined),
+      }),
     );
   }
 

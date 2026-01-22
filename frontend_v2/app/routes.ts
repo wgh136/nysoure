@@ -14,7 +14,7 @@ export default [
             route("search", "routes/search.tsx"),
             route("about", "routes/about.tsx"),
             route("publish", "routes/publish.tsx"),
-            route("resources/:id/edit", "routes/resources.$id.edit.tsx"),
+            route("resource/edit/:id", "routes/resources.$id.edit.tsx"),
             route("resources/:id", "routes/resource.$id.tsx"),
             route("user/:username", "routes/user.$username.tsx"),
             route("collection/:id", "routes/collection.$id.tsx"),

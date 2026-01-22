@@ -80,7 +80,7 @@ export default function ManageServerConfigPage() {
     });
     if (res.success) {
       showToast({
-        message: t("Update server config successfully"),
+        message: "Update server config successfully",
         type: "success",
       });
     } else {

@@ -110,6 +110,7 @@ func getFrontendConfig(c fiber.Ctx) error {
 			"site_description":                  sc.ServerDescription,
 			"private_deployment":                config.PrivateDeployment(),
 			"background":                        random,
+			"support_email_address":             config.SupportEmailAddress(),
 		},
 	})
 }

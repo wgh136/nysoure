@@ -18,6 +18,24 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    networks:
+      nysoure-net:
+    
+  frontend:
+    build: 
+      context: ./frontend_v2
+      dockerfile: Dockerfile
+    ports:
+      - "3030:3000"
+    env_file:
+      - frontend_v2/.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      nysoure-net:
 
   db:
     image: mariadb:latest
@@ -31,6 +49,8 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    networks:
+      nysoure-net:
 
   redis:
     image: redis:latest
@@ -40,6 +60,8 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    networks:
+      nysoure-net:
 
   backup:
     build:
@@ -60,3 +82,8 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    networks:
+      nysoure-net:
+
+networks:
+  nysoure-net:
