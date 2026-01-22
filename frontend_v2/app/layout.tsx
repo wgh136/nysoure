@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router";
-import { MdArrowUpward, MdMenu, MdOutlinePerson, MdOutlinePublish, MdShuffle, MdTimeline, MdInfoOutline, MdOutlineLabel, MdSearch, MdLogout, MdNotifications } from "react-icons/md";
+import { MdArrowUpward, MdMenu, MdOutlinePerson, MdOutlinePublish, MdShuffle, MdTimeline, MdInfoOutline, MdOutlineLabel, MdSearch, MdLogout, MdNotifications, MdOutlineSettings } from "react-icons/md";
 import { useTranslation } from "./hook/i18n.js";
 import { useConfig } from "./hook/config.js";
 import { ThemeSwitcher } from "./components/theme_switcher.js";
@@ -20,124 +20,124 @@ export default function Layout() {
   )
 }
 
-function Navigator({appName}: {appName: string}) {
+function Navigator({ appName }: { appName: string }) {
   const { t } = useTranslation();
 
   return (
     <Background>
       <div
-      style={{
-        position: "relative",
-        zIndex: 1,
-      }}
-    >
-      <FloatingToTopButton />
-      <div className="z-1 fixed top-2 left-2 right-2 backdrop-blur-xs h-16 rounded-box max-w-8xl mx-auto" />
-      <div className="z-2 fixed top-2 left-2 right-2 h-16 bg-base-100/90 rounded-box max-w-8xl mx-auto" />
-      <div
-        className="shadow-lg fixed top-2 left-2 right-2 z-3 lg:z-10 bg-transparent h-16 rounded-box px-2 lg:px-4 flex items-center max-w-8xl mx-auto"
+        style={{
+          position: "relative",
+          zIndex: 1,
+        }}
       >
-        <div className={"flex-1 flex items-center w-full"}>
-          <div className="dropdown">
-            <div
-              tabIndex={0}
-              role="button"
-              className="btn btn-ghost btn-circle lg:hidden"
-            >
-              <MdMenu size={24} />
+        <FloatingToTopButton />
+        <div className="z-1 fixed top-2 left-2 right-2 backdrop-blur-xs h-16 rounded-box max-w-8xl mx-auto" />
+        <div className="z-2 fixed top-2 left-2 right-2 h-16 bg-base-100/90 rounded-box max-w-8xl mx-auto" />
+        <div
+          className="shadow-lg fixed top-2 left-2 right-2 z-3 lg:z-10 bg-transparent h-16 rounded-box px-2 lg:px-4 flex items-center max-w-8xl mx-auto"
+        >
+          <div className={"flex-1 flex items-center w-full"}>
+            <div className="dropdown">
+              <div
+                tabIndex={0}
+                role="button"
+                className="btn btn-ghost btn-circle lg:hidden"
+              >
+                <MdMenu size={24} />
+              </div>
+              <ul
+                tabIndex={0}
+                className="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+              >
+                <li
+                  onClick={() => {
+                    (document.activeElement as HTMLElement)?.blur();
+                  }}
+                >
+                  <NavLink to="/tags">
+                    <MdOutlineLabel size={18} />
+                    {t("Tags")}
+                  </NavLink>
+                </li>
+                <li
+                  onClick={() => {
+                    (document.activeElement as HTMLElement)?.blur();
+                  }}
+                >
+                  <NavLink to="/activity">
+                    <MdTimeline size={18} />
+                    {t("Activity")}
+                  </NavLink>
+                </li>
+                <li
+                  onClick={() => {
+                    (document.activeElement as HTMLElement)?.blur();
+                  }}
+                >
+                  <NavLink to="/random">
+                    <MdShuffle size={18} />
+                    {t("Random")}
+                  </NavLink>
+                </li>
+                <li
+                  onClick={() => {
+                    (document.activeElement as HTMLElement)?.blur();
+                  }}
+                >
+                  <NavLink to="/about">
+                    <MdInfoOutline size={18} />
+                    {t("About")}
+                  </NavLink>
+                </li>
+              </ul>
             </div>
-            <ul
-              tabIndex={0}
-              className="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
-            >
-              <li
-                onClick={() => {
-                  (document.activeElement as HTMLElement)?.blur();
-                }}
+            <div>
+              <NavLink
+                to="/"
+                replace
+                className="btn btn-ghost text-xl"
               >
-                <NavLink to="/tags">
-                  <MdOutlineLabel size={18} />
-                  {t("Tags")}
-                </NavLink>
-              </li>
-              <li
-                onClick={() => {
-                  (document.activeElement as HTMLElement)?.blur();
-                }}
-              >
-                <NavLink to="/activity">
-                  <MdTimeline size={18} />
-                  {t("Activity")}
-                </NavLink>
-              </li>
-              <li
-                onClick={() => {
-                  (document.activeElement as HTMLElement)?.blur();
-                }}
-              >
-                <NavLink to="/random">
-                  <MdShuffle size={18} />
-                  {t("Random")}
-                </NavLink>
-              </li>
-              <li
-                onClick={() => {
-                  (document.activeElement as HTMLElement)?.blur();
-                }}
-              >
-                <NavLink to="/about">
-                  <MdInfoOutline size={18} />
-                  {t("About")}
-                </NavLink>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <NavLink
-              to="/"
-              replace
-              className="btn btn-ghost text-xl"
-            >
-              {appName}
-            </NavLink>
-          </div>
-          <div className="hidden lg:flex">
-            <ul className="menu menu-horizontal px-1">
-              <li>
-                <NavLink to="/tags">
-                  <MdOutlineLabel size={18} />
-                  {t("Tags")}
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/random">
-                  <MdShuffle size={18} />
-                  {t("Random")}
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/activity">
-                  <MdTimeline size={18} />
-                  {t("Activity")}
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/about">
-                  <MdInfoOutline size={18} />
-                  {t("About")}
-                </NavLink>
-              </li>
-            </ul>
-          </div>
-          <div className={"flex-1"}></div>
-          <div className="flex gap-2">
-            <SearchBar />
-            <ThemeSwitcher />
-            <PublishButton />
-            <UserButton />
+                {appName}
+              </NavLink>
+            </div>
+            <div className="hidden lg:flex">
+              <ul className="menu menu-horizontal px-1">
+                <li>
+                  <NavLink to="/tags">
+                    <MdOutlineLabel size={18} />
+                    {t("Tags")}
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/random">
+                    <MdShuffle size={18} />
+                    {t("Random")}
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/activity">
+                    <MdTimeline size={18} />
+                    {t("Activity")}
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/about">
+                    <MdInfoOutline size={18} />
+                    {t("About")}
+                  </NavLink>
+                </li>
+              </ul>
+            </div>
+            <div className={"flex-1"}></div>
+            <div className="flex gap-2">
+              <SearchBar />
+              <ThemeSwitcher />
+              <PublishButton />
+              <UserButton />
+            </div>
           </div>
         </div>
-      </div>
       </div>
     </Background>
   )
@@ -185,19 +185,19 @@ function PublishButton() {
 
   return (
     <>
-    <NavLink
-      to="/publish"
-      className="btn btn-primary hidden lg:flex"
-    >
-      <MdOutlinePublish size={24} />
-      <span>{t("Publish")}</span>
-    </NavLink>
-    <NavLink
-      to="/publish"
-      className="btn btn-primary btn-square lg:hidden"
-    >
-      <MdOutlinePublish size={24} />
-    </NavLink>
+      <NavLink
+        to="/publish"
+        className="btn btn-primary hidden lg:flex"
+      >
+        <MdOutlinePublish size={24} />
+        <span>{t("Publish")}</span>
+      </NavLink>
+      <NavLink
+        to="/publish"
+        className="btn btn-primary btn-square lg:hidden"
+      >
+        <MdOutlinePublish size={24} />
+      </NavLink>
     </>
   )
 }
@@ -258,25 +258,25 @@ function UserButton() {
   return (
     <div className="dropdown dropdown-end">
       <div className="indicator">
-          {notificationCount > 0 && (
-            <span className="indicator-item badge badge-error badge-xs"></span>
-          )}
-          <div
-            tabIndex={0}
-            role="button"
-            className="btn btn-square avatar overflow-clip"
-            onMouseDown={(e) => {
-              const target = e.currentTarget;
-              // 如果已经有焦点（菜单已打开），则阻止默认行为并手动关闭
-              if (document.activeElement === target) {
-                e.preventDefault();
-                target.blur();
-              }
-            }}
-          >
-            <img alt="Avatar" className="w-10 object-cover" src={network.getUserAvatar(config.user!)} />
-          </div>
+        {notificationCount > 0 && (
+          <span className="indicator-item badge badge-error badge-xs"></span>
+        )}
+        <div
+          tabIndex={0}
+          role="button"
+          className="btn btn-square avatar overflow-clip"
+          onMouseDown={(e) => {
+            const target = e.currentTarget;
+            // 如果已经有焦点（菜单已打开），则阻止默认行为并手动关闭
+            if (document.activeElement === target) {
+              e.preventDefault();
+              target.blur();
+            }
+          }}
+        >
+          <img alt="Avatar" className="w-10 object-cover" src={network.getUserAvatar(config.user!)} />
         </div>
+      </div>
       <ul
         tabIndex={0}
         className="menu menu-md dropdown-content bg-base-100 rounded-box z-50 mt-3 w-52 p-2 shadow"
@@ -304,6 +304,16 @@ function UserButton() {
                 {notificationCount > 99 ? "99+" : notificationCount}
               </span>
             )}
+          </NavLink>
+        </li>
+        <li
+          onClick={() => {
+            (document.activeElement as HTMLElement)?.blur();
+          }}
+        >
+          <NavLink to="/manage/me">
+            <MdOutlineSettings size={18} />
+            {t("Settings")}
           </NavLink>
         </li>
         <li

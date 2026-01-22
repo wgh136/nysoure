@@ -18,7 +18,13 @@ export default [
             route("user/:username", "routes/user.$username.tsx"),
             route("collection/:id", "routes/collection.$id.tsx"),
             route("create-collection", "routes/create-collection.tsx"),
-            route("comments/:id", "routes/comments.$id.tsx")
-        ])
+            route("comments/:id", "routes/comments.$id.tsx"),
+            layout("routes/manage.tsx", [
+                route("manage/me", "routes/manage.me.tsx"),
+                route("manage/storage", "routes/manage.storage.tsx"),
+                route("manage/users", "routes/manage.users.tsx"),
+                route("manage/config", "routes/manage.config.tsx")
+            ])
+        ]),
     ])
 ] satisfies RouteConfig;
