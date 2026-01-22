@@ -13,7 +13,10 @@ export default [
             route("about", "routes/about.tsx"),
             route("publish", "routes/publish.tsx"),
             route("resources/:id/edit", "routes/resources.$id.edit.tsx"),
-            route("user/:username", "routes/user.$username.tsx")
+            route("user/:username", "routes/user.$username.tsx"),
+            route("collection/:id", "routes/collection.$id.tsx"),
+            route("create-collection", "routes/create-collection.tsx"),
+            route("comments/:id", "routes/comments.$id.tsx")
         ])
     ])
 ] satisfies RouteConfig;
