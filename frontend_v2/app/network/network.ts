@@ -29,7 +29,7 @@ class Network {
     if (typeof window !== "undefined") {
       return "/api";
     } else {
-      return process.env.API_BASE_URL;
+      return process.env.API_BASE_URL || "/api";
     }
   };
 
@@ -321,11 +321,13 @@ class Network {
   }
 
   getImageUrl(id: number): string {
-    return `${this.apiBaseUrl}/image/${id}`;
+    // Always use relative path to ensure SSR and client hydration match
+    return `/api/image/${id}`;
   }
 
   getResampledImageUrl(id: number): string {
-    return `${this.apiBaseUrl}/image/resampled/${id}`;
+    // Always use relative path to ensure SSR and client hydration match
+    return `/api/image/resampled/${id}`;
   }
 
   async createResource(

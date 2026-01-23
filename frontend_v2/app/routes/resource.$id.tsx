@@ -162,8 +162,8 @@ export default function ResourcePage({ loaderData }: Route.ComponentProps) {
         <Tags tags={resource.tags} />
         <div className={"px-3 mt-2 flex flex-wrap"}>
           {resource.links &&
-            resource.links.map((l) => {
-              return <Link link={l} ratings={resource.ratings} />
+            resource.links.map((l, index) => {
+              return <Link key={index} link={l} ratings={resource.ratings} />
             })}
           <CollectionDialog rid={resource.id} />
         </div>
@@ -1900,8 +1900,8 @@ function KunFile({
               <MdOutlineArchive size={16} className={"inline-block"} />
               {file.size}
             </Badge>
-            {tags.map((p) => (
-              <Badge className={"badge-soft badge-info text-xs mr-2"} key={p}>
+            {tags.map((p, index) => (
+              <Badge className={"badge-soft badge-info text-xs mr-2"} key={`${p}-${index}`}>
                 {p}
               </Badge>
             ))}
