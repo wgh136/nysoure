@@ -28,14 +28,14 @@ function Navigator({ appName }: { appName: string }) {
       <div
         style={{
           position: "relative",
-          zIndex: 1,
+          zIndex: 2,
         }}
       >
         <FloatingToTopButton />
-        <div className="z-1 fixed top-2 left-2 right-2 backdrop-blur-xs h-16 rounded-box max-w-8xl mx-auto" />
-        <div className="z-2 fixed top-2 left-2 right-2 h-16 bg-base-100/90 rounded-box max-w-8xl mx-auto" />
+        <div className="z-3 fixed top-2 left-2 right-2 backdrop-blur-xs h-16 rounded-box max-w-8xl mx-auto" />
+        <div className="z-4 fixed top-2 left-2 right-2 h-16 bg-base-100/90 rounded-box max-w-8xl mx-auto" />
         <div
-          className="shadow-lg fixed top-2 left-2 right-2 z-3 lg:z-10 bg-transparent h-16 rounded-box px-2 lg:px-4 flex items-center max-w-8xl mx-auto"
+          className="shadow-lg fixed top-2 left-2 right-2 z-5 lg:z-10 bg-transparent h-16 rounded-box px-2 lg:px-4 flex items-center max-w-8xl mx-auto"
         >
           <div className={"flex-1 flex items-center w-full"}>
             <div className="dropdown">
@@ -48,7 +48,7 @@ function Navigator({ appName }: { appName: string }) {
               </div>
               <ul
                 tabIndex={0}
-                className="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+                className="menu menu-md dropdown-content bg-base-100 rounded-box z-2 mt-3 w-52 p-2 shadow"
               >
                 <li
                   onClick={() => {

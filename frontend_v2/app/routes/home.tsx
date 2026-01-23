@@ -254,7 +254,7 @@ function PinnedResources() {
         {canScrollLeft && (
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-sm shadow-lg bg-base-100/90 hover:bg-base-100"
+            className="absolute left-0 top-1/2 -translate-y-1/2 btn btn-circle btn-sm shadow-lg bg-base-100/90 hover:bg-base-100 z-1"
             aria-label="Scroll left"
           >
             <MdChevronLeft size={24} />
@@ -278,7 +278,7 @@ function PinnedResources() {
         {canScrollRight && (
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 btn btn-circle btn-sm shadow-lg bg-base-100/90 hover:bg-base-100"
+            className="absolute right-0 top-1/2 -translate-y-1/2 btn btn-circle btn-sm shadow-lg bg-base-100/90 hover:bg-base-100 z-1"
             aria-label="Scroll right"
           >
             <MdChevronRight size={24} />

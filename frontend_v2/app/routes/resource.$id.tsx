@@ -173,6 +173,10 @@ export default function ResourcePage({ loaderData }: Route.ComponentProps) {
       </div>
     </div>
 
+    <div className="w-full block sm:hidden">
+      <Gallery images={resource.gallery} nsfw={resource.galleryNsfw} />
+    </div>
+
     <div
       className="tabs tabs-box my-2 p-4 shadow rounded-box! bg-base-100/60 backdrop-blur-sm"
     >
