@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { Storage } from "~/network/models";
 import { network } from "~/network/network";
 import showToast from "~/components/toast";
@@ -16,6 +16,19 @@ export default function StorageView() {
   const [storages, setStorages] = useState<Storage[] | null>(null);
   const [loadingId, setLoadingId] = useState<number | null>(null);
 
+  const updateStorages = useCallback(async () => {
+    setStorages(null);
+    const response = await network.listStorages();
+    if (response.success) {
+      setStorages(response.data!);
+    } else {
+      showToast({
+        message: response.message,
+        type: "error",
+      });
+    }
+  }, []);
+
   useEffect(() => {
     if (config.user == null || !config.user.is_admin) {
       return;
@@ -31,6 +44,52 @@ export default function StorageView() {
       }
     });
   }, [config.user]);
+
+  const handleDelete = useCallback(async (id: number) => {
+    if (loadingId != null) {
+      return;
+    }
+    setLoadingId(id);
+    try {
+      const response = await network.deleteStorage(id);
+      if (response.success) {
+        showToast({
+          message: t("Storage deleted successfully"),
+        });
+        await updateStorages();
+      } else {
+        showToast({
+          message: response.message,
+          type: "error",
+        });
+      }
+    } finally {
+      setLoadingId(null);
+    }
+  }, [loadingId, t, updateStorages]);
+
+  const handleSetDefault = useCallback(async (id: number) => {
+    if (loadingId != null) {
+      return;
+    }
+    setLoadingId(id);
+    try {
+      const response = await network.setDefaultStorage(id);
+      if (response.success) {
+        showToast({
+          message: t("Storage set as default successfully"),
+        });
+        await updateStorages();
+      } else {
+        showToast({
+          message: response.message,
+          type: "error",
+        });
+      }
+    } finally {
+      setLoadingId(null);
+    }
+  }, [loadingId, t, updateStorages]);
 
   if (!config.user) {
     return (
@@ -53,59 +112,6 @@ export default function StorageView() {
   if (storages == null) {
     return <Loading />;
   }
-
-  const updateStorages = async () => {
-    setStorages(null);
-    const response = await network.listStorages();
-    if (response.success) {
-      setStorages(response.data!);
-    } else {
-      showToast({
-        message: response.message,
-        type: "error",
-      });
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (loadingId != null) {
-      return;
-    }
-    setLoadingId(id);
-    const response = await network.deleteStorage(id);
-    if (response.success) {
-      showToast({
-        message: t("Storage deleted successfully"),
-      });
-      updateStorages();
-    } else {
-      showToast({
-        message: response.message,
-        type: "error",
-      });
-    }
-    setLoadingId(null);
-  };
-
-  const handleSetDefault = async (id: number) => {
-    if (loadingId != null) {
-      return;
-    }
-    setLoadingId(id);
-    const response = await network.setDefaultStorage(id);
-    if (response.success) {
-      showToast({
-        message: t("Storage set as default successfully"),
-      });
-      updateStorages();
-    } else {
-      showToast({
-        message: response.message,
-        type: "error",
-      });
-    }
-    setLoadingId(null);
-  };
 
   return (
     <>

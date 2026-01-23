@@ -2016,6 +2016,7 @@ function Comments({ resourceId }: { resourceId: number }) {
         resourceId={resourceId}
         page={page}
         maxPageCallback={setMaxPage}
+        reload={reload}
         key={listKey}
       />
       {maxPage ? (
@@ -2031,16 +2032,14 @@ function CommentsList({
   resourceId,
   page,
   maxPageCallback,
+  reload,
 }: {
   resourceId: number;
   page: number;
   maxPageCallback: (maxPage: number) => void;
+  reload: () => void;
 }) {
   const [comments, setComments] = useState<RComment[] | null>(null);
-
-  const reload = function () {
-    window.location.reload();
-  }
 
   useEffect(() => {
     network.listResourceComments(resourceId, page).then((res) => {

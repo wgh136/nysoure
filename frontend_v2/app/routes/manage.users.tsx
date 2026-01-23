@@ -263,47 +263,53 @@ function BannedUserRow({ user, onChanged }: { user: User; onChanged: () => void 
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleUnban = async () => {
+  const handleUnban = useCallback(async () => {
     if (isLoading) {
       return;
     }
     setIsLoading(true);
-    const res = await network.unbanUser(user.id);
-    if (res.success) {
-      showToast({
-        type: "success",
-        message: t("User unbanned successfully"),
-      });
-      onChanged();
-    } else {
-      showToast({
-        type: "error",
-        message: res.message,
-      });
+    try {
+      const res = await network.unbanUser(user.id);
+      if (res.success) {
+        showToast({
+          type: "success",
+          message: t("User unbanned successfully"),
+        });
+        onChanged();
+      } else {
+        showToast({
+          type: "error",
+          message: res.message,
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  };
+  }, [isLoading, user.id, t, onChanged]);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (isLoading) {
       return;
     }
     setIsLoading(true);
-    const res = await network.deleteUser(user.id);
-    if (res.success) {
-      showToast({
-        type: "success",
-        message: t("User deleted successfully"),
-      });
-      onChanged();
-    } else {
-      showToast({
-        type: "error",
-        message: res.message,
-      });
+    try {
+      const res = await network.deleteUser(user.id);
+      if (res.success) {
+        showToast({
+          type: "success",
+          message: t("User deleted successfully"),
+        });
+        onChanged();
+      } else {
+        showToast({
+          type: "error",
+          message: res.message,
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  };
+  }, [isLoading, user.id, t, onChanged]);
 
   return (
     <tr key={user.id} className={"hover"}>
@@ -374,110 +380,125 @@ function UserRow({ user, onChanged }: { user: User; onChanged: () => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const buttonRef = createRef<HTMLButtonElement>();
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (isLoading) {
       return;
     }
     setIsLoading(true);
-    const res = await network.deleteUser(user.id);
-    if (res.success) {
-      showToast({
-        type: "success",
-        message: t("User deleted successfully"),
-      });
-      onChanged();
-    } else {
-      showToast({
-        type: "error",
-        message: res.message,
-      });
+    try {
+      const res = await network.deleteUser(user.id);
+      if (res.success) {
+        showToast({
+          type: "success",
+          message: t("User deleted successfully"),
+        });
+        onChanged();
+      } else {
+        showToast({
+          type: "error",
+          message: res.message,
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  };
+  }, [isLoading, user.id, t, onChanged]);
 
-  const handleSetAdmin = async () => {
+  const handleSetAdmin = useCallback(async () => {
     if (isLoading) {
       return;
     }
     setIsLoading(true);
-    const res = await network.setUserAdmin(user.id, true);
-    if (res.success) {
-      showToast({
-        type: "success",
-        message: t("User set as admin successfully"),
-      });
-      onChanged();
-    } else {
-      showToast({
-        type: "error",
-        message: res.message,
-      });
+    try {
+      const res = await network.setUserAdmin(user.id, true);
+      if (res.success) {
+        showToast({
+          type: "success",
+          message: t("User set as admin successfully"),
+        });
+        onChanged();
+      } else {
+        showToast({
+          type: "error",
+          message: res.message,
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  };
+  }, [isLoading, user.id, t, onChanged]);
 
-  const handleSetUser = async () => {
+  const handleSetUser = useCallback(async () => {
     if (isLoading) {
       return;
     }
     setIsLoading(true);
-    const res = await network.setUserAdmin(user.id, false);
-    if (res.success) {
-      showToast({
-        type: "success",
-        message: t("User set as user successfully"),
-      });
-      onChanged();
-    } else {
-      showToast({
-        type: "error",
-        message: res.message,
-      });
+    try {
+      const res = await network.setUserAdmin(user.id, false);
+      if (res.success) {
+        showToast({
+          type: "success",
+          message: t("User set as user successfully"),
+        });
+        onChanged();
+      } else {
+        showToast({
+          type: "error",
+          message: res.message,
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  };
+  }, [isLoading, user.id, t, onChanged]);
 
-  const handleSetUploadPermission = async () => {
+  const handleSetUploadPermission = useCallback(async () => {
     if (isLoading) {
       return;
     }
     setIsLoading(true);
-    const res = await network.setUserUploadPermission(user.id, true);
-    if (res.success) {
-      showToast({
-        type: "success",
-        message: t("User set as upload permission successfully"),
-      });
-      onChanged();
-    } else {
-      showToast({
-        type: "error",
-        message: res.message,
-      });
+    try {
+      const res = await network.setUserUploadPermission(user.id, true);
+      if (res.success) {
+        showToast({
+          type: "success",
+          message: t("User set as upload permission successfully"),
+        });
+        onChanged();
+      } else {
+        showToast({
+          type: "error",
+          message: res.message,
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  };
+  }, [isLoading, user.id, t, onChanged]);
 
-  const handleRemoveUploadPermission = async () => {
+  const handleRemoveUploadPermission = useCallback(async () => {
     if (isLoading) {
       return;
     }
     setIsLoading(true);
-    const res = await network.setUserUploadPermission(user.id, false);
-    if (res.success) {
-      showToast({
-        type: "success",
-        message: t("User removed upload permission successfully"),
-      });
-      onChanged();
-    } else {
-      showToast({
-        type: "error",
-        message: res.message,
-      });
+    try {
+      const res = await network.setUserUploadPermission(user.id, false);
+      if (res.success) {
+        showToast({
+          type: "success",
+          message: t("User removed upload permission successfully"),
+        });
+        onChanged();
+      } else {
+        showToast({
+          type: "error",
+          message: res.message,
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  };
+  }, [isLoading, user.id, t, onChanged]);
 
   return (
     <tr key={user.id} className={"hover"}>

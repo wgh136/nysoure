@@ -15,14 +15,14 @@ export function getI18nData(acceptLanguage?: string | null) {
   return i18nData[language as keyof typeof i18nData]["translation"];
 }
 
-function t(key: string) {
-  const { i18n } = useRouteLoaderData("app");
+function t(key: string, i18n: any) {
   return i18n[key] || key;
 }
 
 export function useTranslation() {
+  const { i18n } = useRouteLoaderData("app");
   return {
-    t: t,
+    t: (key: string) => t(key, i18n),
   }
 }
 

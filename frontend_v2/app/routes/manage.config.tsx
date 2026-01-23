@@ -1,7 +1,7 @@
 import { useTranslation } from "~/hook/i18n";
 import { useConfig } from "~/hook/config";
 import { ErrorAlert, InfoAlert } from "~/components/alert";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { ServerConfig } from "~/network/models";
 import Loading from "~/components/loading";
 import Input, { TextArea } from "~/components/input";
@@ -30,6 +30,50 @@ export default function ManageServerConfigPage() {
     });
   }, []);
 
+  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isLoading) {
+      return;
+    }
+    function isPositiveInteger(str: string) {
+      return /^[1-9]\d*$/.test(str);
+    }
+    for (const e of pinnedResources.split(",")) {
+      if (!isPositiveInteger(e)) {
+        showToast({
+          message: "Pinned resources must be a comma separated list of numbers",
+          type: "error",
+        });
+        return;
+      }
+    }
+    if (!config) return;
+    
+    let pinned = pinnedResources.split(",").map((id) => parseInt(id));
+    setConfig({ ...config, pinned_resources: pinned });
+    setIsLoading(true);
+    
+    try {
+      const res = await network.setServerConfig({
+        ...config,
+        pinned_resources: pinned,
+      });
+      if (res.success) {
+        showToast({
+          message: t("Update server config successfully"),
+          type: "success",
+        });
+      } else {
+        showToast({
+          message: res.message,
+          type: "error",
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLoading, pinnedResources, config, t]);
+
   if (!userConfig.user) {
     return (
       <ErrorAlert
@@ -51,44 +95,6 @@ export default function ManageServerConfigPage() {
   if (config == null) {
     return <Loading />;
   }
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (isLoading) {
-      return;
-    }
-    function isPositiveInteger(str: string) {
-      return /^[1-9]\d*$/.test(str);
-    }
-    for (const e of pinnedResources.split(",")) {
-      if (!isPositiveInteger(e)) {
-        showToast({
-          message: "Pinned resources must be a comma separated list of numbers",
-          type: "error",
-        });
-        return;
-      }
-    }
-    let pinned = pinnedResources.split(",").map((id) => parseInt(id));
-    setConfig({ ...config, pinned_resources: pinned });
-    setIsLoading(true);
-    const res = await network.setServerConfig({
-      ...config,
-      pinned_resources: pinned,
-    });
-    if (res.success) {
-      showToast({
-        message: t("Update server config successfully"),
-        type: "success",
-      });
-    } else {
-      showToast({
-        message: res.message,
-        type: "error",
-      });
-    }
-    setIsLoading(false);
-  };
 
   return (
     <form className="px-4 pb-4" onSubmit={handleSubmit}>
