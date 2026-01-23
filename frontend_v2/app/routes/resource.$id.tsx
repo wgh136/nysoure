@@ -655,19 +655,35 @@ function RelatedResourceCard({
   content?: string;
 }) {
   const [articleWidth, setArticleWidth] = useState<number | null>(null);
+  const observerRef = useRef<ResizeObserver | null>(null);
 
   useEffect(() => {
-    const observer = new ResizeObserver((entries) => {
+    const articleElement = document.querySelector("article");
+    if (!articleElement) return;
+
+    observerRef.current = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        if (entry.contentRect.width !== articleWidth) {
-          setArticleWidth(entry.contentRect.width);
-        }
+        const newWidth = entry.contentRect.width;
+        setArticleWidth((prevWidth) => {
+          // Only update if width actually changed significantly (more than 1px)
+          if (prevWidth === null || Math.abs(newWidth - prevWidth) > 1) {
+            return newWidth;
+          }
+          return prevWidth;
+        });
       }
     });
-    const articleElement = document.querySelector("article");
-    if (articleElement) {
-      observer.observe(articleElement);
-    }
+    
+    observerRef.current.observe(articleElement);
+    
+    // Set initial width immediately
+    setArticleWidth(articleElement.clientWidth);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
   }, []);
 
   const imgHeight = r.image && r.image.width > r.image.height ? 320 : 420;
@@ -678,9 +694,8 @@ function RelatedResourceCard({
     imgWidth = articleWidth;
   }
 
-  if (!articleWidth) {
-    return <></>;
-  }
+  // Use a minimum width fallback instead of returning empty
+  const displayWidth = imgWidth || (articleWidth || 300);
 
   return (
     <span className={"inline-flex max-w-full"}>
@@ -693,7 +708,7 @@ function RelatedResourceCard({
         {r.image && (
           <img
             style={{
-              width: imgWidth,
+              width: displayWidth,
               height: imgHeight,
               objectFit: "cover",
             }}
@@ -705,7 +720,7 @@ function RelatedResourceCard({
         <span
           className={"inline-flex flex-col p-4"}
           style={{
-            width: imgWidth,
+            width: displayWidth,
           }}
         >
           <span
