@@ -1044,7 +1044,7 @@ function FileTile({ file }: { file: RFile }) {
                   window.open(link, "_blank");
                 } else {
                   showPopup(
-                    <CloudflarePopup file={file} />,
+                    <CloudflarePopup file={file} t={t} />,
                     buttonRef.current!,
                   );
                 }
@@ -1073,7 +1073,7 @@ function FileTile({ file }: { file: RFile }) {
                 const link = network.getFileDownloadLink(file.id, "");
                 window.open(link, "_blank");
               } else {
-                showPopup(<CloudflarePopup file={file} />, buttonRef2.current!);
+                showPopup(<CloudflarePopup file={file} t={t} />, buttonRef2.current!);
               }
             }}
           >
@@ -1093,14 +1093,12 @@ function FileTile({ file }: { file: RFile }) {
   );
 }
 
-function CloudflarePopup({ file }: { file: RFile }) {
+function CloudflarePopup({ file, t }: { file: RFile, t: (key: string) => string }) {
   const closePopup = useClosePopup();
 
   const [isLoading, setLoading] = useState(true);
 
   const [downloadToken, setDownloadToken] = useState<string | null>(null);
-
-  const { t } = useTranslation();
 
   return (
     <div
