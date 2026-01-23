@@ -5,6 +5,9 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
+  define: {
+    'import.meta.env.CLOUDFLARE_TURNSTILE_SITE_KEY': JSON.stringify(process.env.CLOUDFLARE_TURNSTILE_SITE_KEY),
+  },
   server: {
     allowedHosts: ["debug.nysoure.com"],
     host: "0.0.0.0",
