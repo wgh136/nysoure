@@ -56,7 +56,16 @@ export function meta({ loaderData, matches }: Route.MetaArgs) {
     { property: "og:description", content: description },
   ];
   if (cover != null) {
-    meta.push({ property: "og:image", content: network.getImageUrl(cover) });
+    let url = network.getImageUrl(cover);
+    if (url.startsWith("/")) {
+      if (typeof window !== "undefined") {
+        url = window.location.origin + url;
+      } else {
+        let serverBaseUrl = process.env.SERVER_BASE_URL!;
+        url = serverBaseUrl + url
+      }
+    }
+    meta.push({ property: "og:image", content: url });
   }
   return meta;
 }
@@ -77,7 +86,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 export default function ResourcePage({ loaderData }: Route.ComponentProps) {
   const { resource } = loaderData;
   const [page, setPage] = useState(0);
-  const [visitedTabs, setVisitedTabs] = useState<Set<number>>(new Set([]));
+  const [visitedTabs, setVisitedTabs] = useState<Set<number>>(new Set([0]));
   const config = useConfig();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -620,7 +629,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
             },
             a: ({ node, ...props }) => {
               const href = props.href as string;
-              const origin = window.location.origin;
+              const origin = typeof window !== "undefined" ? window.location.origin : process.env.SERVER_BASE_URL!;
 
               if (href.startsWith(origin) || href.startsWith("/")) {
                 let path = href;
