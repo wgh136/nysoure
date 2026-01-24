@@ -54,32 +54,34 @@ export default function TaggedResourcesPage() {
 
   return (
     <div>
-      <div className="flex items-center px-4">
-        <h1 className="text-2xl pt-6 pb-2 font-bold flex-1">
-          {tag?.name ?? tagName}
-        </h1>
-        {tag && <EditTagButton tag={tag} onEdited={setTag} />}
+      <div className="my-4 px-1 bg-base-100/80 backdrop-blur-xs shadow rounded-box">
+        <div className="flex items-center px-4">
+          <h1 className="text-2xl pt-6 pb-2 font-bold flex-1">
+            {tag?.name ?? tagName}
+          </h1>
+          {tag && <EditTagButton tag={tag} onEdited={setTag} />}
+        </div>
+        {tag?.type && (
+          <h2 className="text-base-content/60 ml-2 text-lg pl-2 mb-2">
+            {tag.type}
+          </h2>
+        )}
+        <div className="px-3">
+          {(tag?.aliases ?? []).map((e, idx) => {
+            return (
+              <Badge key={idx} className="m-1 badge-primary badge-soft">
+                {e}
+              </Badge>
+            );
+          })}
+          {tag && <EditAliasDialog tag={tag} onEdited={setTag} />}
+        </div>
+        {tag?.description && (
+          <article className="px-4 py-2">
+            <Markdown>{tag.description}</Markdown>
+          </article>
+        )}
       </div>
-      {tag?.type && (
-        <h2 className="text-base-content/60 ml-2 text-lg pl-2 mb-2">
-          {tag.type}
-        </h2>
-      )}
-      <div className="px-3">
-        {(tag?.aliases ?? []).map((e, idx) => {
-          return (
-            <Badge key={idx} className="m-1 badge-primary badge-soft">
-              {e}
-            </Badge>
-          );
-        })}
-        {tag && <EditAliasDialog tag={tag} onEdited={setTag} />}
-      </div>
-      {tag?.description && (
-        <article className="px-4 py-2">
-          <Markdown>{tag.description}</Markdown>
-        </article>
-      )}
       <ResourcesView
         key={tag?.name ?? tagName}
         storageKey={`tagged-${tag?.name ?? tagName}`}
