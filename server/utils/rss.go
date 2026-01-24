@@ -1,8 +1,8 @@
 package utils
 
 import (
+	"html"
 	"github.com/gofiber/fiber/v3/log"
-	"net/url"
 	"nysoure/server/model"
 	"os"
 	"path/filepath"
@@ -26,13 +26,13 @@ func GenerateRss(baseURL string, resources []model.Resource) {
 	for _, resource := range resources {
 		builder.WriteString("  <item>\n")
 		builder.WriteString("    <title>")
-		builder.WriteString(url.PathEscape(resource.Title))
+		builder.WriteString(html.EscapeString(resource.Title))
 		builder.WriteString("</title>\n")
 		builder.WriteString("    <link>")
 		builder.WriteString(baseURL + "/resources/" + strconv.Itoa(int(resource.ID)))
 		builder.WriteString("</link>\n")
 		builder.WriteString("    <description>")
-		builder.WriteString(url.PathEscape(ArticleToDescription(resource.Article, 255)))
+		builder.WriteString(html.EscapeString(ArticleToDescription(resource.Article, 255)))
 		builder.WriteString("</description>\n")
 		builder.WriteString("    <pubDate>")
 		builder.WriteString(resource.UpdatedAt.Format("Mon, 02 Jan 2006 15:04:05 MST"))
