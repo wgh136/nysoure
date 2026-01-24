@@ -9,8 +9,17 @@ import {
 import Button from "~/components/button";
 import showToast from "~/components/toast";
 import Input from "~/components/input";
-import { useConfig } from "~/hook/config";
+import { configFromMatches, useConfig } from "~/hook/config";
 import { useTranslation } from "~/hook/i18n";
+import type { Route } from "./+types/manage.me";
+
+export function meta({ matches }: Route.MetaArgs) {
+  const config = configFromMatches(matches);
+  return [
+    { title: config.server_name },
+    { name: "description", content: config.site_description },
+  ];
+}
 
 export default function ManageMePage() {
   const { t } = useTranslation();

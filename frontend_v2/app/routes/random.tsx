@@ -2,6 +2,16 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { network } from "~/network/network";
 import Loading from "~/components/loading";
+import type { Route } from "./+types/random";
+import { configFromMatches } from "~/hook/config";
+
+export function meta({ matches }: Route.MetaArgs) {
+  const config = configFromMatches(matches);
+  return [
+    { title: config.server_name },
+    { name: "description", content: config.site_description },
+  ];
+}
 
 export default function RandomPage() {
   const navigate = useNavigate();

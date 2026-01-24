@@ -5,8 +5,6 @@ import { useTranslation } from "../hook/i18n";
 import { ErrorAlert } from "../components/alert";
 import ResourceForm, { type ResourceFormData } from "../components/resource_form";
 import { configFromMatches, useConfig } from "../hook/config";
-import Loading from "../components/loading";
-import showToast from "../components/toast";
 
 export function meta({ matches }: Route.MetaArgs) {
   const config = configFromMatches(matches);

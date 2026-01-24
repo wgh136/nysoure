@@ -1,5 +1,5 @@
 import { useTranslation } from "~/hook/i18n";
-import { useConfig } from "~/hook/config";
+import { configFromMatches, useConfig } from "~/hook/config";
 import { ErrorAlert, InfoAlert } from "~/components/alert";
 import { useEffect, useState, useCallback } from "react";
 import type { ServerConfig } from "~/network/models";
@@ -8,6 +8,15 @@ import Input, { TextArea } from "~/components/input";
 import { network } from "~/network/network";
 import showToast from "~/components/toast";
 import Button from "~/components/button";
+import type { Route } from "./+types/manage.config";
+
+export function meta({ matches }: Route.MetaArgs) {
+  const config = configFromMatches(matches);
+  return [
+    { title: config.server_name },
+    { name: "description", content: config.site_description },
+  ];
+}
 
 export default function ManageServerConfigPage() {
   const { t } = useTranslation();

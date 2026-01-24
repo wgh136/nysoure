@@ -7,8 +7,17 @@ import { MdMoreHoriz, MdSearch } from "react-icons/md";
 import Pagination from "~/components/pagination";
 import showPopup, { PopupMenuItem } from "~/components/popup";
 import { useTranslation } from "~/hook/i18n";
-import { useConfig } from "~/hook/config";
+import { configFromMatches, useConfig } from "~/hook/config";
 import { ErrorAlert } from "~/components/alert";
+import type { Route } from "./+types/manage.users";
+
+export function meta({ matches }: Route.MetaArgs) {
+  const config = configFromMatches(matches);
+  return [
+    { title: config.server_name },
+    { name: "description", content: config.site_description },
+  ];
+}
 
 export default function UserView() {
   const { t } = useTranslation();

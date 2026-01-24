@@ -6,10 +6,18 @@ import Loading from "~/components/loading";
 import { MdAdd, MdMoreHoriz } from "react-icons/md";
 import { ErrorAlert } from "~/components/alert";
 import { useTranslation } from "~/hook/i18n";
-import { useConfig } from "~/hook/config";
+import { configFromMatches, useConfig } from "~/hook/config";
 import showPopup, { PopupMenuItem } from "~/components/popup";
 import Badge from "~/components/badge";
+import type { Route } from "./+types/manage.storage";
 
+export function meta({ matches }: Route.MetaArgs) {
+  const config = configFromMatches(matches);
+  return [
+    { title: config.server_name },
+    { name: "description", content: config.site_description },
+  ];
+}
 export default function StorageView() {
   const { t } = useTranslation();
   const config = useConfig();
