@@ -22,7 +22,10 @@ export async function loader({ params }: Route.LoaderArgs) {
   }
 
   // Fetch collection data on server side
-  const collectionRes = await network.getCollection(id);
+  const [collectionRes, firstPageResources] = await Promise.all([
+    network.getCollection(id),
+    network.listCollectionResources(id, 1),
+  ]);
   
   if (!collectionRes.success) {
     throw new Error(collectionRes.message || "Failed to load collection");
@@ -31,6 +34,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   return {
     collection: collectionRes.data,
     collectionId: id,
+    firstPageResources: firstPageResources.success ? firstPageResources : undefined,
   };
 }
 
@@ -49,7 +53,7 @@ export function meta({ loaderData, matches }: Route.MetaArgs) {
 }
 
 export default function CollectionPage({ loaderData }: Route.ComponentProps) {
-  const { collection: initialCollection, collectionId } = loaderData;
+  const { collection: initialCollection, collectionId, firstPageResources } = loaderData;
   const navigate = useNavigate();
   const [collection, setCollection] = useState<Collection | null>(initialCollection ?? null);
   const [resourcesKey, setResourcesKey] = useState(0);
@@ -202,6 +206,7 @@ export default function CollectionPage({ loaderData }: Route.ComponentProps) {
             : undefined
         }
         key={resourcesKey}
+        initialData={resourcesKey === 0 ? firstPageResources : undefined}
       />
       <dialog id="deleteResourceDialog" className="modal">
         <div className="modal-box">

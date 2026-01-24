@@ -1,6 +1,6 @@
 import type { Route } from "./+types/search";
 import { useTranslation } from "../hook/i18n";
-import { useSearchParams } from "react-router";
+import { useLoaderData, useSearchParams } from "react-router";
 import { network } from "../network/network";
 import ResourcesView from "~/components/resources_view";
 import { configFromMatches } from "../hook/config";
@@ -20,14 +20,24 @@ export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
   const keyword = url.searchParams.get("keyword") || "";
   
+  let firstPageResults = undefined;
+  if (keyword) {
+    const result = await network.searchResources(keyword, 1);
+    if (result.success) {
+      firstPageResults = result;
+    }
+  }
+  
   return {
     keyword,
+    firstPageResults,
   };
 }
 
 export default function SearchPage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
+  const { firstPageResults } = useLoaderData<typeof loader>();
   const keyword = searchParams.get("keyword");
 
   if (!keyword || keyword === "") {
@@ -48,6 +58,7 @@ export default function SearchPage() {
       <ResourcesView
         storageKey={`search-${keyword}`}
         loader={(page) => network.searchResources(keyword, page)}
+        initialData={firstPageResults}
       />
     </div>
   );

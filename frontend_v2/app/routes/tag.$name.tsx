@@ -25,17 +25,21 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Error("Tag name is required");
   }
 
-  const tagResponse = await network.getTagByName(tagName);
+  const [tagResponse, firstPageResources] = await Promise.all([
+    network.getTagByName(tagName),
+    network.getResourcesByTag(tagName, 1),
+  ]);
   
   return {
     tagName,
     tag: tagResponse.success ? tagResponse.data : null,
+    firstPageResources: firstPageResources.success ? firstPageResources : undefined,
   };
 }
 
 export default function TaggedResourcesPage() {
   const { t } = useTranslation();
-  const { tagName, tag: initialTag } = useLoaderData<typeof loader>();
+  const { tagName, tag: initialTag, firstPageResources } = useLoaderData<typeof loader>();
   const [tag, setTag] = useState<Tag | null>(initialTag ?? null);
 
   if (!tagName) {
@@ -80,6 +84,7 @@ export default function TaggedResourcesPage() {
         key={tag?.name ?? tagName}
         storageKey={`tagged-${tag?.name ?? tagName}`}
         loader={(page) => network.getResourcesByTag(tagName, page)}
+        initialData={firstPageResources}
       />
     </div>
   );

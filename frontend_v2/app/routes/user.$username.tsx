@@ -31,13 +31,24 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   // Get cookie from request headers for SSR
   const cookie = request.headers.get("Cookie");
   
+  // Get hash from URL to determine which tab
+  const url = new URL(request.url);
+  const hash = url.hash.slice(1);
+  
   // Fetch user info on server side
-  const userRes = await network.getUserInfo(username);
+  const [userRes, firstPageResources] = await Promise.all([
+    network.getUserInfo(username),
+    // Only fetch resources if on resources tab or no hash (default tab)
+    (hash === "resources" || hash === "") 
+      ? network.getResourcesByUser(username, 1)
+      : Promise.resolve({ success: false, message: "Not on resources tab" }),
+  ]);
   
   return {
     user: userRes.success ? userRes.data : null,
     username,
     error: !userRes.success ? userRes.message : null,
+    firstPageResources: firstPageResources.success ? firstPageResources : undefined,
   };
 }
 
@@ -51,7 +62,7 @@ export function meta({ data, matches }: Route.MetaArgs) {
 }
 
 export default function UserPage({ loaderData }: Route.ComponentProps) {
-  const { user: initialUser, username, error } = loaderData;
+  const { user: initialUser, username, error, firstPageResources } = loaderData;
   const [user, setUser] = useState<User | null>(initialUser ?? null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -142,7 +153,7 @@ export default function UserPage({ loaderData }: Route.ComponentProps) {
       </div>
       <div className="w-full">
         {page === 0 && <Collections username={username} />}
-        {page === 1 && <UserResources user={user} />}
+        {page === 1 && <UserResources user={user} initialData={firstPageResources} />}
         {page === 2 && <UserComments user={user} />}
         {page === 3 && <UserFiles user={user} />}
       </div>
@@ -204,13 +215,14 @@ function UserCard({ user }: { user: User }) {
   );
 }
 
-function UserResources({ user }: { user: User }) {
+function UserResources({ user, initialData }: { user: User; initialData?: any }) {
   return (
     <ResourcesView
       storageKey={`user-${user.username}`}
       loader={(page) => {
         return network.getResourcesByUser(user.username, page);
       }}
+      initialData={initialData}
     ></ResourcesView>
   );
 }

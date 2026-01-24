@@ -18,9 +18,10 @@ export function meta({ matches}: Route.MetaArgs) {
 }
 
 export async function loader() {
-  const [pinnedResources, statistic] = await Promise.all([
+  const [pinnedResources, statistic, firstPageResources] = await Promise.all([
     network.getPinnedResources(),
     network.getStatistic(),
+    network.getResources(1, RSort.TimeDesc),
   ]);
   if (!pinnedResources.success || !statistic.success) {
     throw new Error("Failed to load pinned resources or statistic");
@@ -28,11 +29,13 @@ export async function loader() {
   return {
     pinnedResources: pinnedResources.data ?? [],
     statistic: statistic.data ?? null,
+    firstPageResources: firstPageResources.success ? firstPageResources : undefined,
   };
 }
 
 export default function Home() {
   const { t } = useTranslation();
+  const { firstPageResources } = useLoaderData<typeof loader>();
 
   const [order, setOrder] = useState(RSort.TimeDesc);
 
@@ -69,6 +72,7 @@ export default function Home() {
         key={`home_page_${order}`}
         storageKey={`home_page_${order}`}
         loader={(page) => network.getResources(page, order)}
+        initialData={order === RSort.TimeDesc ? firstPageResources : undefined}
       />
     </>
   );

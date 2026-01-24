@@ -9,14 +9,16 @@ export default function ResourcesView({
   loader,
   storageKey,
   actionBuilder,
+  initialData,
 }: {
   loader: (page: number) => Promise<PageResponse<Resource>>;
   storageKey?: string;
   actionBuilder?: (resource: Resource) => React.ReactNode;
+  initialData?: PageResponse<Resource>;
 }) {
-  const [data, setData] = useState<Resource[]>([]);
-  const pageRef = useRef(1);
-  const totalPagesRef = useRef(1);
+  const [data, setData] = useState<Resource[]>(initialData?.data ?? []);
+  const pageRef = useRef(initialData ? 2 : 1);
+  const totalPagesRef = useRef(initialData?.totalPages ?? 1);
   const isLoadingRef = useRef(false);
   const [isClient, setIsClient] = useState(false);
 
@@ -41,18 +43,16 @@ export default function ResourcesView({
   }, [loader]);
 
   useEffect(() => {
-    if (isClient) {
+    if (isClient && !initialData) {
       loadPage();
     }
-  }, [loadPage, isClient]);
+  }, [loadPage, isClient, initialData]);
 
   const maybeLoadMore = useInfiniteLoader(loadPage);
 
   if (!isClient) {
     return (
-      <div className={"pt-2"}>
-        <Loading />
-      </div>
+      <></>
     );
   }
 
