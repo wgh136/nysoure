@@ -1,10 +1,28 @@
 services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+      - frontend
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      nysoure-net:
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     volumes:
       - ./app_data:/var/lib/nysoure
     depends_on:
@@ -25,8 +43,8 @@ services:
     build: 
       context: ./frontend_v2
       dockerfile: Dockerfile
-    ports:
-      - "3030:3000"
+    expose:
+      - "3000"
     env_file:
       - frontend_v2/.env
     logging:
