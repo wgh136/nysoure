@@ -944,7 +944,7 @@ function FileTile({ file }: { file: RFile }) {
   const navigate = useNavigate();
 
   return (
-    <div className={"card shadow bg-base-100 mb-4 p-4"}>
+    <div className={"card shadow bg-base-100/80 mb-4 p-4"}>
       <div className={"flex flex-row items-center"}>
         <div className={"grow"}>
           <h4 className={"font-bold break-all"}>{file.filename}</h4>
@@ -1897,7 +1897,7 @@ function KunFile({
   tags.push(...file.type.map((t) => kunResourceTypeToString(t)));
 
   return (
-    <div className={"card shadow bg-base-100 mb-4"}>
+    <div className={"card shadow bg-base-100/80 mb-4"}>
       <div className={"p-4 flex flex-row items-center"}>
         <div className={"grow"}>
           <h4 className={"font-bold break-all"}>{file.name}</h4>

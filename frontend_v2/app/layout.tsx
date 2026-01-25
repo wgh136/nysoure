@@ -225,16 +225,22 @@ function UserButton() {
     return () => clearInterval(interval);
   }, [config.isLoggedIn]);
 
-  // Reset notification count when navigating away from notifications page
+  // Clear notification count when entering notifications page
   useEffect(() => {
-    if (config.isLoggedIn && location.pathname !== '/notifications') {
-      const fetchCount = async () => {
-        const res = await network.getUserNotificationsCount();
-        if (res.success && res.data !== undefined) {
-          setNotificationCount(res.data);
-        }
-      };
-      fetchCount();
+    if (config.isLoggedIn) {
+      if (location.pathname === '/notifications') {
+        // Immediately clear the count when entering notifications page
+        setNotificationCount(0);
+      } else {
+        // Fetch fresh count when on other pages
+        const fetchCount = async () => {
+          const res = await network.getUserNotificationsCount();
+          if (res.success && res.data !== undefined) {
+            setNotificationCount(res.data);
+          }
+        };
+        fetchCount();
+      }
     }
   }, [location.pathname, config.isLoggedIn]);
 
@@ -259,7 +265,7 @@ function UserButton() {
     <div className="dropdown dropdown-end">
       <div className="indicator">
         {notificationCount > 0 && (
-          <span className="indicator-item badge badge-error badge-xs"></span>
+          <span className="indicator-item w-2 h-2 bg-error rounded-full"></span>
         )}
         <div
           tabIndex={0}
