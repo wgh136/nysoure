@@ -1772,7 +1772,7 @@ function DeleteFileDialog({
     setLoading(false);
   };
 
-  if (!config.user?.is_admin && config.user?.id !== uploaderId) {
+  if (!isAdmin(config) && config.user?.id !== uploaderId) {
     return <></>;
   }
 
@@ -1982,7 +1982,7 @@ function DeleteResourceDialog({
     setLoading(false);
   };
 
-  if (!config.user?.is_admin && config.user?.id !== uploaderId) {
+  if (!isAdmin(config) && config.user?.id !== uploaderId) {
     return <></>;
   }
 
