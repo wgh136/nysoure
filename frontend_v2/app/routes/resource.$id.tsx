@@ -736,8 +736,9 @@ function RelatedResourceCard({
               className="w-full h-full object-cover"
             />
         )}
-        <span className="block absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-black/70 to-transparent">
+        <span className="block absolute bottom-0 left-0 right-0 p-2 bg-linear-to-t from-black/70 to-transparent">
           <span className="text-lg font-bold line-clamp-2 overflow-hidden text-white">{r.title}</span>
+          {content && <span className="text-xs line-clamp-1 overflow-hidden text-white">{content}</span>}
         </span>
     </NavLink>
   );
