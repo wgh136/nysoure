@@ -2,6 +2,7 @@ package service
 
 import (
 	aireview "nysoure/server/ai_review"
+	"nysoure/server/ctx"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"regexp"
@@ -76,7 +77,7 @@ func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType
 	if err != nil {
 		log.Error("Error creating comment activity:", err)
 	}
-	
+
 	// Asynchronously check if the comment is an ad
 	go func() {
 		if aireview.IsAd(req.Content) {
@@ -86,7 +87,7 @@ func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType
 			}
 		}
 	}()
-	
+
 	return c.ToView(), nil
 }
 
@@ -210,7 +211,7 @@ func ListCommentsWithUser(username string, page int) ([]model.CommentWithResourc
 	return res, totalPages, nil
 }
 
-func UpdateComment(commentID, userID uint, req CommentRequest, host string) (*model.CommentView, error) {
+func UpdateComment(commentID uint, c ctx.Context, req CommentRequest, host string) (*model.CommentView, error) {
 	if len(req.Content) == 0 {
 		return nil, model.NewRequestError("Content cannot be empty")
 	}
@@ -219,6 +220,7 @@ func UpdateComment(commentID, userID uint, req CommentRequest, host string) (*mo
 	}
 
 	// Check if user is banned
+	userID := c.MustUserID()
 	user, err := dao.GetUserByID(userID)
 	if err != nil {
 		log.Error("Error getting user:", err)
@@ -233,11 +235,7 @@ func UpdateComment(commentID, userID uint, req CommentRequest, host string) (*mo
 		return nil, model.NewNotFoundError("Comment not found")
 	}
 	if comment.UserID != userID {
-		isAdmin, err := CheckUserIsAdmin(userID)
-		if err != nil {
-			log.Error("Error checking if user is admin:", err)
-			return nil, model.NewInternalServerError("Error checking user permissions")
-		}
+		isAdmin := c.UserPermission() == model.PermissionAdmin
 		if !isAdmin {
 			return nil, model.NewUnAuthorizedError("You can only update your own comments")
 		}

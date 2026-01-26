@@ -7,7 +7,7 @@ import { network } from "../network/network";
 import ResourcesView from "~/components/resources_view";
 import Markdown from "react-markdown";
 import { MdAdd, MdClose, MdEdit } from "react-icons/md";
-import { configFromMatches, useConfig } from "../hook/config";
+import { configFromMatches, useConfig, canUpload } from "../hook/config";
 import { useLoaderData } from "react-router";
 
 export function meta({ matches, params }: Route.MetaArgs) {
@@ -102,7 +102,7 @@ function EditTagButton({
   const { t } = useTranslation();
 
   // Only show edit button if user can upload
-  if (!config.isLoggedIn || (!config.user?.can_upload && !config.user?.is_admin)) {
+  if (!config.isLoggedIn || !canUpload(config)) {
     return null;
   }
 
@@ -262,7 +262,7 @@ function EditAliasDialog({
   const [error, setError] = useState<string | null>(null);
 
   // Only show edit button if user can upload
-  if (!config.isLoggedIn || (!config.user?.can_upload && !config.user?.is_admin)) {
+  if (!config.isLoggedIn || !canUpload(config)) {
     return null;
   }
 

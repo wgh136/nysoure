@@ -5,26 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"nysoure/server/config"
-	"nysoure/server/dao"
 	"regexp"
 	"strconv"
 )
-
-func checkUserCanUpload(uid uint) (bool, error) {
-	user, err := dao.GetUserByID(uid)
-	if err != nil {
-		return false, err
-	}
-	return user.IsAdmin || user.CanUpload, nil
-}
-
-func CheckUserIsAdmin(uid uint) (bool, error) {
-	user, err := dao.GetUserByID(uid)
-	if err != nil {
-		return false, err
-	}
-	return user.IsAdmin, nil
-}
 
 func VerifyCfToken(cfToken string) (bool, error) {
 	if config.CloudflareTurnstileSecretKey() == "" {

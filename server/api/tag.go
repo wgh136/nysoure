@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/url"
+	"nysoure/server/ctx"
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"strconv"
@@ -23,11 +24,8 @@ func handleCreateTag(c fiber.Ctx) error {
 	if len([]rune(tag)) > maxTagNameLength {
 		return model.NewRequestError("Tag name too long")
 	}
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You must be logged in to create a tag")
-	}
-	t, err := service.CreateTag(uid, tag)
+	context := ctx.NewContext(c)
+	t, err := service.CreateTag(context, tag)
 	if err != nil {
 		return err
 	}
@@ -77,10 +75,7 @@ func handleDeleteTag(c fiber.Ctx) error {
 }
 
 func handleSetTagInfo(c fiber.Ctx) error {
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You must be logged in to set tag description")
-	}
+	context := ctx.NewContext(c)
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
 		return model.NewRequestError("Invalid tag ID")
@@ -98,7 +93,7 @@ func handleSetTagInfo(c fiber.Ctx) error {
 		aliasOf = &aliasUint
 	}
 	tagType := c.FormValue("type")
-	t, err := service.SetTagInfo(uid, uint(id), description, aliasOf, tagType)
+	t, err := service.SetTagInfo(context, uint(id), description, aliasOf, tagType)
 	if err != nil {
 		return err
 	}
@@ -146,10 +141,7 @@ func getAllTags(c fiber.Ctx) error {
 }
 
 func getOrCreateTags(c fiber.Ctx) error {
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You must be logged in to get or create tags")
-	}
+	context := ctx.NewContext(c)
 
 	type GetOrCreateTagsRequest struct {
 		Names   []string `json:"names"`
@@ -179,7 +171,7 @@ func getOrCreateTags(c fiber.Ctx) error {
 
 	tagType := strings.TrimSpace(req.TagType)
 
-	tags, err := service.GetOrCreateTags(uid, names, tagType)
+	tags, err := service.GetOrCreateTags(context, names, tagType)
 	if err != nil {
 		return err
 	}
@@ -192,10 +184,7 @@ func getOrCreateTags(c fiber.Ctx) error {
 }
 
 func editTagAlias(c fiber.Ctx) error {
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You must be logged in to edit tag aliases")
-	}
+	context := ctx.NewContext(c)
 
 	idStr := c.Params("id")
 	id, err := strconv.Atoi(idStr)
@@ -210,7 +199,7 @@ func editTagAlias(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid request format")
 	}
 
-	tag, err := service.EditTagAlias(uid, uint(id), req.Aliases)
+	tag, err := service.EditTagAlias(context, uint(id), req.Aliases)
 	if err != nil {
 		return err
 	}

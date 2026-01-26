@@ -2,24 +2,18 @@ package api
 
 import (
 	"nysoure/server/config"
+	"nysoure/server/ctx"
 	"nysoure/server/model"
 	"nysoure/server/service"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/log"
 )
 
 func getServerConfig(c fiber.Ctx) error {
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewRequestError("You are not logged in")
-	}
-	isAdmin, err := service.CheckUserIsAdmin(uid)
-	if err != nil {
-		log.Error("Error checking user admin status: ", err)
-		return model.NewInternalServerError("Error checking user admin status")
-	}
-	if !isAdmin {
+	ctx := ctx.NewContext(c)
+	if ctx.UserPermission() != model.PermissionAdmin {
 		return model.NewUnAuthorizedError("You do not have permission to access this resource")
 	}
 	sc := config.GetConfig()
@@ -30,16 +24,8 @@ func getServerConfig(c fiber.Ctx) error {
 }
 
 func setServerConfig(c fiber.Ctx) error {
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewRequestError("You are not logged in")
-	}
-	isAdmin, err := service.CheckUserIsAdmin(uid)
-	if err != nil {
-		log.Error("Error checking user admin status: ", err)
-		return model.NewInternalServerError("Error checking user admin status")
-	}
-	if !isAdmin {
+	ctx := ctx.NewContext(c)
+	if ctx.UserPermission() != model.PermissionAdmin {
 		return model.NewUnAuthorizedError("You do not have permission to access this resource")
 	}
 
@@ -74,18 +60,21 @@ func getStatistics(c fiber.Ctx) error {
 
 func getFrontendConfig(c fiber.Ctx) error {
 	sc := config.GetConfig()
-	uid, ok := c.Locals("uid").(uint)
+	ctx := ctx.NewContext(c)
 	var user *model.UserView
-	clearCookie := false
-	if ok {
-		u, err := service.GetMe(uid)
-		if err != nil {
-			clearCookie = true
+	if ctx.LoggedIn() {
+		u, err := service.GetMe(ctx)
+		if err == nil {
+			user = &u.UserView
+			c.Cookie(&fiber.Cookie{
+				Name:     "token",
+				Value:    u.Token,
+				Expires:  time.Now().Add(7 * 24 * time.Hour),
+				HTTPOnly: true,
+				Secure:   true,
+				SameSite: "Strict",
+			})
 		}
-		user = &u.UserView
-	}
-	if clearCookie {
-		c.ClearCookie("token")
 	}
 	random, err := service.RandomCover()
 	if err != nil {

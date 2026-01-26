@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/url"
+	"nysoure/server/ctx"
 	"nysoure/server/middleware"
 	"nysoure/server/model"
 	"nysoure/server/service"
@@ -176,10 +177,6 @@ func listCommentsByUser(c fiber.Ctx) error {
 }
 
 func updateComment(c fiber.Ctx) error {
-	userID, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewRequestError("You must be logged in to update comment")
-	}
 	commentIDStr := c.Params("commentID")
 	commentID, err := strconv.Atoi(commentIDStr)
 	if err != nil {
@@ -195,7 +192,8 @@ func updateComment(c fiber.Ctx) error {
 		return model.NewRequestError("Content cannot be empty")
 	}
 
-	comment, err := service.UpdateComment(uint(commentID), userID, req, c.Host())
+	context := ctx.NewContext(c)
+	comment, err := service.UpdateComment(uint(commentID), context, req, c.Host())
 	if err != nil {
 		return err
 	}

@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"nysoure/server/ctx"
 	"nysoure/server/middleware"
 	"nysoure/server/model"
 	"nysoure/server/service"
@@ -13,17 +14,14 @@ import (
 )
 
 func handleUploadImage(c fiber.Ctx) error {
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You must be logged in to upload an image")
-	}
 	data := c.Body()
 	contentType := http.DetectContentType(data)
 	if !strings.HasPrefix(contentType, "image/") {
 		return model.NewRequestError("Invalid image format")
 	}
 	ip := c.IP()
-	id, err := service.CreateImage(uid, ip, data)
+	context := ctx.NewContext(c)
+	id, err := service.CreateImage(context, ip, data)
 	if err != nil {
 		return err
 	}
@@ -62,11 +60,8 @@ func handleDeleteImage(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid image ID")
 	}
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
-	if err := service.DeleteImage(uid, uint(id)); err != nil {
+	context := ctx.NewContext(c)
+	if err := service.DeleteImage(context, uint(id)); err != nil {
 		return err
 	}
 	return c.Status(fiber.StatusOK).JSON(model.Response[any]{

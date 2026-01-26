@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/url"
+	"nysoure/server/ctx"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/service"
@@ -30,11 +31,8 @@ func handleCreateResource(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid request body")
 	}
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You must be logged in to create a resource")
-	}
-	id, err := service.CreateResource(uid, &params)
+	context := ctx.NewContext(c)
+	id, err := service.CreateResource(context, &params)
 	if err != nil {
 		return err
 	}
@@ -76,11 +74,8 @@ func handleDeleteResource(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid resource ID")
 	}
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You must be logged in to delete a resource")
-	}
-	err = service.DeleteResource(uid, uint(id))
+	context := ctx.NewContext(c)
+	err = service.DeleteResource(context, uint(id))
 	if err != nil {
 		return err
 	}
@@ -235,11 +230,8 @@ func handleUpdateResource(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid request body")
 	}
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You must be logged in to update a resource")
-	}
-	err = service.UpdateResource(uid, uint(id), &params)
+	context := ctx.NewContext(c)
+	err = service.UpdateResource(context, uint(id), &params)
 	if err != nil {
 		return err
 	}
@@ -287,11 +279,8 @@ func handleGetInfoFromVndb(c fiber.Ctx) error {
 	if vnID == "" {
 		return model.NewRequestError("VNDB ID is required")
 	}
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You must be logged in to get characters from VNDB")
-	}
-	characters, err := service.GetCharactersFromVndb(vnID, uid)
+	context := ctx.NewContext(c)
+	characters, err := service.GetCharactersFromVndb(vnID, context)
 	if err != nil {
 		return err
 	}
@@ -333,12 +322,8 @@ func handleUpdateCharacterImage(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid request body")
 	}
 
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You must be logged in to update a character")
-	}
-
-	err = service.UpdateCharacterImage(uid, uint(resourceId), uint(characterId), params.ImageID)
+	context := ctx.NewContext(c)
+	err = service.UpdateCharacterImage(context, uint(resourceId), uint(characterId), params.ImageID)
 	if err != nil {
 		return err
 	}
@@ -496,12 +481,8 @@ func handleUpdateResourceImage(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid request body")
 	}
 
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You must be logged in to update a resource image")
-	}
-
-	err = service.UpdateResourceImage(uid, uint(resourceId), uint(oldImageId), params.NewImageID)
+	context := ctx.NewContext(c)
+	err = service.UpdateResourceImage(context, uint(resourceId), uint(oldImageId), params.NewImageID)
 	if err != nil {
 		return err
 	}

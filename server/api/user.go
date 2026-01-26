@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"nysoure/server/ctx"
 	"nysoure/server/middleware"
 	"nysoure/server/model"
 	"nysoure/server/service"
@@ -67,16 +68,12 @@ func handleUserLogin(c fiber.Ctx) error {
 }
 
 func handleUserChangePassword(c fiber.Ctx) error {
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
 	oldPassword := c.FormValue("old_password")
 	newPassword := c.FormValue("new_password")
 	if oldPassword == "" || newPassword == "" {
 		return model.NewRequestError("Old and new passwords are required")
 	}
-	user, err := service.ChangePassword(uid, oldPassword, newPassword)
+	user, err := service.ChangePassword(ctx.NewContext(c), oldPassword, newPassword)
 	if err != nil {
 		return err
 	}
@@ -96,10 +93,6 @@ func handleUserChangePassword(c fiber.Ctx) error {
 }
 
 func handleUserChangeAvatar(c fiber.Ctx) error {
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
 	file, err := c.FormFile("avatar")
 	if err != nil {
 		return model.NewRequestError("Avatar file is required")
@@ -113,7 +106,7 @@ func handleUserChangeAvatar(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	user, err := service.ChangeAvatar(uid, imageData)
+	user, err := service.ChangeAvatar(ctx.NewContext(c), imageData)
 	if err != nil {
 		return err
 	}
@@ -141,11 +134,6 @@ func handleGetUserAvatar(c fiber.Ctx) error {
 }
 
 func handleSetUserAdmin(c fiber.Ctx) error {
-	adminID, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
-
 	userIDStr := c.FormValue("user_id")
 	if userIDStr == "" {
 		return model.NewRequestError("User ID is required")
@@ -163,7 +151,7 @@ func handleSetUserAdmin(c fiber.Ctx) error {
 
 	isAdmin := isAdminStr == "true" || isAdminStr == "1"
 
-	user, err := service.SetUserAdmin(adminID, uint(userID), isAdmin)
+	user, err := service.SetUserAdmin(ctx.NewContext(c), uint(userID), isAdmin)
 	if err != nil {
 		return err
 	}
@@ -176,11 +164,6 @@ func handleSetUserAdmin(c fiber.Ctx) error {
 }
 
 func handleSetUserUploadPermission(c fiber.Ctx) error {
-	adminID, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
-
 	userIDStr := c.FormValue("user_id")
 	if userIDStr == "" {
 		return model.NewRequestError("User ID is required")
@@ -198,7 +181,7 @@ func handleSetUserUploadPermission(c fiber.Ctx) error {
 
 	canUpload := canUploadStr == "true" || canUploadStr == "1"
 
-	user, err := service.SetUserUploadPermission(adminID, uint(userID), canUpload)
+	user, err := service.SetUserUploadPermission(ctx.NewContext(c), uint(userID), canUpload)
 	if err != nil {
 		return err
 	}
@@ -211,18 +194,13 @@ func handleSetUserUploadPermission(c fiber.Ctx) error {
 }
 
 func handleListUsers(c fiber.Ctx) error {
-	adminID, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
-
 	pageStr := c.Query("page", "1")
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page < 1 {
 		page = 1
 	}
 
-	users, totalPages, err := service.ListUsers(adminID, page)
+	users, totalPages, err := service.ListUsers(ctx.NewContext(c), page)
 	if err != nil {
 		return err
 	}
@@ -236,11 +214,6 @@ func handleListUsers(c fiber.Ctx) error {
 }
 
 func handleSearchUsers(c fiber.Ctx) error {
-	adminID, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
-
 	username := c.Query("username", "")
 	if username == "" {
 		return model.NewRequestError("Username search parameter is required")
@@ -252,7 +225,7 @@ func handleSearchUsers(c fiber.Ctx) error {
 		page = 1
 	}
 
-	users, totalPages, err := service.SearchUsers(adminID, username, page)
+	users, totalPages, err := service.SearchUsers(ctx.NewContext(c), username, page)
 	if err != nil {
 		return err
 	}
@@ -266,11 +239,6 @@ func handleSearchUsers(c fiber.Ctx) error {
 }
 
 func handleDeleteUser(c fiber.Ctx) error {
-	adminID, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
-
 	userIDStr := c.FormValue("user_id")
 	if userIDStr == "" {
 		return model.NewRequestError("User ID is required")
@@ -281,7 +249,7 @@ func handleDeleteUser(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid user ID")
 	}
 
-	if err := service.DeleteUser(adminID, uint(userID)); err != nil {
+	if err := service.DeleteUser(ctx.NewContext(c), uint(userID)); err != nil {
 		return err
 	}
 
@@ -312,15 +280,11 @@ func handleGetUserInfo(c fiber.Ctx) error {
 }
 
 func handleChangeUsername(c fiber.Ctx) error {
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
 	newUsername := c.FormValue("username")
 	if newUsername == "" {
 		return model.NewRequestError("Username is required")
 	}
-	user, err := service.ChangeUsername(uid, newUsername)
+	user, err := service.ChangeUsername(ctx.NewContext(c), newUsername)
 	if err != nil {
 		return err
 	}
@@ -332,15 +296,11 @@ func handleChangeUsername(c fiber.Ctx) error {
 }
 
 func handleSetUserBio(c fiber.Ctx) error {
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
 	bio := c.FormValue("bio")
 	if bio == "" {
 		return model.NewRequestError("Bio is required")
 	}
-	user, err := service.SetUserBio(uid, bio)
+	user, err := service.SetUserBio(ctx.NewContext(c), bio)
 	if err != nil {
 		return err
 	}
@@ -353,11 +313,7 @@ func handleSetUserBio(c fiber.Ctx) error {
 
 // handleGetMe retrieves the current user's information and refreshes the token
 func handleGetMe(c fiber.Ctx) error {
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
-	user, err := service.GetMe(uid)
+	user, err := service.GetMe(ctx.NewContext(c))
 	if err != nil {
 		return err
 	}
@@ -377,18 +333,13 @@ func handleGetMe(c fiber.Ctx) error {
 }
 
 func handleListBannedUsers(c fiber.Ctx) error {
-	adminID, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
-
 	pageStr := c.Query("page", "1")
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page < 1 {
 		page = 1
 	}
 
-	users, totalPages, err := service.ListBannedUsers(adminID, page)
+	users, totalPages, err := service.ListBannedUsers(ctx.NewContext(c), page)
 	if err != nil {
 		return err
 	}
@@ -402,11 +353,6 @@ func handleListBannedUsers(c fiber.Ctx) error {
 }
 
 func handleUnbanUser(c fiber.Ctx) error {
-	adminID, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
-
 	userIDStr := c.FormValue("user_id")
 	if userIDStr == "" {
 		return model.NewRequestError("User ID is required")
@@ -417,7 +363,7 @@ func handleUnbanUser(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid user ID")
 	}
 
-	user, err := service.UnbanUser(adminID, uint(userID))
+	user, err := service.UnbanUser(ctx.NewContext(c), uint(userID))
 	if err != nil {
 		return err
 	}

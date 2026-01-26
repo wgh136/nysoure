@@ -1,6 +1,7 @@
 package service
 
 import (
+	"nysoure/server/ctx"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 )
@@ -34,18 +35,15 @@ func UpdateCollection(uid, id uint, title, article string, host string, public b
 }
 
 // Delete a collection by ID.
-func DeleteCollection(uid, id uint) error {
-	user, err := dao.GetUserByID(uid)
-	if err != nil {
-		return err
-	}
+func DeleteCollection(c ctx.Context, id uint) error {
+	uid := c.MustUserID()
 
 	collection, err := dao.GetCollectionByID(id)
 	if err != nil {
 		return err
 	}
 
-	if user.ID != collection.UserID && !user.IsAdmin {
+	if uid != collection.UserID && c.UserPermission() != model.PermissionAdmin {
 		return model.NewUnAuthorizedError("user does not have permission to delete this collection")
 	}
 

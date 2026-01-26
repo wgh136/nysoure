@@ -1,6 +1,7 @@
 package service
 
 import (
+	"nysoure/server/ctx"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/storage"
@@ -19,13 +20,8 @@ type CreateS3StorageParams struct {
 	MaxSizeInMB     uint   `json:"maxSizeInMB"`
 }
 
-func CreateS3Storage(uid uint, params CreateS3StorageParams) error {
-	isAdmin, err := CheckUserIsAdmin(uid)
-	if err != nil {
-		log.Errorf("check user is admin failed: %s", err)
-		return model.NewInternalServerError("check user is admin failed")
-	}
-	if !isAdmin {
+func CreateS3Storage(c ctx.Context, params CreateS3StorageParams) error {
+	if c.UserPermission() != model.PermissionAdmin {
 		return model.NewUnAuthorizedError("only admin can create s3 storage")
 	}
 	s3 := storage.S3Storage{
@@ -41,7 +37,7 @@ func CreateS3Storage(uid uint, params CreateS3StorageParams) error {
 		Config:  s3.ToString(),
 		MaxSize: int64(params.MaxSizeInMB) * 1024 * 1024,
 	}
-	_, err = dao.CreateStorage(s)
+	_, err := dao.CreateStorage(s)
 	return err
 }
 
@@ -51,19 +47,14 @@ type CreateLocalStorageParams struct {
 	MaxSizeInMB uint   `json:"maxSizeInMB"`
 }
 
-func CreateLocalStorage(uid uint, params CreateLocalStorageParams) error {
-	isAdmin, err := CheckUserIsAdmin(uid)
-	if err != nil {
-		log.Errorf("check user is admin failed: %s", err)
-		return model.NewInternalServerError("check user is admin failed")
-	}
-	if !isAdmin {
+func CreateLocalStorage(c ctx.Context, params CreateLocalStorageParams) error {
+	if c.UserPermission() != model.PermissionAdmin {
 		return model.NewUnAuthorizedError("only admin can create local storage")
 	}
 	local := storage.LocalStorage{
 		Path: params.Path,
 	}
-	err = os.MkdirAll(params.Path, os.ModePerm)
+	err := os.MkdirAll(params.Path, os.ModePerm)
 	if err != nil {
 		log.Errorf("create local storage dir failed: %s", err)
 		return model.NewInternalServerError("create local storage dir failed")
@@ -88,13 +79,8 @@ type CreateFTPStorageParams struct {
 	MaxSizeInMB uint   `json:"maxSizeInMB"`
 }
 
-func CreateFTPStorage(uid uint, params CreateFTPStorageParams) error {
-	isAdmin, err := CheckUserIsAdmin(uid)
-	if err != nil {
-		log.Errorf("check user is admin failed: %s", err)
-		return model.NewInternalServerError("check user is admin failed")
-	}
-	if !isAdmin {
+func CreateFTPStorage(c ctx.Context, params CreateFTPStorageParams) error {
+	if c.UserPermission() != model.PermissionAdmin {
 		return model.NewUnAuthorizedError("only admin can create ftp storage")
 	}
 	ftp := storage.FTPStorage{
@@ -110,7 +96,7 @@ func CreateFTPStorage(uid uint, params CreateFTPStorageParams) error {
 		Config:  ftp.ToString(),
 		MaxSize: int64(params.MaxSizeInMB) * 1024 * 1024,
 	}
-	_, err = dao.CreateStorage(s)
+	_, err := dao.CreateStorage(s)
 	return err
 }
 
@@ -126,32 +112,22 @@ func ListStorages() ([]model.StorageView, error) {
 	return result, nil
 }
 
-func DeleteStorage(uid, id uint) error {
-	isAdmin, err := CheckUserIsAdmin(uid)
-	if err != nil {
-		log.Errorf("check user is admin failed: %s", err)
-		return model.NewInternalServerError("check user is admin failed")
-	}
-	if !isAdmin {
+func DeleteStorage(c ctx.Context, id uint) error {
+	if c.UserPermission() != model.PermissionAdmin {
 		return model.NewUnAuthorizedError("only admin can delete storage")
 	}
-	err = dao.DeleteStorage(id)
+	err := dao.DeleteStorage(id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func SetDefaultStorage(uid, id uint) error {
-	isAdmin, err := CheckUserIsAdmin(uid)
-	if err != nil {
-		log.Errorf("check user is admin failed: %s", err)
-		return model.NewInternalServerError("check user is admin failed")
-	}
-	if !isAdmin {
+func SetDefaultStorage(c ctx.Context, id uint) error {
+	if c.UserPermission() != model.PermissionAdmin {
 		return model.NewUnAuthorizedError("only admin can set default storage")
 	}
-	err = dao.SetDefaultStorage(id)
+	err := dao.SetDefaultStorage(id)
 	if err != nil {
 		return err
 	}

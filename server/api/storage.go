@@ -1,6 +1,7 @@
 package api
 
 import (
+	"nysoure/server/ctx"
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"strconv"
@@ -23,12 +24,8 @@ func handleCreateS3Storage(c fiber.Ctx) error {
 		return model.NewRequestError("Max size must be greater than 0")
 	}
 
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You are not authorized to perform this action")
-	}
-
-	err := service.CreateS3Storage(uid, params)
+	context := ctx.NewContext(c)
+	err := service.CreateS3Storage(context, params)
 	if err != nil {
 		return err
 	}
@@ -53,12 +50,8 @@ func handleCreateLocalStorage(c fiber.Ctx) error {
 		return model.NewRequestError("Max size must be greater than 0")
 	}
 
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You are not authorized to perform this action")
-	}
-
-	err := service.CreateLocalStorage(uid, params)
+	context := ctx.NewContext(c)
+	err := service.CreateLocalStorage(context, params)
 	if err != nil {
 		return err
 	}
@@ -84,12 +77,8 @@ func handleCreateFTPStorage(c fiber.Ctx) error {
 		return model.NewRequestError("Max size must be greater than 0")
 	}
 
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You are not authorized to perform this action")
-	}
-
-	err := service.CreateFTPStorage(uid, params)
+	context := ctx.NewContext(c)
+	err := service.CreateFTPStorage(context, params)
 	if err != nil {
 		return err
 	}
@@ -124,12 +113,8 @@ func handleDeleteStorage(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid storage ID")
 	}
 
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You are not authorized to perform this action")
-	}
-
-	err = service.DeleteStorage(uid, uint(id))
+	context := ctx.NewContext(c)
+	err = service.DeleteStorage(context, uint(id))
 	if err != nil {
 		return err
 	}
@@ -147,12 +132,8 @@ func handleSetDefaultStorage(c fiber.Ctx) error {
 		return model.NewRequestError("Invalid storage ID")
 	}
 
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("You are not authorized to perform this action")
-	}
-
-	err = service.SetDefaultStorage(uid, uint(id))
+	context := ctx.NewContext(c)
+	err = service.SetDefaultStorage(context, uint(id))
 	if err != nil {
 		return err
 	}

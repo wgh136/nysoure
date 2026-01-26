@@ -1,7 +1,7 @@
 import { network } from "~/network/network";
 import type { Route } from "./+types/resource.$id";
 import removeMd from "remove-markdown";
-import { configFromMatches, useConfig } from "~/hook/config";
+import { configFromMatches, useConfig, isAdmin, canUpload } from "~/hook/config";
 import { createRef, useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { MdAdd, MdOutlineAccessTime, MdOutlineAdd, MdOutlineArchive, MdOutlineArticle, MdOutlineCloud, MdOutlineComment, MdOutlineContentCopy, MdOutlineDataset, MdOutlineDelete, MdOutlineDownload, MdOutlineEdit, MdOutlineFolderSpecial, MdOutlineInfo, MdOutlineLink, MdOutlineOpenInNew, MdOutlineStar, MdOutlineVerifiedUser } from "react-icons/md";
 import { useTranslation } from "~/hook/i18n";
@@ -227,7 +227,7 @@ export default function ResourcePage({ loaderData }: Route.ComponentProps) {
       </div>
 
       <div className={"grow"}></div>
-      {config.user?.is_admin || config.user?.id === resource.author.id ? (
+      {isAdmin(config) || config.user?.id === resource.author.id ? (
         <Button
           className={"btn-ghost btn-circle"}
           onClick={() => {
@@ -894,7 +894,7 @@ function Files({
         </div>
       )}
       <div className={"h-2"}></div>
-      {(config.user?.can_upload || (config.allow_normal_user_upload && config.isLoggedIn)) && (
+      {(canUpload(config) || (config.allow_normal_user_upload && config.isLoggedIn)) && (
         <div className={"flex flex-row-reverse"}>
           <CreateFileDialog resourceId={resource.id}></CreateFileDialog>
         </div>
@@ -1471,7 +1471,7 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
                 )}
               </p>
               <select
-                disabled={!config.user?.can_upload} // normal user cannot choose storage
+                disabled={!canUpload(config)} // normal user cannot choose storage
                 className="select select-primary w-full my-2"
                 value={storage?.id || ""}
                 onChange={(e) => {
@@ -1527,7 +1527,7 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
             </>
           )}
 
-          {fileType === FileType.serverTask && !config.user?.can_upload && (
+          {fileType === FileType.serverTask && !canUpload(config) && (
             <p className={"text-sm p-2"}>
               {t(
                 "You do not have permission to upload files, please contact the administrator.",
@@ -1535,7 +1535,7 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
             </p>
           )}
 
-          {fileType === FileType.serverTask && config.user?.can_upload && (
+          {fileType === FileType.serverTask && canUpload(config) && (
             <>
               <p className={"text-sm p-2"}>
                 {t(
@@ -1543,7 +1543,7 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
                 )}
               </p>
               <select
-                disabled={!config.user?.can_upload}
+                disabled={!canUpload(config)}
                 className="select select-primary w-full my-2"
                 value={storage?.id || ""}
                 onChange={(e) => {
@@ -1665,7 +1665,7 @@ function UpdateFileInfoDialog({ file }: { file: RFile }) {
     setLoading(false);
   };
 
-  if (!config.user?.is_admin && config.user?.id !== file.user.id) {
+  if (!isAdmin(config) && config.user?.id !== file.user.id) {
     return <></>;
   }
 

@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"nysoure/server/cache"
 	"nysoure/server/config"
+	"nysoure/server/ctx"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/search"
@@ -51,14 +52,11 @@ type CharacterParams struct {
 	Image uint     `json:"image"`
 }
 
-func CreateResource(uid uint, params *ResourceParams) (uint, error) {
-	canUpload, err := checkUserCanUpload(uid)
-	if err != nil {
-		return 0, err
-	}
-	if !canUpload {
+func CreateResource(c ctx.Context, params *ResourceParams) (uint, error) {
+	if c.UserPermission() < model.PermissionUploader {
 		return 0, model.NewUnAuthorizedError("You have not permission to upload resources")
 	}
+	uid := c.MustUserID()
 
 	images := make([]model.Image, len(params.Images))
 	for i, id := range params.Images {
@@ -136,6 +134,7 @@ func CreateResource(uid uint, params *ResourceParams) (uint, error) {
 		GalleryNsfw:       nsfw,
 		Characters:        characters,
 	}
+	var err error
 	if r, err = dao.CreateResource(r); err != nil {
 		return 0, err
 	}
@@ -451,11 +450,9 @@ func SearchResource(query string, page int) ([]model.ResourceView, int, error) {
 	return views, totalPages, nil
 }
 
-func DeleteResource(uid, id uint) error {
-	isAdmin, err := CheckUserIsAdmin(uid)
-	if err != nil {
-		return err
-	}
+func DeleteResource(c ctx.Context, id uint) error {
+	uid := c.MustUserID()
+	isAdmin := c.UserPermission() == model.PermissionAdmin
 	if !isAdmin {
 		r, err := dao.GetResourceByID(id)
 		if err != nil {
@@ -514,17 +511,14 @@ func GetResourcesWithUser(username string, page int) ([]model.ResourceView, int,
 	return views, totalPages, nil
 }
 
-func UpdateResource(uid, rid uint, params *ResourceParams) error {
-	isAdmin, err := checkUserCanUpload(uid)
-	if err != nil {
-		log.Error("checkUserCanUpload error: ", err)
-		return model.NewInternalServerError("Failed to check user permission")
-	}
+func UpdateResource(c ctx.Context, rid uint, params *ResourceParams) error {
+	uid := c.MustUserID()
+	canUpload := c.UserPermission() >= model.PermissionUploader
 	r, err := dao.GetResourceByID(rid)
 	if err != nil {
 		return err
 	}
-	if r.UserID != uid && !isAdmin {
+	if r.UserID != uid && !canUpload {
 		return model.NewUnAuthorizedError("You have not permission to edit this resource")
 	}
 
@@ -666,12 +660,8 @@ func GetPinnedResources() ([]model.ResourceView, error) {
 	return views, nil
 }
 
-func GetCharactersFromVndb(vnID string, uid uint) ([]CharacterParams, error) {
-	canUpload, err := checkUserCanUpload(uid)
-	if err != nil {
-		return nil, err
-	}
-	if !canUpload {
+func GetCharactersFromVndb(vnID string, c ctx.Context) ([]CharacterParams, error) {
+	if c.UserPermission() < model.PermissionUploader {
 		return nil, model.NewUnAuthorizedError("You have not permission to fetch characters from VNDB")
 	}
 
@@ -823,7 +813,9 @@ func downloadAndCreateImage(imageURL string) (uint, error) {
 
 	// 使用系统用户ID (假设为1) 创建图片
 	// 注意：这里使用系统账户，实际使用时可能需要调整
-	imageID, err := CreateImage(1, "127.0.0.1", imageData)
+	// 创建一个临时的fake context用于内部调用
+	fakeCtx := ctx.NewFakeContext(1, model.PermissionUploader)
+	imageID, err := CreateImage(fakeCtx, "127.0.0.1", imageData)
 	if err != nil {
 		return 0, fmt.Errorf("failed to create image: %w", err)
 	}
@@ -868,7 +860,7 @@ func GetReleaseDateFromVndb(vnID string) (string, error) {
 }
 
 // UpdateCharacterImage 更新角色的图片ID
-func UpdateCharacterImage(uid, resourceID, characterID, imageID uint) error {
+func UpdateCharacterImage(c ctx.Context, resourceID, characterID, imageID uint) error {
 	// 检查资源是否存在并且用户有权限修改
 	resource, err := dao.GetResourceByID(resourceID)
 	if err != nil {
@@ -878,10 +870,8 @@ func UpdateCharacterImage(uid, resourceID, characterID, imageID uint) error {
 		return err
 	}
 
-	isAdmin, err := CheckUserIsAdmin(uid)
-	if err != nil {
-		return err
-	}
+	uid := c.MustUserID()
+	isAdmin := c.UserPermission() == model.PermissionAdmin
 
 	// 检查用户是否有权限修改这个资源
 	if resource.UserID != uid && !isAdmin {
@@ -960,17 +950,15 @@ func GetLowResolutionResourceImages(page int, pageSize int, maxWidth, maxHeight 
 }
 
 // UpdateResourceImage 更新资源图片
-func UpdateResourceImage(uid, resourceID, oldImageID, newImageID uint) error {
+func UpdateResourceImage(c ctx.Context, resourceID, oldImageID, newImageID uint) error {
 	// 首先检查用户权限 - 确保用户是资源的所有者或管理员
 	resource, err := dao.GetResourceByID(resourceID)
 	if err != nil {
 		return err
 	}
 
-	isAdmin, err := CheckUserIsAdmin(uid)
-	if err != nil {
-		return err
-	}
+	uid := c.MustUserID()
+	isAdmin := c.UserPermission() == model.PermissionAdmin
 
 	if resource.UserID != uid && !isAdmin {
 		return model.NewUnAuthorizedError("You don't have permission to update this resource")
