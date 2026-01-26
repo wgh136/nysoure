@@ -6,7 +6,7 @@ import Loading from "~/components/loading";
 import { MdAdd, MdMoreHoriz } from "react-icons/md";
 import { ErrorAlert } from "~/components/alert";
 import { useTranslation } from "~/hook/i18n";
-import { configFromMatches, useConfig } from "~/hook/config";
+import { configFromMatches, useConfig, isAdmin } from "~/hook/config";
 import showPopup, { PopupMenuItem } from "~/components/popup";
 import Badge from "~/components/badge";
 import type { Route } from "./+types/manage.storage";
@@ -38,7 +38,7 @@ export default function StorageView() {
   }, []);
 
   useEffect(() => {
-    if (config.user == null || !config.user.is_admin) {
+    if (config.user == null || !isAdmin(config)) {
       return;
     }
     network.listStorages().then((response) => {
@@ -108,7 +108,7 @@ export default function StorageView() {
     );
   }
 
-  if (!config.user?.is_admin) {
+  if (!isAdmin(config)) {
     return (
       <ErrorAlert
         className={"m-4"}

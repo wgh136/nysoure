@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"nysoure/server/config"
+	ctx2 "nysoure/server/ctx"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/storage"
@@ -80,18 +81,14 @@ func init() {
 	}()
 }
 
-func CreateUploadingFile(uid uint, filename string, description string, fileSize int64, resourceID, storageID uint, tag string) (*model.UploadingFileView, error) {
+func CreateUploadingFile(c ctx2.Context, filename string, description string, fileSize int64, resourceID, storageID uint, tag string) (*model.UploadingFileView, error) {
 	if filename == "" {
 		return nil, model.NewRequestError("filename is empty")
 	}
 	if len([]rune(filename)) > 128 {
 		return nil, model.NewRequestError("filename is too long")
 	}
-	canUpload, err := checkUserCanUpload(uid)
-	if err != nil {
-		log.Error("failed to check user permission: ", err)
-		return nil, model.NewInternalServerError("failed to check user permission")
-	}
+	canUpload := c.UserPermission() >= model.PermissionUploader
 	if !canUpload {
 		if !config.AllowNormalUserUpload() || fileSize > config.MaxNormalUserUploadSize()*1024*1024 {
 			return nil, model.NewUnAuthorizedError("user cannot upload file")
@@ -113,6 +110,7 @@ func CreateUploadingFile(uid uint, filename string, description string, fileSize
 		log.Error("failed to create temp dir: ", err)
 		return nil, model.NewInternalServerError("failed to create temp dir")
 	}
+	uid := c.MustUserID()
 	uploadingFile, err := dao.CreateUploadingFile(filename, description, fileSize, blockSize, tempPath, resourceID, storageID, uid, tag)
 	if err != nil {
 		log.Error("failed to create uploading file: ", err)
@@ -309,7 +307,7 @@ func CancelUploadingFile(uid uint, fid uint) error {
 	return nil
 }
 
-func CreateRedirectFile(uid uint, filename string, description string, resourceID uint, redirectUrl string, fileSize int64, md5 string, tag string) (*model.FileView, error) {
+func CreateRedirectFile(c ctx2.Context, filename string, description string, resourceID uint, redirectUrl string, fileSize int64, md5 string, tag string) (*model.FileView, error) {
 	u, err := url.Parse(redirectUrl)
 	if err != nil {
 		return nil, model.NewRequestError("URL is not valid")
@@ -320,15 +318,12 @@ func CreateRedirectFile(uid uint, filename string, description string, resourceI
 		}
 	}
 
-	canUpload, err := checkUserCanUpload(uid)
-	if err != nil {
-		log.Error("failed to check user permission: ", err)
-		return nil, model.NewInternalServerError("failed to check user permission")
-	}
+	canUpload := c.UserPermission() >= model.PermissionUploader
 	if !canUpload && !config.AllowNormalUserUpload() {
 		return nil, model.NewUnAuthorizedError("user cannot upload file")
 	}
 
+	uid := c.MustUserID()
 	file, err := dao.CreateFile(filename, description, resourceID, nil, "", redirectUrl, fileSize, uid, md5, tag)
 	if err != nil {
 		log.Error("failed to create file in db: ", err)
@@ -337,18 +332,15 @@ func CreateRedirectFile(uid uint, filename string, description string, resourceI
 	return file.ToView(), nil
 }
 
-func DeleteFile(uid uint, fid string) error {
+func DeleteFile(c ctx2.Context, fid string) error {
 	file, err := dao.GetFile(fid)
 	if err != nil {
 		log.Error("failed to get file: ", err)
 		return model.NewNotFoundError("file not found")
 	}
 
-	isAdmin, err := CheckUserIsAdmin(uid)
-	if err != nil {
-		log.Error("failed to check user permission: ", err)
-		return model.NewInternalServerError("failed to check user permission")
-	}
+	uid := c.MustUserID()
+	isAdmin := c.UserPermission() == model.PermissionAdmin
 
 	if !isAdmin && file.UserID != uid {
 		return model.NewUnAuthorizedError("user cannot delete file")
@@ -373,18 +365,15 @@ func DeleteFile(uid uint, fid string) error {
 	return nil
 }
 
-func UpdateFile(uid uint, fid string, filename string, description string, tag string, size int64) (*model.FileView, error) {
+func UpdateFile(c ctx2.Context, fid string, filename string, description string, tag string, size int64) (*model.FileView, error) {
 	file, err := dao.GetFile(fid)
 	if err != nil {
 		log.Error("failed to get file: ", err)
 		return nil, model.NewNotFoundError("file not found")
 	}
 
-	isAdmin, err := CheckUserIsAdmin(uid)
-	if err != nil {
-		log.Error("failed to check user permission: ", err)
-		return nil, model.NewInternalServerError("failed to check user permission")
-	}
+	uid := c.MustUserID()
+	isAdmin := c.UserPermission() == model.PermissionAdmin
 
 	if !isAdmin && file.UserID != uid {
 		return nil, model.NewUnAuthorizedError("user cannot update file")
@@ -570,13 +559,8 @@ func downloadFile(ctx context.Context, url string, path string) (string, error) 
 	}
 }
 
-func CreateServerDownloadTask(uid uint, url, filename, description string, resourceID, storageID uint, tag string) (*model.FileView, error) {
-	canUpload, err := checkUserCanUpload(uid)
-	if err != nil {
-		log.Error("failed to check user permission: ", err)
-		return nil, model.NewInternalServerError("failed to check user permission")
-	}
-	if !canUpload {
+func CreateServerDownloadTask(c ctx2.Context, url, filename, description string, resourceID, storageID uint, tag string) (*model.FileView, error) {
+	if c.UserPermission() < model.PermissionUploader {
 		return nil, model.NewUnAuthorizedError("user cannot upload file")
 	}
 
@@ -591,6 +575,7 @@ func CreateServerDownloadTask(uid uint, url, filename, description string, resou
 		return nil, model.NewRequestError("server is busy, please try again later")
 	}
 
+	uid := c.MustUserID()
 	file, err := dao.CreateFile(filename, description, resourceID, &storageID, storageKeyUnavailable, "", 0, uid, "", tag)
 	if err != nil {
 		log.Error("failed to create file in db: ", err)

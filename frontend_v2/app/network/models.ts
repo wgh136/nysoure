@@ -3,13 +3,20 @@ export interface User {
   username: string;
   created_at: string;
   avatar_path: string;
-  is_admin: boolean;
-  can_upload: boolean;
+  permission: Permission;
   resources_count: number;
   files_count: number;
   comments_count: number;
   bio: string;
   banned: boolean;
+}
+
+export enum Permission {
+  None = 0,
+  User = 1,
+  Verified = 2,
+  Uploader = 3,
+  Admin = 4,
 }
 
 export interface UserWithToken extends User {

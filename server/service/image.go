@@ -6,6 +6,7 @@ import (
 	"image"
 	"math"
 	"net/http"
+	"nysoure/server/ctx"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/utils"
@@ -126,12 +127,8 @@ func init() {
 	}()
 }
 
-func CreateImage(uid uint, ip string, data []byte) (uint, error) {
-	canUpload, err := checkUserCanUpload(uid)
-	if err != nil {
-		log.Error("Error checking user upload permission:", err)
-		return 0, model.NewInternalServerError("Error checking user upload permission")
-	}
+func CreateImage(c ctx.Context, ip string, data []byte) (uint, error) {
+	canUpload := c.UserPermission() >= model.PermissionUploader
 
 	if len(data) == 0 {
 		return 0, model.NewRequestError("Image data is empty")
@@ -219,16 +216,11 @@ func GetImage(id uint) ([]byte, error) {
 	return data, nil
 }
 
-func DeleteImage(uid, id uint) error {
-	canUpload, err := checkUserCanUpload(uid)
-	if err != nil {
-		log.Error("Error checking user upload permission:", err)
-		return model.NewInternalServerError("Error checking user upload permission")
-	}
-	if !canUpload {
+func DeleteImage(c ctx.Context, id uint) error {
+	if c.UserPermission() < model.PermissionUploader {
 		return model.NewUnAuthorizedError("User cannot upload images")
 	}
-	err = deleteImage(id)
+	err := deleteImage(id)
 	if err != nil {
 		log.Error("Error deleting image:", err)
 		return model.NewInternalServerError("Error deleting image")

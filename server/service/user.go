@@ -8,6 +8,7 @@ import (
 	"math"
 	"net/http"
 	"nysoure/server/config"
+	"nysoure/server/ctx"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/static"
@@ -134,8 +135,12 @@ func Login(username, password string) (model.UserViewWithToken, error) {
 	return user.ToView().WithToken(token), nil
 }
 
-func ChangePassword(id uint, oldPassword, newPassword string) (model.UserViewWithToken, error) {
-	user, err := dao.GetUserByID(id)
+func ChangePassword(ctx ctx.Context, oldPassword, newPassword string) (model.UserViewWithToken, error) {
+	if !ctx.LoggedIn() {
+		return model.UserViewWithToken{}, model.NewUnAuthorizedError("You must be logged in to change your password")
+	}
+
+	user, err := dao.GetUserByID(ctx.MaybeUserID())
 	if err != nil {
 		return model.UserViewWithToken{}, err
 	}
@@ -157,8 +162,12 @@ func ChangePassword(id uint, oldPassword, newPassword string) (model.UserViewWit
 	return user.ToView().WithToken(token), nil
 }
 
-func ChangeAvatar(id uint, imageData []byte) (model.UserView, error) {
-	user, err := dao.GetUserByID(id)
+func ChangeAvatar(ctx ctx.Context, imageData []byte) (model.UserView, error) {
+	if !ctx.LoggedIn() {
+		return model.UserView{}, model.NewUnAuthorizedError("You must be logged in to change your avatar")
+	}
+
+	user, err := dao.GetUserByID(ctx.MaybeUserID())
 	if err != nil {
 		return model.UserView{}, err
 	}
@@ -239,17 +248,12 @@ func getEmbedAvatar(id uint) ([]byte, error) {
 	return static.Static.ReadFile(fileName)
 }
 
-func SetUserAdmin(adminID uint, targetUserID uint, isAdmin bool) (model.UserView, error) {
-	if adminID == targetUserID {
+func SetUserAdmin(ctx ctx.Context, targetUserID uint, isAdmin bool) (model.UserView, error) {
+	if ctx.MaybeUserID() == targetUserID {
 		return model.UserView{}, model.NewRequestError("You cannot modify your own admin status")
 	}
 
-	adminUser, err := dao.GetUserByID(adminID)
-	if err != nil {
-		return model.UserView{}, err
-	}
-
-	if !adminUser.IsAdmin {
+	if ctx.UserPermission() != model.PermissionAdmin {
 		return model.UserView{}, model.NewUnAuthorizedError("Only administrators can modify admin status")
 	}
 
@@ -258,7 +262,12 @@ func SetUserAdmin(adminID uint, targetUserID uint, isAdmin bool) (model.UserView
 		return model.UserView{}, err
 	}
 
-	targetUser.IsAdmin = isAdmin
+	if isAdmin {
+		targetUser.Permission = model.PermissionAdmin
+	} else {
+		// When removing admin, set to User permission
+		targetUser.Permission = model.PermissionUser
+	}
 
 	if err := dao.UpdateUser(targetUser); err != nil {
 		return model.UserView{}, err
@@ -267,13 +276,8 @@ func SetUserAdmin(adminID uint, targetUserID uint, isAdmin bool) (model.UserView
 	return targetUser.ToView(), nil
 }
 
-func SetUserUploadPermission(adminID uint, targetUserID uint, canUpload bool) (model.UserView, error) {
-	adminUser, err := dao.GetUserByID(adminID)
-	if err != nil {
-		return model.UserView{}, err
-	}
-
-	if !adminUser.IsAdmin {
+func SetUserUploadPermission(ctx ctx.Context, targetUserID uint, canUpload bool) (model.UserView, error) {
+	if ctx.UserPermission() != model.PermissionAdmin {
 		return model.UserView{}, model.NewUnAuthorizedError("Only administrators can modify upload permissions")
 	}
 
@@ -282,7 +286,17 @@ func SetUserUploadPermission(adminID uint, targetUserID uint, canUpload bool) (m
 		return model.UserView{}, err
 	}
 
-	targetUser.CanUpload = canUpload
+	if canUpload {
+		// Grant upload permission - set to Uploader if not already Admin
+		if targetUser.Permission < model.PermissionUploader {
+			targetUser.Permission = model.PermissionUploader
+		}
+	} else {
+		// Remove upload permission - set to User if currently Uploader
+		if targetUser.Permission == model.PermissionUploader {
+			targetUser.Permission = model.PermissionUser
+		}
+	}
 
 	if err := dao.UpdateUser(targetUser); err != nil {
 		return model.UserView{}, err
@@ -291,13 +305,8 @@ func SetUserUploadPermission(adminID uint, targetUserID uint, canUpload bool) (m
 	return targetUser.ToView(), nil
 }
 
-func ListUsers(adminID uint, page int) ([]model.UserView, int, error) {
-	admin, err := dao.GetUserByID(adminID)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	if !admin.IsAdmin {
+func ListUsers(ctx ctx.Context, page int) ([]model.UserView, int, error) {
+	if ctx.UserPermission() != model.PermissionAdmin {
 		return nil, 0, model.NewUnAuthorizedError("Only administrators can list users")
 	}
 
@@ -320,13 +329,8 @@ func ListUsers(adminID uint, page int) ([]model.UserView, int, error) {
 	return userViews, totalPages, nil
 }
 
-func SearchUsers(adminID uint, username string, page int) ([]model.UserView, int, error) {
-	admin, err := dao.GetUserByID(adminID)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	if !admin.IsAdmin {
+func SearchUsers(ctx ctx.Context, username string, page int) ([]model.UserView, int, error) {
+	if ctx.UserPermission() != model.PermissionAdmin {
 		return nil, 0, model.NewUnAuthorizedError("Only administrators can search users")
 	}
 
@@ -349,23 +353,18 @@ func SearchUsers(adminID uint, username string, page int) ([]model.UserView, int
 	return userViews, totalPages, nil
 }
 
-func DeleteUser(adminID uint, targetUserID uint) error {
-	admin, err := dao.GetUserByID(adminID)
-	if err != nil {
-		return err
-	}
-
-	if !admin.IsAdmin {
+func DeleteUser(ctx ctx.Context, targetUserID uint) error {
+	if ctx.UserPermission() != model.PermissionAdmin {
 		return model.NewUnAuthorizedError("Only administrators can delete users")
 	}
 
 	// Check if user is trying to delete themselves
-	if adminID == targetUserID {
+	if ctx.MaybeUserID() == targetUserID {
 		return model.NewRequestError("You cannot delete your own account")
 	}
 
 	// Check if target user exists
-	_, err = dao.GetUserByID(targetUserID)
+	_, err := dao.GetUserByID(targetUserID)
 	if err != nil {
 		return err
 	}
@@ -414,12 +413,16 @@ func GetUserByUsername(username string) (model.UserView, error) {
 	return user.ToView(), nil
 }
 
-func ChangeUsername(uid uint, newUsername string) (model.UserView, error) {
+func ChangeUsername(ctx ctx.Context, newUsername string) (model.UserView, error) {
+	if !ctx.LoggedIn() {
+		return model.UserView{}, model.NewUnAuthorizedError("You must be logged in to change your username")
+	}
+
 	if err := validateUsername(newUsername); err != nil {
 		return model.UserView{}, err
 	}
 
-	user, err := dao.GetUserByID(uid)
+	user, err := dao.GetUserByID(ctx.MaybeUserID())
 	if err != nil {
 		return model.UserView{}, err
 	}
@@ -430,11 +433,15 @@ func ChangeUsername(uid uint, newUsername string) (model.UserView, error) {
 	return user.ToView(), nil
 }
 
-func SetUserBio(uid uint, bio string) (model.UserView, error) {
+func SetUserBio(ctx ctx.Context, bio string) (model.UserView, error) {
+	if !ctx.LoggedIn() {
+		return model.UserView{}, model.NewUnAuthorizedError("You must be logged in to set your bio")
+	}
+
 	if len(bio) > 200 {
 		return model.UserView{}, model.NewRequestError("Bio must be less than 200 characters")
 	}
-	user, err := dao.GetUserByID(uid)
+	user, err := dao.GetUserByID(ctx.MaybeUserID())
 	if err != nil {
 		return model.UserView{}, err
 	}
@@ -445,8 +452,12 @@ func SetUserBio(uid uint, bio string) (model.UserView, error) {
 	return user.ToView(), nil
 }
 
-func GetMe(uid uint) (model.UserViewWithToken, error) {
-	user, err := dao.GetUserByID(uid)
+func GetMe(ctx ctx.Context) (model.UserViewWithToken, error) {
+	if !ctx.LoggedIn() {
+		return model.UserViewWithToken{}, model.NewUnAuthorizedError("You must be logged in to get your information")
+	}
+
+	user, err := dao.GetUserByID(ctx.MaybeUserID())
 	if err != nil {
 		return model.UserViewWithToken{}, err
 	}
@@ -484,13 +495,8 @@ func GetUserNotificationsCount(userID uint) (uint, error) {
 	return dao.GetUserNotificationCount(userID)
 }
 
-func ListBannedUsers(adminID uint, page int) ([]model.UserView, int, error) {
-	admin, err := dao.GetUserByID(adminID)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	if !admin.IsAdmin {
+func ListBannedUsers(ctx ctx.Context, page int) ([]model.UserView, int, error) {
+	if ctx.UserPermission() != model.PermissionAdmin {
 		return nil, 0, model.NewUnAuthorizedError("Only administrators can list banned users")
 	}
 
@@ -513,13 +519,8 @@ func ListBannedUsers(adminID uint, page int) ([]model.UserView, int, error) {
 	return userViews, totalPages, nil
 }
 
-func UnbanUser(adminID uint, targetUserID uint) (model.UserView, error) {
-	admin, err := dao.GetUserByID(adminID)
-	if err != nil {
-		return model.UserView{}, err
-	}
-
-	if !admin.IsAdmin {
+func UnbanUser(ctx ctx.Context, targetUserID uint) (model.UserView, error) {
+	if ctx.UserPermission() != model.PermissionAdmin {
 		return model.UserView{}, model.NewUnAuthorizedError("Only administrators can unban users")
 	}
 
@@ -543,4 +544,8 @@ func UnbanUser(adminID uint, targetUserID uint) (model.UserView, error) {
 	}
 
 	return targetUser.ToView(), nil
+}
+
+func GetUserPermission(uid uint) (model.Permission, error) {
+	return dao.GetUserPermission(uid)
 }

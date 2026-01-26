@@ -7,9 +7,10 @@ import { MdMoreHoriz, MdSearch } from "react-icons/md";
 import Pagination from "~/components/pagination";
 import showPopup, { PopupMenuItem } from "~/components/popup";
 import { useTranslation } from "~/hook/i18n";
-import { configFromMatches, useConfig } from "~/hook/config";
+import { configFromMatches, useConfig, isAdmin } from "~/hook/config";
 import { ErrorAlert } from "~/components/alert";
 import type { Route } from "./+types/manage.users";
+import { Permission } from "~/network/models";
 
 export function meta({ matches }: Route.MetaArgs) {
   const config = configFromMatches(matches);
@@ -36,7 +37,7 @@ export default function UserView() {
     );
   }
 
-  if (!config.user?.is_admin) {
+  if (!isAdmin(config)) {
     return (
       <ErrorAlert
         className={"m-4"}
@@ -184,8 +185,7 @@ function UserTable({
           <tr>
             <td>{t("Username")}</td>
             <td>{t("Created At")}</td>
-            <td>{t("Admin")}</td>
-            <td>{t("Can Upload")}</td>
+            <td>{t("Permission")}</td>
             <td>{t("Actions")}</td>
           </tr>
         </thead>
@@ -518,8 +518,13 @@ function UserRow({ user, onChanged }: { user: User; onChanged: () => void }) {
         )}
       </td>
       <td>{new Date(user.created_at).toLocaleDateString()}</td>
-      <td>{user.is_admin ? t("Yes") : t("No")}</td>
-      <td>{user.can_upload ? t("Yes") : t("No")}</td>
+      <td>
+        {user.permission === Permission.Admin && t("Admin")}
+        {user.permission === Permission.Uploader && t("Uploader")}
+        {user.permission === Permission.Verified && t("Verified")}
+        {user.permission === Permission.User && t("User")}
+        {user.permission === Permission.None && t("None")}
+      </td>
       <td>
         <div className="dropdown dropdown-bottom dropdown-end">
           <button
@@ -541,7 +546,7 @@ function UserRow({ user, onChanged }: { user: User; onChanged: () => void }) {
                   >
                     <a>{t("Delete")}</a>
                   </PopupMenuItem>
-                  {user.is_admin ? (
+                  {user.permission === Permission.Admin ? (
                     <PopupMenuItem onClick={handleSetUser}>
                       <a>{t("Set as user")}</a>
                     </PopupMenuItem>
@@ -550,8 +555,8 @@ function UserRow({ user, onChanged }: { user: User; onChanged: () => void }) {
                       <a>{t("Set as admin")}</a>
                     </PopupMenuItem>
                   )}
-                  {config.user?.is_admin ? (
-                    user.can_upload ? (
+                  {isAdmin(config) ? (
+                    user.permission >= Permission.Uploader ? (
                       <PopupMenuItem onClick={handleRemoveUploadPermission}>
                         <a>{t("Remove upload permission")}</a>
                       </PopupMenuItem>

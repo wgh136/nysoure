@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"nysoure/server/config"
+	"nysoure/server/ctx"
 	"nysoure/server/middleware"
 	"nysoure/server/model"
 	"nysoure/server/service"
@@ -36,8 +37,6 @@ func AddFileRoutes(router fiber.Router) {
 }
 
 func initUpload(c fiber.Ctx) error {
-	uid := c.Locals("uid").(uint)
-
 	type InitUploadRequest struct {
 		Filename    string `json:"filename"`
 		Description string `json:"description"`
@@ -55,7 +54,8 @@ func initUpload(c fiber.Ctx) error {
 	req.Filename = strings.TrimSpace(req.Filename)
 	req.Tag = strings.TrimSpace(req.Tag)
 
-	result, err := service.CreateUploadingFile(uid, req.Filename, req.Description, req.FileSize, req.ResourceID, req.StorageID, req.Tag)
+	context := ctx.NewContext(c)
+	result, err := service.CreateUploadingFile(context, req.Filename, req.Description, req.FileSize, req.ResourceID, req.StorageID, req.Tag)
 	if err != nil {
 		return err
 	}
@@ -134,8 +134,6 @@ func cancelUpload(c fiber.Ctx) error {
 }
 
 func createRedirectFile(c fiber.Ctx) error {
-	uid := c.Locals("uid").(uint)
-
 	type CreateRedirectFileRequest struct {
 		Filename    string `json:"filename"`
 		Description string `json:"description"`
@@ -155,7 +153,8 @@ func createRedirectFile(c fiber.Ctx) error {
 	req.Md5 = strings.TrimSpace(req.Md5)
 	req.Tag = strings.TrimSpace(req.Tag)
 
-	result, err := service.CreateRedirectFile(uid, req.Filename, req.Description, req.ResourceID, req.RedirectURL, req.FileSize, req.Md5, req.Tag)
+	context := ctx.NewContext(c)
+	result, err := service.CreateRedirectFile(context, req.Filename, req.Description, req.ResourceID, req.RedirectURL, req.FileSize, req.Md5, req.Tag)
 	if err != nil {
 		return err
 	}
@@ -179,8 +178,6 @@ func getFile(c fiber.Ctx) error {
 }
 
 func updateFile(c fiber.Ctx) error {
-	uid := c.Locals("uid").(uint)
-
 	type UpdateFileRequest struct {
 		Filename    string `json:"filename"`
 		Description string `json:"description"`
@@ -196,7 +193,8 @@ func updateFile(c fiber.Ctx) error {
 	req.Filename = strings.TrimSpace(req.Filename)
 	req.Tag = strings.TrimSpace(req.Tag)
 
-	result, err := service.UpdateFile(uid, c.Params("id"), req.Filename, req.Description, req.Tag, req.FileSize)
+	context := ctx.NewContext(c)
+	result, err := service.UpdateFile(context, c.Params("id"), req.Filename, req.Description, req.Tag, req.FileSize)
 	if err != nil {
 		return err
 	}
@@ -208,9 +206,8 @@ func updateFile(c fiber.Ctx) error {
 }
 
 func deleteFile(c fiber.Ctx) error {
-	uid := c.Locals("uid").(uint)
-
-	if err := service.DeleteFile(uid, c.Params("id")); err != nil {
+	context := ctx.NewContext(c)
+	if err := service.DeleteFile(context, c.Params("id")); err != nil {
 		return err
 	}
 
@@ -297,8 +294,6 @@ func downloadLocalFile(c fiber.Ctx) error {
 }
 
 func createServerDownloadTask(c fiber.Ctx) error {
-	uid := c.Locals("uid").(uint)
-
 	type InitUploadRequest struct {
 		Url         string `json:"url"`
 		Filename    string `json:"filename"`
@@ -316,7 +311,8 @@ func createServerDownloadTask(c fiber.Ctx) error {
 	req.Filename = strings.TrimSpace(req.Filename)
 	req.Tag = strings.TrimSpace(req.Tag)
 
-	result, err := service.CreateServerDownloadTask(uid, req.Url, req.Filename, req.Description, req.ResourceID, req.StorageID, req.Tag)
+	context := ctx.NewContext(c)
+	result, err := service.CreateServerDownloadTask(context, req.Url, req.Filename, req.Description, req.ResourceID, req.StorageID, req.Tag)
 	if err != nil {
 		return err
 	}

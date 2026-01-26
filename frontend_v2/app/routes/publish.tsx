@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import { useTranslation } from "../hook/i18n";
 import { ErrorAlert } from "../components/alert";
 import ResourceForm, { type ResourceFormData } from "../components/resource_form";
-import { configFromMatches, useConfig } from "../hook/config";
+import { configFromMatches, useConfig, canUpload } from "../hook/config";
 
 export function meta({ matches }: Route.MetaArgs) {
   const config = configFromMatches(matches);
@@ -91,7 +91,7 @@ export default function Publish() {
     );
   }
 
-  if (!config.allow_normal_user_upload && !config.user.can_upload) {
+  if (!config.allow_normal_user_upload && !canUpload(config)) {
     return (
       <ErrorAlert
         className={"m-4"}

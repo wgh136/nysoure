@@ -1,5 +1,5 @@
 import { useTranslation } from "~/hook/i18n";
-import { configFromMatches, useConfig } from "~/hook/config";
+import { configFromMatches, useConfig, isAdmin } from "~/hook/config";
 import { ErrorAlert, InfoAlert } from "~/components/alert";
 import { useEffect, useState, useCallback } from "react";
 import type { ServerConfig } from "~/network/models";
@@ -92,7 +92,7 @@ export default function ManageServerConfigPage() {
     );
   }
 
-  if (!userConfig.user?.is_admin) {
+  if (!isAdmin(userConfig)) {
     return (
       <ErrorAlert
         className={"m-4"}

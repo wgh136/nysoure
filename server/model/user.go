@@ -7,12 +7,21 @@ import (
 	"gorm.io/gorm"
 )
 
+type Permission uint8
+
+const (
+	PermissionNone Permission = iota
+	PermissionUser
+	PermissionVerified
+	PermissionUploader
+	PermissionAdmin
+)
+
 type User struct {
 	gorm.Model
 	Username                 string `gorm:"uniqueIndex;not null"`
 	PasswordHash             []byte
-	IsAdmin                  bool
-	CanUpload                bool
+	Permission               Permission `gorm:"not null;default:1"`
 	AvatarVersion            int
 	ResourcesCount           int
 	FilesCount               int
@@ -24,17 +33,16 @@ type User struct {
 }
 
 type UserView struct {
-	ID             uint      `json:"id"`
-	Username       string    `json:"username"`
-	CreatedAt      time.Time `json:"created_at"`
-	AvatarPath     string    `json:"avatar_path"`
-	IsAdmin        bool      `json:"is_admin"`
-	CanUpload      bool      `json:"can_upload"`
-	ResourcesCount int       `json:"resources_count"`
-	FilesCount     int       `json:"files_count"`
-	CommentsCount  int       `json:"comments_count"`
-	Bio            string    `json:"bio"`
-	Banned         bool      `json:"banned"`
+	ID             uint       `json:"id"`
+	Username       string     `json:"username"`
+	CreatedAt      time.Time  `json:"created_at"`
+	AvatarPath     string     `json:"avatar_path"`
+	Permission     Permission `json:"permission"`
+	ResourcesCount int        `json:"resources_count"`
+	FilesCount     int        `json:"files_count"`
+	CommentsCount  int        `json:"comments_count"`
+	Bio            string     `json:"bio"`
+	Banned         bool       `json:"banned"`
 }
 
 type UserViewWithToken struct {
@@ -48,8 +56,7 @@ func (u User) ToView() UserView {
 		Username:       u.Username,
 		CreatedAt:      u.CreatedAt,
 		AvatarPath:     fmt.Sprintf("/api/user/avatar/%d?v=%d", u.ID, u.AvatarVersion),
-		IsAdmin:        u.IsAdmin,
-		CanUpload:      u.CanUpload || u.IsAdmin,
+		Permission:     u.Permission,
 		ResourcesCount: u.ResourcesCount,
 		FilesCount:     u.FilesCount,
 		CommentsCount:  u.CommentsCount,

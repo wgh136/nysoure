@@ -1,6 +1,7 @@
 package service
 
 import (
+	"nysoure/server/ctx"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"slices"
@@ -29,16 +30,11 @@ func init() {
 	}()
 }
 
-func CreateTag(uid uint, name string) (*model.TagView, error) {
+func CreateTag(c ctx.Context, name string) (*model.TagView, error) {
 	if len([]rune(name)) > maxTagLength {
 		return nil, model.NewRequestError("Tag name too long")
 	}
-	canUpload, err := checkUserCanUpload(uid)
-	if err != nil {
-		log.Error("Error checking user permissions:", err)
-		return nil, model.NewInternalServerError("Error checking user permissions")
-	}
-	if !canUpload {
+	if c.UserPermission() < model.PermissionUploader {
 		return nil, model.NewUnAuthorizedError("User cannot create tags")
 	}
 	t, err := dao.CreateTag(name)
@@ -100,13 +96,8 @@ func DeleteTag(id uint) error {
 	return dao.DeleteTag(id)
 }
 
-func SetTagInfo(uid uint, id uint, description string, aliasOf *uint, tagType string) (*model.TagView, error) {
-	canUpload, err := checkUserCanUpload(uid)
-	if err != nil {
-		log.Error("Error checking user permissions:", err)
-		return nil, model.NewInternalServerError("Error checking user permissions")
-	}
-	if !canUpload {
+func SetTagInfo(c ctx.Context, id uint, description string, aliasOf *uint, tagType string) (*model.TagView, error) {
+	if c.UserPermission() < model.PermissionUploader {
 		return nil, model.NewUnAuthorizedError("User cannot set tag description")
 	}
 	if aliasOf != nil && *aliasOf == id {
@@ -186,13 +177,8 @@ func GetTagList() ([]model.TagViewWithCount, error) {
 	return cachedTagList, nil
 }
 
-func GetOrCreateTags(uid uint, names []string, tagType string) ([]model.TagView, error) {
-	canUpload, err := checkUserCanUpload(uid)
-	if err != nil {
-		log.Error("Error checking user permissions:", err)
-		return nil, model.NewInternalServerError("Error checking user permissions")
-	}
-	if !canUpload {
+func GetOrCreateTags(c ctx.Context, names []string, tagType string) ([]model.TagView, error) {
+	if c.UserPermission() < model.PermissionUploader {
 		return nil, model.NewUnAuthorizedError("User cannot create tags")
 	}
 	tags := make([]model.TagView, 0, len(names))
@@ -213,13 +199,8 @@ func GetOrCreateTags(uid uint, names []string, tagType string) ([]model.TagView,
 	return tags, updateCachedTagList()
 }
 
-func EditTagAlias(uid uint, tagID uint, aliases []string) (*model.TagView, error) {
-	canUpload, err := checkUserCanUpload(uid)
-	if err != nil {
-		log.Error("Error checking user permissions:", err)
-		return nil, model.NewInternalServerError("Error checking user permissions")
-	}
-	if !canUpload {
+func EditTagAlias(c ctx.Context, tagID uint, aliases []string) (*model.TagView, error) {
+	if c.UserPermission() < model.PermissionUploader {
 		return nil, model.NewUnAuthorizedError("User cannot create tags")
 	}
 

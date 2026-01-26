@@ -1,6 +1,7 @@
 package api
 
 import (
+	"nysoure/server/ctx"
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"strconv"
@@ -66,10 +67,6 @@ func handleUpdateCollection(c fiber.Ctx) error {
 }
 
 func handleDeleteCollection(c fiber.Ctx) error {
-	uid, ok := c.Locals("uid").(uint)
-	if !ok {
-		return model.NewUnAuthorizedError("Unauthorized")
-	}
 	idStr := c.FormValue("id")
 	if idStr == "" {
 		return model.NewRequestError("ID is required")
@@ -78,7 +75,8 @@ func handleDeleteCollection(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid collection ID")
 	}
-	if err := service.DeleteCollection(uid, uint(id)); err != nil {
+	context := ctx.NewContext(c)
+	if err := service.DeleteCollection(context, uint(id)); err != nil {
 		return err
 	}
 	return c.Status(fiber.StatusOK).JSON(model.Response[any]{
