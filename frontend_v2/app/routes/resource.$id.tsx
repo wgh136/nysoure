@@ -651,13 +651,68 @@ function Article({ resource }: { resource: ResourceDetails }) {
             },
           }}
         >
-          {resource.article.replaceAll("\n", "  \n")}
+          {normalizeArticle(resource.article)}
         </Markdown>
       </article>
       <div className="border-b border-base-300 h-8"></div>
       <Characters characters={resource.characters} />
     </>
   );
+}
+
+function normalizeArticle(article: string) {
+  const lines = article.split("\n");
+  let result = "";
+  let lastIsRelatedResource = false;
+  const lineSeparator = "    \n";
+
+  const isResourceLine = (text: string): boolean => {
+    let currentHost = "";
+    if (typeof window !== "undefined") {
+      currentHost = window.location.host;
+    } else {
+      // 这里的 process.env 处理通常需要确保是完整的协议+主机名，否则 URL 构造函数会报错
+      currentHost = process.env.SERVER_BASE_URL || "http://localhost";
+    }
+    const trimmed = text.trim();
+    const match = trimmed.match(/^\[.*\]\((.*)\)$/);
+    if (!match) return false;
+
+    try {
+      const urlContent = match[1];
+      // 如果 urlContent 是相对路径，需要 base 包含协议
+      const base = currentHost.startsWith('http') ? currentHost : `https://${currentHost}`;
+      const url = new URL(urlContent, base);
+      return url.host === (new URL(base).host) && url.pathname.startsWith("/resources/");
+    } catch (e) {
+      return false;
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trimEnd();
+    const isResource = isResourceLine(line);
+    const isEmpty = line.trim() === "";
+
+    if (isResource) {
+      if (lastIsRelatedResource) {
+        result += " " + line.trim();
+      } else {
+        result += (result ? lineSeparator : "") + line.trim();
+      }
+      lastIsRelatedResource = true;
+    } else if (isEmpty && lastIsRelatedResource) {
+      continue; 
+    } else {
+      if (result && !result.endsWith(lineSeparator)) {
+        result += lineSeparator;
+      }
+      result += line + lineSeparator;
+      lastIsRelatedResource = false;
+    }
+  }
+
+  return result.trimEnd();
 }
 
 function RelatedResourceCard({
@@ -667,101 +722,24 @@ function RelatedResourceCard({
   r: Resource;
   content?: string;
 }) {
-  const [articleWidth, setArticleWidth] = useState<number | null>(null);
-  const observerRef = useRef<ResizeObserver | null>(null);
-
-  useEffect(() => {
-    const articleElement = document.querySelector("article");
-    if (!articleElement) return;
-
-    observerRef.current = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const newWidth = entry.contentRect.width;
-        setArticleWidth((prevWidth) => {
-          // Only update if width actually changed significantly (more than 1px)
-          if (prevWidth === null || Math.abs(newWidth - prevWidth) > 1) {
-            return newWidth;
-          }
-          return prevWidth;
-        });
-      }
-    });
-    
-    observerRef.current.observe(articleElement);
-    
-    // Set initial width immediately
-    setArticleWidth(articleElement.clientWidth);
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, []);
-
-  const imgHeight = r.image && r.image.width > r.image.height ? 320 : 420;
-  let imgWidth = r.image
-    ? (r.image.width / r.image.height) * imgHeight
-    : undefined;
-  if (articleWidth && imgWidth && imgWidth > articleWidth) {
-    imgWidth = articleWidth;
-  }
-
-  // Use a minimum width fallback instead of returning empty
-  const displayWidth = imgWidth || (articleWidth || 300);
-
   return (
-    <span className={"inline-flex max-w-full"}>
-      <NavLink
-        to={"/resources/" + r.id}
-        className={
-          "mr-2 mb-2 max-w-full cursor-pointer inline-flex min-w-0 flex-col bg-base-100 shadow hover:shadow-md transition-shadow rounded-xl no-underline"
-        }
-      >
-        {r.image && (
+    <NavLink
+      to={"/resources/" + r.id}
+      className={
+        "inline-block shadow hover:shadow-md transition-shadow bg-base-100/40 backdrop-blur-xs relative h-52 overflow-hidden w-full max-w-md"
+      }
+    >
+      {r.image != null && (
           <img
-            style={{
-              width: displayWidth,
-              height: imgHeight,
-              objectFit: "cover",
-            }}
-            className={"h-full object-cover min-w-0"}
-            alt={"cover"}
-            src={network.getImageUrl(r.image?.id)}
-          />
+              src={network.getResampledImageUrl(r.image.id)}
+              alt="cover"
+              className="w-full h-full object-cover"
+            />
         )}
-        <span
-          className={"inline-flex flex-col p-4"}
-          style={{
-            width: displayWidth,
-          }}
-        >
-          <span
-            style={{
-              maxWidth: "100%",
-              textOverflow: "ellipsis",
-              lineBreak: "anywhere",
-              wordBreak: "break-all",
-              fontSize: "1.2rem",
-              fontWeight: "bold",
-              lineHeight: "1.5rem",
-              color: "var(--color-base-content)",
-            }}
-          >
-            {r.title}
-          </span>
-          <span className={"h-2"}></span>
-          <span
-            style={{
-              color: "var(--color-base-content)",
-              lineBreak: "anywhere",
-            }}
-          >
-            {content}
-          </span>
+        <span className="block absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-black/70 to-transparent">
+          <span className="text-lg font-bold line-clamp-2 overflow-hidden text-white">{r.title}</span>
         </span>
-      </NavLink>
-    </span>
+    </NavLink>
   );
 }
 
