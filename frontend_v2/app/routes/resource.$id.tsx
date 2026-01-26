@@ -524,6 +524,8 @@ function CollectionSelector({
 }
 
 function Article({ resource }: { resource: ResourceDetails }) {
+  const article = useMemo<string>(() => normalizeArticle(resource.article), [resource.article])
+
   return (
     <>
       <article>
@@ -651,7 +653,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
             },
           }}
         >
-          {normalizeArticle(resource.article)}
+          {article}
         </Markdown>
       </article>
       <div className="border-b border-base-300 h-8"></div>
@@ -726,7 +728,7 @@ function RelatedResourceCard({
     <NavLink
       to={"/resources/" + r.id}
       className={
-        "inline-block shadow hover:shadow-md transition-shadow bg-base-100/40 backdrop-blur-xs relative h-52 overflow-hidden w-full max-w-md"
+        "inline-block shadow hover:shadow-md transition-shadow relative h-52 overflow-hidden w-full max-w-md rounded-sm overflow-clip"
       }
     >
       {r.image != null && (
@@ -734,6 +736,9 @@ function RelatedResourceCard({
               src={network.getResampledImageUrl(r.image.id)}
               alt="cover"
               className="w-full h-full object-cover"
+              style={{
+                borderRadius: 0,
+              }}
             />
         )}
         <span className="block absolute bottom-0 left-0 right-0 p-2 bg-linear-to-t from-black/70 to-transparent">
