@@ -728,7 +728,7 @@ function RelatedResourceCard({
     <NavLink
       to={"/resources/" + r.id}
       className={
-        "inline-block shadow hover:shadow-md transition-shadow relative h-52 overflow-hidden w-full max-w-md rounded-sm overflow-clip"
+        "inline-block shadow hover:shadow-md transition-shadow relative h-52 w-full max-w-md rounded-sm overflow-clip"
       }
     >
       {r.image != null && (

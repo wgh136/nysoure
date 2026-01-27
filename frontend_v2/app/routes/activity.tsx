@@ -6,7 +6,7 @@ import { useTranslation } from "~/hook/i18n";
 import { useLoaderData, useNavigate } from "react-router";
 import Loading from "~/components/loading";
 import { CommentContent } from "~/components/comment_tile";
-import { MdOutlineArchive, MdOutlinePhotoAlbum } from "react-icons/md";
+import { MdOutlineArchive, MdOutlinePhotoAlbum, MdOutlineTimer, MdOutlineTimeToLeave } from "react-icons/md";
 import Badge from "~/components/badge";
 import Markdown from "react-markdown";
 import { configFromMatches } from "~/hook/config";
@@ -143,12 +143,12 @@ function ActivityCard({ activity }: { activity: Activity }) {
           </Markdown>
         </div>
         <p className={"pt-1"}>
-          <Badge className={"badge-soft badge-secondary text-xs mr-2"}>
-            <MdOutlineArchive size={16} className={"inline-block"} />
-            {activity.file!.is_redirect
-              ? t("Redirect")
-              : fileSizeToString(activity.file!.size)}
-          </Badge>
+          {activity.file!.size > 0 && (
+            <Badge className={"badge-soft badge-secondary text-xs mr-2"}>
+              <MdOutlineArchive size={16} className={"inline-block"} />
+              {fileSizeToString(activity.file!.size)}
+            </Badge>
+          )}
           <Badge className={"badge-soft badge-accent text-xs mr-2"}>
             <MdOutlinePhotoAlbum size={16} className={"inline-block"} />
             {(() => {
@@ -167,7 +167,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
   return (
     <div
       className={
-        "card shadow m-4 p-4 hover:shadow-md transition-shadow cursor-pointer bg-base-100-tr82"
+        "card shadow my-4 p-4 hover:shadow-md transition-shadow cursor-pointer bg-base-100-tr82"
       }
       onClick={() => {
         if (
