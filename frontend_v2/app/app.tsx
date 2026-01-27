@@ -26,7 +26,6 @@ export default function App() {
   const navigation = useNavigation();
 
   useEffect(() => {
-    console.log(navigation.state);
     if (navigation.state === "loading") {
       NProgress.start();
     } else {

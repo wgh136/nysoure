@@ -16,9 +16,6 @@ export function Background({ children }: { children: React.ReactNode }) {
     return match ? null : config.background;
   });
 
-  console.log(background);
-  console.log(location.pathname);
-
   return <BackgroundContext.Provider value={setBackground}>
     <div
       className="background-wrapper"

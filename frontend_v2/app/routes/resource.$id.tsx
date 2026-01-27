@@ -137,13 +137,9 @@ export default function ResourcePage({ loaderData }: Route.ComponentProps) {
     if (sfwImages.length > 0) {
       // random one
       const selectedImage = sfwImages[Math.floor(Math.random() * sfwImages.length)];
-      console.log('Setting background to random image:', selectedImage);
       setBackground(selectedImage);
     } else if (resource.coverId != null) {
-      console.log('Setting background to cover:', resource.coverId);
       setBackground(resource.coverId);
-    } else {
-      console.log('No images available for background');
     }
   }, [resource]);
 
