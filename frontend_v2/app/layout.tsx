@@ -11,12 +11,12 @@ export default function Layout() {
   const { server_name } = useConfig();
 
   return (
-    <>
+    <Background>
       <Navigator appName={server_name} />
       <div className="pt-20 max-w-8xl mx-auto px-2">
         <Outlet />
       </div>
-    </>
+    </Background>
   )
 }
 
@@ -24,7 +24,6 @@ function Navigator({ appName }: { appName: string }) {
   const { t } = useTranslation();
 
   return (
-    <Background>
       <div
         style={{
           position: "relative",
@@ -139,7 +138,6 @@ function Navigator({ appName }: { appName: string }) {
           </div>
         </div>
       </div>
-    </Background>
   )
 }
 

@@ -1,18 +1,23 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useConfig } from "~/hook/config";
-import { createContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { network } from "~/network/network";
+import { useLocation } from "react-router";
 
-const BackgroundContext = createContext<(arg0: number) => void>(() => { });
+const BackgroundContext = createContext<(arg0: number | null) => void>(() => { });
 
 export function Background({ children }: { children: React.ReactNode }) {
   const config = useConfig();
+  const location = useLocation(); 
 
-  const [background, setBackground] = useState<number | null>(config.background);
+  const [background, setBackground] = useState<number | null>(() => {
+    const regex = /^\/resources\/(\d+)$/;
+    const match = regex.test(location.pathname);
+    return match ? null : config.background;
+  });
 
-  if (!background) {
-    return <></>
-  }
+  console.log(background);
+  console.log(location.pathname);
 
   return <BackgroundContext.Provider value={setBackground}>
     <div
@@ -27,18 +32,26 @@ export function Background({ children }: { children: React.ReactNode }) {
         opacity: 0.6,
       }}
     >
-      <AnimatePresence mode="wait">
-        <motion.img
-          key={background}
-          src={network.getImageUrl(background)}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
-          className="absolute w-full h-full object-cover"
-        />
-      </AnimatePresence>
+      {
+        background && (
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={background}
+              src={network.getImageUrl(background)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="absolute w-full h-full object-cover"
+            />
+          </AnimatePresence>
+        )
+      }
     </div>
     {children}
   </BackgroundContext.Provider>
+}
+
+export function useSetBackground() {
+  return useContext(BackgroundContext);
 }

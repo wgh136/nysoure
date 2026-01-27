@@ -26,6 +26,7 @@ import KunApi, { kunLanguageToString, kunPlatformToString, kunResourceTypeToStri
 import { CommentTile } from "~/components/comment_tile";
 import { CommentInput } from "~/components/comment_input";
 import Pagination from "~/components/pagination";
+import { useSetBackground } from "~/components/background";
 
 export function meta({ loaderData, matches }: Route.MetaArgs) {
   const config = configFromMatches(matches);
@@ -122,6 +123,29 @@ export default function ResourcePage({ loaderData }: Route.ComponentProps) {
     // Mark tab as visited when switched to
     setVisitedTabs((prev) => new Set(prev).add(idx));
   };
+
+  const setBackground = useSetBackground();
+  useEffect(() => {
+    let sfwImages = [];
+    for (const image of resource.images ?? []) {
+      if (resource.galleryNsfw?.includes(image.id) ?? false) {
+        continue;
+      }
+      sfwImages.push(image.id);
+    }
+    console.log('SFW Images:', sfwImages);
+    if (sfwImages.length > 0) {
+      // random one
+      const selectedImage = sfwImages[Math.floor(Math.random() * sfwImages.length)];
+      console.log('Setting background to random image:', selectedImage);
+      setBackground(selectedImage);
+    } else if (resource.coverId != null) {
+      console.log('Setting background to cover:', resource.coverId);
+      setBackground(resource.coverId);
+    } else {
+      console.log('No images available for background');
+    }
+  }, [resource]);
 
   return <div>
     <div className="flex bg-base-100/60 backdrop-blur-sm rounded-box mt-4 shadow mb-2 p-2">
