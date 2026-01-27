@@ -231,7 +231,8 @@ func downloadFile(c fiber.Ctx) error {
 	if devAccess {
 		verified = true
 	}
-	s, filename, err := service.DownloadFile(c.Params("id"), verified, c.Locals("real_user") == true)
+	realUser := c.Locals("real_user") == true
+	s, filename, err := service.DownloadFile(c.Params("id"), verified, realUser)
 	if err != nil {
 		return err
 	}
@@ -251,7 +252,9 @@ func downloadFile(c fiber.Ctx) error {
 		}
 		q.Set("token", token)
 		uri.RawQuery = q.Encode()
-		stat.RecordDownload()
+		if realUser {
+			stat.RecordDownload()
+		}
 		return c.Redirect().Status(fiber.StatusFound).To(uri.String())
 	}
 	data := map[string]string{
@@ -263,7 +266,9 @@ func downloadFile(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewInternalServerError("Failed to generate download token")
 	}
-	stat.RecordDownload()
+	if realUser {
+		stat.RecordDownload()
+	}
 	return c.Redirect().Status(fiber.StatusFound).To(fmt.Sprintf("%s/api/files/download/local?token=%s", c.BaseURL(), token))
 }
 
