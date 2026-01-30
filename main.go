@@ -37,6 +37,8 @@ func main() {
 
 	app.Get("/metrics", adaptor.HTTPHandler(prom.Handler()))
 
+	api.AddRootImageRoutes(app)
+
 	apiG := app.Group("/api")
 	apiG.Use(middleware.PrivateMiddleware)
 	{

@@ -98,3 +98,8 @@ func AddImageRoutes(api fiber.Router) {
 		image.Delete("/:id", handleDeleteImage)
 	}
 }
+
+func AddRootImageRoutes(r fiber.Router) {
+	r.Get("/image/resampled/:id", handleGetResampledImage)
+	r.Get("/image/:id", handleGetImage)
+}

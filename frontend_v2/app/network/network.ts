@@ -322,12 +322,12 @@ class Network {
 
   getImageUrl(id: number): string {
     // Always use relative path to ensure SSR and client hydration match
-    return `/api/image/${id}`;
+    return `/image/${id}`;
   }
 
   getResampledImageUrl(id: number): string {
     // Always use relative path to ensure SSR and client hydration match
-    return `/api/image/resampled/${id}`;
+    return `/image/resampled/${id}`;
   }
 
   async createResource(
