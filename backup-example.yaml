@@ -1,0 +1,33 @@
+name: "backup"
+
+items:
+  - name: "app"
+    type: "local"
+    path: "/data/app_data"
+    exclude:
+      - "*.log"
+      - "*.tmp"
+      - "/data/app_data/cache"
+      - "/data/app_data/temp"
+      - "/data/app_data/uploading"
+      - "/data/app_data/resampled"
+      - "*.bleve"
+  - name: "db"
+    type: "mariadb"
+    host: "db"
+    port: 3306
+    user: "root"
+    password: "root_password"
+    database: "nysoure"
+
+options:
+  storage: "s3"
+  s3:
+    endpoint: "https://s3.example.com"
+    access_key: "access_key"
+    secret_key: "secret_key"
+    bucket: "bucket"
+    region: "region"
+    path: "path"
+  max_backups: 3
+  backup_interval: "1d"

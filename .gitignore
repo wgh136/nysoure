@@ -15,3 +15,6 @@ frontend_v2/.react-router
 app_data/
 backup_data/
 db_data/
+
+# backup config
+backup.yaml

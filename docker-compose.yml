@@ -82,19 +82,11 @@ services:
       nysoure-net:
 
   backup:
-    build:
-      context: .
-      dockerfile: Dockerfile.backup
-    volumes:
-      - ./app_data:/backup/app_data:ro
-      - ./db_data:/backup/db_data:ro
-      - ./backup_data:/backup/local
-    depends_on:
-      - db
-      - app
-    env_file:
-      - .env
-    restart: no
+    build: https://git.nyne.dev/nyne/backup.git#v0.0.2
+    volumes: 
+      - ./backup.yaml:/config/backup.yaml
+      - ./app_data:/data/app_data:ro
+    restart: unless-stopped
     logging:
       driver: "json-file"
       options:
@@ -102,6 +94,9 @@ services:
         max-file: "3"
     networks:
       nysoure-net:
+    depends_on:
+      - app
+      - db
 
 networks:
   nysoure-net:
