@@ -21,6 +21,10 @@ func FrontendMiddleware(c fiber.Ctx) error {
 		return c.Next()
 	}
 
+	if strings.HasPrefix(c.Path(), "/image") {
+		return c.Next()
+	}
+
 	if strings.HasPrefix(c.Path(), "/metrics") {
 		return c.Next()
 	}
