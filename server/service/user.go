@@ -546,6 +546,6 @@ func UnbanUser(ctx ctx.Context, targetUserID uint) (model.UserView, error) {
 	return targetUser.ToView(), nil
 }
 
-func GetUserPermission(uid uint) (model.Permission, error) {
-	return dao.GetUserPermission(uid)
+func GetUserPermissionAndCreatedAt(uid uint) (model.Permission, time.Time, error) {
+	return dao.GetUserPermissionAndCreatedAt(uid)
 }

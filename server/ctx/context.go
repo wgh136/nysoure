@@ -20,6 +20,8 @@ type Context interface {
 	IsRealUser() bool
 	IsDevAccess() bool
 	UserPermission() model.Permission
+	UserCreatedAt() time.Time
+	Host() string
 }
 
 type contextImpl struct {
@@ -84,17 +86,27 @@ func (c *contextImpl) UserPermission() model.Permission {
 	return c.fiberCtx.Locals("permission").(model.Permission)
 }
 
+func (c *contextImpl) UserCreatedAt() time.Time {
+	return c.fiberCtx.Locals("created_at").(time.Time)
+}
+
+func (c *contextImpl) Host() string {
+	return c.fiberCtx.Hostname()
+}
+
 // fakeContext 是一个简单的context实现,用于内部函数调用
 type fakeContext struct {
 	userID     uint
 	permission model.Permission
+	createdAt  time.Time
 }
 
 // NewFakeContext 创建一个用于内部调用的fake context
-func NewFakeContext(userID uint, permission model.Permission) Context {
+func NewFakeContext(userID uint, permission model.Permission, createdAt time.Time) Context {
 	return &fakeContext{
 		userID:     userID,
 		permission: permission,
+		createdAt:  createdAt,
 	}
 }
 
@@ -112,3 +124,5 @@ func (f *fakeContext) LoggedIn() bool                   { return true }
 func (f *fakeContext) IsRealUser() bool                 { return false }
 func (f *fakeContext) IsDevAccess() bool                { return false }
 func (f *fakeContext) UserPermission() model.Permission { return f.permission }
+func (f *fakeContext) UserCreatedAt() time.Time         { return f.createdAt }
+func (f *fakeContext) Host() string                     { return "" }

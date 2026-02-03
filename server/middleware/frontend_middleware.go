@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"nysoure/server/config"
+	"nysoure/server/ctx"
 	"nysoure/server/service"
 	"nysoure/server/utils"
 	"os"
@@ -84,7 +85,7 @@ func serveIndexHtml(c fiber.Ctx) error {
 		idStr := strings.TrimPrefix(path, "/resources/")
 		id, err := strconv.Atoi(idStr)
 		if err == nil {
-			r, err := service.GetResource(uint(id), c.Hostname(), c)
+			r, err := service.GetResource(uint(id), ctx.NewContext(c))
 			if err == nil {
 				if len(r.Images) > 0 {
 					preview = fmt.Sprintf("%s/api/image/%d", serverBaseURL, r.Images[0].ID)

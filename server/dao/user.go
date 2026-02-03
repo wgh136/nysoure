@@ -3,6 +3,7 @@ package dao
 import (
 	"errors"
 	"nysoure/server/model"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -167,13 +168,13 @@ func ListBannedUsers(page, pageSize int) ([]model.User, int64, error) {
 	return users, total, nil
 }
 
-func GetUserPermission(id uint) (model.Permission, error) {
-	var permission model.Permission
-	if err := db.Model(&model.User{}).Where("id = ?", id).Select("permission").Scan(&permission).Error; err != nil {
+func GetUserPermissionAndCreatedAt(id uint) (model.Permission, time.Time, error) {
+	var user model.User
+	if err := db.Model(&model.User{}).Where("id = ?", id).Select("permission, created_at").Scan(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return model.PermissionNone, model.NewNotFoundError("User not found")
+			return model.PermissionNone, time.Time{}, model.NewNotFoundError("User not found")
 		}
-		return model.PermissionNone, err
+		return model.PermissionNone, time.Time{}, err
 	}
-	return permission, nil
+	return user.Permission, user.CreatedAt, nil
 }

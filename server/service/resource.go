@@ -21,7 +21,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/log"
 
 	"gorm.io/gorm"
@@ -205,29 +204,35 @@ func parseResourceIfPresent(line string, host string) *model.ResourceView {
 	return &v
 }
 
-func GetResource(id uint, host string, ctx fiber.Ctx) (*model.ResourceDetailView, error) {
+func GetResource(id uint, c ctx.Context) (*model.ResourceDetailView, error) {
 	r, err := dao.GetResourceByID(id)
 	if err != nil {
 		return nil, err
 	}
-	if ctx != nil && ctx.Locals("real_user") == true {
+	if c.IsRealUser() {
 		err = dao.AddResourceViewCount(id)
 		if err != nil {
 			log.Error("AddResourceViewCount error: ", err)
 		}
 	}
 	v := r.ToDetailView()
-	if host != "" {
-		related := findRelatedResources(r, host)
+	if c.Host() != "" {
+		related := findRelatedResources(r, c.Host())
 		v.Related = related
 	}
 	fillRatings(&v)
-	if ctx != nil {
-		_, ok := ctx.Locals("uid").(uint)
-		if !ok {
-			removeNsfwImages(&v)
+
+	removeNsfw := true
+	if c.LoggedIn() {
+		createdAt := c.UserCreatedAt()
+		if createdAt.Before(time.Now().Add(-72 * time.Hour)) {
+			removeNsfw = false
 		}
 	}
+	if removeNsfw {
+		removeNsfwImages(&v)
+	}
+	
 	return &v, nil
 }
 
@@ -463,7 +468,7 @@ func DeleteResource(c ctx.Context, id uint) error {
 			return model.NewUnAuthorizedError("You have not permission to delete this resource")
 		}
 	}
-	r, err := GetResource(id, "", nil)
+	r, err := GetResource(id, c)
 	if err != nil {
 		return err
 	}
@@ -827,7 +832,7 @@ func downloadAndCreateImage(imageURL string) (uint, error) {
 	// 使用系统用户ID (假设为1) 创建图片
 	// 注意：这里使用系统账户，实际使用时可能需要调整
 	// 创建一个临时的fake context用于内部调用
-	fakeCtx := ctx.NewFakeContext(1, model.PermissionUploader)
+	fakeCtx := ctx.NewFakeContext(1, model.PermissionUploader, time.Time{})
 	imageID, err := CreateImage(fakeCtx, "127.0.0.1", imageData)
 	if err != nil {
 		return 0, fmt.Errorf("failed to create image: %w", err)

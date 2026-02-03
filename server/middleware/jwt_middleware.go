@@ -26,7 +26,7 @@ func JwtMiddleware(c fiber.Ctx) error {
 			}
 		}
 
-		p, err := service.GetUserPermission(id)
+		p, createdAt, err := service.GetUserPermissionAndCreatedAt(id)
 		if err != nil {
 			if model.IsNotFoundError(err) {
 				if fromCookie {
@@ -42,6 +42,7 @@ func JwtMiddleware(c fiber.Ctx) error {
 
 		c.Locals("uid", id)
 		c.Locals("permission", p)
+		c.Locals("created_at", createdAt)
 	}
 	return c.Next()
 }

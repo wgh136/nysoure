@@ -53,8 +53,7 @@ func handleGetResource(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid resource ID")
 	}
-	host := c.Hostname()
-	resource, err := service.GetResource(uint(id), host, c)
+	resource, err := service.GetResource(uint(id), ctx.NewContext(c))
 	if err != nil {
 		return err
 	}
