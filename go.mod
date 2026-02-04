@@ -6,7 +6,6 @@ require (
 	github.com/gofiber/fiber/v3 v3.0.0-rc.1
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	golang.org/x/crypto v0.42.0
-	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.0
 )
 
@@ -95,7 +94,6 @@ require (
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-sqlite3 v1.14.28 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/prometheus/client_golang v1.23.2
 	github.com/tinylib/msgp v1.3.0 // indirect

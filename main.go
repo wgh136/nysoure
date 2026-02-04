@@ -29,7 +29,7 @@ func main() {
 
 	app.Use(middleware.JwtMiddleware)
 
-	app.Use(middleware.FrontendMiddleware)
+	app.Use(middleware.StaticContentMiddleware)
 
 	app.Use(middleware.StatMiddleware)
 

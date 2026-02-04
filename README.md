@@ -19,18 +19,3 @@ A file sharing service that allows you to upload files and share them with other
 1. Clone the repository
 2. Install Docker and Docker Compose
 3. Run `docker-compose up -d` to start the application
-
-### Python script
-
-1. Clone the repository
-2. Install Python, golang, nodejs, and npm
-3. Run `python3 build.py` to build the application
-4. Set up the database and environment variables
-5. Execute the binary file in the `build` folder
-
-Environment variables:
-- DB_HOST
-- DB_PORT
-- DB_USER
-- DB_PASSWORD
-- DB_NAME
