@@ -5,6 +5,7 @@ test.db
 build/
 temp/
 .env
+pg_data/
 
 frontend_v2/dist/
 frontend_v2/node_modules/

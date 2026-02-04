@@ -26,7 +26,7 @@ services:
     volumes:
       - ./app_data:/var/lib/nysoure
     depends_on:
-      - db
+      - postgres
       - redis
     env_file:
       - .env
@@ -55,12 +55,14 @@ services:
     networks:
       nysoure-net:
 
-  db:
-    image: mariadb:latest
+  postgres:
+    image: postgres:18.1
     volumes:
-      - ./db_data:/var/lib/mysql
-    env_file:
-      - .env
+      - ./pg_data:/var/lib/postgresql
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -82,7 +84,7 @@ services:
       nysoure-net:
 
   backup:
-    build: https://git.nyne.dev/x/backup.git#v0.0.2
+    build: https://git.nyne.dev/x/backup.git#v0.0.3
     volumes: 
       - ./backup.yaml:/config/backup.yaml
       - ./app_data:/data/app_data:ro
@@ -96,7 +98,7 @@ services:
       nysoure-net:
     depends_on:
       - app
-      - db
+      - postgres
 
 networks:
   nysoure-net:

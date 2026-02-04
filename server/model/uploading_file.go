@@ -17,7 +17,7 @@ type UploadingFile struct {
 	UserID           uint
 	BlockSize        int64
 	TotalSize        int64
-	Blocks           []bool `gorm:"type:blob;serializer:blocks"`
+	Blocks           []bool `gorm:"type:bytea;serializer:blocks"`
 	TempPath         string
 	Resource         Resource `gorm:"foreignKey:TargetResourceID"`
 	Storage          Storage  `gorm:"foreignKey:TargetStorageID"`

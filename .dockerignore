@@ -2,6 +2,7 @@
 app_data/
 db_data/
 backup_data/
+pg_data/
 
 # Git 相关
 .git/
