@@ -14,17 +14,20 @@ import Badge from "../components/badge";
 import { configFromMatches, useConfig } from "../hook/config";
 import removeMd from "remove-markdown";
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const id = params.id ? parseInt(params.id, 10) : 0;
   
   if (isNaN(id) || id <= 0) {
     throw new Error("Invalid collection ID");
   }
 
+  // Get cookie from request headers for SSR authentication
+  const cookie = request.headers.get("Cookie");
+
   // Fetch collection data on server side
   const [collectionRes, firstPageResources] = await Promise.all([
-    network.getCollection(id),
-    network.listCollectionResources(id, 1),
+    network.getCollection(id, cookie || undefined),
+    network.listCollectionResources(id, 1, cookie || undefined),
   ]);
   
   if (!collectionRes.success) {

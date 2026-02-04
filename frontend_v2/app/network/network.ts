@@ -795,9 +795,11 @@ class Network {
     );
   }
 
-  async getCollection(id: number): Promise<Response<Collection>> {
+  async getCollection(id: number, cookie?: string): Promise<Response<Collection>> {
     return this._callApi(() =>
-      axios.get(`${this.apiBaseUrl}/collection/${id}`),
+      axios.get(`${this.apiBaseUrl}/collection/${id}`, {
+        headers: this.getHeaders(cookie ? { Cookie: cookie } : undefined),
+      }),
     );
   }
 
@@ -815,10 +817,12 @@ class Network {
   async listCollectionResources(
     collectionId: number,
     page: number = 1,
+    cookie?: string,
   ): Promise<PageResponse<Resource>> {
     return this._callApi(() =>
       axios.get(`${this.apiBaseUrl}/collection/${collectionId}/resources`, {
         params: { page },
+        headers: this.getHeaders(cookie ? { Cookie: cookie } : undefined),
       }),
     );
   }
