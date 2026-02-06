@@ -37,7 +37,7 @@ func CreateTagWithType(tag string, tagType string) (model.Tag, error) {
 func SearchTag(keyword string, mainTag bool) ([]model.Tag, error) {
 	// Search for a tag by its name in the database
 	var t []model.Tag
-	query := db.Model(&model.Tag{}).Where("name Like ?", "%"+keyword+"%")
+	query := db.Model(&model.Tag{}).Where("Lower(name) Like Lower(?)", "%"+keyword+"%")
 	if mainTag {
 		query = query.Where("alias_of IS NULL")
 	}
