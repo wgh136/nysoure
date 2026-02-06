@@ -86,6 +86,7 @@ func GetResourceList(page, pageSize int, sort model.RSort) ([]model.Resource, in
 	}
 
 	order := ""
+	where := ""
 	switch sort {
 	case model.RSortTimeAsc:
 		order = "modified_time ASC"
@@ -101,13 +102,20 @@ func GetResourceList(page, pageSize int, sort model.RSort) ([]model.Resource, in
 		order = "downloads DESC"
 	case model.RSortReleaseDateAsc:
 		order = "release_date ASC"
+		where = "release_date is not null"
 	case model.RSortReleaseDateDesc:
 		order = "release_date DESC"
+		where = "release_date is not null"
 	default:
 		order = "modified_time DESC" // Default sort order
 	}
 
-	if err := db.Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Preload("Images").Preload("Tags").Order(order).Find(&resources).Error; err != nil {
+	query := db.Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Preload("Images").Preload("Tags").Order(order)
+	if where != "" {
+		query = query.Where(where)
+	}
+
+	if err := query.Find(&resources).Error; err != nil {
 		return nil, 0, err
 	}
 
