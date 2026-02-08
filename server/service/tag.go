@@ -6,6 +6,7 @@ import (
 	"nysoure/server/model"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v3/log"
@@ -13,6 +14,11 @@ import (
 
 const (
 	maxTagLength = 20
+)
+
+var (
+	cachedTagList []model.TagViewWithCount
+	tagCacheMutex sync.Mutex
 )
 
 func init() {
@@ -123,8 +129,6 @@ func SetTagInfo(c ctx.Context, id uint, description string, aliasOf *uint, tagTy
 	return t.ToView(), nil
 }
 
-var cachedTagList []model.TagViewWithCount
-
 func updateCachedTagList() error {
 	tags, err := dao.ListTags()
 	if err != nil {
@@ -170,8 +174,12 @@ func updateCachedTagList() error {
 
 func GetTagList() ([]model.TagViewWithCount, error) {
 	if cachedTagList == nil {
-		if err := updateCachedTagList(); err != nil {
-			return nil, err
+		tagCacheMutex.Lock()
+		defer tagCacheMutex.Unlock()
+		if cachedTagList == nil {
+			if err := updateCachedTagList(); err != nil {
+				return nil, err
+			}
 		}
 	}
 	return cachedTagList, nil
