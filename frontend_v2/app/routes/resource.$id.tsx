@@ -808,7 +808,7 @@ function CharacterCard({ character }: { character: CharacterParams }) {
       <img
         src={character.image ? network.getImageUrl(character.image) : "/cp.webp"}
         alt={character.name}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover object-top"
       />
 
       <div className="absolute bottom-1 left-1 right-1 px-1 py-1 border border-base-100/40 rounded-lg bg-base-100/60">
