@@ -46,12 +46,12 @@ func handleSearchTag(c fiber.Ctx) error {
 	mainTag := mainTagStr == "true" || mainTagStr == "1"
 	tags, err := service.SearchTag(keyword, mainTag)
 	if tags == nil {
-		tags = []model.TagView{}
+		tags = []model.TagViewWithCount{}
 	}
 	if err != nil {
 		return err
 	}
-	return c.Status(fiber.StatusOK).JSON(model.Response[*[]model.TagView]{
+	return c.Status(fiber.StatusOK).JSON(model.Response[*[]model.TagViewWithCount]{
 		Success: true,
 		Data:    &tags,
 		Message: "Tags retrieved successfully",

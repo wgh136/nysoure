@@ -17,8 +17,9 @@ const (
 )
 
 var (
-	cachedTagList []model.TagViewWithCount
-	tagCacheMutex sync.Mutex
+	cachedTagList  []model.TagViewWithCount
+	cachedTagTable map[uint]int
+	tagCacheMutex  sync.Mutex
 )
 
 func init() {
@@ -82,16 +83,41 @@ func GetTagByName(name string) (*model.TagView, error) {
 	return t.ToView(), nil
 }
 
-func SearchTag(name string, mainTag bool) ([]model.TagView, error) {
+func SearchTag(name string, mainTag bool) ([]model.TagViewWithCount, error) {
+	if cachedTagList == nil {
+		tagCacheMutex.Lock()
+		defer tagCacheMutex.Unlock()
+		if cachedTagList == nil {
+			if err := updateCachedTagList(); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	tags, err := dao.SearchTag(name, mainTag)
 	if err != nil {
 		return nil, err
 	}
-	var tagViews []model.TagView
+	var tagViewsWithCount []model.TagViewWithCount
 	for _, t := range tags {
-		tagViews = append(tagViews, *t.ToView())
+		count := 0
+		id := t.ID
+		if t.AliasOf != nil {
+			id = *t.AliasOf
+		}
+		i, ok := cachedTagTable[id]
+		if ok {
+			count = cachedTagList[i].ResourceCount
+		}
+		tagViewsWithCount = append(tagViewsWithCount, *t.ToView().WithCount(count))
 	}
-	return tagViews, nil
+	slices.SortFunc(tagViewsWithCount, func(a, b model.TagViewWithCount) int {
+		return b.ResourceCount - a.ResourceCount
+	})
+	if len(tagViewsWithCount) > 10 {
+		tagViewsWithCount = tagViewsWithCount[:10]
+	}
+	return tagViewsWithCount, nil
 }
 
 func DeleteTag(id uint) error {
@@ -167,6 +193,11 @@ func updateCachedTagList() error {
 			limit = len(tagsOfType)
 		}
 		cachedTagList = append(cachedTagList, tagsOfType[:limit]...)
+	}
+
+	cachedTagTable = make(map[uint]int)
+	for i, tag := range cachedTagList {
+		cachedTagTable[tag.ID] = i
 	}
 
 	return nil
