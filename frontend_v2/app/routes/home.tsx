@@ -6,7 +6,7 @@ import type { Resource, Statistics } from "../network/models";
 import ResourcesView from "~/components/resources_view.tsx";
 import { network } from "../network/network";
 import { configFromMatches, useConfig } from "../hook/config";
-import { useLoaderData, useNavigate } from "react-router";
+import { useLoaderData, useNavigate, useSearchParams } from "react-router";
 import { MdOutlineClass, MdOutlineArchive, MdOutlineAccessTime, MdOutlineStorage, MdChevronLeft, MdChevronRight } from "react-icons/md";
 
 export function meta({ matches}: Route.MetaArgs) {
@@ -17,11 +17,15 @@ export function meta({ matches}: Route.MetaArgs) {
   ];
 }
 
-export async function loader() {
+export async function loader({ request }: Route.LoaderArgs) {
+  const url = new URL(request.url);
+  const sortParam = url.searchParams.get("sort");
+  const sort = sortParam ? parseInt(sortParam) : RSort.TimeDesc;
+  
   const [pinnedResources, statistic, firstPageResources] = await Promise.all([
     network.getPinnedResources(),
     network.getStatistic(),
-    network.getResources(1, RSort.TimeDesc),
+    network.getResources(1, sort),
   ]);
   if (!pinnedResources.success || !statistic.success) {
     throw new Error("Failed to load pinned resources or statistic");
@@ -30,14 +34,16 @@ export async function loader() {
     pinnedResources: pinnedResources.data ?? [],
     statistic: statistic.data ?? null,
     firstPageResources: firstPageResources.success ? firstPageResources : undefined,
+    sort,
   };
 }
 
 export default function Home() {
   const { t } = useTranslation();
-  const { firstPageResources } = useLoaderData<typeof loader>();
+  const { firstPageResources, sort } = useLoaderData<typeof loader>();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [order, setOrder] = useState(RSort.TimeDesc);
+  const order = sort;
 
   return (
     <>
@@ -46,10 +52,10 @@ export default function Home() {
       <div className={"flex pt-4 items-center"}>
         <select
           value={order}
-          className="select select-primary max-w-72 bg-base-100/60! shadow-xs backdrop-blur-sm"
+          className="select select-primary max-w-72 bg-base-100/80! shadow-xs backdrop-blur-sm"
           onChange={(e) => {
-            const order = parseInt(e.target.value);
-            setOrder(order);
+            const newOrder = parseInt(e.target.value);
+            setSearchParams({ sort: newOrder.toString() });
           }}
         >
           {[
@@ -72,7 +78,7 @@ export default function Home() {
         key={`home_page_${order}`}
         storageKey={`home_page_${order}`}
         loader={(page) => network.getResources(page, order)}
-        initialData={order === RSort.TimeDesc ? firstPageResources : undefined}
+        initialData={firstPageResources}
       />
     </>
   );
