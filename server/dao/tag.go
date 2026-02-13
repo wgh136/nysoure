@@ -4,6 +4,7 @@ import (
 	"errors"
 	"nysoure/server/model"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v3/log"
 
@@ -198,6 +199,11 @@ func ClearUnusedTags() error {
 		return err
 	}
 	for _, tag := range tags {
+		now := time.Now()
+		// If the tag is less than 7 days old, we don't need to check if it is unused
+		if tag.CreatedAt.After(now.Add(-time.Hour * 24 * 7)) {
+			continue
+		}
 		resources, _, err := GetResourceByTag(tag.ID, 1, 1)
 		if err != nil {
 			return err
