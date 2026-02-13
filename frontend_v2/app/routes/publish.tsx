@@ -17,7 +17,7 @@ export function meta({ matches }: Route.MetaArgs) {
 
 // Load from localStorage - only runs once
 function getInitialData(): ResourceFormData {
-  const oldData = localStorage.getItem("publish_data");
+  const oldData = (typeof localStorage !== "undefined") && localStorage.getItem("publish_data");
   if (oldData) {
     try {
       const data = JSON.parse(oldData);

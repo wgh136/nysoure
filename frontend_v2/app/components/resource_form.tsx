@@ -67,7 +67,7 @@ export default function ResourceForm({
 
   // Auto-save to localStorage if storageKey is provided
   useEffect(() => {
-    if (!storageKey) return;
+    if (!storageKey || typeof localStorage === "undefined") return;
 
     const data = {
       title,
