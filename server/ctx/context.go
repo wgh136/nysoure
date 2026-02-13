@@ -83,7 +83,11 @@ func (c *contextImpl) IsDevAccess() bool {
 }
 
 func (c *contextImpl) UserPermission() model.Permission {
-	return c.fiberCtx.Locals("permission").(model.Permission)
+	permission, ok := c.fiberCtx.Locals("permission").(model.Permission)
+	if !ok {
+		return model.PermissionNone
+	}
+	return permission
 }
 
 func (c *contextImpl) UserCreatedAt() time.Time {
