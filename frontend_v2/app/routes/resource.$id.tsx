@@ -1915,7 +1915,7 @@ function KunFile({
   return (
     <div className={"card shadow bg-base-100/80 mb-4"}>
       <div className={"p-4 flex flex-row items-center"}>
-        <div className={"grow"}>
+          <div className={"grow min-w-0"}>
           <h4 className={"font-bold break-all"}>{file.name}</h4>
           <div className={"text-sm my-1 comment_tile"}>
             <Markdown>{file.note.replaceAll("\n", "  \n")}</Markdown>
