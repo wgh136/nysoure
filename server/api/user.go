@@ -33,7 +33,7 @@ func handleUserRegister(c fiber.Ctx) error {
 		Expires:  time.Now().Add(7 * 24 * time.Hour),
 		HTTPOnly: true,
 		Secure:   true,
-		SameSite: "Strict",
+		SameSite: fiber.CookieSameSiteLaxMode,
 	})
 	return c.Status(fiber.StatusOK).JSON(model.Response[model.UserViewWithToken]{
 		Success: true,
@@ -58,7 +58,7 @@ func handleUserLogin(c fiber.Ctx) error {
 		Expires:  time.Now().Add(7 * 24 * time.Hour),
 		HTTPOnly: true,
 		Secure:   true,
-		SameSite: "Strict",
+		SameSite: fiber.CookieSameSiteLaxMode,
 	})
 	return c.Status(fiber.StatusOK).JSON(model.Response[model.UserViewWithToken]{
 		Success: true,
@@ -74,7 +74,7 @@ func handleUserLogout(c fiber.Ctx) error {
 		Expires:  time.Now().Add(-time.Hour),
 		HTTPOnly: true,
 		Secure:   true,
-		SameSite: "Strict",
+		SameSite: fiber.CookieSameSiteLaxMode,
 		MaxAge:   -1,
 	})
 	return c.Status(fiber.StatusOK).JSON(model.Response[any]{
@@ -99,7 +99,7 @@ func handleUserChangePassword(c fiber.Ctx) error {
 		Expires:  time.Now().Add(7 * 24 * time.Hour),
 		HTTPOnly: true,
 		Secure:   true,
-		SameSite: "Strict",
+		SameSite: fiber.CookieSameSiteLaxMode,
 	})
 	return c.Status(fiber.StatusOK).JSON(model.Response[model.UserViewWithToken]{
 		Success: true,
@@ -339,7 +339,7 @@ func handleGetMe(c fiber.Ctx) error {
 		Expires:  time.Now().Add(7 * 24 * time.Hour),
 		HTTPOnly: true,
 		Secure:   true,
-		SameSite: "Strict",
+		SameSite: fiber.CookieSameSiteLaxMode,
 	})
 	return c.Status(fiber.StatusOK).JSON(model.Response[model.UserViewWithToken]{
 		Success: true,
