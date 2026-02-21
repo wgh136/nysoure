@@ -27,6 +27,7 @@ import { CommentTile } from "~/components/comment_tile";
 import { CommentInput } from "~/components/comment_input";
 import Pagination from "~/components/pagination";
 import { useSetBackground } from "~/components/background";
+import { ValidateHtml } from "~/utils/html";
 
 export function meta({ loaderData, matches }: Route.MetaArgs) {
   const config = configFromMatches(matches);
@@ -558,22 +559,33 @@ function Article({ resource }: { resource: ResourceDetails }) {
                 (props.children as ReactElement).type === "strong"
               ) {
                 // @ts-ignore
-                const child = (
+                const children = (
                   props.children as ReactElement
-                ).props.children.toString() as string;
-                if (child.startsWith("<iframe")) {
+                ).props.children;
+                let plainChild = "";
+                if (Array.isArray(children)) {
+                  plainChild = children.map((c) => {
+                    if (typeof c === "object" && c.type === "text") {
+                      return c.props.children;
+                    } else if (typeof c === "object" && c.props.href) {
+                      return c.props.href;
+                    }
+                    return c.toString();
+                  }).join("");
+                } else {
+                  plainChild = children.toString();
+                }
+                if (plainChild.startsWith("<iframe")) {
                   // @ts-ignore
-                  let html = child;
-                  let splits = html.split(" ");
-                  splits = splits.filter((s: string) => {
-                    return !(
-                      s.startsWith("width") ||
-                      s.startsWith("height") ||
-                      s.startsWith("class") ||
-                      s.startsWith("style")
-                    );
-                  });
-                  html = splits.join(" ");
+                  let html = plainChild;
+                  // remove width, height, class, style attributes
+                  html = html.replace(/width="[^"]*"/g, "");
+                  html = html.replace(/height="[^"]*"/g, "");
+                  html = html.replace(/class="[^"]*"/g, "");
+                  html = html.replace(/style="[^"]*"/g, "");
+                  if (!ValidateHtml(html)) {
+                    return <></>;
+                  }
                   return (
                     <div
                       className={`w-full my-3 max-w-xl rounded-xl overflow-clip ${html.includes("youtube") ? "aspect-video" : "h-48 sm:h-64"}`}
