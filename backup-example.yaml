@@ -13,9 +13,9 @@ items:
       - "/data/app_data/resampled"
       - "*.bleve"
   - name: "db"
-    type: "mariadb"
+    type: "postgresql"
     host: "db"
-    port: 3306
+    port: 5432
     user: "root"
     password: "root_password"
     database: "nysoure"
