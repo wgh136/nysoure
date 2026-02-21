@@ -84,7 +84,7 @@ services:
       nysoure-net:
 
   backup:
-    build: https://git.nyne.dev/x/backup.git#v0.0.3
+    build: https://git.nyne.dev/x/backup.git#v0.0.4
     volumes: 
       - ./backup.yaml:/config/backup.yaml
       - ./app_data:/data/app_data:ro
