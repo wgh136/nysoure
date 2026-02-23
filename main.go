@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"nysoure/server/api"
+	"nysoure/server/dao"
 	"nysoure/server/middleware"
 
 	"github.com/gofiber/fiber/v3"
@@ -12,6 +13,8 @@ import (
 )
 
 func main() {
+	dao.InitDB()
+
 	app := fiber.New(fiber.Config{
 		BodyLimit:   8 * 1024 * 1024,
 		ProxyHeader: "X-Real-IP",

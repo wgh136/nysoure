@@ -1,7 +1,6 @@
 package search
 
 import (
-	"nysoure/server/dao"
 	"nysoure/server/model"
 	"os"
 	"testing"
@@ -28,7 +27,6 @@ func TearDown() {
 	if err != nil {
 		panic(err)
 	}
-	dao.Close()
 	os.RemoveAll("search_test.bleve")
 	os.Remove("test.db")
 }

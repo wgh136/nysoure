@@ -15,7 +15,7 @@ var (
 	ready = false
 )
 
-func init() {
+func InitDB() {
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
 	user := os.Getenv("DB_USER")
