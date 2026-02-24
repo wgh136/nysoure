@@ -232,7 +232,7 @@ func GetResource(id uint, c ctx.Context) (*model.ResourceDetailView, error) {
 	if removeNsfw {
 		removeNsfwImages(&v)
 	}
-	
+
 	return &v, nil
 }
 
@@ -1043,6 +1043,57 @@ func getVNDBRatingWithCache(vnID string) (int, error) {
 	return rating, nil
 }
 
+func getSteamRating(steamID string) (int, error) {
+	client := http.Client{}
+	url := fmt.Sprintf("https://store.steampowered.com/appreviews/%s?json=1&language=all&purchase_type=all&cursor=*&num_per_page=0", steamID)
+	resp, err := client.Get(url)
+	if err != nil {
+		return 0, model.NewInternalServerError("Failed to get Steam rating")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return 0, model.NewInternalServerError("Failed to get Steam rating")
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return 0, model.NewInternalServerError("Failed to read Steam rating")
+	}
+	var steamResp struct {
+		QuerySummary struct {
+			TotalReviews  int `json:"total_reviews"`
+			TotalPositive int `json:"total_positive"`
+		} `json:"query_summary"`
+	}
+	if err := json.Unmarshal(body, &steamResp); err != nil {
+		return 0, model.NewInternalServerError("Failed to parse Steam rating")
+	}
+	rating := int(math.Round(float64(steamResp.QuerySummary.TotalPositive) / float64(steamResp.QuerySummary.TotalReviews) * 100))
+	return rating, nil
+}
+
+func getSteamRatingWithCache(steamID string) (int, error) {
+	cacheKey := fmt.Sprintf("steam_rating_%s", steamID)
+	ratingStr, err := cache.Get(cacheKey)
+	if err != nil && !errors.Is(err, cache.ErrNotFound) {
+		return 0, err
+	} else if errors.Is(err, cache.ErrNotFound) {
+		rating, err := getSteamRating(steamID)
+		if err != nil {
+			return 0, err
+		}
+		err = cache.Set(cacheKey, strconv.Itoa(rating), 24*time.Hour)
+		if err != nil {
+			log.Error("Failed to set Steam rating cache: ", err)
+		}
+		return rating, nil
+	}
+	rating, err := strconv.Atoi(ratingStr)
+	if err != nil {
+		return 0, model.NewInternalServerError("Failed to parse Steam rating")
+	}
+	return rating, nil
+}
+
 func fillRatings(resource *model.ResourceDetailView) {
 	ratings := make(map[string]int)
 	for _, link := range resource.Links {
@@ -1056,6 +1107,17 @@ func fillRatings(resource *model.ResourceDetailView) {
 				ratings[link.Label] = rating
 			} else {
 				log.Error("Failed to get VNDB rating: ", err)
+			}
+		} else if steamID, ok := strings.CutPrefix(link.URL, "https://store.steampowered.com/app/"); ok {
+			steamID = strings.TrimSpace(steamID)
+			if strings.Contains(steamID, "/") {
+				steamID = strings.Split(steamID, "/")[0]
+			}
+			rating, err := getSteamRatingWithCache(steamID)
+			if err == nil {
+				ratings[link.Label] = rating
+			} else {
+				log.Error("Failed to get Steam rating: ", err)
 			}
 		}
 	}
