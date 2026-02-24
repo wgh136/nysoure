@@ -53,7 +53,9 @@ func GetResourceByID(id uint) (model.Resource, error) {
 		Preload("Tags", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id", "name", "type", "alias_of")
 		}).
-		Preload("Files").
+		Preload("Files", func(db *gorm.DB) *gorm.DB {
+			return db.Order("files.updated_at ASC")
+		}).
 		Preload("Files.User").
 		Preload("Files.Storage").
 		Preload("Characters").
