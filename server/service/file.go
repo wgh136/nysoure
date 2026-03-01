@@ -329,6 +329,23 @@ func CreateRedirectFile(c ctx2.Context, filename string, description string, res
 		log.Error("failed to create file in db: ", err)
 		return nil, model.NewInternalServerError("failed to create file in db")
 	}
+
+	if fileSize == 0 {
+		// asynchronously fetch the file size
+		go func() {
+			size, err := utils.FetchRedirectFileSize(redirectUrl)
+			if err != nil {
+				log.Error("failed to fetch file size: ", err)
+				return
+			}
+			_, err = dao.UpdateFile(file.UUID, "", "", "", size)
+			if err != nil {
+				log.Error("failed to update file size: ", err)
+				return
+			}
+		}()
+	}
+
 	return file.ToView(), nil
 }
 
@@ -384,6 +401,23 @@ func UpdateFile(c ctx2.Context, fid string, filename string, description string,
 		log.Error("failed to update file in db: ", err)
 		return nil, model.NewInternalServerError("failed to update file in db")
 	}
+
+	if file.RedirectUrl != "" && file.Size == 0 {
+		// asynchronously fetch the file size
+		go func() {
+			size, err := utils.FetchRedirectFileSize(file.RedirectUrl)
+			if err != nil {
+				log.Error("failed to fetch file size: ", err)
+				return
+			}
+			_, err = dao.UpdateFile(file.UUID, "", "", "", size)
+			if err != nil {
+				log.Error("failed to update file size: ", err)
+				return
+			}
+		}()
+	}
+
 	return file.ToView(), nil
 }
 
