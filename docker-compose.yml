@@ -31,6 +31,12 @@ services:
     env_file:
       - .env
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: "${APP_MEM_LIMIT:-512M}"
+        reservations:
+          memory: "${APP_MEM_RESERVE:-64M}"
     logging:
       driver: "json-file"
       options:
@@ -38,15 +44,21 @@ services:
         max-file: "3"
     networks:
       nysoure-net:
-    
+
   frontend:
-    build: 
+    build:
       context: ./frontend_v2
       dockerfile: Dockerfile
     expose:
       - "3000"
     env_file:
       - frontend_v2/.env
+    deploy:
+      resources:
+        limits:
+          memory: "${FRONTEND_MEM_LIMIT:-512M}"
+        reservations:
+          memory: "${FRONTEND_MEM_RESERVE:-128M}"
     logging:
       driver: "json-file"
       options:
@@ -64,6 +76,12 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: "${POSTGRES_MEM_LIMIT:-1G}"
+        reservations:
+          memory: "${POSTGRES_MEM_RESERVE:-128M}"
     logging:
       driver: "json-file"
       options:
@@ -75,6 +93,12 @@ services:
   redis:
     image: redis:latest
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: "${REDIS_MEM_LIMIT:-512M}"
+        reservations:
+          memory: "${REDIS_MEM_RESERVE:-64M}"
     logging:
       driver: "json-file"
       options:
