@@ -84,10 +84,11 @@ services:
       nysoure-net:
 
   backup:
-    build: https://git.nyne.dev/x/backup.git#v0.0.4
+    build: https://git.nyne.dev/x/backup.git#v0.0.6
     volumes: 
       - ./backup.yaml:/config/backup.yaml
       - ./app_data:/data/app_data:ro
+      - ./.env:/data/.env
     restart: unless-stopped
     logging:
       driver: "json-file"

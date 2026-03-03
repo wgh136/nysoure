@@ -19,6 +19,12 @@ items:
     user: "nysoure"
     password: "nysoure_password"
     database: "nysoure"
+  - name: "env"
+    type: "local"
+    path: "/data/.env"
+  - name: "backup_config"
+    type: "local"
+    path: "/config/backup.yaml"
 
 options:
   storage: "s3"
