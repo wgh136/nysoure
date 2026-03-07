@@ -73,7 +73,16 @@ func GetTagByID(id uint) (model.Tag, error) {
 func GetTagByName(name string) (model.Tag, error) {
 	// Retrieve a tag by its name from the database
 	var t model.Tag
+	// exact match
 	if err := db.Preload("Aliases").Where("name = ?", name).First(&t).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.Tag{}, err
+		}
+	} else {
+		return t, nil
+	}
+	// case insensitive match
+	if err := db.Preload("Aliases").Where("Lower(name) = Lower(?)", name).First(&t).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return model.Tag{}, model.NewNotFoundError("Tag not found")
 		}
@@ -229,7 +238,7 @@ func ClearUnusedTags() error {
 
 func ExistsTag(name string) (bool, error) {
 	var count int64
-	if err := db.Model(&model.Tag{}).Where("name = ?", name).Count(&count).Error; err != nil {
+	if err := db.Model(&model.Tag{}).Where("Lower(name) = Lower(?)", name).Count(&count).Error; err != nil {
 		return false, err
 	}
 	return count > 0, nil
