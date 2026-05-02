@@ -267,6 +267,25 @@ func SetFileStorageKeyAndSize(id string, storageKey string, size int64, hash str
 	return nil
 }
 
+func UpdateFileStorage(id string, storageID uint, storageKey string) error {
+	f := &model.File{}
+	if err := db.Where("uuid = ?", id).First(f).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.NewNotFoundError("file not found")
+		}
+		return err
+	}
+	f.StorageID = &storageID
+	f.StorageKey = storageKey
+	if err := db.Save(f).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.NewNotFoundError("file not found")
+		}
+		return err
+	}
+	return nil
+}
+
 func ListUserFiles(userID uint, page, pageSize int) ([]*model.File, int64, error) {
 	var files []*model.File
 	var count int64

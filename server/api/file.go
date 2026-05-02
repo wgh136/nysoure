@@ -28,6 +28,7 @@ func AddFileRoutes(router fiber.Router) {
 		fileGroup.Post("/upload/cancel/:id", cancelUpload)
 		fileGroup.Post("/redirect", createRedirectFile, middleware.NewRequestLimiter(300, 24*time.Hour))
 		fileGroup.Post("/upload/url", createServerDownloadTask)
+		fileGroup.Post("/migrate", createFileMigrationTask)
 		fileGroup.Get("/tasks", listTasks)
 		fileGroup.Get("/tasks/:id", getTask)
 		fileGroup.Post("/tasks/:id/stop", stopTask)
@@ -352,6 +353,31 @@ func createServerDownloadTask(c fiber.Ctx) error {
 	return c.JSON(model.Response[*model.FileView]{
 		Success: true,
 		Data:    result,
+	})
+}
+
+func createFileMigrationTask(c fiber.Ctx) error {
+	type CreateFileMigrationTaskRequest struct {
+		FileID          string `json:"file_id"`
+		TargetStorageID uint   `json:"target_storage_id"`
+	}
+
+	var req CreateFileMigrationTaskRequest
+	if err := c.Bind().Body(&req); err != nil {
+		return model.NewRequestError("Invalid request parameters")
+	}
+
+	req.FileID = strings.TrimSpace(req.FileID)
+
+	context := ctx.NewContext(c)
+	t, err := service.CreateFileMigrationTask(context, req.FileID, req.TargetStorageID)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(model.Response[TaskView]{
+		Success: true,
+		Data:    toTaskView(t),
 	})
 }
 

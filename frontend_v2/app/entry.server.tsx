@@ -29,41 +29,47 @@ export default async function handleRequest(
   return new Promise((resolve, reject) => {
     let shellRendered = false;
     const userAgent = request.headers.get("user-agent");
+    const shouldWaitForAllReady =
+      (userAgent && isbot(userAgent)) || routerContext.isSpaMode;
 
-    // Ensure requests from bots and SPA Mode renders wait for all content to load before responding
-    // https://react.dev/reference/react-dom/server/renderToPipeableStream#waiting-for-all-content-to-load-for-crawlers-and-static-generation
-    const readyOption: keyof Parameters<typeof renderToPipeableStream>[1] =
-      (userAgent && isbot(userAgent)) || routerContext.isSpaMode
-        ? "onAllReady"
-        : "onShellReady";
+    const onReady = () => {
+      shellRendered = true;
+      const body = new PassThrough();
+      const stream = new ReadableStream({
+        start(controller) {
+          body.on("data", (chunk: Buffer) => {
+            controller.enqueue(chunk);
+          });
+          body.on("end", () => {
+            controller.close();
+          });
+        },
+      });
+
+      responseHeaders.set("Content-Type", "text/html; charset=utf-8");
+
+      resolve(
+        new Response(stream, {
+          headers: responseHeaders,
+          status: responseStatusCode,
+        })
+      );
+
+      pipe(body);
+    };
 
     const { pipe, abort } = renderToPipeableStream(
       <ServerRouter context={routerContext} url={request.url} />,
       {
-        [readyOption]() {
-          shellRendered = true;
-          const body = new PassThrough();
-          const stream = new ReadableStream({
-            start(controller) {
-              body.on("data", (chunk: Buffer) => {
-                controller.enqueue(chunk);
-              });
-              body.on("end", () => {
-                controller.close();
-              });
-            },
-          });
-
-          responseHeaders.set("Content-Type", "text/html; charset=utf-8");
-
-          resolve(
-            new Response(stream, {
-              headers: responseHeaders,
-              status: responseStatusCode,
-            })
-          );
-
-          pipe(body);
+        onAllReady() {
+          if (shouldWaitForAllReady) {
+            onReady();
+          }
+        },
+        onShellReady() {
+          if (!shouldWaitForAllReady) {
+            onReady();
+          }
         },
         onShellError(error: unknown) {
           reject(error);

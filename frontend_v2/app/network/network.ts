@@ -597,6 +597,18 @@ class Network {
     );
   }
 
+  async createFileMigrationTask(
+    fileId: string,
+    targetStorageId: number,
+  ): Promise<Response<ServerTask>> {
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/files/migrate`, {
+        file_id: fileId,
+        target_storage_id: targetStorageId,
+      }),
+    );
+  }
+
   async listServerTasks(): Promise<Response<ServerTask[]>> {
     return this._callApi(() => axios.get(`${this.apiBaseUrl}/files/tasks`));
   }

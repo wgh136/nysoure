@@ -1,5 +1,5 @@
 export class Debounce {
-  private timer: number | null = null;
+  private timer: ReturnType<typeof setTimeout> | null = null;
   private readonly delay: number;
 
   constructor(delay: number) {

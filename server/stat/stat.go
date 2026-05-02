@@ -3,8 +3,8 @@ package stat
 import (
 	"time"
 
+	ipstat "git.nyne.dev/o/ip_stat"
 	prom "github.com/prometheus/client_golang/prometheus"
-	ipstat "github.com/wgh136/gopkg/ip_stat"
 )
 
 var (

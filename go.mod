@@ -10,6 +10,7 @@ require (
 )
 
 require (
+	git.nyne.dev/o/ip_stat v0.0.1
 	github.com/blevesearch/bleve v1.0.14
 	github.com/chai2010/webp v1.4.0
 	github.com/disintegration/imaging v1.6.2
@@ -17,7 +18,6 @@ require (
 	github.com/redis/go-redis/v9 v9.17.0
 	github.com/stretchr/testify v1.11.1
 	github.com/wgh136/cloudflare-error-page v0.0.1
-	github.com/wgh136/gopkg/ip_stat v0.0.0-20251231110953-7b6a855b995e
 	google.golang.org/genai v1.42.0
 	gorm.io/driver/postgres v1.6.0
 )

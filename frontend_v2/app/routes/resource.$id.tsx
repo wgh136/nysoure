@@ -3,7 +3,7 @@ import type { Route } from "./+types/resource.$id";
 import removeMd from "remove-markdown";
 import { configFromMatches, useConfig, isAdmin, canUpload } from "~/hook/config";
 import { createRef, useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
-import { MdAdd, MdOutlineAccessTime, MdOutlineAdd, MdOutlineArchive, MdOutlineArticle, MdOutlineCloud, MdOutlineComment, MdOutlineContentCopy, MdOutlineDataset, MdOutlineDelete, MdOutlineDownload, MdOutlineEdit, MdOutlineFolderSpecial, MdOutlineInfo, MdOutlineLink, MdOutlineOpenInNew, MdOutlineStar, MdOutlineVerifiedUser } from "react-icons/md";
+import { MdAdd, MdOutlineAccessTime, MdOutlineAdd, MdOutlineArchive, MdOutlineArticle, MdOutlineCloud, MdOutlineComment, MdOutlineContentCopy, MdOutlineDataset, MdOutlineDelete, MdOutlineDownload, MdOutlineEdit, MdOutlineFolderSpecial, MdOutlineInfo, MdOutlineLink, MdOutlineOpenInNew, MdOutlineStar, MdOutlineSwapHoriz, MdOutlineVerifiedUser } from "react-icons/md";
 import { useTranslation } from "~/hook/i18n";
 import { NavLink, useNavigate } from "react-router";
 import type { CharacterParams, Collection, Resource, ResourceDetails, RFile, RLink, Tag, Storage as RStorage, Comment as RComment } from "~/network/models";
@@ -1060,6 +1060,7 @@ function FileTile({ file }: { file: RFile }) {
             </Badge>
             <DeleteFileDialog fileId={file.id} uploaderId={file.user.id} />
             <UpdateFileInfoDialog file={file} />
+            <MigrateFileDialog file={file} />
           </p>
         </div>
         <div className={`flex-row items-center hidden xs:flex`}>
@@ -1655,6 +1656,119 @@ function CreateFileDialog({ resourceId }: { resourceId: number }) {
                 <span className={"loading loading-spinner loading-sm"}></span>
               ) : null}
               {t("Submit")}
+            </button>
+          </div>
+        </div>
+      </dialog>
+    </>
+  );
+}
+
+function MigrateFileDialog({ file }: { file: RFile }) {
+  const [isLoading, setLoading] = useState(false);
+  const [storages, setStorages] = useState<RStorage[] | null>(null);
+  const [selectedStorageID, setSelectedStorageID] = useState<number | null>(null);
+  const config = useConfig();
+  const { t } = useTranslation();
+
+  const id = `migrate_file_dialog_${file.id}`;
+
+  const reload = function () {
+    window.location.reload();
+  }
+
+  const openDialog = async () => {
+    if (isLoading) {
+      return;
+    }
+    if (storages == null) {
+      setLoading(true);
+      const res = await network.listStorages();
+      setLoading(false);
+      if (!res.success || !res.data) {
+        showToast({ message: res.message, type: "error" });
+        return;
+      }
+      setStorages(res.data);
+      let defaultStorage = res.data.find((s) => s.isDefault);
+      if (!defaultStorage && res.data.length > 0) {
+        defaultStorage = res.data[0];
+      }
+      setSelectedStorageID(defaultStorage?.id ?? null);
+    }
+    const dialog = document.getElementById(id) as HTMLDialogElement;
+    dialog.showModal();
+  };
+
+  const handleMigrate = async () => {
+    if (isLoading || selectedStorageID == null) {
+      return;
+    }
+    setLoading(true);
+    const res = await network.createFileMigrationTask(file.id, selectedStorageID);
+    setLoading(false);
+    if (!res.success) {
+      showToast({ message: res.message, type: "error" });
+      return;
+    }
+    const dialog = document.getElementById(id) as HTMLDialogElement;
+    dialog.close();
+    showToast({ message: t("Migration task created successfully"), type: "success" });
+    reload();
+  };
+
+  if (file.is_redirect) {
+    return <></>;
+  }
+  if (!isAdmin(config) && config.user?.id !== file.user.id) {
+    return <></>;
+  }
+
+  return (
+    <>
+      <button
+        className={"btn btn-info btn-ghost btn-circle btn-sm ml-1"}
+        onClick={openDialog}
+      >
+        <MdOutlineSwapHoriz size={16} className={"inline-block"} />
+      </button>
+      <dialog id={id} className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">{t("Migrate File")}</h3>
+          <p className="py-2 text-sm">
+            {t("Move this file from current storage to another storage asynchronously.")}
+          </p>
+          <select
+            className="select select-primary w-full my-2"
+            value={selectedStorageID ?? ""}
+            onChange={(e) => {
+              const value = parseInt(e.target.value);
+              if (isNaN(value)) {
+                setSelectedStorageID(null);
+              } else {
+                setSelectedStorageID(value);
+              }
+            }}
+          >
+            <option value={""} disabled>
+              {t("Select Storage")}
+            </option>
+            {storages?.map((s) => {
+              return (
+                <option key={s.id} value={s.id}>
+                  {s.name}({(s.currentSize / 1024 / 1024).toFixed(2)}/{s.maxSize / 1024 / 1024}MB)
+                </option>
+              );
+            })}
+          </select>
+
+          <div className="modal-action">
+            <form method="dialog">
+              <button className="btn btn-ghost">{t("Close")}</button>
+            </form>
+            <button className="btn btn-info" onClick={handleMigrate}>
+              {isLoading ? <span className={"loading loading-spinner loading-sm"}></span> : null}
+              {t("Start Migration")}
             </button>
           </div>
         </div>

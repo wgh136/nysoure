@@ -630,6 +630,55 @@ func CreateServerDownloadTask(c ctx2.Context, url, filename, description string,
 	return file.ToView(), nil
 }
 
+func CreateFileMigrationTask(c ctx2.Context, fileID string, targetStorageID uint) (task.Task, error) {
+	if fileID == "" {
+		return nil, model.NewRequestError("file_id is required")
+	}
+
+	file, err := dao.GetFile(fileID)
+	if err != nil {
+		log.Error("failed to get file: ", err)
+		return nil, model.NewNotFoundError("file not found")
+	}
+
+	if file.StorageID == nil || file.RedirectUrl != "" {
+		return nil, model.NewRequestError("file is not stored in storage")
+	}
+	if file.StorageKey == "" || file.StorageKey == storageKeyUnavailable {
+		return nil, model.NewRequestError("file is not available, please try again later")
+	}
+
+	uid := c.MustUserID()
+	isAdmin := c.UserPermission() == model.PermissionAdmin
+	if !isAdmin && file.UserID != uid {
+		return nil, model.NewUnAuthorizedError("user cannot migrate file")
+	}
+
+	if *file.StorageID == targetStorageID {
+		return nil, model.NewRequestError("source and target storage are the same")
+	}
+
+	targetStorage, err := dao.GetStorage(targetStorageID)
+	if err != nil {
+		log.Error("failed to get target storage: ", err)
+		return nil, model.NewRequestError("target storage not found")
+	}
+	if storage.NewStorage(targetStorage) == nil {
+		return nil, model.NewRequestError("target storage configuration is invalid")
+	}
+
+	migrationTask := task.NewFileMigrationTask(file.ID, file.UUID, file.Filename, *file.StorageID, targetStorageID, file.Size)
+	task.RegisterTask(migrationTask)
+
+	go func() {
+		if err := migrationTask.Run(); err != nil {
+			log.Error("file migration task failed: ", migrationTask.ID(), ", err: ", err)
+		}
+	}()
+
+	return migrationTask, nil
+}
+
 func ListUserFiles(username string, page int) ([]*model.FileView, int, error) {
 	user, err := dao.GetUserByUsername(username)
 	if err != nil {
