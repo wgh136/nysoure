@@ -83,33 +83,37 @@ func GetResourceList(page, pageSize int, sort model.RSort) ([]model.Resource, in
 	var resources []model.Resource
 	var total int64
 
-	if err := db.Model(&model.Resource{}).Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
-
 	order := ""
 	where := ""
 	switch sort {
 	case model.RSortTimeAsc:
-		order = "modified_time ASC"
+		order = "modified_time ASC, id ASC"
 	case model.RSortTimeDesc:
-		order = "modified_time DESC"
+		order = "modified_time DESC, id DESC"
 	case model.RSortViewsAsc:
-		order = "views ASC"
+		order = "views ASC, id ASC"
 	case model.RSortViewsDesc:
-		order = "views DESC"
+		order = "views DESC, id DESC"
 	case model.RSortDownloadsAsc:
-		order = "downloads ASC"
+		order = "downloads ASC, id ASC"
 	case model.RSortDownloadsDesc:
-		order = "downloads DESC"
+		order = "downloads DESC, id DESC"
 	case model.RSortReleaseDateAsc:
-		order = "release_date ASC"
+		order = "release_date ASC, id ASC"
 		where = "release_date is not null"
 	case model.RSortReleaseDateDesc:
-		order = "release_date DESC"
+		order = "release_date DESC, id DESC"
 		where = "release_date is not null"
 	default:
-		order = "modified_time DESC" // Default sort order
+		order = "modified_time DESC, id DESC" // Default sort order
+	}
+
+	countQuery := db.Model(&model.Resource{})
+	if where != "" {
+		countQuery = countQuery.Where(where)
+	}
+	if err := countQuery.Count(&total).Error; err != nil {
+		return nil, 0, err
 	}
 
 	query := db.Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Preload("Images").Preload("Tags").Order(order)
@@ -256,7 +260,7 @@ func GetResourceByTag(tagID uint, page int, pageSize int) ([]model.Resource, int
 		Preload("Images").
 		Preload("Tags").
 		Preload("Files").
-		Order("created_at DESC").
+		Order("created_at DESC, id DESC").
 		Find(&resources).Error; err != nil {
 		return nil, 0, err
 	}
@@ -322,7 +326,7 @@ func GetResourcesByUsername(username string, page, pageSize int) ([]model.Resour
 		return nil, 0, err
 	}
 
-	if err := db.Model(&model.Resource{}).Where("user_id = ?", user.ID).Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Preload("Images").Preload("Tags").Order("created_at DESC").Find(&resources).Error; err != nil {
+	if err := db.Model(&model.Resource{}).Where("user_id = ?", user.ID).Offset((page - 1) * pageSize).Limit(pageSize).Preload("User").Preload("Images").Preload("Tags").Order("created_at DESC, id DESC").Find(&resources).Error; err != nil {
 		return nil, 0, err
 	}
 
