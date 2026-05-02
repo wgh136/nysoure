@@ -14,12 +14,12 @@ import (
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/storage"
+	"nysoure/server/task"
 	"nysoure/server/utils"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync/atomic"
 	"time"
 
 	"github.com/gofiber/fiber/v3/log"
@@ -618,130 +618,12 @@ func CreateServerDownloadTask(c ctx2.Context, url, filename, description string,
 
 	updateUploadingSize(contentLength)
 
+	downloadTask := task.NewServerDownloadTask(file.ID, file.UUID, url, filename, storageID, contentLength)
+	task.RegisterTask(downloadTask)
+
 	go func() {
-		ctx, cancel := context.WithCancel(context.Background())
-
-		done := atomic.Bool{}
-
-		go func() {
-			for {
-				time.Sleep(10 * time.Second)
-				if done.Load() {
-					return
-				}
-				// Stop the task if the file is deleted
-				if _, err := dao.GetFileByID(file.ID); err != nil {
-					log.Info("File deleted by user, stopping download task: ", file.UUID)
-					done.Store(true)
-					cancel()
-					return
-				}
-			}
-		}()
-
-		defer func() {
-			done.Store(true)
-		}()
-
-		defer func() {
-			updateUploadingSize(-contentLength)
-		}()
-
-		tempDir := filepath.Join(utils.GetStoragePath(), "temp")
-		if err := os.MkdirAll(tempDir, os.ModePerm); err != nil {
-			log.Error("failed to create temp dir: ", err)
-			_ = dao.DeleteFile(file.UUID)
-			return
-		}
-
-		tempPath := filepath.Join(utils.GetStoragePath(), "temp", uuid.NewString())
-		defer func() {
-			if err := os.Remove(tempPath); err != nil {
-				log.Error("failed to remove temp file: ", err)
-			}
-		}()
-
-		hash := ""
-
-		for i := range 3 {
-			if done.Load() {
-				return
-			}
-			hash, err = downloadFile(ctx, url, tempPath)
-			if err != nil {
-				log.Error("failed to download file: ", err)
-				if i == 2 {
-					_ = dao.DeleteFile(file.UUID)
-					log.Error("Failed to download file after retries, deleting file record: ", file.UUID)
-					return
-				}
-				log.Info("Retrying download... Attempt: ", i+1)
-				time.Sleep(2 * time.Second) // Wait before retrying
-				continue
-			} else {
-				log.Info("File downloaded successfully: ", tempPath)
-				break
-			}
-		}
-
-		if done.Load() {
-			return
-		}
-
-		stat, err := os.Stat(tempPath)
-		if err != nil {
-			log.Error("failed to get temp file info: ", err)
-			_ = dao.DeleteFile(file.UUID)
-			_ = os.Remove(tempPath)
-			return
-		}
-		size := stat.Size()
-		if size == 0 {
-			log.Error("downloaded file is empty")
-			_ = dao.DeleteFile(file.UUID)
-			_ = os.Remove(tempPath)
-			return
-		}
-		if size != contentLength {
-			log.Error("downloaded file size does not match expected size: ", size, " != ", contentLength)
-			_ = dao.DeleteFile(file.UUID)
-			_ = os.Remove(tempPath)
-			return
-		}
-		s, err := dao.GetStorage(storageID)
-		if err != nil {
-			log.Error("failed to get storage: ", err)
-			_ = dao.DeleteFile(file.UUID)
-			_ = os.Remove(tempPath)
-			return
-		}
-		iStorage := storage.NewStorage(s)
-		if iStorage == nil {
-			log.Error("failed to find storage: ", err)
-			_ = dao.DeleteFile(file.UUID)
-			_ = os.Remove(tempPath)
-			return
-		}
-		storageKey, err := iStorage.Upload(tempPath, filename)
-		if err != nil {
-			log.Error("failed to upload file to storage: ", err)
-			_ = dao.DeleteFile(file.UUID)
-			_ = os.Remove(tempPath)
-			return
-		}
-		if err := dao.SetFileStorageKeyAndSize(file.UUID, storageKey, size, hash); err != nil {
-			log.Error("failed to set file storage key: ", err)
-			_ = dao.DeleteFile(file.UUID)
-			_ = iStorage.Delete(storageKey)
-			_ = os.Remove(tempPath)
-			return
-		}
-		if err := dao.AddStorageUsage(storageID, size); err != nil {
-			log.Error("failed to add storage usage: ", err)
-			_ = dao.DeleteFile(file.UUID)
-			_ = iStorage.Delete(storageKey)
-			_ = os.Remove(tempPath)
-			return
+		if err := downloadTask.Run(); err != nil {
+			log.Error("server download task failed: ", downloadTask.ID(), ", err: ", err)
 		}
 	}()
 

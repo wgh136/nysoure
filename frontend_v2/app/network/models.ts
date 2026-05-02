@@ -253,6 +253,14 @@ export interface Statistics {
   storage: number;
 }
 
+export interface ServerTask {
+  id: string;
+  status: string;
+  progress: number;
+  error?: string;
+  finish_time?: string;
+}
+
 export interface Config {
   server_name: string;
   site_description: string;

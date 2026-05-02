@@ -10,6 +10,7 @@ import (
 	"nysoure/server/model"
 	"nysoure/server/service"
 	"nysoure/server/stat"
+	"nysoure/server/task"
 	"nysoure/server/utils"
 	"strconv"
 	"strings"
@@ -27,6 +28,9 @@ func AddFileRoutes(router fiber.Router) {
 		fileGroup.Post("/upload/cancel/:id", cancelUpload)
 		fileGroup.Post("/redirect", createRedirectFile, middleware.NewRequestLimiter(300, 24*time.Hour))
 		fileGroup.Post("/upload/url", createServerDownloadTask)
+		fileGroup.Get("/tasks", listTasks)
+		fileGroup.Get("/tasks/:id", getTask)
+		fileGroup.Post("/tasks/:id/stop", stopTask)
 		fileGroup.Get("/:id", getFile)
 		fileGroup.Put("/:id", updateFile)
 		fileGroup.Delete("/:id", deleteFile)
@@ -34,6 +38,30 @@ func AddFileRoutes(router fiber.Router) {
 		fileGroup.Get("/download/:id", downloadFile, middleware.NewDynamicRequestLimiter(config.MaxDownloadsPerDayForSingleIP, 24*time.Hour))
 		fileGroup.Get("/user/:username", listUserFiles)
 	}
+}
+
+type TaskView struct {
+	ID         string          `json:"id"`
+	Status     task.TaskStatus `json:"status"`
+	Progress   float64         `json:"progress"`
+	Error      string          `json:"error,omitempty"`
+	FinishTime *time.Time      `json:"finish_time,omitempty"`
+}
+
+func toTaskView(t task.Task) TaskView {
+	view := TaskView{
+		ID:       t.ID(),
+		Status:   t.Status(),
+		Progress: t.Progress(),
+	}
+	if err := t.Error(); err != nil {
+		view.Error = err.Error()
+	}
+	finishTime := t.FinishTime()
+	if !finishTime.IsZero() {
+		view.FinishTime = &finishTime
+	}
+	return view
 }
 
 func initUpload(c fiber.Ctx) error {
@@ -324,6 +352,46 @@ func createServerDownloadTask(c fiber.Ctx) error {
 	return c.JSON(model.Response[*model.FileView]{
 		Success: true,
 		Data:    result,
+	})
+}
+
+func listTasks(c fiber.Ctx) error {
+	allTasks := task.GetAllTasks()
+	views := make([]TaskView, 0, len(allTasks))
+	for _, t := range allTasks {
+		views = append(views, toTaskView(t))
+	}
+
+	return c.JSON(model.Response[[]TaskView]{
+		Success: true,
+		Data:    views,
+	})
+}
+
+func getTask(c fiber.Ctx) error {
+	t, exists := task.GetTask(c.Params("id"))
+	if !exists {
+		return model.NewNotFoundError("task not found")
+	}
+
+	return c.JSON(model.Response[TaskView]{
+		Success: true,
+		Data:    toTaskView(t),
+	})
+}
+
+func stopTask(c fiber.Ctx) error {
+	id := c.Params("id")
+	t, exists := task.GetTask(id)
+	if !exists {
+		return model.NewNotFoundError("task not found")
+	}
+
+	t.Stop()
+
+	return c.JSON(model.Response[TaskView]{
+		Success: true,
+		Data:    toTaskView(t),
 	})
 }
 

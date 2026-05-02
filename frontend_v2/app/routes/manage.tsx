@@ -4,6 +4,7 @@ import {
   MdOutlinePerson,
   MdOutlineStorage,
   MdOutlineSettings,
+  MdTimeline,
 } from "react-icons/md";
 import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "~/hook/i18n";
@@ -30,7 +31,8 @@ export default function ManagePage() {
     const path = location.pathname;
     if (path.includes("/manage/storage")) return 1;
     if (path.includes("/manage/users")) return 2;
-    if (path.includes("/manage/config")) return 3;
+    if (path.includes("/manage/tasks")) return 3;
+    if (path.includes("/manage/config")) return 4;
     return 0; // default to "My Info"
   };
 
@@ -86,7 +88,7 @@ export default function ManagePage() {
     );
   };
 
-  const pageNames = [t("My Info"), t("Storage"), t("Users"), t("Server")];
+  const pageNames = [t("My Info"), t("Storage"), t("Users"), t("Server Tasks"), t("Server")];
 
   return (
     <div className="drawer lg:drawer-open lg:pl-4">
@@ -128,9 +130,15 @@ export default function ManagePage() {
           )}
           {buildItem(t("Users"), <MdOutlinePerson className={"text-xl"} />, 2, "/manage/users")}
           {buildItem(
+            t("Server Tasks"),
+            <MdTimeline className={"text-xl"} />,
+            3,
+            "/manage/tasks"
+          )}
+          {buildItem(
             t("Server"),
             <MdOutlineSettings className={"text-xl"} />,
-            3,
+            4,
             "/manage/config"
           )}
         </ul>

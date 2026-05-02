@@ -22,6 +22,7 @@ import type {
   Statistics,
   VndbInfo,
   Config,
+  ServerTask,
 } from "./models.ts";
 
 class Network {
@@ -594,6 +595,18 @@ class Network {
         tag,
       }),
     );
+  }
+
+  async listServerTasks(): Promise<Response<ServerTask[]>> {
+    return this._callApi(() => axios.get(`${this.apiBaseUrl}/files/tasks`));
+  }
+
+  async getServerTask(taskId: string): Promise<Response<ServerTask>> {
+    return this._callApi(() => axios.get(`${this.apiBaseUrl}/files/tasks/${taskId}`));
+  }
+
+  async stopServerTask(taskId: string): Promise<Response<ServerTask>> {
+    return this._callApi(() => axios.post(`${this.apiBaseUrl}/files/tasks/${taskId}/stop`));
   }
 
   async getFile(fileId: string): Promise<Response<RFile>> {

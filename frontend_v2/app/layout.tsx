@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from "react-router";
 import { MdArrowUpward, MdMenu, MdOutlinePerson, MdOutlinePublish, MdShuffle, MdTimeline, MdInfoOutline, MdOutlineLabel, MdSearch, MdLogout, MdNotifications, MdOutlineSettings } from "react-icons/md";
 import { useTranslation } from "./hook/i18n.js";
 import { useConfig } from "./hook/config.js";
+import { Permission } from "./network/models.ts";
 import { ThemeSwitcher } from "./components/theme_switcher.js";
 import { network } from "./network/network.js";
 import { Background } from "./components/background.js";
@@ -295,6 +296,18 @@ function UserButton() {
             {t("My Profile")}
           </NavLink>
         </li>
+        {config.user?.permission === Permission.Admin && (
+          <li
+            onClick={() => {
+              (document.activeElement as HTMLElement)?.blur();
+            }}
+          >
+            <NavLink to="/manage/tasks">
+              <MdTimeline size={18} />
+              {t("Server Tasks")}
+            </NavLink>
+          </li>
+        )}
         <li
           onClick={() => {
             (document.activeElement as HTMLElement)?.blur();

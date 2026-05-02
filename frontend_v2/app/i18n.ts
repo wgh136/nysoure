@@ -49,9 +49,19 @@ export const i18nData = {
       "Manage": "管理",
       "Storage": "存储",
       "Users": "用户",
+      "Server Tasks": "服务器任务",
       "You are not logged in. Please log in to access this page.":
         "您尚未登录。请登录以访问此页面。",
       "You are not authorized to access this page.": "您无权访问此页面。",
+      "Task ID": "任务 ID",
+      "Status": "状态",
+      "Progress": "进度",
+      "Finished At": "完成时间",
+      "Total tasks": "任务总数",
+      "Refresh": "刷新",
+      "Stop": "停止",
+      "Task stopped": "任务已停止",
+      "No tasks found": "暂无任务",
 
       // Storage management
       "No storage found. Please create a new storage.":
