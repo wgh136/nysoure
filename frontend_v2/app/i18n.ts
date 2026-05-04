@@ -67,6 +67,7 @@ export const i18nData = {
       "Stop": "停止",
       "Task stopped": "任务已停止",
       "No tasks found": "暂无任务",
+      "No resources found": "暂无资源",
 
       // Storage management
       "No storage found. Please create a new storage.":
@@ -347,6 +348,7 @@ export const i18nData = {
       "You are not logged in. Please log in to access this page.":
         "您尚未登入。請登入以訪問此頁面。",
       "You are not authorized to access this page.": "您無權訪問此頁面。",
+      "No resources found": "暫無資源",
 
       // Storage management
       "No storage found. Please create a new storage.":

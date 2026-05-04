@@ -255,7 +255,7 @@ func GetAllResourcesStats(c ctx.Context, page int, sort string) ([]model.Resourc
 	if page < 1 {
 		page = 1
 	}
-	return dao.GetAllResourcesStats(page, pageSize, sort)
+	return dao.GetAllResourcesStats(page, 500, sort)
 }
 
 // splitQuery splits the input query string into keywords, treating quoted substrings (single or double quotes)

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { ErrorAlert } from "~/components/alert";
-import Loading from "~/components/loading";
 import Pagination from "~/components/pagination";
 import showToast from "~/components/toast";
 import { configFromMatches, isAdmin, useConfig } from "~/hook/config";
@@ -24,19 +23,24 @@ export default function ManageResourcesPage() {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [rows, setRows] = useState<ResourceStats[] | null>(null);
+  const [rows, setRows] = useState<ResourceStats[]>([]);
+  const [loading, setLoading] = useState(false);
   const [sort, setSort] = useState<
     "views_asc" | "views_desc" | "downloads_asc" | "downloads_desc" | undefined
   >();
+  const skeletonRows = 8;
 
   const fetchRows = useCallback(async () => {
+    setLoading(true);
     const res = await network.getAdminResourceStats(page, sort);
     if (!res.success) {
       showToast({ message: res.message, type: "error" });
+      setLoading(false);
       return;
     }
     setRows(res.data ?? []);
     setTotalPages(res.totalPages ?? 0);
+    setLoading(false);
   }, [page, sort]);
 
   const toggleSort = useCallback((kind: "views" | "downloads") => {
@@ -68,7 +72,6 @@ export default function ManageResourcesPage() {
     if (!config.user || !isAdmin(config)) {
       return;
     }
-    setRows(null);
     fetchRows();
   }, [config.user, config, fetchRows]);
 
@@ -90,16 +93,8 @@ export default function ManageResourcesPage() {
     );
   }
 
-  if (rows === null) {
-    return <Loading />;
-  }
-
   return (
     <div className="mx-4 mb-4 flex flex-col gap-3">
-      <div className="text-sm opacity-70">
-        {t("Resources")}: {rows.length}
-      </div>
-
       <div className="rounded-box border border-base-content/10 bg-base-100 overflow-x-auto">
         <table className="table">
           <thead>
@@ -109,6 +104,7 @@ export default function ManageResourcesPage() {
               <th>
                 <button
                   className="btn btn-ghost btn-xs"
+                  disabled={loading}
                   onClick={() => toggleSort("views")}
                 >
                   {t("View Count")}
@@ -118,6 +114,7 @@ export default function ManageResourcesPage() {
               <th>
                 <button
                   className="btn btn-ghost btn-xs"
+                  disabled={loading}
                   onClick={() => toggleSort("downloads")}
                 >
                   {t("Download Count")}
@@ -127,20 +124,48 @@ export default function ManageResourcesPage() {
               <th>{t("File Count")}</th>
             </tr>
           </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr
-                key={row.id}
-                className="hover cursor-pointer"
-                onClick={() => navigate(`/resources/${row.id}`)}
-              >
-                <td>{row.id}</td>
-                <td>{row.title}</td>
-                <td>{row.views}</td>
-                <td>{row.downloads}</td>
-                <td>{row.file_count}</td>
+          <tbody aria-busy={loading}>
+            {loading ? (
+              Array.from({ length: skeletonRows }).map((_, index) => (
+                <tr key={`skeleton-${index}`}>
+                  <td>
+                    <div className="skeleton h-4 w-12" />
+                  </td>
+                  <td>
+                    <div className="skeleton h-4 w-64" />
+                  </td>
+                  <td>
+                    <div className="skeleton h-4 w-16" />
+                  </td>
+                  <td>
+                    <div className="skeleton h-4 w-16" />
+                  </td>
+                  <td>
+                    <div className="skeleton h-4 w-14" />
+                  </td>
+                </tr>
+              ))
+            ) : rows.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="text-center py-6 opacity-70">
+                  {t("No resources found")}
+                </td>
               </tr>
-            ))}
+            ) : (
+              rows.map((row) => (
+                <tr
+                  key={row.id}
+                  className="hover cursor-pointer"
+                  onClick={() => navigate(`/resources/${row.id}`)}
+                >
+                  <td>{row.id}</td>
+                  <td>{row.title}</td>
+                  <td>{row.views}</td>
+                  <td>{row.downloads}</td>
+                  <td>{row.file_count}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
