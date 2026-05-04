@@ -24,6 +24,7 @@ export default [
                 route("manage/me", "routes/manage.me.tsx"),
                 route("manage/storage", "routes/manage.storage.tsx"),
                 route("manage/users", "routes/manage.users.tsx"),
+                route("manage/resources", "routes/manage.resources.tsx"),
                 route("manage/tasks", "routes/manage.tasks.tsx"),
                 route("manage/config", "routes/manage.config.tsx")
             ])

@@ -345,6 +345,41 @@ func GetAllResources() ([]model.Resource, error) {
 	return resources, nil
 }
 
+func GetAllResourcesStats(page, pageSize int, sort string) ([]model.ResourceStatsView, int, error) {
+	var total int64
+	if err := db.Model(&model.Resource{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	orderBy := "resources.id DESC"
+	switch sort {
+	case "views_asc":
+		orderBy = "resources.views ASC, resources.id ASC"
+	case "views_desc":
+		orderBy = "resources.views DESC, resources.id DESC"
+	case "downloads_asc":
+		orderBy = "resources.downloads ASC, resources.id ASC"
+	case "downloads_desc":
+		orderBy = "resources.downloads DESC, resources.id DESC"
+	}
+
+	var stats []model.ResourceStatsView
+	offset := (page - 1) * pageSize
+	if err := db.Table("resources").
+		Select("resources.id, resources.title, resources.views, resources.downloads, COUNT(files.id) AS file_count").
+		Joins("LEFT JOIN files ON files.resource_id = resources.id").
+		Group("resources.id, resources.title").
+		Order(orderBy).
+		Offset(offset).
+		Limit(pageSize).
+		Scan(&stats).Error; err != nil {
+		return nil, 0, err
+	}
+
+	totalPages := (total + int64(pageSize) - 1) / int64(pageSize)
+	return stats, int(totalPages), nil
+}
+
 type CachedResourceStats struct {
 	id        uint
 	views     atomic.Int64

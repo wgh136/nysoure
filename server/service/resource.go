@@ -248,6 +248,16 @@ func GetResourceList(page int, sort model.RSort) ([]model.ResourceView, int, err
 	return views, totalPages, nil
 }
 
+func GetAllResourcesStats(c ctx.Context, page int, sort string) ([]model.ResourceStatsView, int, error) {
+	if c.UserPermission() != model.PermissionAdmin {
+		return nil, 0, model.NewUnAuthorizedError("You do not have permission to access this resource")
+	}
+	if page < 1 {
+		page = 1
+	}
+	return dao.GetAllResourcesStats(page, pageSize, sort)
+}
+
 // splitQuery splits the input query string into keywords, treating quoted substrings (single or double quotes)
 // as single keywords and supporting escape characters for quotes. Spaces outside quotes are used as separators.
 func splitQuery(query string) []string {

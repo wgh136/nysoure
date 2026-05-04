@@ -98,6 +98,14 @@ export interface Resource {
   author: User;
 }
 
+export interface ResourceStats {
+  id: number;
+  title: string;
+  views: number;
+  downloads: number;
+  file_count: number;
+}
+
 export interface ResourceDetails {
   id: number;
   title: string;

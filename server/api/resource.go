@@ -122,6 +122,31 @@ func handleListResources(c fiber.Ctx) error {
 	})
 }
 
+func handleListAllResourcesForAdmin(c fiber.Ctx) error {
+	pageStr := c.Query("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return model.NewRequestError("Invalid page number")
+	}
+	sort := c.Query("sort", "")
+	if sort != "" && sort != "views_asc" && sort != "views_desc" && sort != "downloads_asc" && sort != "downloads_desc" {
+		return model.NewRequestError("Invalid sort parameter")
+	}
+	resources, maxPage, err := service.GetAllResourcesStats(ctx.NewContext(c), page, sort)
+	if err != nil {
+		return err
+	}
+	if resources == nil {
+		resources = []model.ResourceStatsView{}
+	}
+	return c.Status(fiber.StatusOK).JSON(model.PageResponse[model.ResourceStatsView]{
+		Success:    true,
+		Data:       resources,
+		TotalPages: maxPage,
+		Message:    "Resources retrieved successfully",
+	})
+}
+
 func handleListResourcesWithTag(c fiber.Ctx) error {
 	tag := c.Params("tag")
 	if tag == "" {
@@ -504,6 +529,7 @@ func AddResourceRoutes(api fiber.Router) {
 		resource.Get("/vndb/info", handleGetInfoFromVndb)
 		resource.Get("/characters/low-resolution", handleGetLowResolutionCharacters)
 		resource.Get("/images/low-resolution", handleGetLowResolutionResourceImages)
+		resource.Get("/admin/all", handleListAllResourcesForAdmin)
 		resource.Get("/:id", handleGetResource)
 		resource.Delete("/:id", handleDeleteResource)
 		resource.Get("/tag/:tag", handleListResourcesWithTag)

@@ -1,6 +1,7 @@
 import {
   MdMenu,
   MdOutlineBadge,
+  MdOutlineDataset,
   MdOutlinePerson,
   MdOutlineStorage,
   MdOutlineSettings,
@@ -31,8 +32,9 @@ export default function ManagePage() {
     const path = location.pathname;
     if (path.includes("/manage/storage")) return 1;
     if (path.includes("/manage/users")) return 2;
-    if (path.includes("/manage/tasks")) return 3;
-    if (path.includes("/manage/config")) return 4;
+    if (path.includes("/manage/resources")) return 3;
+    if (path.includes("/manage/tasks")) return 4;
+    if (path.includes("/manage/config")) return 5;
     return 0; // default to "My Info"
   };
 
@@ -88,7 +90,7 @@ export default function ManagePage() {
     );
   };
 
-  const pageNames = [t("My Info"), t("Storage"), t("Users"), t("Server Tasks"), t("Server")];
+  const pageNames = [t("My Info"), t("Storage"), t("Users"), t("Resource Statistics"), t("Server Tasks"), t("Server")];
 
   return (
     <div className="drawer lg:drawer-open lg:pl-4">
@@ -130,15 +132,21 @@ export default function ManagePage() {
           )}
           {buildItem(t("Users"), <MdOutlinePerson className={"text-xl"} />, 2, "/manage/users")}
           {buildItem(
+            t("Resource Statistics"),
+            <MdOutlineDataset className={"text-xl"} />,
+            3,
+            "/manage/resources"
+          )}
+          {buildItem(
             t("Server Tasks"),
             <MdTimeline className={"text-xl"} />,
-            3,
+            4,
             "/manage/tasks"
           )}
           {buildItem(
             t("Server"),
             <MdOutlineSettings className={"text-xl"} />,
-            4,
+            5,
             "/manage/config"
           )}
         </ul>

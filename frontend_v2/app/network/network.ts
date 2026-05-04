@@ -20,6 +20,7 @@ import type {
   CommentWithRef,
   Collection,
   Statistics,
+  ResourceStats,
   VndbInfo,
   Config,
   ServerTask,
@@ -355,6 +356,20 @@ class Network {
   ): Promise<PageResponse<Resource>> {
     return this._callApi(() =>
       axios.get(`${this.apiBaseUrl}/resource`, {
+        params: {
+          page,
+          sort,
+        },
+      }),
+    );
+  }
+
+  async getAdminResourceStats(
+    page: number,
+    sort?: "views_asc" | "views_desc" | "downloads_asc" | "downloads_desc",
+  ): Promise<PageResponse<ResourceStats>> {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/resource/admin/all`, {
         params: {
           page,
           sort,

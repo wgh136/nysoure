@@ -43,6 +43,14 @@ type ResourceView struct {
 	Author      UserView   `json:"author"`
 }
 
+type ResourceStatsView struct {
+	ID        uint   `json:"id"`
+	Title     string `json:"title"`
+	Views     uint   `json:"views"`
+	Downloads uint   `json:"downloads"`
+	FileCount int    `json:"file_count"`
+}
+
 type ResourceDetailView struct {
 	ID                uint            `json:"id"`
 	Title             string          `json:"title"`

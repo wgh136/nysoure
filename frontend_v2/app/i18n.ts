@@ -49,6 +49,11 @@ export const i18nData = {
       "Manage": "管理",
       "Storage": "存储",
       "Users": "用户",
+      "Resource Statistics": "资源统计",
+      "Resource ID": "资源ID",
+      "View Count": "访问数",
+      "Download Count": "下载数",
+      "File Count": "文件数量",
       "Server Tasks": "服务器任务",
       "You are not logged in. Please log in to access this page.":
         "您尚未登录。请登录以访问此页面。",
@@ -334,6 +339,11 @@ export const i18nData = {
       "Manage": "管理",
       "Storage": "儲存",
       "Users": "用戶",
+      "Resource Statistics": "資源統計",
+      "Resource ID": "資源ID",
+      "View Count": "訪問數",
+      "Download Count": "下載數",
+      "File Count": "文件數量",
       "You are not logged in. Please log in to access this page.":
         "您尚未登入。請登入以訪問此頁面。",
       "You are not authorized to access this page.": "您無權訪問此頁面。",
