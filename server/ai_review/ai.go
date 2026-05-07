@@ -2,16 +2,12 @@ package aireview
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"io"
 	"log/slog"
 	"net/http"
 	"nysoure/server/config"
-	"strings"
 	"time"
-
-	"google.golang.org/genai"
 )
 
 // OpenAI types
@@ -34,24 +30,7 @@ type OpenAIResponse struct {
 	} `json:"error,omitempty"`
 }
 
-// AIProvider represents the AI service provider
-type AIProvider int
-
-const (
-	ProviderOpenAI AIProvider = iota
-	ProviderGoogleAI
-)
-
-// detectProvider determines the AI provider based on the API URL
-func detectProvider(apiUrl string) AIProvider {
-	if strings.Contains(apiUrl, "generativelanguage.googleapis.com") {
-		return ProviderGoogleAI
-	}
-	return ProviderOpenAI
-}
-
-// Chat sends a message to AI API and returns the response
-// Automatically detects and adapts to OpenAI or Google AI based on API URL
+// Chat sends a message to the configured OpenAI-compatible API and returns the response.
 func Chat(content string) string {
 	apiUrl := config.OpenAIUrl()
 	apiKey := config.OpenAIApiKey()
@@ -63,14 +42,7 @@ func Chat(content string) string {
 		return ""
 	}
 
-	provider := detectProvider(apiUrl)
-
-	switch provider {
-	case ProviderGoogleAI:
-		return chatWithGoogleAI(apiUrl, apiKey, model, content)
-	default:
-		return chatWithOpenAI(apiUrl, apiKey, model, content)
-	}
+	return chatWithOpenAI(apiUrl, apiKey, model, content)
 }
 
 // chatWithOpenAI sends a message to OpenAI API
@@ -139,49 +111,4 @@ func chatWithOpenAI(apiUrl, apiKey, model, content string) string {
 	}
 
 	return openAIResp.Choices[0].Message.Content
-}
-
-// chatWithGoogleAI sends a message to Google AI API using official SDK
-func chatWithGoogleAI(apiUrl, apiKey, model, content string) string {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	// Create client with API key
-	client, err := genai.NewClient(ctx, &genai.ClientConfig{
-		APIKey:  apiKey,
-		Backend: genai.BackendGeminiAPI,
-	})
-	if err != nil {
-		slog.Error("Failed to create Google AI client", "error", err)
-		return ""
-	}
-
-	// Create content for the request
-	genaiContent := &genai.Content{
-		Parts: []*genai.Part{
-			{Text: content},
-		},
-	}
-
-	// Generate content using the model
-	resp, err := client.Models.GenerateContent(ctx, model, []*genai.Content{genaiContent}, nil)
-	if err != nil {
-		slog.Error("Failed to generate content with Google AI", "error", err)
-		return ""
-	}
-
-	// Extract text from response
-	if len(resp.Candidates) == 0 {
-		slog.Error("No candidates in Google AI response")
-		return ""
-	}
-
-	var resultText strings.Builder
-	for _, part := range resp.Candidates[0].Content.Parts {
-		if part.Text != "" {
-			resultText.WriteString(part.Text)
-		}
-	}
-
-	return resultText.String()
 }
