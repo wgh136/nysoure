@@ -332,8 +332,12 @@ func SumFileSize() (int64, error) {
 
 	// 缓存已过期或不存在，查询数据库
 	var size int64
-	if err := db.Model(&model.File{}).Select("SUM(size)").Scan(&size).Error; err != nil {
+	var tmpSize *int64
+	if err := db.Model(&model.File{}).Select("SUM(size)").Scan(&tmpSize).Error; err != nil {
 		return 0, err
+	}
+	if tmpSize != nil {
+		size = *tmpSize
 	}
 
 	// 更新缓存

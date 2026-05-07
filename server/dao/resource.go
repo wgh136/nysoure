@@ -479,9 +479,14 @@ func AddResourceDownloadCount(id uint) error {
 
 func RandomResource() (model.Resource, error) {
 	var maxID int64
-	if err := db.Model(&model.Resource{}).Select("MAX(id)").Scan(&maxID).Error; err != nil {
+	var tmpMaxID *int64
+	if err := db.Model(&model.Resource{}).Select("MAX(id)").Scan(&tmpMaxID).Error; err != nil {
 		return model.Resource{}, err
 	}
+	if tmpMaxID == nil {
+		return model.Resource{}, model.NewRequestError("No resources found")
+	}
+	maxID = *tmpMaxID
 	for {
 		randomID := uint(1)
 		if maxID > 1 {
