@@ -23,6 +23,7 @@ import (
 
 	"github.com/gofiber/fiber/v3/log"
 
+	govndb "git.nyne.dev/o/go_vndb"
 	"gorm.io/gorm"
 )
 
@@ -672,6 +673,9 @@ func RandomCover() (uint, error) {
 			return v.Images[0].ID, nil
 		}
 	}
+	if lastSuccessCover == 0 {
+		return 0, model.NewNotFoundError("No cover found")
+	}
 	return lastSuccessCover, nil
 }
 
@@ -688,74 +692,26 @@ func GetPinnedResources() ([]model.ResourceView, error) {
 	return views, nil
 }
 
-func GetCharactersFromVndb(vnID string, c ctx.Context) ([]CharacterParams, error) {
+// GetInfoFromVndb returns character information and release date for a given VNDB ID.
+func GetInfoFromVndb(vnID string, c ctx.Context) ([]CharacterParams, string, error) {
 	if c.UserPermission() < model.PermissionUploader {
-		return nil, model.NewUnAuthorizedError("You have not permission to fetch characters from VNDB")
+		return nil, "", model.NewUnAuthorizedError("You have not permission to fetch characters from VNDB")
 	}
 
-	client := http.Client{}
-	jsonStr := fmt.Sprintf(`
-	{
-		"filters": ["id", "=", "%s"],
-		"fields": "va.character.name, va.staff.name, va.staff.original, va.character.original, va.character.image.url, va.character.vns.role"
-	}
-	`, vnID)
-	jsonStr = strings.TrimSpace(jsonStr)
-	reader := strings.NewReader(jsonStr)
-	resp, err := client.Post("https://api.vndb.org/kana/vn", "application/json", reader)
+	result, err := govndb.GetVN(vnID)
 	if err != nil {
-		return nil, model.NewInternalServerError("Failed to fetch data from VNDB")
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return nil, model.NewInternalServerError("Failed to fetch data from VNDB")
-	}
-	// 定义 VNDB API 响应结构
-	type VndbResponse struct {
-		Results []struct {
-			ID string `json:"id"`
-			VA []struct {
-				Character struct {
-					ID       string `json:"id"`
-					Name     string `json:"name"`
-					Original string `json:"original"`
-					Image    struct {
-						URL string `json:"url"`
-					} `json:"image"`
-					VNS []struct {
-						ID   string `json:"id"`
-						Role string `json:"role"`
-					} `json:"vns"`
-				} `json:"character"`
-				Staff struct {
-					ID       string `json:"id"`
-					Name     string `json:"name"`
-					Original string `json:"original"`
-				} `json:"staff"`
-			} `json:"va"`
-		} `json:"results"`
+		return nil, "", model.NewInternalServerError("Failed to fetch data from VNDB")
 	}
 
-	// 解析响应
-	var vndbResp VndbResponse
-	if err := json.NewDecoder(resp.Body).Decode(&vndbResp); err != nil {
-		return nil, model.NewInternalServerError("Failed to parse VNDB response")
-	}
-
-	if len(vndbResp.Results) == 0 {
-		return []CharacterParams{}, nil
-	}
-
-	result := vndbResp.Results[0]
 	var characters []CharacterParams
 	processedCharacters := make(map[string]bool) // 避免重复角色
 
 	// 遍历声优信息
-	for _, va := range result.VA {
+	for _, va := range result.VoiceActors {
 		role := "Unknown"
-		for _, vn := range va.Character.VNS {
-			if vn.ID == vnID {
-				role = vn.Role
+		for _, vn := range va.Character.VNs {
+			if vn.ID == vnID && vn.Role != nil {
+				role = *vn.Role
 				break
 			}
 		}
@@ -770,17 +726,13 @@ func GetCharactersFromVndb(vnID string, c ctx.Context) ([]CharacterParams, error
 		}
 		processedCharacters[va.Character.ID] = true
 
-		// 优先使用 original 字段作为角色名，如果没有则使用 name
-		characterName := strings.ReplaceAll(va.Character.Original, " ", "")
-		if characterName == "" {
-			characterName = va.Character.Name
-		}
+		characterName := strings.ReplaceAll(va.Character.OriginalName(), " ", "")
 		if characterName == "" {
 			continue // 跳过没有名字的角色
 		}
 
 		// 使用 original 字段作为声优名，如果没有则使用 name
-		cvName := strings.ReplaceAll(va.Staff.Original, " ", "")
+		cvName := strings.ReplaceAll(va.Staff.OriginalName(), " ", "")
 		if cvName == "" {
 			cvName = va.Staff.Name
 		}
@@ -807,7 +759,12 @@ func GetCharactersFromVndb(vnID string, c ctx.Context) ([]CharacterParams, error
 		characters = append(characters, character)
 	}
 
-	return characters, nil
+	released := ""
+	if result.Released != nil {
+		released = *result.Released
+	}
+
+	return characters, released, nil
 }
 
 // downloadAndCreateImage 下载图片并使用 CreateImage 保存
@@ -839,8 +796,6 @@ func downloadAndCreateImage(imageURL string) (uint, error) {
 		return 0, fmt.Errorf("image too large")
 	}
 
-	// 使用系统用户ID (假设为1) 创建图片
-	// 注意：这里使用系统账户，实际使用时可能需要调整
 	// 创建一个临时的fake context用于内部调用
 	fakeCtx := ctx.NewFakeContext(1, model.PermissionUploader, time.Time{})
 	imageID, err := CreateImage(fakeCtx, "127.0.0.1", imageData)
@@ -849,42 +804,6 @@ func downloadAndCreateImage(imageURL string) (uint, error) {
 	}
 
 	return imageID, nil
-}
-
-func GetReleaseDateFromVndb(vnID string) (string, error) {
-	client := http.Client{}
-	jsonStr := fmt.Sprintf(`
-	{
-		"filters": ["id", "=", "%s"],
-		"fields": "released"
-	}
-	`, vnID)
-	jsonStr = strings.TrimSpace(jsonStr)
-	reader := strings.NewReader(jsonStr)
-	resp, err := client.Post("https://api.vndb.org/kana/vn", "application/json", reader)
-	if err != nil {
-		return "", model.NewInternalServerError("Failed to fetch data from VNDB")
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return "", model.NewInternalServerError("Failed to fetch data from VNDB")
-	}
-	// 定义 VNDB API 响应结构
-	type VndbResponse struct {
-		Results []struct {
-			Released string `json:"released"`
-		} `json:"results"`
-	}
-	// 解析响应
-	var vndbResp VndbResponse
-	if err := json.NewDecoder(resp.Body).Decode(&vndbResp); err != nil {
-		return "", model.NewInternalServerError("Failed to parse VNDB response")
-	}
-	if len(vndbResp.Results) == 0 {
-		return "", nil
-	}
-	released := vndbResp.Results[0].Released
-	return released, nil
 }
 
 // UpdateCharacterImage 更新角色的图片ID
@@ -997,37 +916,15 @@ func UpdateResourceImage(c ctx.Context, resourceID, oldImageID, newImageID uint)
 }
 
 func getVNDBRating(vnID string) (int, error) {
-	client := http.Client{}
-	jsonStr := fmt.Sprintf(`
-	{
-		"filters": ["id", "=", "%s"],
-		"fields": "rating"
-	}
-	`, vnID)
-	jsonStr = strings.TrimSpace(jsonStr)
-	reader := strings.NewReader(jsonStr)
-	resp, err := client.Post("https://api.vndb.org/kana/vn", "application/json", reader)
+	rating, err := govndb.GetVNRating(vnID)
 	if err != nil {
-		return 0, model.NewInternalServerError("Failed to fetch data from VNDB")
+		return 0, model.NewInternalServerError("Failed to get VNDB rating")
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return 0, model.NewInternalServerError("Failed to fetch data from VNDB")
+	intRating := 0
+	if rating != nil {
+		intRating = int(math.Round(float64(*rating)))
 	}
-	type VndbResponse struct {
-		Results []struct {
-			Rating float32 `json:"rating"`
-		} `json:"results"`
-	}
-	var vndbResp VndbResponse
-	if err := json.NewDecoder(resp.Body).Decode(&vndbResp); err != nil {
-		return 0, model.NewInternalServerError("Failed to parse VNDB response: " + err.Error())
-	}
-	if len(vndbResp.Results) == 0 {
-		return 0, nil
-	}
-	rating := vndbResp.Results[0].Rating
-	return int(math.Round(float64(rating))), nil
+	return intRating, nil
 }
 
 func getVNDBRatingWithCache(vnID string) (int, error) {

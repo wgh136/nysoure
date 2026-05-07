@@ -304,11 +304,7 @@ func handleGetInfoFromVndb(c fiber.Ctx) error {
 		return model.NewRequestError("VNDB ID is required")
 	}
 	context := ctx.NewContext(c)
-	characters, err := service.GetCharactersFromVndb(vnID, context)
-	if err != nil {
-		return err
-	}
-	releaseDate, err := service.GetReleaseDateFromVndb(vnID)
+	characters, releaseDate, err := service.GetInfoFromVndb(vnID, context)
 	if err != nil {
 		return err
 	}

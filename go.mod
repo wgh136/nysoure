@@ -10,6 +10,7 @@ require (
 )
 
 require (
+	git.nyne.dev/o/go_vndb v0.0.2
 	git.nyne.dev/o/ip_stat v0.0.1
 	github.com/blevesearch/bleve v1.0.14
 	github.com/chai2010/webp v1.4.0
