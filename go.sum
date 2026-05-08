@@ -1,5 +1,5 @@
-git.nyne.dev/o/go_vndb v0.0.2 h1:VTCMEjys/BtOhhCgam2uHWPZ3fTgrtIPrYZD0nCqBxE=
-git.nyne.dev/o/go_vndb v0.0.2/go.mod h1:BAkfcGxdmw6zLNlPzWPu3P7+CxoEbwAKf/pBHqEUuCI=
+git.nyne.dev/o/go_vndb v0.0.3 h1:yr9DBcyl54irmcpSOPvvMN5SzgqoqNp6oG+0Z5tw054=
+git.nyne.dev/o/go_vndb v0.0.3/go.mod h1:BAkfcGxdmw6zLNlPzWPu3P7+CxoEbwAKf/pBHqEUuCI=
 git.nyne.dev/o/ip_stat v0.0.1 h1:InxOp07RAw4ke/tdfkzHH9JjeK4ylvNfLdF+q+K68K8=
 git.nyne.dev/o/ip_stat v0.0.1/go.mod h1:fl28UZVwXBwLlrlLV6GZIxTyUpvPkYUNYcE/aVOZP3s=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=

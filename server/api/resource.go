@@ -318,6 +318,24 @@ func handleGetInfoFromVndb(c fiber.Ctx) error {
 	})
 }
 
+func handleGetResourcePrefillFromVndb(c fiber.Ctx) error {
+	vnID := c.Query("vnid")
+	if vnID == "" {
+		return model.NewRequestError("VNDB ID is required")
+	}
+
+	prefill, err := service.GetResourceFormPrefillFromVNDB(vnID, ctx.NewContext(c))
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.Response[service.ResourceFormPrefill]{
+		Success: true,
+		Data:    *prefill,
+		Message: "VNDB resource params retrieved successfully",
+	})
+}
+
 func handleUpdateCharacterImage(c fiber.Ctx) error {
 	resourceIdStr := c.Params("resourceId")
 	characterIdStr := c.Params("characterId")
@@ -523,6 +541,7 @@ func AddResourceRoutes(api fiber.Router) {
 		resource.Get("/random", handleGetRandomResource)
 		resource.Get("/pinned", handleGetPinnedResources)
 		resource.Get("/vndb/info", handleGetInfoFromVndb)
+		resource.Get("/vndb/prefill", handleGetResourcePrefillFromVndb)
 		resource.Get("/characters/low-resolution", handleGetLowResolutionCharacters)
 		resource.Get("/images/low-resolution", handleGetLowResolutionResourceImages)
 		resource.Get("/admin/all", handleListAllResourcesForAdmin)

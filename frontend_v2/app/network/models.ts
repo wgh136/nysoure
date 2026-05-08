@@ -77,6 +77,20 @@ export interface VndbInfo {
   release_date: string;
 }
 
+export interface VndbResourcePrefill {
+  title: string;
+  alternative_titles: string[];
+  links: RLink[];
+  release_date?: string;
+  tags: Tag[];
+  article: string;
+  images: number[];
+  cover_id?: number;
+  gallery: number[];
+  gallery_nsfw: number[];
+  characters: CharacterParams[];
+}
+
 export interface Image {
   id: number;
   width: number;

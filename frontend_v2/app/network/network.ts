@@ -22,6 +22,7 @@ import type {
   Statistics,
   ResourceStats,
   VndbInfo,
+  VndbResourcePrefill,
   Config,
   ServerTask,
 } from "./models.ts";
@@ -912,6 +913,14 @@ class Network {
   async getInfoFromVNDB(vnID: string): Promise<Response<VndbInfo>> {
     return this._callApi(() =>
       axios.get(`${this.apiBaseUrl}/resource/vndb/info`, {
+        params: { vnid: vnID },
+      }),
+    );
+  }
+
+  async getResourcePrefillFromVNDB(vnID: string): Promise<Response<VndbResourcePrefill>> {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/resource/vndb/prefill`, {
         params: { vnid: vnID },
       }),
     );

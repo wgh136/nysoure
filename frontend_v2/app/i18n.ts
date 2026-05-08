@@ -19,6 +19,15 @@ export const i18nData = {
       "Don't have an account? Register": "没有账号？注册",
       "Already have an account? Login": "已有账号？登录",
       "Publish Resource": "发布资源",
+      "Choose Publishing Method": "选择发布方式",
+      "Choose how to create this resource.": "选择资源创建方式。",
+      "Use VNID": "使用 VNID",
+      "Start from Scratch": "从零开始",
+      "Import Resource from VNDB": "从 VNDB 导入资源",
+      "Fill the form automatically from VNDB, then continue editing before publishing.":
+        "先从 VNDB 自动填充表单，再继续编辑后发布。",
+      "Import from VNDB": "从 VNDB 导入",
+      "Failed to fetch resource params from VNDB": "从 VNDB 获取资源预填信息失败",
       "All information can be modified after publishing":
         "所有的信息均可在发布后修改",
       "Title": "标题",
@@ -310,6 +319,15 @@ export const i18nData = {
       "Don't have an account? Register": "沒有賬號？註冊",
       "Already have an account? Login": "已有賬號？登入",
       "Publish Resource": "發布資源",
+      "Choose Publishing Method": "選擇發布方式",
+      "Choose how to create this resource.": "選擇資源建立方式。",
+      "Use VNID": "使用 VNID",
+      "Start from Scratch": "從零開始",
+      "Import Resource from VNDB": "從 VNDB 導入資源",
+      "Fill the form automatically from VNDB, then continue editing before publishing.":
+        "先從 VNDB 自動填充表單，再繼續編輯後發布。",
+      "Import from VNDB": "從 VNDB 導入",
+      "Failed to fetch resource params from VNDB": "從 VNDB 獲取資源預填資訊失敗",
       "All information can be modified after publishing":
         "所有資訊均可於發布後修改",
       "Title": "標題",

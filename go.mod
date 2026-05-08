@@ -10,7 +10,7 @@ require (
 )
 
 require (
-	git.nyne.dev/o/go_vndb v0.0.2
+	git.nyne.dev/o/go_vndb v0.0.3
 	git.nyne.dev/o/ip_stat v0.0.1
 	github.com/blevesearch/bleve v1.0.14
 	github.com/cenkalti/rain/v2 v2.3.0
@@ -18,7 +18,6 @@ require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/jlaffaye/ftp v0.2.0
 	github.com/redis/go-redis/v9 v9.17.0
-	github.com/stretchr/testify v1.11.1
 	github.com/wgh136/cloudflare-error-page v0.0.1
 	gorm.io/driver/postgres v1.6.0
 )
@@ -39,7 +38,6 @@ require (
 	github.com/cenkalti/log v1.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/couchbase/vellum v1.0.2 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/glycerine/go-unsnap-stream v0.0.0-20181221182339-f9677308dec2 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
@@ -64,7 +62,6 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/nictuku/dht v0.0.0-20201226073453-fd1c1dd3d66a // indirect
 	github.com/nictuku/nettools v0.0.0-20150117095333-8867a2107ad3 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/powerman/rpc-codec v1.2.2 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.66.1 // indirect
@@ -79,7 +76,6 @@ require (
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/sync v0.18.0 // indirect
 	google.golang.org/protobuf v1.36.8 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/blake3 v1.1.6 // indirect
 )
 

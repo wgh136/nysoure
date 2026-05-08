@@ -177,26 +177,73 @@ function FloatingToTopButton() {
 
 function PublishButton() {
   const config = useConfig();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   if (!config.isLoggedIn) {
     return <></>
   }
 
+  const dialogId = "publish_dialog";
+  const openPublishDialog = () => {
+    const dialog = document.getElementById(dialogId) as HTMLDialogElement | null;
+    dialog?.showModal();
+  };
+  const closePublishDialog = () => {
+    const dialog = document.getElementById(dialogId) as HTMLDialogElement | null;
+    dialog?.close();
+  };
+  const goToPublish = (source?: "vndb") => {
+    closePublishDialog();
+    navigate(source ? `/publish?source=${source}` : "/publish");
+  };
+
   return (
     <>
-      <NavLink
-        to="/publish"
+      <button
+        type="button"
         className="btn btn-primary hidden lg:flex"
+        onClick={openPublishDialog}
       >
         <MdOutlinePublish size={24} />
         <span>{t("Publish")}</span>
-      </NavLink>
-      <NavLink
-        to="/publish"
+      </button>
+      <button
+        type="button"
         className="btn btn-primary btn-square lg:hidden"
+        onClick={openPublishDialog}
       >
         <MdOutlinePublish size={24} />
-      </NavLink>
+      </button>
+      <dialog id={dialogId} className="modal">
+        <div className="modal-box max-w-md">
+          <h3 className="text-lg font-bold">{t("Choose Publishing Method")}</h3>
+          <p className="py-3 text-sm opacity-80">{t("Choose how to create this resource.")}</p>
+          <div className="grid gap-3">
+            <button
+              type="button"
+              className="btn btn-primary justify-start"
+              onClick={() => goToPublish("vndb")}
+            >
+              {t("Use VNID")}
+            </button>
+            <button
+              type="button"
+              className="btn btn-soft justify-start"
+              onClick={() => goToPublish()}
+            >
+              {t("Start from Scratch")}
+            </button>
+          </div>
+          <div className="modal-action">
+            <form method="dialog">
+              <button className="btn" onClick={closePublishDialog}>{t("Cancel")}</button>
+            </form>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>{t("Close")}</button>
+        </form>
+      </dialog>
     </>
   )
 }

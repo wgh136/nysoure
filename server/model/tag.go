@@ -8,6 +8,7 @@ type Tag struct {
 	Description string
 	AliasOf     *uint `gorm:"default:NULL"` // Foreign key for aliasing, can be NULL
 	Type        string
+	VNID        string
 	Resources   []Resource `gorm:"many2many:resource_tags;"`
 	Aliases     []Tag      `gorm:"foreignKey:AliasOf;references:ID"`
 }

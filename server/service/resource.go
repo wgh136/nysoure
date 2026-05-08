@@ -23,7 +23,6 @@ import (
 
 	"github.com/gofiber/fiber/v3/log"
 
-	govndb "git.nyne.dev/o/go_vndb"
 	"gorm.io/gorm"
 )
 
@@ -692,81 +691,6 @@ func GetPinnedResources() ([]model.ResourceView, error) {
 	return views, nil
 }
 
-// GetInfoFromVndb returns character information and release date for a given VNDB ID.
-func GetInfoFromVndb(vnID string, c ctx.Context) ([]CharacterParams, string, error) {
-	if c.UserPermission() < model.PermissionUploader {
-		return nil, "", model.NewUnAuthorizedError("You have not permission to fetch characters from VNDB")
-	}
-
-	result, err := govndb.GetVN(vnID)
-	if err != nil {
-		return nil, "", model.NewInternalServerError("Failed to fetch data from VNDB")
-	}
-
-	var characters []CharacterParams
-	processedCharacters := make(map[string]bool) // 避免重复角色
-
-	// 遍历声优信息
-	for _, va := range result.VoiceActors {
-		role := "Unknown"
-		for _, vn := range va.Character.VNs {
-			if vn.ID == vnID && vn.Role != nil {
-				role = *vn.Role
-				break
-			}
-		}
-
-		if role != "primary" && role != "side" && role != "main" {
-			continue
-		}
-
-		// 避免重复角色
-		if processedCharacters[va.Character.ID] {
-			continue
-		}
-		processedCharacters[va.Character.ID] = true
-
-		characterName := strings.ReplaceAll(va.Character.OriginalName(), " ", "")
-		if characterName == "" {
-			continue // 跳过没有名字的角色
-		}
-
-		// 使用 original 字段作为声优名，如果没有则使用 name
-		cvName := strings.ReplaceAll(va.Staff.OriginalName(), " ", "")
-		if cvName == "" {
-			cvName = va.Staff.Name
-		}
-
-		character := CharacterParams{
-			Name:  characterName,
-			Alias: []string{},
-			CV:    cvName,
-			Role:  role,
-			Image: 0, // 默认值，下面会下载图片
-		}
-
-		// 下载并保存角色图片
-		if va.Character.Image.URL != "" {
-			imageID, err := downloadAndCreateImage(va.Character.Image.URL)
-			if err != nil {
-				log.Error("Failed to download character image:", err)
-				// 继续处理，即使图片下载失败
-			} else {
-				character.Image = imageID
-			}
-		}
-
-		characters = append(characters, character)
-	}
-
-	released := ""
-	if result.Released != nil {
-		released = *result.Released
-	}
-
-	return characters, released, nil
-}
-
 // downloadAndCreateImage 下载图片并使用 CreateImage 保存
 func downloadAndCreateImage(imageURL string) (uint, error) {
 	// 创建 HTTP 客户端
@@ -913,41 +837,6 @@ func UpdateResourceImage(c ctx.Context, resourceID, oldImageID, newImageID uint)
 
 	// 更新资源图片
 	return dao.UpdateResourceImage(resourceID, oldImageID, newImageID)
-}
-
-func getVNDBRating(vnID string) (int, error) {
-	rating, err := govndb.GetVNRating(vnID)
-	if err != nil {
-		return 0, model.NewInternalServerError("Failed to get VNDB rating")
-	}
-	intRating := 0
-	if rating != nil {
-		intRating = int(math.Round(float64(*rating)))
-	}
-	return intRating, nil
-}
-
-func getVNDBRatingWithCache(vnID string) (int, error) {
-	cacheKey := fmt.Sprintf("vndb_rating_%s", vnID)
-	ratingStr, err := cache.Get(cacheKey)
-	if err != nil && !errors.Is(err, cache.ErrNotFound) {
-		return 0, err
-	} else if errors.Is(err, cache.ErrNotFound) {
-		rating, err := getVNDBRating(vnID)
-		if err != nil {
-			return 0, err
-		}
-		err = cache.Set(cacheKey, strconv.Itoa(rating), 24*time.Hour)
-		if err != nil {
-			log.Error("Failed to set VNDB rating cache: ", err)
-		}
-		return rating, nil
-	}
-	rating, err := strconv.Atoi(ratingStr)
-	if err != nil {
-		return 0, model.NewInternalServerError("Failed to parse VNDB rating")
-	}
-	return rating, nil
 }
 
 func getSteamRating(steamID string) (int, error) {

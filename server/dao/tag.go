@@ -35,6 +35,18 @@ func CreateTagWithType(tag string, tagType string) (model.Tag, error) {
 	return t, nil
 }
 
+func CreateTagWithVNID(tag string, tagType string, vnID string) (model.Tag, error) {
+	// Create a new tag with a specific type and VNID in the database
+	if strings.Contains(tag, "%") {
+		return model.Tag{}, model.NewRequestError("Tag name cannot contain '%' character")
+	}
+	t := model.Tag{Name: tag, Type: tagType, VNID: vnID}
+	if err := db.Create(&t).Error; err != nil {
+		return model.Tag{}, err
+	}
+	return t, nil
+}
+
 func SearchTag(keyword string, mainTag bool) ([]model.Tag, error) {
 	// Search for a tag by its name in the database
 	var t []model.Tag
@@ -250,4 +262,15 @@ func ExistsTagByID(id uint) (bool, error) {
 		return false, err
 	}
 	return count > 0, nil
+}
+
+func GetTagByVNID(vnID string) (model.Tag, error) {
+	var t model.Tag
+	if err := db.Where("vnid = ?", vnID).First(&t).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.Tag{}, model.NewNotFoundError("Tag not found")
+		}
+		return model.Tag{}, err
+	}
+	return t, nil
 }

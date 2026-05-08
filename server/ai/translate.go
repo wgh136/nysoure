@@ -19,11 +19,16 @@ const translatePrompt = `你是一个专业翻译器。请将下面 JSON 中所�
 JSON:
 %s`
 
-func Translate[T any](content T) T {
+const translateContextPrompt = `
+
+补充上下文：
+%s`
+
+func Translate[T any](content T, context string) (T, error) {
 	contentType := reflect.TypeOf(content)
 	contentValue := reflect.ValueOf(content)
 	if !contentValue.IsValid() || contentType == nil {
-		return content
+		return content, fmt.Errorf("translate content is invalid")
 	}
 
 	// The contract here is translating structs while preserving shape.
@@ -31,48 +36,53 @@ func Translate[T any](content T) T {
 	isPointer := contentType.Kind() == reflect.Ptr
 	if isPointer {
 		if contentValue.IsNil() {
-			return content
+			return content, fmt.Errorf("translate content pointer is nil")
 		}
 		rootType = contentType.Elem()
 	}
 	if rootType.Kind() != reflect.Struct {
-		return content
+		return content, fmt.Errorf("translate content must be a struct or pointer to struct")
 	}
 
 	payload, err := json.Marshal(content)
 	if err != nil {
 		slog.Warn("translate marshal failed", "error", err)
-		return content
+		return content, fmt.Errorf("marshal translation content: %w", err)
 	}
 
-	response := Chat(fmt.Sprintf(translatePrompt, string(payload)))
+	prompt := fmt.Sprintf(translatePrompt, string(payload))
+	if trimmedContext := strings.TrimSpace(context); trimmedContext != "" {
+		prompt += fmt.Sprintf(translateContextPrompt, trimmedContext)
+	}
+
+	response := Chat(prompt)
 	if strings.TrimSpace(response) == "" {
-		return content
+		return content, fmt.Errorf("translation returned empty response")
 	}
 
 	translatedJSON, ok := extractJSON(response)
 	if !ok {
 		slog.Warn("translate response does not contain valid JSON")
-		return content
+		return content, fmt.Errorf("translation response does not contain valid JSON")
 	}
 
 	targetPtr := reflect.New(rootType).Interface()
 	if err := json.Unmarshal([]byte(translatedJSON), targetPtr); err != nil {
 		slog.Warn("translate unmarshal failed", "error", err)
-		return content
+		return content, fmt.Errorf("unmarshal translated content: %w", err)
 	}
 
 	if isPointer {
 		if translated, ok := any(targetPtr).(T); ok {
-			return translated
+			return translated, nil
 		}
-		return content
+		return content, fmt.Errorf("translated content type mismatch")
 	}
 
 	if translated, ok := reflect.ValueOf(targetPtr).Elem().Interface().(T); ok {
-		return translated
+		return translated, nil
 	}
-	return content
+	return content, fmt.Errorf("translated content type mismatch")
 }
 
 func extractJSON(raw string) (string, bool) {
