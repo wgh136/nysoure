@@ -1,4 +1,4 @@
-package aireview
+package ai
 
 import (
 	"bytes"

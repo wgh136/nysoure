@@ -1,7 +1,7 @@
 package service
 
 import (
-	aireview "nysoure/server/ai_review"
+	"nysoure/server/ai"
 	"nysoure/server/ctx"
 	"nysoure/server/dao"
 	"nysoure/server/model"
@@ -80,7 +80,7 @@ func CreateComment(req CommentRequest, userID uint, refID uint, ip string, cType
 
 	// Asynchronously check if the comment is an ad
 	go func() {
-		if aireview.IsAd(req.Content) {
+		if ai.IsAd(req.Content) {
 			log.Info("Comment detected as ad, banning user", "userID", userID, "commentID", c.ID)
 			if err := dao.BanUser(userID); err != nil {
 				log.Error("Error banning user:", err)
