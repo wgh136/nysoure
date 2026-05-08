@@ -532,6 +532,43 @@ func testFileUrl(url string) (int64, error) {
 	return 0, model.NewRequestError("failed to get valid content length")
 }
 
+func shouldUseBTDownload(rawURL string) bool {
+	trimmed := strings.TrimSpace(rawURL)
+	lower := strings.ToLower(trimmed)
+	if strings.HasPrefix(lower, "magnet:") {
+		return true
+	}
+	if !strings.HasPrefix(lower, "http://") && !strings.HasPrefix(lower, "https://") {
+		return false
+	}
+
+	parsed, err := url.Parse(trimmed)
+	if err == nil {
+		if strings.HasSuffix(strings.ToLower(parsed.Path), ".torrent") {
+			return true
+		}
+	}
+
+	client := http.Client{Timeout: 10 * time.Second}
+	req, err := http.NewRequest("HEAD", trimmed, nil)
+	if err != nil {
+		return false
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+
+	contentType := strings.ToLower(strings.TrimSpace(resp.Header.Get("Content-Type")))
+	if strings.Contains(contentType, "application/x-bittorrent") {
+		return true
+	}
+
+	contentDisposition := strings.ToLower(strings.TrimSpace(resp.Header.Get("Content-Disposition")))
+	return strings.Contains(contentDisposition, ".torrent")
+}
+
 // downloadFile return nil if the download is successful or the context is cancelled
 func downloadFile(ctx context.Context, url string, path string) (string, error) {
 	if _, err := os.Stat(path); err == nil {
@@ -598,10 +635,15 @@ func CreateServerDownloadTask(c ctx2.Context, url, filename, description string,
 		return nil, model.NewUnAuthorizedError("user cannot upload file")
 	}
 
-	contentLength, err := testFileUrl(url)
-	if err != nil {
-		log.Error("failed to test file URL: ", err)
-		return nil, model.NewRequestError("failed to test file URL: " + err.Error())
+	useBT := shouldUseBTDownload(url)
+	contentLength := int64(0)
+	if !useBT {
+		var err error
+		contentLength, err = testFileUrl(url)
+		if err != nil {
+			log.Error("failed to test file URL: ", err)
+			return nil, model.NewRequestError("failed to test file URL: " + err.Error())
+		}
 	}
 
 	if contentLength+getUploadingSize() > config.MaxUploadingSize() {
@@ -618,7 +660,7 @@ func CreateServerDownloadTask(c ctx2.Context, url, filename, description string,
 
 	updateUploadingSize(contentLength)
 
-	downloadTask := task.NewServerDownloadTask(file.ID, file.UUID, url, filename, storageID, contentLength)
+	downloadTask := task.NewServerDownloadTask(file.ID, file.UUID, url, filename, storageID, contentLength, useBT)
 	task.RegisterTask(downloadTask)
 
 	go func() {
