@@ -689,7 +689,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
         </Markdown>
       </article>
       <div className="border-b border-base-300 h-8"></div>
-      <Characters characters={resource.characters} />
+      <Characters characters={resource.characters} tags={resource.tags} />
     </>
   );
 }
@@ -781,7 +781,13 @@ function RelatedResourceCard({
   );
 }
 
-function Characters({ characters }: { characters: CharacterParams[] }) {
+function Characters({
+  characters,
+  tags,
+}: {
+  characters: CharacterParams[];
+  tags: Tag[];
+}) {
   const { t } = useTranslation();
 
   let main = characters.filter((c) => c.role === "primary");
@@ -796,22 +802,36 @@ function Characters({ characters }: { characters: CharacterParams[] }) {
   return (
     <div className="mt-8">
       <h3 className="text-xl font-bold mb-4">{t("Characters")}</h3>
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+      <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
         {characters.map((character, index) => (
-          <CharacterCard key={index} character={character} />
+          <CharacterCard key={index} character={character} tags={tags} />
         ))}
       </div>
     </div>
   );
 }
 
-function CharacterCard({ character }: { character: CharacterParams }) {
+function CharacterCard({
+  character,
+  tags,
+}: {
+  character: CharacterParams;
+  tags: Tag[];
+}) {
   const navigate = useNavigate();
+  const cvTag = character.cv?.trim();
+  const matchedTag = cvTag
+    ? tags.find((tag) => tag.name === cvTag)
+    : undefined;
 
   const handleCVClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (character.cv) {
-      navigate(`/search?keyword=${encodeURIComponent(character.cv)}`);
+    if (cvTag) {
+      if (matchedTag) {
+        navigate(`/tag/${encodeURIComponent(matchedTag.name)}`);
+        return;
+      }
+      navigate(`/search?keyword=${encodeURIComponent(cvTag)}`);
     }
   };
 
