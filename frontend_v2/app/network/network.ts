@@ -266,6 +266,14 @@ class Network {
     );
   }
 
+  async mergeTag(sourceTagId: number, targetTagId: number): Promise<Response<Tag>> {
+    return this._callApi(() =>
+      axios.postForm(`${this.apiBaseUrl}/tag/${sourceTagId}/merge`, {
+        target_tag_id: targetTagId,
+      }),
+    );
+  }
+
   async getOrCreateTags(
     names: string[],
     tagType: string,

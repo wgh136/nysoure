@@ -3,12 +3,13 @@ import { useTranslation } from "../hook/i18n";
 import { useState, useEffect } from "react";
 import type { Tag } from "../network/models";
 import Badge from "~/components/badge";
+import showToast from "~/components/toast";
 import { network } from "../network/network";
 import ResourcesView from "~/components/resources_view";
 import Markdown from "react-markdown";
 import { MdAdd, MdClose, MdEdit } from "react-icons/md";
 import { configFromMatches, useConfig, canUpload } from "../hook/config";
-import { useLoaderData } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 
 export function meta({ matches, params }: Route.MetaArgs) {
   const config = configFromMatches(matches);
@@ -41,6 +42,7 @@ export default function TaggedResourcesPage() {
   const { t } = useTranslation();
   const { tagName, tag: initialTag, firstPageResources } = useLoaderData<typeof loader>();
   const [tag, setTag] = useState<Tag | null>(initialTag ?? null);
+  const navigate = useNavigate();
 
   if (!tagName) {
     return (
@@ -59,7 +61,22 @@ export default function TaggedResourcesPage() {
           <h1 className="text-2xl pt-6 pb-2 font-bold flex-1">
             {tag?.name ?? tagName}
           </h1>
-          {tag && <EditTagButton tag={tag} onEdited={setTag} />}
+          <div className="flex items-center gap-2">
+            {tag && (
+              <MergeTagButton
+                tag={tag}
+                onMerged={(mergedTag) => {
+                  showToast({
+                    message: t("Tag merged successfully"),
+                    type: "success",
+                  });
+                  setTag(mergedTag);
+                  navigate(`/tag/${encodeURIComponent(mergedTag.name)}`);
+                }}
+              />
+            )}
+            {tag && <EditTagButton tag={tag} onEdited={setTag} />}
+          </div>
         </div>
         {tag?.type && (
           <h2 className="text-base-content/60 ml-2 text-lg pl-2 mb-2">
@@ -89,6 +106,141 @@ export default function TaggedResourcesPage() {
         initialData={firstPageResources}
       />
     </div>
+  );
+}
+
+function MergeTagButton({
+  tag,
+  onMerged,
+}: {
+  tag: Tag;
+  onMerged: (tag: Tag) => void;
+}) {
+  const config = useConfig();
+  const { t } = useTranslation();
+  const [keyword, setKeyword] = useState("");
+  const [targetTag, setTargetTag] = useState<Tag | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!config.isLoggedIn || !canUpload(config)) {
+    return null;
+  }
+
+  const submit = async () => {
+    if (!targetTag) {
+      setError(t("Please select a target tag"));
+      return;
+    }
+    if (targetTag.id === tag.id) {
+      setError(t("Cannot merge a tag into itself"));
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    const res = await network.mergeTag(tag.id, targetTag.id);
+    setIsLoading(false);
+    if (res.success && res.data) {
+      const dialog = document.getElementById(
+        "merge_tag_dialog",
+      ) as HTMLDialogElement;
+      dialog.close();
+      onMerged(res.data);
+      return;
+    }
+    setError(res.message || t("Unknown error"));
+  };
+
+  const searchTarget = async (value: string) => {
+    setKeyword(value);
+    setTargetTag(null);
+    setError(null);
+    const trimmedValue = value.trim();
+    if (trimmedValue === "") {
+      return;
+    }
+
+    setIsSearching(true);
+    const res = await network.searchTags(trimmedValue, true);
+    setIsSearching(false);
+    if (!res.success || !res.data) {
+      setError(res.message || t("Unknown error"));
+      return;
+    }
+
+    const matchedTag = res.data.find((item) => item.id !== tag.id) ?? null;
+    setTargetTag(matchedTag);
+    if (!matchedTag) {
+      setError(t("No target tag found"));
+    }
+  };
+
+  return (
+    <>
+      <button
+        className="btn btn-outline btn-error"
+        onClick={() => {
+          setKeyword("");
+          setTargetTag(null);
+          setError(null);
+          const dialog = document.getElementById(
+            "merge_tag_dialog",
+          ) as HTMLDialogElement;
+          dialog.showModal();
+        }}
+      >
+        {t("Merge")}
+      </button>
+      <dialog id="merge_tag_dialog" className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">{t("Merge Tag")}</h3>
+          <p className="text-sm text-base-content/70 mt-2 mb-4">
+            {t("Merge this tag into another tag. Existing resources will be moved and this tag will be deleted permanently.")}
+          </p>
+          <fieldset className="fieldset w-full">
+            <legend className="fieldset-legend">{t("Target Tag")}</legend>
+            <input
+              type="text"
+              className="input input-primary w-full"
+              placeholder={t("Search Tags")}
+              value={keyword}
+              onChange={(e) => {
+                void searchTarget(e.target.value);
+              }}
+            />
+          </fieldset>
+          {targetTag && (
+            <div className="py-2 border border-base-300 rounded-3xl mt-4 px-4 flex items-center gap-2">
+              <span className="text-sm text-base-content/70">{t("Target Tag")}</span>
+              <Badge>{targetTag.name}</Badge>
+            </div>
+          )}
+          {isSearching && (
+            <p className="text-sm text-base-content/70 mt-3">{t("Searching...")}</p>
+          )}
+          {error && (
+            <div role="alert" className="alert alert-error mt-4">
+              <span>{error}</span>
+            </div>
+          )}
+          <div className="modal-action">
+            <form method="dialog">
+              <button className="btn btn-ghost">{t("Close")}</button>
+            </form>
+            <button
+              onClick={submit}
+              className="btn btn-error"
+              disabled={isLoading}
+            >
+              {isLoading && <span className="loading loading-spinner"></span>}
+              {t("Merge")}
+            </button>
+          </div>
+        </div>
+      </dialog>
+    </>
   );
 }
 

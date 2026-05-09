@@ -70,6 +70,86 @@ func DeleteTag(id uint) error {
 	return nil
 }
 
+func MergeTag(sourceID uint, targetID uint) (model.Tag, error) {
+	if sourceID == targetID {
+		return model.Tag{}, model.NewRequestError("Source and target tags must be different")
+	}
+
+	var mergedTarget model.Tag
+	err := db.Transaction(func(tx *gorm.DB) error {
+		source, err := GetTagByID(sourceID)
+		if err != nil {
+			return err
+		}
+
+		target, err := GetTagByID(targetID)
+		if err != nil {
+			return err
+		}
+		if target.AliasOf != nil {
+			target, err = GetTagByID(*target.AliasOf)
+			if err != nil {
+				return err
+			}
+		}
+
+		if source.ID == target.ID {
+			return model.NewRequestError("Source and target tags must be different")
+		}
+
+		updates := map[string]any{}
+		if strings.TrimSpace(target.Description) == "" && strings.TrimSpace(source.Description) != "" {
+			updates["description"] = source.Description
+			target.Description = source.Description
+		}
+		if strings.TrimSpace(target.Type) == "" && strings.TrimSpace(source.Type) != "" {
+			updates["type"] = source.Type
+			target.Type = source.Type
+		}
+		if strings.TrimSpace(target.VNID) == "" && strings.TrimSpace(source.VNID) != "" {
+			updates["vnid"] = source.VNID
+			target.VNID = source.VNID
+		}
+		if len(updates) > 0 {
+			if err := tx.Model(&model.Tag{}).Where("id = ?", target.ID).Updates(updates).Error; err != nil {
+				return err
+			}
+		}
+
+		if err := tx.Exec(
+			"DELETE FROM resource_tags WHERE tag_id = ? AND resource_id IN (SELECT resource_id FROM resource_tags WHERE tag_id = ?)",
+			source.ID,
+			target.ID,
+		).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Exec(
+			"UPDATE resource_tags SET tag_id = ? WHERE tag_id = ?",
+			target.ID,
+			source.ID,
+		).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(&model.Tag{}).Where("alias_of = ?", source.ID).Update("alias_of", target.ID).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Unscoped().Delete(&model.Tag{}, source.ID).Error; err != nil {
+			return err
+		}
+
+		mergedTarget, err = GetTagByID(target.ID)
+		return err
+	})
+	if err != nil {
+		return model.Tag{}, err
+	}
+
+	return mergedTarget, nil
+}
+
 func GetTagByID(id uint) (model.Tag, error) {
 	// Retrieve a tag by its ID from the database
 	var t model.Tag

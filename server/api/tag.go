@@ -74,6 +74,30 @@ func handleDeleteTag(c fiber.Ctx) error {
 	})
 }
 
+func handleMergeTag(c fiber.Ctx) error {
+	context := ctx.NewContext(c)
+	sourceID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return model.NewRequestError("Invalid tag ID")
+	}
+
+	targetID, err := strconv.Atoi(c.FormValue("target_tag_id"))
+	if err != nil {
+		return model.NewRequestError("Invalid target tag ID")
+	}
+
+	tag, err := service.MergeTag(context, uint(sourceID), uint(targetID))
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.Response[model.TagView]{
+		Success: true,
+		Data:    *tag,
+		Message: "Tag merged successfully",
+	})
+}
+
 func handleSetTagInfo(c fiber.Ctx) error {
 	context := ctx.NewContext(c)
 	id, err := strconv.Atoi(c.Params("id"))
@@ -217,6 +241,7 @@ func AddTagRoutes(api fiber.Router) {
 		tag.Post("/", handleCreateTag)
 		tag.Get("/search", handleSearchTag)
 		tag.Delete("/:id", handleDeleteTag)
+		tag.Post("/:id/merge", handleMergeTag)
 		tag.Put("/:id/alias", editTagAlias)
 		tag.Put("/:id/info", handleSetTagInfo)
 		tag.Get("/:name", handleGetTagByName)

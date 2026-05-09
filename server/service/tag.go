@@ -128,6 +128,24 @@ func DeleteTag(id uint) error {
 	return dao.DeleteTag(id)
 }
 
+func MergeTag(c ctx.Context, sourceID uint, targetID uint) (*model.TagView, error) {
+	if c.UserPermission() < model.PermissionUploader {
+		return nil, model.NewUnAuthorizedError("User cannot merge tags")
+	}
+
+	tag, err := dao.MergeTag(sourceID, targetID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = updateCachedTagList()
+	if err != nil {
+		log.Error("Error updating cached tag list:", err)
+	}
+
+	return tag.ToView(), nil
+}
+
 func SetTagInfo(c ctx.Context, id uint, description string, aliasOf *uint, tagType string) (*model.TagView, error) {
 	if c.UserPermission() < model.PermissionUploader {
 		return nil, model.NewUnAuthorizedError("User cannot set tag description")
