@@ -76,11 +76,11 @@ export default function TaggedResourcesPage() {
           })}
           {tag && <EditAliasDialog tag={tag} onEdited={setTag} />}
         </div>
-        {tag?.description && (
+        {tag?.description ? (
           <article className="px-4 py-2">
             <Markdown>{tag.description}</Markdown>
           </article>
-        )}
+        ) : <div className="h-2"/>}
       </div>
       <ResourcesView
         key={tag?.name ?? tagName}
