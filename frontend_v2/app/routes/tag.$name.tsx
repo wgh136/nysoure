@@ -7,7 +7,7 @@ import showToast from "~/components/toast";
 import { network } from "../network/network";
 import ResourcesView from "~/components/resources_view";
 import Markdown from "react-markdown";
-import { MdAdd, MdClose, MdEdit } from "react-icons/md";
+import { MdAdd, MdClose, MdEdit, MdOutlineLink } from "react-icons/md";
 import { configFromMatches, useConfig, canUpload } from "../hook/config";
 import { useLoaderData, useNavigate } from "react-router";
 
@@ -30,7 +30,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     network.getTagByName(tagName),
     network.getResourcesByTag(tagName, 1),
   ]);
-  
+
   return {
     tagName,
     tag: tagResponse.success ? tagResponse.data : null,
@@ -97,7 +97,18 @@ export default function TaggedResourcesPage() {
           <article className="px-4 py-2">
             <Markdown>{tag.description}</Markdown>
           </article>
-        ) : <div className="h-2"/>}
+        ) : <div className="h-2" />}
+        {tag?.vnid ? (
+          <a
+            href={"https://vndb.org/" + tag.vnid}
+            target="_blank"
+            rel="noreferrer"
+            className="badge badge-soft badge-secondary mb-4 mx-4"
+          >
+            <MdOutlineLink className="inline-block text-lg" />
+            VNDB
+          </a>
+        ) : null}
       </div>
       <ResourcesView
         key={tag?.name ?? tagName}

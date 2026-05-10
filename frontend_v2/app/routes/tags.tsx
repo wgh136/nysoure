@@ -30,8 +30,6 @@ export default function TagsPage() {
   const { tags } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
 
-  const getVndbUrl = (vnid: string) => `https://vndb.org/${vnid}`;
-
   // Group tags by type
   const tagsMap = new Map<string, TagWithCount[]>();
 
@@ -68,17 +66,6 @@ export default function TagsPage() {
                   {tag.name +
                     (tag.resources_count > 0 ? ` (${tag.resources_count})` : "")}
                 </Badge>
-                {tag.vnid ? (
-                  <a
-                    href={getVndbUrl(tag.vnid)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="badge badge-ghost shadow-xs"
-                  >
-                    <MdOutlineLink className="inline-block" />
-                    VNDB
-                  </a>
-                ) : null}
               </div>
             ))}
           </div>
