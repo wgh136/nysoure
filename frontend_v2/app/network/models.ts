@@ -41,6 +41,7 @@ export interface Tag {
   name: string;
   description: string;
   type: string;
+  vnid: string;
   aliases: string[];
 }
 

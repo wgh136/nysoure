@@ -5,6 +5,7 @@ import Badge from "~/components/badge";
 import { useLoaderData, useNavigate } from "react-router";
 import { network } from "../network/network";
 import { configFromMatches } from "../hook/config";
+import { MdOutlineLink } from "react-icons/md";
 
 export function meta({ matches }: Route.MetaArgs) {
   const config = configFromMatches(matches);
@@ -28,6 +29,8 @@ export default function TagsPage() {
   const { t } = useTranslation();
   const { tags } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
+
+  const getVndbUrl = (vnid: string) => `https://vndb.org/${vnid}`;
 
   // Group tags by type
   const tagsMap = new Map<string, TagWithCount[]>();
@@ -53,20 +56,32 @@ export default function TagsPage() {
           <h2 className="text-lg font-bold pl-1">
             {type === "" ? t("Other") : type}
           </h2>
-          <p>
+          <div className="flex flex-wrap gap-2">
             {tagList.map((tag) => (
-              <Badge
-                onClick={() => {
-                  navigate(`/tag/${encodeURIComponent(tag.name)}`);
-                }}
-                key={tag.name}
-                className="m-1 cursor-pointer badge-soft badge-primary shadow-xs"
-              >
-                {tag.name +
-                  (tag.resources_count > 0 ? ` (${tag.resources_count})` : "")}
-              </Badge>
+              <div key={tag.name} className="inline-flex items-center gap-1">
+                <Badge
+                  onClick={() => {
+                    navigate(`/tag/${encodeURIComponent(tag.name)}`);
+                  }}
+                  className="cursor-pointer badge-soft badge-primary shadow-xs"
+                >
+                  {tag.name +
+                    (tag.resources_count > 0 ? ` (${tag.resources_count})` : "")}
+                </Badge>
+                {tag.vnid ? (
+                  <a
+                    href={getVndbUrl(tag.vnid)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="badge badge-ghost shadow-xs"
+                  >
+                    <MdOutlineLink className="inline-block" />
+                    VNDB
+                  </a>
+                ) : null}
+              </div>
             ))}
-          </p>
+          </div>
         </div>
       ))}
     </div>

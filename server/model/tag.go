@@ -18,6 +18,7 @@ type TagView struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	Type        string   `json:"type"`
+	VNID        string   `json:"vnid"`
 	Aliases     []string `json:"aliases"`
 }
 
@@ -31,6 +32,7 @@ func (t *Tag) ToView() *TagView {
 		Name:        t.Name,
 		Description: t.Description,
 		Type:        t.Type,
+		VNID:        t.VNID,
 		Aliases:     aliases,
 	}
 }
