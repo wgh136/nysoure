@@ -283,8 +283,6 @@ export default function ResourcePage({ loaderData }: Route.ComponentProps) {
 function Tags({ tags }: { tags: Tag[] }) {
   const tagsMap = new Map<string, Tag[]>();
 
-  const navigate = useNavigate();
-
   const { t } = useTranslation();
 
   for (const tag of tags || []) {
@@ -305,17 +303,15 @@ function Tags({ tags }: { tags: Tag[] }) {
             {type == "" ? t("Other") : type}
           </Badge>
           {tags.map((tag) => (
-            <Badge
-              key={tag.name}
-              className={
-                `${compactMode ? "m-0.5" : "m-1"} cursor-pointer badge-soft badge-primary shadow-xs`
-              }
-              onClick={() => {
-                navigate(`/tag/${encodeURIComponent(tag.name)}`);
-              }}
-            >
-              {tag.name}
-            </Badge>
+            <NavLink key={tag.name} to={`/tag/${encodeURIComponent(tag.name)}`}>
+              <Badge
+                className={
+                  `${compactMode ? "m-0.5" : "m-1"} cursor-pointer badge-soft badge-primary shadow-xs`
+                }
+              >
+                {tag.name}
+              </Badge>
+            </NavLink>
           ))}
         </p>
       ))}
