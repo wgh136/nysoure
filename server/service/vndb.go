@@ -65,9 +65,9 @@ func charactersFromVndb(vn *govndb.VN) ([]CharacterParams, error) {
 	// 遍历声优信息
 	for _, va := range vn.VoiceActors {
 		role := "Unknown"
-		for _, vn := range va.Character.VNs {
-			if vn.ID == vn.ID && vn.Role != nil {
-				role = *vn.Role
+		for _, vnc := range va.Character.VNs {
+			if vnc.ID == vn.ID && vnc.Role != nil {
+				role = *vnc.Role
 				break
 			}
 		}
