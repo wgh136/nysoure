@@ -215,7 +215,7 @@ func ResourceParamsFromVNDB(vnid string) (*ResourceParams, error) {
 		Title: vn.OriginalTitle(),
 		Links: []model.Link{
 			{
-				URL:   fmt.Sprintf("https://vndb.org/v%s", vnid),
+				URL:   fmt.Sprintf("https://vndb.org/%s", vnid),
 				Label: "VNDB",
 			},
 		},
@@ -332,7 +332,7 @@ func ResourceParamsFromVNDB(vnid string) (*ResourceParams, error) {
 		}
 	}
 	if params.CoverID != nil {
-		params.Article = fmt.Sprintf("[image](/image/%d)\n\n%s", *params.CoverID, params.Article)
+		params.Article = fmt.Sprintf("![image](/image/%d)\n\n%s", *params.CoverID, params.Article)
 	}
 
 	characters, err := charactersFromVndb(vn)
