@@ -15,6 +15,7 @@ import Button from "~/components/button";
 import Loading from "~/components/loading";
 import Gallery from "~/components/gallery";
 import Markdown from "react-markdown";
+import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";
 import { fileSizeToString } from "~/utils/file_size";
 import showPopup, { useClosePopup } from "~/components/popup";
@@ -547,8 +548,27 @@ function Article({ resource }: { resource: ResourceDetails }) {
     <>
       <article>
         <Markdown
-          remarkPlugins={[remarkGfm]}
+          remarkPlugins={[remarkGfm, remarkDirective, remarkCollapseDirective]}
           components={{
+            details: ({ children, node, ...props }) => {
+              const summary = node?.properties?.["data-collapse-label"];
+              const label = Array.isArray(summary) ? summary.join("") : summary?.toString() || "Details";
+
+              return (
+                <details
+                  {...props}
+                  className="my-4 rounded-xl border border-base-300 bg-base-100/70 shadow-sm"
+                >
+                  <summary className="cursor-pointer list-none px-4 py-3 font-medium select-none marker:hidden">
+                    <span className="inline-flex items-center gap-2">
+                      <MdOutlineAdd size={18} />
+                      {label}
+                    </span>
+                  </summary>
+                  <div className="px-4 pb-4 pt-1">{children}</div>
+                </details>
+              );
+            },
             p: ({ node, ...props }) => {
               if (
                 typeof props.children === "object" &&
@@ -691,6 +711,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
 }
 
 function normalizeArticle(article: string) {
+  article = normalizeCollapseDirectiveSyntax(article);
   const lines = article.split("\n");
   let result = "";
   let lastIsRelatedResource = false;
@@ -743,6 +764,73 @@ function normalizeArticle(article: string) {
   }
 
   return result.trimEnd();
+}
+
+function normalizeCollapseDirectiveSyntax(article: string) {
+  const lines = article.split("\n");
+  const normalizedLines: string[] = [];
+  let fence: string | null = null;
+
+  for (const line of lines) {
+    const trimmed = line.trimStart();
+    const fenceMatch = trimmed.match(/^(```+|~~~+)/);
+
+    if (fenceMatch) {
+      const marker = fenceMatch[1][0];
+      if (fence == null) {
+        fence = marker;
+      } else if (fence === marker) {
+        fence = null;
+      }
+      normalizedLines.push(line);
+      continue;
+    }
+
+    if (fence == null) {
+      const collapseMatch = line.match(/^(\s*):::collapse\s+(.+?)\s*$/);
+      if (collapseMatch) {
+        normalizedLines.push(`${collapseMatch[1]}:::collapse[${collapseMatch[2]}]`);
+        continue;
+      }
+    }
+
+    normalizedLines.push(line);
+  }
+
+  return normalizedLines.join("\n");
+}
+
+function remarkCollapseDirective() {
+  return (tree: unknown) => {
+    walkMarkdownTree(tree, (node) => {
+      if (node.type !== "containerDirective" || node.name !== "collapse") {
+        return;
+      }
+
+      const data = node.data || (node.data = {});
+      data.hName = "details";
+      data.hProperties = {
+        ...(data.hProperties || {}),
+        "data-collapse-label": node.label || "Details",
+      };
+    });
+  };
+}
+
+function walkMarkdownTree(node: unknown, visitor: (node: any) => void) {
+  if (!node || typeof node !== "object") {
+    return;
+  }
+
+  visitor(node);
+
+  if (!("children" in node) || !Array.isArray(node.children)) {
+    return;
+  }
+
+  for (const child of node.children) {
+    walkMarkdownTree(child, visitor);
+  }
 }
 
 function RelatedResourceCard({

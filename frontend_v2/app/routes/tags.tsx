@@ -5,7 +5,6 @@ import Badge from "~/components/badge";
 import { useLoaderData, useNavigate } from "react-router";
 import { network } from "../network/network";
 import { configFromMatches } from "../hook/config";
-import { MdOutlineLink } from "react-icons/md";
 
 export function meta({ matches }: Route.MetaArgs) {
   const config = configFromMatches(matches);
