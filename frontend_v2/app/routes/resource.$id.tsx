@@ -2,8 +2,9 @@ import { network } from "~/network/network";
 import type { Route } from "./+types/resource.$id";
 import removeMd from "remove-markdown";
 import { configFromMatches, useConfig, isAdmin, canUpload } from "~/hook/config";
-import { createRef, useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
-import { MdAdd, MdOutlineAccessTime, MdOutlineAdd, MdOutlineArchive, MdOutlineArticle, MdOutlineCloud, MdOutlineComment, MdOutlineContentCopy, MdOutlineDataset, MdOutlineDelete, MdOutlineDownload, MdOutlineEdit, MdOutlineFolderSpecial, MdOutlineInfo, MdOutlineLink, MdOutlineOpenInNew, MdOutlineStar, MdOutlineSwapHoriz, MdOutlineVerifiedUser } from "react-icons/md";
+import { createRef, useCallback, useEffect, useMemo, useRef, useState, type ComponentPropsWithoutRef, type ReactElement } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { MdAdd, MdOutlineAccessTime, MdOutlineAdd, MdOutlineArchive, MdOutlineArticle, MdOutlineCloud, MdOutlineComment, MdOutlineContentCopy, MdOutlineDataset, MdOutlineDelete, MdOutlineDownload, MdOutlineEdit, MdOutlineFolderSpecial, MdOutlineInfo, MdOutlineKeyboardArrowDown, MdOutlineLink, MdOutlineOpenInNew, MdOutlineStar, MdOutlineSwapHoriz, MdOutlineVerifiedUser } from "react-icons/md";
 import { useTranslation } from "~/hook/i18n";
 import { NavLink, useNavigate } from "react-router";
 import type { CharacterParams, Collection, Resource, ResourceDetails, RFile, RLink, Tag, Storage as RStorage, Comment as RComment } from "~/network/models";
@@ -550,25 +551,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
         <Markdown
           remarkPlugins={[remarkGfm, remarkDirective, remarkCollapseDirective]}
           components={{
-            details: ({ children, node, ...props }) => {
-              const summary = node?.properties?.["data-collapse-label"];
-              const label = Array.isArray(summary) ? summary.join("") : summary?.toString() || "Details";
-
-              return (
-                <details
-                  {...props}
-                  className="my-4 rounded-xl border border-base-300 bg-base-100/70 shadow-sm"
-                >
-                  <summary className="cursor-pointer list-none px-4 py-3 font-medium select-none marker:hidden">
-                    <span className="inline-flex items-center gap-2">
-                      <MdOutlineAdd size={18} />
-                      {label}
-                    </span>
-                  </summary>
-                  <div className="px-4 pb-4 pt-1">{children}</div>
-                </details>
-              );
-            },
+            details: CollapseDetails,
             p: ({ node, ...props }) => {
               if (
                 typeof props.children === "object" &&
@@ -710,6 +693,56 @@ function Article({ resource }: { resource: ResourceDetails }) {
   );
 }
 
+type CollapseDetailsProps = ComponentPropsWithoutRef<"details"> & {
+  "data-collapse-label"?: string;
+};
+
+function CollapseDetails({ children, className, open, id, title, ...props }: CollapseDetailsProps) {
+  const [isOpen, setIsOpen] = useState(Boolean(open));
+  const summary = props["data-collapse-label"];
+  const label = Array.isArray(summary) ? summary.join("") : summary?.toString() || "Details";
+
+  return (
+    <div
+      id={id}
+      title={title}
+      className={`my-4 overflow-hidden rounded-xl border border-base-300 bg-base-100/70 shadow-sm ${className || ""}`.trim()}
+    >
+      <button
+        type="button"
+        className="flex w-full items-center gap-2 px-4 py-3 text-left font-medium transition-colors duration-200 hover:bg-base-200/60"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((current) => !current)}
+      >
+        <motion.span
+          initial={false}
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
+          className="shrink-0"
+        >
+          <MdOutlineKeyboardArrowDown size={20} />
+        </motion.span>
+        <span>{label}</span>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {isOpen ? (
+          <motion.div
+            key="content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.24, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 pt-1">{children}</div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function normalizeArticle(article: string) {
   article = normalizeCollapseDirectiveSyntax(article);
   const lines = article.split("\n");
@@ -807,12 +840,21 @@ function remarkCollapseDirective() {
         return;
       }
 
+      const labelNode = Array.isArray(node.children)
+        ? node.children.find((child: any) => child?.data?.directiveLabel)
+        : undefined;
+      const label = extractTextContent(labelNode).trim() || "Details";
+
       const data = node.data || (node.data = {});
       data.hName = "details";
       data.hProperties = {
         ...(data.hProperties || {}),
-        "data-collapse-label": node.label || "Details",
+        "data-collapse-label": label,
       };
+
+      if (labelNode && Array.isArray(node.children)) {
+        node.children = node.children.filter((child: any) => child !== labelNode);
+      }
     });
   };
 }
@@ -831,6 +873,22 @@ function walkMarkdownTree(node: unknown, visitor: (node: any) => void) {
   for (const child of node.children) {
     walkMarkdownTree(child, visitor);
   }
+}
+
+function extractTextContent(node: any): string {
+  if (!node || typeof node !== "object") {
+    return "";
+  }
+
+  if (typeof node.value === "string") {
+    return node.value;
+  }
+
+  if (!Array.isArray(node.children)) {
+    return "";
+  }
+
+  return node.children.map((child: any) => extractTextContent(child)).join("");
 }
 
 function RelatedResourceCard({
