@@ -275,11 +275,9 @@ func downloadFile(c fiber.Ctx) error {
 			// If there are already query parameters, assume the URL is signed
 			return c.Redirect().Status(fiber.StatusFound).To(uri.String())
 		}
-		token, err := utils.GenerateDownloadToken(s)
-		if err != nil {
-			return err
-		}
+		token, expiresAt := utils.GenerateDownloadToken(uri)
 		q.Set("token", token)
+		q.Set("expires_at", strconv.FormatInt(expiresAt, 10))
 		uri.RawQuery = q.Encode()
 		if realUser {
 			stat.RecordDownload()

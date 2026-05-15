@@ -1,8 +1,12 @@
 package utils
 
 import (
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha256"
 	"errors"
+	"fmt"
+	"net/url"
 	"os"
 	"time"
 
@@ -95,7 +99,7 @@ func ParseTemporaryToken(token string) (string, error) {
 	return "", errors.New("invalid token")
 }
 
-func GenerateDownloadToken(fileKey string) (string, error) {
+func GenerateDownloadToken(u *url.URL) (string, int64) {
 	secretKeyStr := os.Getenv("DOWNLOAD_SECRET_KEY")
 	var secretKey []byte
 	if secretKeyStr == "" {
@@ -103,15 +107,14 @@ func GenerateDownloadToken(fileKey string) (string, error) {
 	} else {
 		secretKey = []byte(secretKeyStr)
 	}
-
-	t := jwt.NewWithClaims(jwt.SigningMethodHS256,
-		jwt.MapClaims{
-			"fileKey": fileKey,
-			"exp":     time.Now().Add(1 * time.Hour).Unix(),
-		})
-	s, err := t.SignedString(secretKey)
-	if err != nil {
-		return "", err
+	expiresAt := time.Now().Add(2 * time.Hour).Unix()
+	path := u.EscapedPath()
+	if path == "" {
+		path = "/"
 	}
-	return s, nil
+	signedPath := fmt.Sprintf("%s?expires_at=%d", path, expiresAt)
+	hash := hmac.New(sha256.New, secretKey)
+	hash.Write([]byte(signedPath))
+	token := hash.Sum(nil)
+	return fmt.Sprintf("%x", token), expiresAt
 }
