@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   MdAdd,
   MdClose,
@@ -62,6 +62,22 @@ export default function ResourceForm({
   const [characters, setCharacters] = useState<CharacterParams[]>(initialData.characters);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
+  const articleRef = useRef<HTMLTextAreaElement>(null);
+
+  const insertSnippet = (snippet: string, cursorOffset: number) => {
+    const el = articleRef.current;
+    if (!el) return;
+    const start = el.selectionStart ?? article.length;
+    const end = el.selectionEnd ?? article.length;
+    const newValue =
+      article.substring(0, start) + snippet + article.substring(end);
+    setArticle(newValue);
+    // Restore focus and place cursor at desired position
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(start + cursorOffset, start + cursorOffset);
+    });
+  };
 
   const { t } = useTranslation();
 
@@ -322,7 +338,31 @@ export default function ResourceForm({
         </div>
         <div className={"h-4"}></div>
         <p className={"my-1"}>{t("Description")}</p>
+        <div className="flex flex-wrap gap-2 mb-2">
+          <button
+            type="button"
+            className="btn btn-sm btn-outline"
+            onClick={() => {
+              const snippet = ":::collapse \u6807\u9898\n\u5185\u5bb9\n:::";
+              insertSnippet(snippet, 11);
+            }}
+          >
+            + Collapse
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline"
+            onClick={() => {
+              const snippet =
+                ":::tab_view Tab1/Tab2/Tab3\nTab1 \u5185\u5bb9\n---\nTab2 \u5185\u5bb9\n---\nTab3 \u5185\u5bb9\n:::";
+              insertSnippet(snippet, 11);
+            }}
+          >
+            + Tab View
+          </button>
+        </div>
         <textarea
+          ref={articleRef}
           className="textarea w-full min-h-80 p-4"
           value={article}
           onChange={(e) => setArticle(e.target.value)}

@@ -2,7 +2,7 @@ import { network } from "~/network/network";
 import type { Route } from "./+types/resource.$id";
 import removeMd from "remove-markdown";
 import { configFromMatches, useConfig, isAdmin, canUpload } from "~/hook/config";
-import { createRef, useCallback, useEffect, useMemo, useRef, useState, type ComponentPropsWithoutRef, type ReactElement } from "react";
+import { Children, createRef, isValidElement, useCallback, useEffect, useMemo, useRef, useState, type ComponentPropsWithoutRef, type ReactElement, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MdAdd, MdOutlineAccessTime, MdOutlineAdd, MdOutlineArchive, MdOutlineArticle, MdOutlineCloud, MdOutlineComment, MdOutlineContentCopy, MdOutlineDataset, MdOutlineDelete, MdOutlineDownload, MdOutlineEdit, MdOutlineFolderSpecial, MdOutlineInfo, MdOutlineKeyboardArrowDown, MdOutlineLink, MdOutlineOpenInNew, MdOutlineStar, MdOutlineSwapHoriz, MdOutlineVerifiedUser } from "react-icons/md";
 import { useTranslation } from "~/hook/i18n";
@@ -549,9 +549,26 @@ function Article({ resource }: { resource: ResourceDetails }) {
     <>
       <article>
         <Markdown
-          remarkPlugins={[remarkGfm, remarkDirective, remarkCollapseDirective]}
+          remarkPlugins={[remarkGfm, remarkDirective, remarkCollapseDirective, remarkTabViewDirective]}
           components={{
             details: CollapseDetails,
+            div: ({ node, className, children, ...props }) => {
+              if (className === "tab-view") {
+                const labels: string[] = JSON.parse(
+                  (props as any)["data-tab-labels"] || "[]",
+                );
+                return <TabView labels={labels}>{children}</TabView>;
+              }
+              if (className === "tab-panel") {
+                return <div className="tab-panel">{children}</div>;
+              }
+              return (
+                <div className={className} {...props}>
+                  {children}
+                </div>
+              );
+            },
+            hr: () => <hr className="my-4 border-base-300" />,
             p: ({ node, ...props }) => {
               if (
                 typeof props.children === "object" &&
@@ -693,6 +710,43 @@ function Article({ resource }: { resource: ResourceDetails }) {
   );
 }
 
+function TabView({
+  labels,
+  children,
+}: {
+  labels: string[];
+  children: React.ReactNode;
+}) {
+  const [activeTab, setActiveTab] = useState(0);
+  const panels = Children.toArray(children).filter(
+    (child) =>
+      isValidElement(child) &&
+      (child.props as any).className === "tab-panel",
+  );
+
+  return (
+    <div className="my-4 overflow-hidden rounded-xl border border-base-300 bg-base-100/70 shadow-sm">
+      <div role="tablist" className="tabs tabs-bordered px-4 pt-2">
+        {labels.map((label, i) => (
+          <button
+            key={i}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === i}
+            className={`tab${
+              activeTab === i ? " tab-active font-semibold" : ""
+            }`}
+            onClick={() => setActiveTab(i)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <div className="px-4 pb-4 pt-2">{panels[activeTab]}</div>
+    </div>
+  );
+}
+
 type CollapseDetailsProps = ComponentPropsWithoutRef<"details"> & {
   "data-collapse-label"?: string;
 };
@@ -825,12 +879,72 @@ function normalizeCollapseDirectiveSyntax(article: string) {
         normalizedLines.push(`${collapseMatch[1]}:::collapse[${collapseMatch[2]}]`);
         continue;
       }
+      const tabViewMatch = line.match(/^(\s*):::tab_view\s+(.+?)\s*$/);
+      if (tabViewMatch) {
+        normalizedLines.push(`${tabViewMatch[1]}:::tab_view[${tabViewMatch[2]}]`);
+        continue;
+      }
     }
 
     normalizedLines.push(line);
   }
 
   return normalizedLines.join("\n");
+}
+
+function remarkTabViewDirective() {
+  return (tree: unknown) => {
+    walkMarkdownTree(tree, (node) => {
+      if (node.type !== "containerDirective" || node.name !== "tab_view") {
+        return;
+      }
+
+      const labelNode = Array.isArray(node.children)
+        ? node.children.find((child: any) => child?.data?.directiveLabel)
+        : undefined;
+      const labelText = extractTextContent(labelNode).trim();
+      const tabLabels = labelText ? labelText.split("/") : [];
+
+      let children: any[] = Array.isArray(node.children) ? [...node.children] : [];
+      if (labelNode) {
+        children = children.filter((child: any) => child !== labelNode);
+      }
+
+      // Split children by thematicBreak (---)
+      const groups: any[][] = [];
+      let currentGroup: any[] = [];
+      for (const child of children) {
+        if (child.type === "thematicBreak") {
+          groups.push(currentGroup);
+          currentGroup = [];
+        } else {
+          currentGroup.push(child);
+        }
+      }
+      groups.push(currentGroup);
+
+      const data = node.data || (node.data = {});
+      data.hName = "div";
+      data.hProperties = {
+        className: "tab-view",
+        "data-tab-labels": JSON.stringify(tabLabels),
+      };
+
+      node.children = groups.map((group, index) => ({
+        type: "containerDirective",
+        name: "tab_panel",
+        children: group,
+        attributes: {},
+        data: {
+          hName: "div",
+          hProperties: {
+            className: "tab-panel",
+            "data-tab-index": String(index),
+          },
+        },
+      }));
+    });
+  };
 }
 
 function remarkCollapseDirective() {
