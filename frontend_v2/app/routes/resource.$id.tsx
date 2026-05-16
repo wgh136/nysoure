@@ -853,23 +853,23 @@ function normalizeArticle(article: string) {
   return result.trimEnd();
 }
 
-function normalizeCollapseDirectiveSyntax(article: string) {
+function normalizeCollapseDirectiveSyntax(article: string): string {
   const lines = article.split("\n");
   const normalizedLines: string[] = [];
   let fence: string | null = null;
+  let i = 0;
 
-  for (const line of lines) {
+  while (i < lines.length) {
+    const line = lines[i];
     const trimmed = line.trimStart();
     const fenceMatch = trimmed.match(/^(```+|~~~+)/);
 
     if (fenceMatch) {
       const marker = fenceMatch[1][0];
-      if (fence == null) {
-        fence = marker;
-      } else if (fence === marker) {
-        fence = null;
-      }
+      if (fence == null) fence = marker;
+      else if (fence === marker) fence = null;
       normalizedLines.push(line);
+      i++;
       continue;
     }
 
@@ -877,16 +877,74 @@ function normalizeCollapseDirectiveSyntax(article: string) {
       const collapseMatch = line.match(/^(\s*):::collapse\s+(.+?)\s*$/);
       if (collapseMatch) {
         normalizedLines.push(`${collapseMatch[1]}:::collapse[${collapseMatch[2]}]`);
+        i++;
         continue;
       }
+
       const tabViewMatch = line.match(/^(\s*):::tab_view\s+(.+?)\s*$/);
       if (tabViewMatch) {
+        i++;
+        // Collect lines until the matching closing :::
+        const blockLines: string[] = [];
+        let depth = 1;
+        let innerFence: string | null = null;
+        while (i < lines.length && depth > 0) {
+          const bl = lines[i];
+          const bt = bl.trimStart();
+          const bfm = bt.match(/^(```+|~~~+)/);
+          if (bfm) {
+            const m = bfm[1][0];
+            if (innerFence == null) innerFence = m;
+            else if (innerFence === m) innerFence = null;
+          }
+          if (innerFence == null) {
+            if (/^:{3,}[a-z_]/.test(bt)) depth++;
+            else if (bt === ":::") {
+              depth--;
+              if (depth === 0) { i++; break; }
+            }
+          }
+          blockLines.push(bl);
+          i++;
+        }
+
+        // Split blockLines by --- at top level (outside fences and nested directives)
+        const sections: string[][] = [[]];
+        let sf: string | null = null;
+        let sd = 0;
+        for (const bl of blockLines) {
+          const bt = bl.trimStart();
+          const bfm = bt.match(/^(```+|~~~+)/);
+          if (bfm) {
+            const m = bfm[1][0];
+            if (sf == null) sf = m; else if (sf === m) sf = null;
+          }
+          if (sf == null) {
+            if (/^:{3,}[a-z_]/.test(bt)) sd++;
+            else if (bt === ":::") sd--;
+          }
+          if (sf == null && sd === 0 && bl.trim() === "---") {
+            sections.push([]);
+          } else {
+            sections[sections.length - 1].push(bl);
+          }
+        }
+
+        // Emit: :::tab_view[labels] + ::::tab_panel sections + :::
         normalizedLines.push(`${tabViewMatch[1]}:::tab_view[${tabViewMatch[2]}]`);
+        for (const section of sections) {
+          normalizedLines.push("::::tab_panel");
+          // Recursively normalize collapse/tab_view inside each section
+          normalizedLines.push(normalizeCollapseDirectiveSyntax(section.join("\n")));
+          normalizedLines.push("::::");
+        }
+        normalizedLines.push(":::");
         continue;
       }
     }
 
     normalizedLines.push(line);
+    i++;
   }
 
   return normalizedLines.join("\n");
@@ -905,24 +963,6 @@ function remarkTabViewDirective() {
       const labelText = extractTextContent(labelNode).trim();
       const tabLabels = labelText ? labelText.split("/") : [];
 
-      let children: any[] = Array.isArray(node.children) ? [...node.children] : [];
-      if (labelNode) {
-        children = children.filter((child: any) => child !== labelNode);
-      }
-
-      // Split children by thematicBreak (---)
-      const groups: any[][] = [];
-      let currentGroup: any[] = [];
-      for (const child of children) {
-        if (child.type === "thematicBreak") {
-          groups.push(currentGroup);
-          currentGroup = [];
-        } else {
-          currentGroup.push(child);
-        }
-      }
-      groups.push(currentGroup);
-
       const data = node.data || (node.data = {});
       data.hName = "div";
       data.hProperties = {
@@ -930,19 +970,20 @@ function remarkTabViewDirective() {
         "data-tab-labels": JSON.stringify(tabLabels),
       };
 
-      node.children = groups.map((group, index) => ({
-        type: "containerDirective",
-        name: "tab_panel",
-        children: group,
-        attributes: {},
-        data: {
-          hName: "div",
-          hProperties: {
-            className: "tab-panel",
-            "data-tab-index": String(index),
-          },
-        },
-      }));
+      // Remove label node and transform tab_panel children
+      const panelChildren = Array.isArray(node.children)
+        ? node.children.filter((child: any) => child !== labelNode)
+        : [];
+
+      for (const child of panelChildren) {
+        if (child.type === "containerDirective" && child.name === "tab_panel") {
+          const childData = child.data || (child.data = {});
+          childData.hName = "div";
+          childData.hProperties = { className: "tab-panel" };
+        }
+      }
+
+      node.children = panelChildren;
     });
   };
 }
