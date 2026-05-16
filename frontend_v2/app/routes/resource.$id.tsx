@@ -930,15 +930,15 @@ function normalizeCollapseDirectiveSyntax(article: string): string {
           }
         }
 
-        // Emit: :::tab_view[labels] + ::::tab_panel sections + :::
-        normalizedLines.push(`${tabViewMatch[1]}:::tab_view[${tabViewMatch[2]}]`);
+        // Emit: ::::tab_view[labels] (outer, more colons) + :::tab_panel sections (inner, fewer colons) + ::::
+        normalizedLines.push(`${tabViewMatch[1]}::::tab_view[${tabViewMatch[2]}]`);
         for (const section of sections) {
-          normalizedLines.push("::::tab_panel");
+          normalizedLines.push(":::tab_panel");
           // Recursively normalize collapse/tab_view inside each section
           normalizedLines.push(normalizeCollapseDirectiveSyntax(section.join("\n")));
-          normalizedLines.push("::::");
+          normalizedLines.push(":::");
         }
-        normalizedLines.push(":::");
+        normalizedLines.push("::::");
         continue;
       }
     }
