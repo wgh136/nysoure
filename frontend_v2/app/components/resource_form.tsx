@@ -64,21 +64,6 @@ export default function ResourceForm({
   const [isSubmitting, setSubmitting] = useState(false);
   const articleRef = useRef<HTMLTextAreaElement>(null);
 
-  const insertSnippet = (snippet: string, cursorOffset: number) => {
-    const el = articleRef.current;
-    if (!el) return;
-    const start = el.selectionStart ?? article.length;
-    const end = el.selectionEnd ?? article.length;
-    const newValue =
-      article.substring(0, start) + snippet + article.substring(end);
-    setArticle(newValue);
-    // Restore focus and place cursor at desired position
-    requestAnimationFrame(() => {
-      el.focus();
-      el.setSelectionRange(start + cursorOffset, start + cursorOffset);
-    });
-  };
-
   const { t } = useTranslation();
 
   // Auto-save to localStorage if storageKey is provided
@@ -344,7 +329,7 @@ export default function ResourceForm({
             className="btn btn-sm btn-outline"
             onClick={() => {
               const snippet = ":::collapse \u6807\u9898\n\u5185\u5bb9\n:::";
-              insertSnippet(snippet, 11);
+              setArticle((prev) => prev + "\n" + snippet);
             }}
           >
             + Collapse
@@ -355,7 +340,7 @@ export default function ResourceForm({
             onClick={() => {
               const snippet =
                 ":::tab_view Tab1/Tab2/Tab3\nTab1 \u5185\u5bb9\n---\nTab2 \u5185\u5bb9\n---\nTab3 \u5185\u5bb9\n:::";
-              insertSnippet(snippet, 11);
+              setArticle((prev) => prev + "\n" + snippet);
             }}
           >
             + Tab View

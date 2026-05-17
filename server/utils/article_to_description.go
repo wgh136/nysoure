@@ -1,11 +1,12 @@
 package utils
 
 import (
+	"strings"
+
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/k3a/html2text"
-	"strings"
 )
 
 func ArticleToDescription(article string, maxLength int) string {
@@ -17,6 +18,7 @@ func ArticleToDescription(article string, maxLength int) string {
 	plain = strings.TrimSpace(plain)
 	plain = mergeSpaces(plain)
 	plain = removeLinks(plain)
+	plain = removeMarkdownExtensions(plain)
 	if len([]rune(plain)) > maxLength {
 		plain = string([]rune(plain)[:(maxLength-3)]) + "..."
 	}
@@ -61,6 +63,18 @@ func removeLinks(str string) string {
 	for _, part := range parts {
 		if !strings.HasPrefix(part, "http://") && !strings.HasPrefix(part, "https://") {
 			builder.WriteString(part + " ")
+		}
+	}
+	return strings.TrimSpace(builder.String())
+}
+
+func removeMarkdownExtensions(str string) string {
+	// Remove lines starts with `:::`
+	lines := strings.Split(str, "\n")
+	builder := strings.Builder{}
+	for _, line := range lines {
+		if !strings.HasPrefix(line, ":::") {
+			builder.WriteString(line + "\n")
 		}
 	}
 	return strings.TrimSpace(builder.String())

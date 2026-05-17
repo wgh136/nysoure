@@ -1,6 +1,5 @@
 import { network } from "~/network/network";
 import type { Route } from "./+types/resource.$id";
-import removeMd from "remove-markdown";
 import { configFromMatches, useConfig, isAdmin, canUpload } from "~/hook/config";
 import { Children, createRef, isValidElement, useCallback, useEffect, useMemo, useRef, useState, type ComponentPropsWithoutRef, type ReactElement, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -30,6 +29,7 @@ import { CommentInput } from "~/components/comment_input";
 import Pagination from "~/components/pagination";
 import { useSetBackground } from "~/components/background";
 import { ValidateHtml } from "~/utils/html";
+import { removeMarkdown } from "~/utils/markdown";
 
 export function meta({ loaderData, matches }: Route.MetaArgs) {
   const config = configFromMatches(matches);
@@ -41,7 +41,7 @@ export function meta({ loaderData, matches }: Route.MetaArgs) {
   }
 
   const title = resource.title;
-  const plainText = removeMd(resource.article).replace(/\s+/g, ' ').trim();
+  const plainText = removeMarkdown(resource.article).replace(/\s+/g, ' ').trim();
   const description = plainText.length > 160
     ? plainText.substring(0, 157) + '...'
     : plainText;
