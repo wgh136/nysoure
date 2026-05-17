@@ -58,6 +58,9 @@ export function meta({ loaderData, matches }: Route.MetaArgs) {
     { name: "description", content: description },
     { property: "og:title", content: title },
     { property: "og:description", content: description },
+    { property: "og:type", content: "article" },
+    { property: "og:url", content: typeof window !== "undefined" ? window.location.href : `${process.env.SERVER_BASE_URL}/resources/${resource.id}` },
+    { property: "twitter:card", content: "summary_large_image" },
   ];
   if (cover != null) {
     let url = network.getResampledImageUrl(cover);
