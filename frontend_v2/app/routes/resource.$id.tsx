@@ -60,7 +60,7 @@ export function meta({ loaderData, matches }: Route.MetaArgs) {
     { property: "og:description", content: description },
   ];
   if (cover != null) {
-    let url = network.getImageUrl(cover);
+    let url = network.getResampledImageUrl(cover);
     if (url.startsWith("/")) {
       if (typeof window !== "undefined") {
         url = window.location.origin + url;
