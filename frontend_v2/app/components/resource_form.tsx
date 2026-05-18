@@ -338,6 +338,16 @@ export default function ResourceForm({
             type="button"
             className="btn btn-sm btn-outline"
             onClick={() => {
+              const snippet = ":::collapse+ \u6807\u9898\n\u5185\u5bb9\n:::";
+              setArticle((prev) => prev + "\n" + snippet);
+            }}
+          >
+            + Collapse (Open)
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline"
+            onClick={() => {
               const snippet =
                 ":::tab_view Tab1/Tab2/Tab3\nTab1 \u5185\u5bb9\n---\nTab2 \u5185\u5bb9\n---\nTab3 \u5185\u5bb9\n:::";
               setArticle((prev) => prev + "\n" + snippet);

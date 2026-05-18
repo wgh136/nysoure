@@ -877,8 +877,10 @@ function normalizeCollapseDirectiveSyntax(article: string): string {
     }
 
     if (fence == null) {
-      const collapseMatch = line.match(/^(\s*):::collapse\s+(.+?)\s*$/);
+      const collapseMatch = line.match(/^(\s*):::collapse(\+?)\s+(.+?)\s*$/);
       if (collapseMatch) {
+        const isOpen = collapseMatch[2] === "+";
+        const collapseLabel = collapseMatch[3];
         i++;
         // Collect body until matching :::
         const bodyLines: string[] = [];
@@ -906,7 +908,8 @@ function normalizeCollapseDirectiveSyntax(article: string): string {
         // Recursively normalize the body
         const normalizedBody = normalizeCollapseDirectiveSyntax(bodyLines.join("\n"));
         // Use 5 colons so collapse can safely contain tab_view (4 colons) and tab_panel (3 colons)
-        normalizedLines.push(`${collapseMatch[1]}:::::collapse[${collapseMatch[2]}]`);
+        const attrs = isOpen ? "{open}" : "";
+        normalizedLines.push(`${collapseMatch[1]}:::::collapse[${collapseLabel}]${attrs}`);
         normalizedLines.push(normalizedBody);
         normalizedLines.push(":::::");
         continue;
@@ -1031,11 +1034,14 @@ function remarkCollapseDirective() {
         : undefined;
       const label = extractTextContent(labelNode).trim() || "Details";
 
+      const isOpen = "open" in (node.attributes || {});
+
       const data = node.data || (node.data = {});
       data.hName = "details";
       data.hProperties = {
         ...(data.hProperties || {}),
         "data-collapse-label": label,
+        ...(isOpen ? { open: true } : {}),
       };
 
       if (labelNode && Array.isArray(node.children)) {
