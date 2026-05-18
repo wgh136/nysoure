@@ -879,8 +879,36 @@ function normalizeCollapseDirectiveSyntax(article: string): string {
     if (fence == null) {
       const collapseMatch = line.match(/^(\s*):::collapse\s+(.+?)\s*$/);
       if (collapseMatch) {
-        normalizedLines.push(`${collapseMatch[1]}:::collapse[${collapseMatch[2]}]`);
         i++;
+        // Collect body until matching :::
+        const bodyLines: string[] = [];
+        let colDepth = 1;
+        let colFence: string | null = null;
+        while (i < lines.length && colDepth > 0) {
+          const bl = lines[i];
+          const bt = bl.trimStart();
+          const bfm = bt.match(/^(```+|~~~+)/);
+          if (bfm) {
+            const m = bfm[1][0];
+            if (colFence == null) colFence = m;
+            else if (colFence === m) colFence = null;
+          }
+          if (colFence == null) {
+            if (/^:{3,}[a-z_]/.test(bt)) colDepth++;
+            else if (bt === ":::") {
+              colDepth--;
+              if (colDepth === 0) { i++; break; }
+            }
+          }
+          bodyLines.push(bl);
+          i++;
+        }
+        // Recursively normalize the body
+        const normalizedBody = normalizeCollapseDirectiveSyntax(bodyLines.join("\n"));
+        // Use 5 colons so collapse can safely contain tab_view (4 colons) and tab_panel (3 colons)
+        normalizedLines.push(`${collapseMatch[1]}:::::collapse[${collapseMatch[2]}]`);
+        normalizedLines.push(normalizedBody);
+        normalizedLines.push(":::::");
         continue;
       }
 
