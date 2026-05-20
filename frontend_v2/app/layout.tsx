@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router";
-import { MdArrowUpward, MdMenu, MdOutlinePerson, MdOutlinePublish, MdShuffle, MdTimeline, MdInfoOutline, MdOutlineLabel, MdSearch, MdLogout, MdNotifications, MdOutlineSettings } from "react-icons/md";
+import { MdArrowUpward, MdClose, MdCloudUpload, MdMenu, MdOutlinePerson, MdOutlinePublish, MdShuffle, MdTimeline, MdInfoOutline, MdOutlineLabel, MdSearch, MdLogout, MdNotifications, MdOutlineSettings } from "react-icons/md";
 import { useTranslation } from "./hook/i18n.js";
 import { useConfig } from "./hook/config.js";
 import { Permission } from "./network/models.ts";
 import { ThemeSwitcher } from "./components/theme_switcher.js";
 import { network } from "./network/network.js";
 import { Background } from "./components/background.js";
+import { uploadingManager, UploadingTask, UploadingStatus } from "./network/uploading.js";
 
 export default function Layout() {
   const { server_name } = useConfig();
@@ -133,6 +134,7 @@ function Navigator({ appName }: { appName: string }) {
             <div className="flex gap-2">
               <SearchBar />
               <ThemeSwitcher />
+              <UploadingButton />
               <PublishButton />
               <UserButton />
             </div>
@@ -394,6 +396,139 @@ function UserButton() {
       </ul>
     </div>
   )
+}
+
+function UploadingButton() {
+  const [hasTasks, setHasTasks] = useState(uploadingManager.hasTasks());
+  const [panelOpen, setPanelOpen] = useState(false);
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    const update = () => setHasTasks(uploadingManager.hasTasks());
+    uploadingManager.addListener(update);
+    return () => uploadingManager.removeListener(update);
+  }, []);
+
+  useEffect(() => {
+    if (!hasTasks) {
+      setPanelOpen(false);
+    }
+  }, [hasTasks]);
+
+  if (!hasTasks) return null;
+
+  return (
+    <>
+      <button
+        type="button"
+        className="btn btn-square btn-soft"
+        title={t("Uploading")}
+        onClick={() => setPanelOpen(true)}
+      >
+        <MdCloudUpload size={24} className="animate-pulse" />
+      </button>
+      {panelOpen && (
+        <UploadingPanel onClose={() => setPanelOpen(false)} />
+      )}
+    </>
+  );
+}
+
+function UploadingPanel({ onClose }: { onClose: () => void }) {
+  const [tasks, setTasks] = useState(() => uploadingManager.getTasks());
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    const update = () => setTasks(uploadingManager.getTasks());
+    uploadingManager.addListener(update);
+    return () => uploadingManager.removeListener(update);
+  }, []);
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-40 bg-black/30"
+        onClick={onClose}
+      />
+      <div className="fixed right-0 top-0 h-full w-80 bg-base-100 shadow-2xl z-50 flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-base-200">
+          <div className="flex items-center gap-2">
+            <MdCloudUpload size={20} className="animate-pulse text-primary" />
+            <h2 className="text-lg font-bold">{t("Uploading")}</h2>
+          </div>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm btn-circle"
+            onClick={onClose}
+          >
+            <MdClose size={18} />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+          {tasks.length === 0 ? (
+            <p className="text-sm text-base-content/50 text-center mt-8">
+              {t("No uploading tasks")}
+            </p>
+          ) : (
+            tasks.map((task) => (
+              <UploadingTaskTile key={task.id} task={task} />
+            ))
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function UploadingTaskTile({ task }: { task: UploadingTask }) {
+  const [, forceUpdate] = useState(0);
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    const update = () => forceUpdate((n) => n + 1);
+    task.addListener(update);
+    return () => task.removeListener(update);
+  }, [task]);
+
+  const progressPercent = Math.round(task.progress * 100);
+
+  const statusLabel = () => {
+    if (task.status === UploadingStatus.UPLOADING) return `${progressPercent}%`;
+    if (task.status === UploadingStatus.DONE) return t("Done");
+    if (task.status === UploadingStatus.ERROR) return task.errorMessage || t("Error");
+    return t("Pending");
+  };
+
+  const progressClass = () => {
+    if (task.status === UploadingStatus.ERROR) return "progress progress-error w-full";
+    if (task.status === UploadingStatus.DONE) return "progress progress-success w-full";
+    return "progress progress-primary w-full";
+  };
+
+  return (
+    <div className="card bg-base-200 p-3 gap-2">
+      <div className="text-sm font-medium truncate" title={task.filename}>
+        {task.filename}
+      </div>
+      <progress
+        className={progressClass()}
+        value={task.progress}
+        max={1}
+      />
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-base-content/60">{statusLabel()}</span>
+        {task.status === UploadingStatus.UPLOADING && (
+          <button
+            type="button"
+            className="btn btn-xs btn-ghost text-error"
+            onClick={() => task.cancel()}
+          >
+            {t("Cancel")}
+          </button>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function SearchBar() {

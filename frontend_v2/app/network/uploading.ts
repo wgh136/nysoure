@@ -2,7 +2,7 @@ import SparkMD5 from "spark-md5";
 import type { Response } from "./models.ts";
 import { network } from "./network.ts";
 
-enum UploadingStatus {
+export enum UploadingStatus {
   PENDING = "pending",
   UPLOADING = "uploading",
   DONE = "done",
@@ -246,10 +246,9 @@ class UploadingManager extends Listenable {
 export const uploadingManager = new UploadingManager();
 
 if (typeof window !== "undefined") {
-  window.addEventListener("beforeunload", () => {
+  window.addEventListener("beforeunload", (e) => {
     if (uploadingManager.hasTasks()) {
-      return "Uploading files, are you sure you want to leave?";
+      e.preventDefault();
     }
-    return undefined;
-  });  
+  });
 }
