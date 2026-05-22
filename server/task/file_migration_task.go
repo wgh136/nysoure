@@ -5,12 +5,14 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net/url"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/storage"
 	"nysoure/server/utils"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -116,7 +118,19 @@ func (t *FileMigrationTask) Run() error {
 	}()
 
 	if strings.HasPrefix(strings.ToLower(sourcePathOrURL), "http") {
-		_, err = downloadFileWithProgress(t.ctx, sourcePathOrURL, tempPath, func(transferred int64) {
+		u, err := url.Parse(sourcePathOrURL)
+		if err != nil || u.Scheme == "" || u.Host == "" {
+			log.Error("invalid source file URL: ", sourcePathOrURL)
+			return t.fail(model.NewRequestError("invalid source file URL"))
+		}
+		q := u.Query()
+		if len(q) == 0 {
+			token, expiresAt := utils.GenerateDownloadToken(u)
+			q.Set("token", token)
+			q.Set("expires_at", strconv.FormatInt(expiresAt, 10))
+		}
+		u.RawQuery = q.Encode()
+		_, err = downloadFileWithProgress(t.ctx, u.String(), tempPath, func(transferred int64) {
 			t.transferredBytes.Store(transferred)
 		})
 		if err != nil {
