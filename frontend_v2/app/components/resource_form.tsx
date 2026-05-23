@@ -225,8 +225,8 @@ export default function ResourceForm({
       }}
     >
       <div className={"p-4 bg-base-100/80 backdrop-blur-sm rounded-box mt-4 shadow mb-4"}>
-        <div className="mb-4 p-3 border border-base-content/10 rounded-box">
-          <h2 className="text-sm font-bold mb-2">{t("Import from VNDB")}</h2>
+        <div className="mb-4 p-4 card bg-base-100 shadow border border-base-200">
+          <h2 className="text-sm font-bold mb-3">{t("Import from VNDB")}</h2>
           <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3">
             {ALL_SECTIONS.map((section) => (
               <label
@@ -235,7 +235,7 @@ export default function ResourceForm({
               >
                 <input
                   type="checkbox"
-                  className="checkbox checkbox-sm"
+                  className="checkbox checkbox-primary checkbox-sm"
                   checked={selectedSections.includes(section)}
                   onChange={() => toggleSection(section)}
                 />
