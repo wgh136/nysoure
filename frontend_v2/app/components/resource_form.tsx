@@ -355,6 +355,17 @@ export default function ResourceForm({
           >
             + Tab View
           </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline"
+            onClick={() => {
+              const snippet =
+                ":::collapse+ \u7b80\u4ecb\n\n:::tab_view \u7ffb\u8bd1/\u539f\u6587\nTab1 \u5185\u5bb9\n---\nTab2 \u5185\u5bb9\n:::\n\n:::";
+              setArticle((prev) => prev + "\n" + snippet);
+            }}
+          >
+            + 折叠的简介
+          </button>
         </div>
         <textarea
           ref={articleRef}
