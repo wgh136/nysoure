@@ -926,10 +926,10 @@ class Network {
     );
   }
 
-  async getResourcePrefillFromVNDB(vnID: string): Promise<Response<VndbResourcePrefill>> {
+  async getResourcePrefillFromVNDB(vnID: string, sections?: string[]): Promise<Response<VndbResourcePrefill>> {
     return this._callApi(() =>
       axios.get(`${this.apiBaseUrl}/resource/vndb/prefill`, {
-        params: { vnid: vnID },
+        params: { vnid: vnID, sections: sections?.join(",") },
       }),
     );
   }

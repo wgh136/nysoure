@@ -324,7 +324,8 @@ func handleGetResourcePrefillFromVndb(c fiber.Ctx) error {
 		return model.NewRequestError("VNDB ID is required")
 	}
 
-	prefill, err := service.GetResourceFormPrefillFromVNDB(vnID, ctx.NewContext(c))
+	sections := service.ParsePrefillSections(c.Query("sections"))
+	prefill, err := service.GetResourceFormPrefillFromVNDB(vnID, ctx.NewContext(c), sections)
 	if err != nil {
 		return err
 	}

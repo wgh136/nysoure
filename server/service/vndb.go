@@ -166,12 +166,45 @@ type ResourceFormPrefill struct {
 	Characters        []CharacterParams `json:"characters"`
 }
 
-func GetResourceFormPrefillFromVNDB(vnID string, c ctx.Context) (*ResourceFormPrefill, error) {
+// PrefillSections controls which sections are fetched from VNDB.
+type PrefillSections struct {
+	Basic      bool // title, alternative_titles, links, release_date
+	Article    bool // article
+	Tags       bool // tags
+	Images     bool // images, cover_id
+	Characters bool // characters
+}
+
+// ParsePrefillSections parses a comma-separated sections string.
+// An empty string means all sections are included.
+func ParsePrefillSections(raw string) PrefillSections {
+	if raw == "" {
+		return PrefillSections{Basic: true, Article: true, Tags: true, Images: true, Characters: true}
+	}
+	s := PrefillSections{}
+	for _, part := range strings.Split(raw, ",") {
+		switch strings.TrimSpace(part) {
+		case "basic":
+			s.Basic = true
+		case "article":
+			s.Article = true
+		case "tags":
+			s.Tags = true
+		case "images":
+			s.Images = true
+		case "characters":
+			s.Characters = true
+		}
+	}
+	return s
+}
+
+func GetResourceFormPrefillFromVNDB(vnID string, c ctx.Context, sections PrefillSections) (*ResourceFormPrefill, error) {
 	if c.UserPermission() < model.PermissionUploader {
 		return nil, model.NewUnAuthorizedError("You have not permission to fetch resource params from VNDB")
 	}
 
-	params, err := ResourceParamsFromVNDB(vnID)
+	params, err := ResourceParamsFromVNDB(vnID, sections)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +233,7 @@ func GetResourceFormPrefillFromVNDB(vnID string, c ctx.Context) (*ResourceFormPr
 	}, nil
 }
 
-func ResourceParamsFromVNDB(vnid string) (*ResourceParams, error) {
+func ResourceParamsFromVNDB(vnid string, sections PrefillSections) (*ResourceParams, error) {
 	vn, err := govndb.GetVN(vnid)
 	if err != nil {
 		return nil, model.NewRequestError(fmt.Sprintf("Error fetching vndb: %s", err.Error()))
@@ -222,124 +255,135 @@ func ResourceParamsFromVNDB(vnid string) (*ResourceParams, error) {
 		ReleaseDate: *vn.Released,
 	}
 
-	type translationReq struct {
-		Description string `json:"description"`
-		Tags        []struct {
-			Name string `json:"name"`
-			ID   string `json:"id"`
-		} `json:"tags"`
-	}
-
-	data := translationReq{
-		Description: *vn.Description,
-	}
-	for _, tag := range vn.Tags {
-		rating := 0.0
-		if tag.Rating != nil {
-			rating = *tag.Rating
-		}
-		if rating < 2.0 {
-			continue
-		}
-		if tag.Category == vndbTagTypeContent {
-			data.Tags = append(data.Tags, struct {
+	if sections.Article || sections.Tags {
+		type translationReq struct {
+			Description string `json:"description"`
+			Tags        []struct {
 				Name string `json:"name"`
 				ID   string `json:"id"`
-			}{
-				Name: tag.Name,
-				ID:   tag.ID,
-			})
+			} `json:"tags"`
 		}
-	}
-	characterNames := make([]string, 0, len(vn.VoiceActors))
-	for _, va := range vn.VoiceActors {
-		characterNames = append(characterNames, va.Character.OriginalName())
-	}
-	ctx := "你需要翻译的是一个视觉小说的简介和标签。简介可能包含一些专业术语, 标签可能包含一些专有名词。请将简介和标签翻译为流畅的中文, 并保持标签的ID原样不变。"
-	if len(characterNames) > 0 {
-		ctx += fmt.Sprintf("这个视觉小说包含以下角色: %s。", strings.Join(characterNames, ","))
-	}
-	data, err = ai.Translate(data, ctx)
-	if err != nil {
-		return nil, model.NewInternalServerError("Failed to translate VNDB content")
-	}
 
-	params.Article = data.Description
-	tagIDs := []uint{}
-	for _, tag := range data.Tags {
-		tagID, err := tagIDFromVNDB(tag.Name, tag.ID)
+		data := translationReq{
+			Description: *vn.Description,
+		}
+		for _, tag := range vn.Tags {
+			rating := 0.0
+			if tag.Rating != nil {
+				rating = *tag.Rating
+			}
+			if rating < 2.0 {
+				continue
+			}
+			if tag.Category == vndbTagTypeContent {
+				data.Tags = append(data.Tags, struct {
+					Name string `json:"name"`
+					ID   string `json:"id"`
+				}{
+					Name: tag.Name,
+					ID:   tag.ID,
+				})
+			}
+		}
+		characterNames := make([]string, 0, len(vn.VoiceActors))
+		for _, va := range vn.VoiceActors {
+			characterNames = append(characterNames, va.Character.OriginalName())
+		}
+		aiCtx := "你需要翻译的是一个视觉小说的简介和标签。简介可能包含一些专业术语, 标签可能包含一些专有名词。请将简介和标签翻译为流畅的中文, 并保持标签的ID原样不变。"
+		if len(characterNames) > 0 {
+			aiCtx += fmt.Sprintf("这个视觉小说包含以下角色: %s。", strings.Join(characterNames, ","))
+		}
+		data, err = ai.Translate(data, aiCtx)
 		if err != nil {
-			return nil, err
+			return nil, model.NewInternalServerError("Failed to translate VNDB content")
 		}
-		tagIDs = append(tagIDs, tagID)
+
+		if sections.Article {
+			params.Article = data.Description
+		}
+
+		if sections.Tags {
+			tagIDs := []uint{}
+			for _, tag := range data.Tags {
+				tagID, err := tagIDFromVNDB(tag.Name, tag.ID)
+				if err != nil {
+					return nil, err
+				}
+				tagIDs = append(tagIDs, tagID)
+			}
+
+			for _, va := range vn.VoiceActors {
+				vaName := va.Staff.OriginalName()
+				vaid := va.Staff.ID
+				tagID, err := tagIDFromVA(vaName, vaid)
+				if err != nil {
+					log.Error("Failed to get tag ID from VA: ", err)
+					continue
+				}
+				tagIDs = append(tagIDs, tagID)
+			}
+
+			for _, producer := range vn.Developers {
+				producerName := producer.Name
+				if producer.Original != nil && *producer.Original != "" {
+					producerName = *producer.Original
+				}
+				tagID, err := tagIDFromProducer(producerName)
+				if err != nil {
+					log.Error("Failed to get tag ID from producer: ", err)
+					continue
+				}
+				tagIDs = append(tagIDs, tagID)
+			}
+
+			for _, staff := range vn.Staff {
+				staffName := staff.OriginalName()
+				tagID, err := tagIDFromStaffIfExists(staffName)
+				if err != nil {
+					log.Error("Failed to get tag ID from staff: ", err)
+					continue
+				}
+				if tagID != 0 {
+					tagIDs = append(tagIDs, tagID)
+				}
+			}
+
+			// 标签去重
+			tagIDSet := make(map[uint]struct{})
+			uniqueTagIDs := []uint{}
+			for _, id := range tagIDs {
+				if _, exists := tagIDSet[id]; !exists {
+					tagIDSet[id] = struct{}{}
+					uniqueTagIDs = append(uniqueTagIDs, id)
+				}
+			}
+			params.Tags = uniqueTagIDs
+		}
 	}
 
-	for _, va := range vn.VoiceActors {
-		vaName := va.Staff.OriginalName()
-		vaid := va.Staff.ID
-		tagID, err := tagIDFromVA(vaName, vaid)
+	if sections.Images {
+		// 封面
+		if vn.Image.URL != "" {
+			imageID, err := downloadAndCreateImage(vn.Image.URL)
+			if err != nil {
+				log.Error("Failed to download VN cover image:", err)
+			} else {
+				params.Images = []uint{imageID}
+				params.CoverID = &imageID
+			}
+		}
+		if params.CoverID != nil && sections.Article {
+			params.Article = fmt.Sprintf("![image](/image/%d)\n\n%s", *params.CoverID, params.Article)
+		}
+	}
+
+	if sections.Characters {
+		characters, err := charactersFromVndb(vn)
 		if err != nil {
-			log.Error("Failed to get tag ID from VA: ", err)
-			continue
+			log.Error("Failed to process character data from VNDB: ", err)
 		}
-		tagIDs = append(tagIDs, tagID)
+		params.Characters = characters
 	}
-
-	for _, producer := range vn.Developers {
-		producerName := producer.Name
-		if producer.Original != nil && *producer.Original != "" {
-			producerName = *producer.Original
-		}
-		tagID, err := tagIDFromProducer(producerName)
-		if err != nil {
-			log.Error("Failed to get tag ID from producer: ", err)
-			continue
-		}
-		tagIDs = append(tagIDs, tagID)
-	}
-
-	for _, staff := range vn.Staff {
-		staffName := staff.OriginalName()
-		tagID, err := tagIDFromStaffIfExists(staffName)
-		if err != nil {
-			log.Error("Failed to get tag ID from staff: ", err)
-			continue
-		}
-		if tagID != 0 {
-			tagIDs = append(tagIDs, tagID)
-		}
-	}
-
-	// 标签去重
-	tagIDSet := make(map[uint]struct{})
-	uniqueTagIDs := []uint{}
-	for _, id := range tagIDs {
-		if _, exists := tagIDSet[id]; !exists {
-			tagIDSet[id] = struct{}{}
-			uniqueTagIDs = append(uniqueTagIDs, id)
-		}
-	}
-	params.Tags = uniqueTagIDs
-
-	// 封面
-	if vn.Image.URL != "" {
-		imageID, err := downloadAndCreateImage(vn.Image.URL)
-		if err != nil {
-			log.Error("Failed to download VN cover image:", err)
-		} else {
-			params.Images = []uint{imageID}
-			params.CoverID = &imageID
-		}
-	}
-	if params.CoverID != nil {
-		params.Article = fmt.Sprintf("![image](/image/%d)\n\n%s", *params.CoverID, params.Article)
-	}
-
-	characters, err := charactersFromVndb(vn)
-	if err != nil {
-		log.Error("Failed to process character data from VNDB: ", err)
-	}
-	params.Characters = characters
 
 	return params, nil
 }

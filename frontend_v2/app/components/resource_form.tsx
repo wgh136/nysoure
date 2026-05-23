@@ -6,7 +6,7 @@ import {
   MdDelete,
   MdOutlineInfo,
 } from "react-icons/md";
-import type { CharacterParams, Tag } from "../network/models";
+import type { CharacterParams, Tag, VndbResourcePrefill } from "../network/models";
 import { network } from "../network/network";
 import { useTranslation } from "../hook/i18n";
 import { ErrorAlert } from "./alert";
@@ -17,6 +17,17 @@ import {
   UploadClipboardImageButton,
 } from "./image_selector";
 import CharacterEditor, { FetchVndbCharactersButton } from "./character_editor";
+
+const ALL_SECTIONS = ["basic", "article", "tags", "images", "characters"] as const;
+type PrefillSection = (typeof ALL_SECTIONS)[number];
+
+const SECTION_LABELS: Record<PrefillSection, string> = {
+  basic: "Basic Info",
+  article: "Article",
+  tags: "Tags",
+  images: "Images",
+  characters: "Characters",
+};
 
 export interface ResourceFormData {
   title: string;
@@ -64,7 +75,62 @@ export default function ResourceForm({
   const [isSubmitting, setSubmitting] = useState(false);
   const articleRef = useRef<HTMLTextAreaElement>(null);
 
+  // VNDB import state
+  const [vnID, setVNID] = useState("");
+  const [importError, setImportError] = useState<string | null>(null);
+  const [isImporting, setImporting] = useState(false);
+  const [selectedSections, setSelectedSections] = useState<PrefillSection[]>([...ALL_SECTIONS]);
+
   const { t } = useTranslation();
+
+  const toggleSection = (section: PrefillSection) => {
+    setSelectedSections((prev) =>
+      prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section],
+    );
+  };
+
+  const handleImportFromVNDB = async () => {
+    if (!/^v\d+$/.test(vnID)) {
+      setImportError(t("Invalid VNDB ID format"));
+      return;
+    }
+    setImportError(null);
+    setImporting(true);
+    const res = await network.getResourcePrefillFromVNDB(vnID, selectedSections);
+    setImporting(false);
+    if (!res.success || !res.data) {
+      setImportError(res.message || t("Failed to fetch resource params from VNDB"));
+      return;
+    }
+    const data: VndbResourcePrefill = res.data;
+    if (selectedSections.includes("basic")) {
+      setTitle(data.title || "");
+      setAltTitles(data.alternative_titles || []);
+      setReleaseDate(data.release_date || undefined);
+      setLinks(data.links || []);
+    }
+    if (selectedSections.includes("article")) {
+      setArticle(data.article || "");
+    }
+    if (selectedSections.includes("tags")) {
+      setTags((prev) => {
+        const merged = [...prev];
+        for (const newTag of data.tags || []) {
+          if (!merged.find((t) => t.id === newTag.id)) {
+            merged.push(newTag);
+          }
+        }
+        return merged;
+      });
+    }
+    if (selectedSections.includes("images")) {
+      setImages(data.images || []);
+      setCoverId(data.cover_id ?? undefined);
+    }
+    if (selectedSections.includes("characters")) {
+      setCharacters(data.characters || []);
+    }
+  };
 
   // Auto-save to localStorage if storageKey is provided
   useEffect(() => {
@@ -159,6 +225,44 @@ export default function ResourceForm({
       }}
     >
       <div className={"p-4 bg-base-100/80 backdrop-blur-sm rounded-box mt-4 shadow mb-4"}>
+        <div className="mb-4 p-3 border border-base-content/10 rounded-box">
+          <h2 className="text-sm font-bold mb-2">{t("Import from VNDB")}</h2>
+          <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3">
+            {ALL_SECTIONS.map((section) => (
+              <label
+                key={section}
+                className="flex items-center gap-1.5 cursor-pointer select-none text-sm"
+              >
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm"
+                  checked={selectedSections.includes(section)}
+                  onChange={() => toggleSection(section)}
+                />
+                {t(SECTION_LABELS[section])}
+              </label>
+            ))}
+          </div>
+          <div className="flex flex-col gap-2 md:flex-row">
+            <input
+              type="text"
+              className="input input-sm flex-1"
+              placeholder="v12345"
+              value={vnID}
+              onChange={(e) => setVNID(e.target.value.trim())}
+            />
+            <button
+              type="button"
+              className="btn btn-sm btn-primary"
+              onClick={handleImportFromVNDB}
+              disabled={isImporting || selectedSections.length === 0}
+            >
+              {isImporting && <span className="loading loading-spinner loading-xs"></span>}
+              <span>{t("Import from VNDB")}</span>
+            </button>
+          </div>
+          {importError && <ErrorAlert className="mt-2" message={importError} />}
+        </div>
         <h1 className={"text-2xl font-bold my-4"}>{pageTitle}</h1>
         <div role="alert" className="alert alert-info mb-2 alert-dash">
           <MdOutlineInfo size={24} />
