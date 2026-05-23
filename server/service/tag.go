@@ -146,6 +146,27 @@ func MergeTag(c ctx.Context, sourceID uint, targetID uint) (*model.TagView, erro
 	return tag.ToView(), nil
 }
 
+func RenameTag(c ctx.Context, id uint, newName string) (*model.TagView, error) {
+	if c.UserPermission() < model.PermissionUploader {
+		return nil, model.NewUnAuthorizedError("User cannot rename tags")
+	}
+	if len([]rune(newName)) > maxTagLength {
+		return nil, model.NewRequestError("Tag name too long")
+	}
+
+	tag, err := dao.RenameTag(id, newName)
+	if err != nil {
+		return nil, err
+	}
+
+	err = updateCachedTagList()
+	if err != nil {
+		log.Error("Error updating cached tag list:", err)
+	}
+
+	return tag.ToView(), nil
+}
+
 func SetTagInfo(c ctx.Context, id uint, description string, aliasOf *uint, tagType string) (*model.TagView, error) {
 	if c.UserPermission() < model.PermissionUploader {
 		return nil, model.NewUnAuthorizedError("User cannot set tag description")

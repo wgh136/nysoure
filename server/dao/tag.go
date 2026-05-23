@@ -150,6 +150,33 @@ func MergeTag(sourceID uint, targetID uint) (model.Tag, error) {
 	return mergedTarget, nil
 }
 
+func RenameTag(id uint, newName string) (model.Tag, error) {
+	if strings.Contains(newName, "%") {
+		return model.Tag{}, model.NewRequestError("Tag name cannot contain '%' character")
+	}
+
+	// Check if a tag with the new name already exists
+	var existing model.Tag
+	err := db.Where("Lower(name) = Lower(?)", newName).First(&existing).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return model.Tag{}, err
+	}
+
+	if err == nil {
+		// Target name already taken: merge source into existing tag
+		if existing.ID == id {
+			return model.Tag{}, model.NewRequestError("Tag already has this name")
+		}
+		return MergeTag(id, existing.ID)
+	}
+
+	// Name is free: just rename
+	if err := db.Model(&model.Tag{}).Where("id = ?", id).Update("name", newName).Error; err != nil {
+		return model.Tag{}, err
+	}
+	return GetTagByID(id)
+}
+
 func GetTagByID(id uint) (model.Tag, error) {
 	// Retrieve a tag by its ID from the database
 	var t model.Tag

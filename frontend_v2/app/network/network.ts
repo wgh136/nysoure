@@ -266,10 +266,10 @@ class Network {
     );
   }
 
-  async mergeTag(sourceTagId: number, targetTagId: number): Promise<Response<Tag>> {
+  async renameTag(tagId: number, newName: string): Promise<Response<Tag>> {
     return this._callApi(() =>
-      axios.postForm(`${this.apiBaseUrl}/tag/${sourceTagId}/merge`, {
-        target_tag_id: targetTagId,
+      axios.postForm(`${this.apiBaseUrl}/tag/${tagId}/rename`, {
+        name: newName,
       }),
     );
   }

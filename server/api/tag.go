@@ -74,19 +74,22 @@ func handleDeleteTag(c fiber.Ctx) error {
 	})
 }
 
-func handleMergeTag(c fiber.Ctx) error {
+func handleRenameTag(c fiber.Ctx) error {
 	context := ctx.NewContext(c)
-	sourceID, err := strconv.Atoi(c.Params("id"))
+	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
 		return model.NewRequestError("Invalid tag ID")
 	}
 
-	targetID, err := strconv.Atoi(c.FormValue("target_tag_id"))
-	if err != nil {
-		return model.NewRequestError("Invalid target tag ID")
+	newName := strings.TrimSpace(c.FormValue("name"))
+	if newName == "" {
+		return model.NewRequestError("New tag name is required")
+	}
+	if len([]rune(newName)) > maxTagNameLength {
+		return model.NewRequestError("Tag name too long")
 	}
 
-	tag, err := service.MergeTag(context, uint(sourceID), uint(targetID))
+	tag, err := service.RenameTag(context, uint(id), newName)
 	if err != nil {
 		return err
 	}
@@ -94,7 +97,7 @@ func handleMergeTag(c fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(model.Response[model.TagView]{
 		Success: true,
 		Data:    *tag,
-		Message: "Tag merged successfully",
+		Message: "Tag renamed successfully",
 	})
 }
 
@@ -241,7 +244,7 @@ func AddTagRoutes(api fiber.Router) {
 		tag.Post("/", handleCreateTag)
 		tag.Get("/search", handleSearchTag)
 		tag.Delete("/:id", handleDeleteTag)
-		tag.Post("/:id/merge", handleMergeTag)
+		tag.Post("/:id/rename", handleRenameTag)
 		tag.Put("/:id/alias", editTagAlias)
 		tag.Put("/:id/info", handleSetTagInfo)
 		tag.Get("/:name", handleGetTagByName)
