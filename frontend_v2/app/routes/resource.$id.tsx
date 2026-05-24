@@ -707,9 +707,9 @@ function Article({ resource }: { resource: ResourceDetails }) {
           {article}
         </Markdown>
       </article>
-      <div className="divider" />
+      {resource.characters.length > 0 && <div className="divider" />}
       <Characters characters={resource.characters} tags={resource.tags} />
-      <div className="divider" />
+      {resource.relations.length > 0 && <div className="divider" />}
       <ResourceRelations relations={resource.relations} />
     </>
   );
