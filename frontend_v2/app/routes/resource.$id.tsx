@@ -1,7 +1,7 @@
 import { network } from "~/network/network";
 import type { Route } from "./+types/resource.$id";
 import { configFromMatches, useConfig, isAdmin, canUpload } from "~/hook/config";
-import { Children, createRef, isValidElement, useCallback, useEffect, useMemo, useRef, useState, type ComponentPropsWithoutRef, type ReactElement, type ReactNode } from "react";
+import { Children, createContext, createRef, isValidElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ComponentPropsWithoutRef, type ReactElement, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MdAdd, MdOutlineAccessTime, MdOutlineAdd, MdOutlineArchive, MdOutlineArticle, MdOutlineCloud, MdOutlineComment, MdOutlineContentCopy, MdOutlineDataset, MdOutlineDelete, MdOutlineDownload, MdOutlineEdit, MdOutlineFolderSpecial, MdOutlineInfo, MdOutlineKeyboardArrowDown, MdOutlineLink, MdOutlineOpenInNew, MdOutlineStar, MdOutlineSwapHoriz, MdOutlineVerifiedUser } from "react-icons/md";
 import { useTranslation } from "~/hook/i18n";
@@ -727,9 +727,11 @@ function TabView({
       (child.props as any).className === "tab-panel",
   );
 
+  const isInCollapse = useContext(collapseContext);
+
   return (
-    <div className="my-4 overflow-hidden rounded-xl border border-base-300 bg-base-100/70 shadow-sm">
-      <div role="tablist" className="tabs tabs-bordered px-4 pt-2">
+    <div className={`${isInCollapse ? "" : "my-4 overflow-hidden rounded-xl border border-base-300 bg-base-100/70 shadow-sm"}`}>
+      <div role="tablist" className={`tabs tabs-bordered ${isInCollapse ? "" : "px-4 pt-2"}`}>
         {labels.map((label, i) => (
           <button
             key={i}
@@ -745,7 +747,8 @@ function TabView({
           </button>
         ))}
       </div>
-      <div className="px-4 pb-4 pt-2">{panels[activeTab]}</div>
+      {isInCollapse && <div className="divider my-0 px-2"></div>}
+      <div className={`${isInCollapse ? "px-2" : "px-4 pb-4 pt-2"}`}>{panels[activeTab]}</div>
     </div>
   );
 }
@@ -754,13 +757,16 @@ type CollapseDetailsProps = ComponentPropsWithoutRef<"details"> & {
   "data-collapse-label"?: string;
 };
 
+const collapseContext = createContext(false);
+
 function CollapseDetails({ children, className, open, id, title, ...props }: CollapseDetailsProps) {
   const [isOpen, setIsOpen] = useState(Boolean(open));
   const summary = props["data-collapse-label"];
   const label = Array.isArray(summary) ? summary.join("") : summary?.toString() || "Details";
 
   return (
-    <div
+    <collapseContext.Provider value={true}>
+      <div
       id={id}
       title={title}
       className={`my-4 overflow-hidden rounded-xl border border-base-300 bg-base-100/70 shadow-sm ${className || ""}`.trim()}
@@ -797,6 +803,7 @@ function CollapseDetails({ children, className, open, id, title, ...props }: Col
         ) : null}
       </AnimatePresence>
     </div>
+    </collapseContext.Provider>
   );
 }
 
