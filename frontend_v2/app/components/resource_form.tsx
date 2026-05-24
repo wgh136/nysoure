@@ -5,11 +5,11 @@ import {
   MdContentCopy,
   MdDelete,
   MdOutlineInfo,
-  MdOutlineSearch,
 } from "react-icons/md";
 import type { CharacterParams, Resource, Tag, VndbResourcePrefill } from "../network/models";
 import { network } from "../network/network";
 import { useTranslation } from "../hook/i18n";
+import { Debounce } from "../utils/debounce";
 import { ErrorAlert } from "./alert";
 import TagInput, { QuickAddTagDialog } from "./tag_input";
 import {
@@ -58,6 +58,7 @@ interface ResourceFormProps {
   title: string;
   storageKey?: string;
   canUploadCheck?: boolean;
+  excludeId?: number;
 }
 
 export default function ResourceForm({
@@ -67,6 +68,7 @@ export default function ResourceForm({
   title: pageTitle,
   storageKey,
   canUploadCheck = false,
+  excludeId,
 }: ResourceFormProps) {
   const [title, setTitle] = useState<string>(initialData.title);
   const [altTitles, setAltTitles] = useState<string[]>(initialData.altTitles);
@@ -675,7 +677,7 @@ export default function ResourceForm({
         </div>
         <div className={"h-4"}></div>
         <p className={"my-1"}>{t("Related Resources")}</p>
-        <RelationEditor relations={relations} setRelations={setRelations} />
+        <RelationEditor relations={relations} setRelations={setRelations} excludeId={excludeId} />
         <div className={"h-4"}></div>
         {error && (
           <div role="alert" className="alert alert-error my-2 shadow">
@@ -711,20 +713,26 @@ export default function ResourceForm({
 function RelationEditor({
   relations,
   setRelations,
+  excludeId,
 }: {
   relations: RelationFormItem[];
   setRelations: React.Dispatch<React.SetStateAction<RelationFormItem[]>>;
+  excludeId?: number;
 }) {
   const [keyword, setKeyword] = useState("");
   const [results, setResults] = useState<Resource[] | null>(null);
   const [isSearching, setSearching] = useState(false);
+  const debounceRef = useRef(new Debounce(400));
   const { t } = useTranslation();
 
-  const handleSearch = async () => {
-    if (!keyword.trim()) return;
+  const handleSearch = async (kw: string) => {
+    if (!kw.trim()) {
+      setResults(null);
+      return;
+    }
     setSearching(true);
     setResults(null);
-    const res = await network.searchResources(keyword.trim(), 1);
+    const res = await network.searchResources(kw.trim(), 1);
     setSearching(false);
     if (res.success && res.data) {
       setResults(res.data);
@@ -733,11 +741,18 @@ function RelationEditor({
     }
   };
 
+  useEffect(() => {
+    if (!keyword.trim()) {
+      debounceRef.current.cancel();
+      setResults(null);
+      return;
+    }
+    debounceRef.current.run(() => handleSearch(keyword));
+  }, [keyword]);
+
   const addRelation = (r: Resource) => {
     if (relations.find((rel) => rel.toId === r.id)) return;
     setRelations((prev) => [...prev, { toId: r.id, toTitle: r.title, description: "" }]);
-    setResults(null);
-    setKeyword("");
   };
 
   const removeRelation = (toId: number) => {
@@ -751,65 +766,71 @@ function RelationEditor({
   };
 
   return (
-    <div>
-      {relations.map((rel) => (
-        <div key={rel.toId} className="flex items-center my-2 gap-2">
-          <span className="badge badge-outline text-sm shrink-0">{rel.toTitle}</span>
-          <input
-            type="text"
-            className="input input-sm flex-1"
-            placeholder={t("Description (optional)")}
-            value={rel.description}
-            onChange={(e) => updateDescription(rel.toId, e.target.value)}
-          />
-          <button
-            className="btn btn-sm btn-square btn-error"
-            type="button"
-            onClick={() => removeRelation(rel.toId)}
-          >
-            <MdDelete size={18} />
-          </button>
-        </div>
-      ))}
-      <div className="flex items-center gap-2 mt-2">
-        <input
-          type="text"
-          className="input input-sm flex-1"
-          placeholder={t("Search resource by title")}
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-        />
-        <button
-          type="button"
-          className="btn btn-sm"
-          onClick={handleSearch}
-          disabled={isSearching || !keyword.trim()}
-        >
-          {isSearching ? (
-            <span className="loading loading-spinner loading-xs" />
-          ) : (
-            <MdOutlineSearch size={18} />
-          )}
-          {t("Search")}
-        </button>
-      </div>
-      {results != null && results.length > 0 && (
-        <div className="border border-base-300 rounded-lg mt-2 max-h-60 overflow-y-auto">
-          {results.map((r) => (
-            <div
-              key={r.id}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-base-200 cursor-pointer"
-              onClick={() => addRelation(r)}
-            >
-              <MdAdd size={18} className="shrink-0 text-primary" />
-              <span className="text-sm">{r.title}</span>
+    <div className="space-y-2">
+      {relations.length > 0 && (
+        <div className="rounded-box border border-base-200 bg-base-100 divide-y divide-base-200 overflow-hidden">
+          {relations.map((rel) => (
+            <div key={rel.toId} className="flex items-center gap-3 px-3 py-2">
+              <span className="text-xs font-medium shrink-0 whitespace-normal text-left w-48">
+                {rel.toTitle}
+              </span>
+              <input
+                type="text"
+                className="input input-sm flex-1 bg-base-200/50 border-none focus:bg-base-100"
+                placeholder={t("Description (optional)")}
+                value={rel.description}
+                onChange={(e) => updateDescription(rel.toId, e.target.value)}
+              />
+              <button
+                className="btn btn-sm btn-ghost btn-square text-error hover:bg-error/10"
+                type="button"
+                onClick={() => removeRelation(rel.toId)}
+              >
+                <MdDelete size={16} />
+              </button>
             </div>
           ))}
         </div>
       )}
+      <div className="relative">
+        <input
+          type="text"
+          className="input input-sm w-full pr-14"
+          placeholder={t("Search resource by title")}
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+        />
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          {isSearching && <span className="loading loading-spinner loading-xs text-primary" />}
+          {keyword && (
+            <button
+              type="button"
+              className="btn btn-xs btn-ghost btn-circle"
+              onClick={() => setKeyword("")}
+            >
+              <MdClose size={14} />
+            </button>
+          )}
+        </div>
+      </div>
+      {results != null && results.filter((r) => !relations.find((rel) => rel.toId === r.id) && r.id !== excludeId).length > 0 && (
+        <div className="rounded-box border border-base-200 bg-base-100 shadow-sm mt-1 max-h-60 overflow-y-auto divide-y divide-base-200">
+          {results
+            .filter((r) => !relations.find((rel) => rel.toId === r.id) && r.id !== excludeId)
+            .map((r) => (
+              <div
+                key={r.id}
+                className="flex items-center gap-2 px-3 py-2.5 hover:bg-primary/5 cursor-pointer transition-colors"
+                onClick={() => addRelation(r)}
+              >
+                <MdAdd size={16} className="shrink-0 text-primary" />
+                <span className="text-sm">{r.title}</span>
+              </div>
+            ))}
+        </div>
+      )}
       {results != null && results.length === 0 && (
-        <p className="text-sm text-base-content/60 mt-2">{t("No results found")}</p>
+        <p className="text-sm text-base-content/50 text-center py-3">{t("No results found")}</p>
       )}
     </div>
   );

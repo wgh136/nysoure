@@ -707,8 +707,9 @@ function Article({ resource }: { resource: ResourceDetails }) {
           {article}
         </Markdown>
       </article>
-      <div className="border-b border-base-300 h-8"></div>
+      <div className="divider" />
       <Characters characters={resource.characters} tags={resource.tags} />
+      <div className="divider" />
       <ResourceRelations relations={resource.relations} />
     </>
   );
@@ -1131,7 +1132,7 @@ function ResourceRelations({ relations }: { relations?: RelationView[] }) {
   }
 
   return (
-    <div className="mt-8">
+    <div className="mt-4">
       <h3 className="text-xl font-bold mb-4">{t("Related Resources")}</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {relations.map((rel) => (
@@ -1161,7 +1162,7 @@ function Characters({
   }
 
   return (
-    <div className="mt-8">
+    <div className="mt-4">
       <h3 className="text-xl font-bold mb-4">{t("Characters")}</h3>
       <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
         {characters.map((character, index) => (

@@ -304,6 +304,7 @@ export const i18nData = {
         "所有文件均由用户上传，如果您发现任何问题，请通过电子邮件联系我们：",
       "No changes made": "没有修改",
       "Edit Alias": "编辑别名",
+      "Related Resources": "相关资源",
     },
   },
   "zh-TW": {
@@ -601,6 +602,7 @@ export const i18nData = {
         "所有檔案均由用戶上傳，如果您發現任何問題，請通過電子郵件聯繫我們：",
       "No changes made": "沒有修改",
       "Edit Alias": "編輯別名",
+      "Related Resources": "相關資源",
     },
   },
 };

@@ -94,6 +94,7 @@ export default function EditResource({ loaderData }: Route.ComponentProps) {
       onSubmit={handleSubmit}
       submitButtonText={t("Publish")}
       title={t("Edit Resource")}
+      excludeId={resourceId}
     />
   );
 }
