@@ -197,7 +197,7 @@ function PinnedResourceCard({
             <img
               src={network.getResampledImageUrl(resource.image.id)}
               alt="cover"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-top"
             />
           </figure>
         )}

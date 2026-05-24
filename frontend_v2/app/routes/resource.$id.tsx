@@ -1110,7 +1110,7 @@ function RelatedResourceCard({
           <img
               src={network.getResampledImageUrl(r.image.id)}
               alt="cover"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-top"
               style={{
                 borderRadius: 0,
               }}
