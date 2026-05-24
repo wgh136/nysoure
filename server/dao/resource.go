@@ -782,3 +782,23 @@ func CountResourcesByUserID(userID uint) (int64, error) {
 	}
 	return count, nil
 }
+
+// GetResourceByVNID retrieves a resource by its VNDB ID.
+// **Low performance**: Only used for admin to quickly find the resource when linking with VNDB.
+func GetResourceByVNID(vnID string) (model.Resource, error) {
+	vndbLink := fmt.Sprintf("https://vndb.org/%s", vnID)
+	var r model.Resource
+	if err := db.Preload("User").
+		Preload("Images").
+		Preload("Tags", func(db *gorm.DB) *gorm.DB {
+			return db.Order("name ASC")
+		}).
+		Where("links LIKE ?", "%"+vndbLink+"%").
+		First(&r).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.Resource{}, model.NewNotFoundError("Resource not found")
+		}
+		return model.Resource{}, err
+	}
+	return r, nil
+}

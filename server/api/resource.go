@@ -318,6 +318,26 @@ func handleGetInfoFromVndb(c fiber.Ctx) error {
 	})
 }
 
+func handleGetResourceByVNID(c fiber.Ctx) error {
+	context := ctx.NewContext(c)
+	if context.UserPermission() != model.PermissionAdmin {
+		return model.NewUnAuthorizedError("Admin permission required")
+	}
+	vnID := c.Query("vnid")
+	if vnID == "" {
+		return model.NewRequestError("VNDB ID is required")
+	}
+	resource, err := dao.GetResourceByVNID(vnID)
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(model.Response[model.Resource]{
+		Success: true,
+		Data:    resource,
+		Message: "Resource retrieved successfully",
+	})
+}
+
 func handleGetResourcePrefillFromVndb(c fiber.Ctx) error {
 	vnID := c.Query("vnid")
 	if vnID == "" {
@@ -543,6 +563,7 @@ func AddResourceRoutes(api fiber.Router) {
 		resource.Get("/pinned", handleGetPinnedResources)
 		resource.Get("/vndb/info", handleGetInfoFromVndb)
 		resource.Get("/vndb/prefill", handleGetResourcePrefillFromVndb)
+		resource.Get("/vndb/find", handleGetResourceByVNID)
 		resource.Get("/characters/low-resolution", handleGetLowResolutionCharacters)
 		resource.Get("/images/low-resolution", handleGetLowResolutionResourceImages)
 		resource.Get("/admin/all", handleListAllResourcesForAdmin)
