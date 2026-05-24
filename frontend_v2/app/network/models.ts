@@ -49,6 +49,16 @@ export interface TagWithCount extends Tag {
   resources_count: number;
 }
 
+export interface RelationParam {
+  to_id: number;
+  description: string;
+}
+
+export interface RelationView {
+  resource: Resource;
+  description: string;
+}
+
 export interface CreateResourceParams {
   title: string;
   alternative_titles: string[];
@@ -61,6 +71,7 @@ export interface CreateResourceParams {
   gallery: number[];
   gallery_nsfw: number[];
   characters: CharacterParams[];
+  relations: RelationParam[];
 }
 
 export type CharacterRole = 'primary' | 'side';
@@ -138,6 +149,7 @@ export interface ResourceDetails {
   downloads: number;
   comments: number;
   related: Resource[];
+  relations: RelationView[];
   gallery: number[];
   galleryNsfw: number[];
   characters: CharacterParams[];

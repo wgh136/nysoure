@@ -27,6 +27,7 @@ function emptyResourceFormData(): ResourceFormData {
     galleryImages: [],
     galleryNsfw: [],
     characters: [],
+    relations: [],
   };
 }
 
@@ -47,6 +48,7 @@ function getInitialData(): ResourceFormData {
         galleryImages: data.gallery || [],
         galleryNsfw: data.gallery_nsfw || [],
         characters: data.characters || [],
+        relations: data.relations || [],
       };
     } catch (e) {
       console.error("Failed to parse publish_data from localStorage", e);
@@ -74,6 +76,7 @@ export default function Publish() {
       gallery: data.galleryImages,
       gallery_nsfw: data.galleryNsfw,
       characters: data.characters,
+      relations: data.relations.map((r) => ({ to_id: r.toId, description: r.description })),
     });
     if (res.success) {
       navigate("/resources/" + res.data!, { replace: true });

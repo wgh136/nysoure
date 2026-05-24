@@ -30,6 +30,11 @@ const (
 	maxSearchQueryLength = 100
 )
 
+type RelationParam struct {
+	ToID        uint   `json:"to_id"`
+	Description string `json:"description"`
+}
+
 type ResourceParams struct {
 	Title             string            `json:"title" binding:"required"`
 	AlternativeTitles []string          `json:"alternative_titles"`
@@ -42,6 +47,7 @@ type ResourceParams struct {
 	Gallery           []uint            `json:"gallery"`
 	GalleryNsfw       []uint            `json:"gallery_nsfw"`
 	Characters        []CharacterParams `json:"characters"`
+	Relations         []RelationParam   `json:"relations"`
 }
 
 type CharacterParams struct {
@@ -138,6 +144,20 @@ func CreateResource(c ctx.Context, params *ResourceParams) (uint, error) {
 	if r, err = dao.CreateResource(r); err != nil {
 		return 0, err
 	}
+	relations := make([]model.Relation, 0, len(params.Relations))
+	for _, rel := range params.Relations {
+		if rel.ToID == 0 || rel.ToID == r.ID {
+			continue
+		}
+		relations = append(relations, model.Relation{
+			FromID:      int64(r.ID),
+			ToID:        int64(rel.ToID),
+			Description: rel.Description,
+		})
+	}
+	if err := dao.ReplaceRelations(r.ID, relations); err != nil {
+		log.Error("ReplaceRelations error: ", err)
+	}
 	err = updateCachedTagList()
 	if err != nil {
 		log.Error("Error updating cached tag list:", err)
@@ -219,6 +239,23 @@ func GetResource(id uint, c ctx.Context) (*model.ResourceDetailView, error) {
 	if c.Host() != "" {
 		related := findRelatedResources(r, c.Host())
 		v.Related = related
+	}
+	rawRelations, relErr := dao.GetRelations(id)
+	if relErr != nil {
+		log.Error("GetRelations error: ", relErr)
+	} else {
+		relationViews := make([]model.RelationView, 0, len(rawRelations))
+		for _, rel := range rawRelations {
+			related, relErr := dao.GetResourceByID(uint(rel.ToID))
+			if relErr != nil {
+				continue
+			}
+			relationViews = append(relationViews, model.RelationView{
+				Resource:    related.ToView(),
+				Description: rel.Description,
+			})
+		}
+		v.Relations = relationViews
 	}
 	fillRatings(&v)
 
@@ -618,6 +655,20 @@ func UpdateResource(c ctx.Context, rid uint, params *ResourceParams) error {
 	if err := dao.UpdateResource(r); err != nil {
 		log.Error("UpdateResource error: ", err)
 		return model.NewInternalServerError("Failed to update resource")
+	}
+	relations := make([]model.Relation, 0, len(params.Relations))
+	for _, rel := range params.Relations {
+		if rel.ToID == 0 || rel.ToID == rid {
+			continue
+		}
+		relations = append(relations, model.Relation{
+			FromID:      int64(rid),
+			ToID:        int64(rel.ToID),
+			Description: rel.Description,
+		})
+	}
+	if err := dao.ReplaceRelations(rid, relations); err != nil {
+		log.Error("ReplaceRelations error: ", err)
 	}
 	err = updateCachedTagList()
 	if err != nil {

@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { MdAdd, MdOutlineAccessTime, MdOutlineAdd, MdOutlineArchive, MdOutlineArticle, MdOutlineCloud, MdOutlineComment, MdOutlineContentCopy, MdOutlineDataset, MdOutlineDelete, MdOutlineDownload, MdOutlineEdit, MdOutlineFolderSpecial, MdOutlineInfo, MdOutlineKeyboardArrowDown, MdOutlineLink, MdOutlineOpenInNew, MdOutlineStar, MdOutlineSwapHoriz, MdOutlineVerifiedUser } from "react-icons/md";
 import { useTranslation } from "~/hook/i18n";
 import { NavLink, useNavigate } from "react-router";
-import type { CharacterParams, Collection, Resource, ResourceDetails, RFile, RLink, Tag, Storage as RStorage, Comment as RComment } from "~/network/models";
+import type { CharacterParams, Collection, RelationView, Resource, ResourceDetails, RFile, RLink, Tag, Storage as RStorage, Comment as RComment } from "~/network/models";
 import Badge from "~/components/badge";
 import { BiLogoSteam } from "react-icons/bi";
 import showToast from "~/components/toast";
@@ -709,6 +709,7 @@ function Article({ resource }: { resource: ResourceDetails }) {
       </article>
       <div className="border-b border-base-300 h-8"></div>
       <Characters characters={resource.characters} tags={resource.tags} />
+      <ResourceRelations relations={resource.relations} />
     </>
   );
 }
@@ -1119,6 +1120,25 @@ function RelatedResourceCard({
           {content && <span className="text-xs line-clamp-1 overflow-hidden text-white">{content}</span>}
         </span>
     </NavLink>
+  );
+}
+
+function ResourceRelations({ relations }: { relations?: RelationView[] }) {
+  const { t } = useTranslation();
+
+  if (!relations || relations.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-8">
+      <h3 className="text-xl font-bold mb-4">{t("Related Resources")}</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {relations.map((rel) => (
+          <RelatedResourceCard key={rel.resource.id} r={rel.resource} content={rel.description || undefined} />
+        ))}
+      </div>
+    </div>
   );
 }
 

@@ -3,7 +3,7 @@ import { network } from "../network/network";
 import { useNavigate } from "react-router";
 import { useTranslation } from "../hook/i18n";
 import { ErrorAlert } from "../components/alert";
-import ResourceForm, { type ResourceFormData } from "../components/resource_form";
+import ResourceForm, { type RelationFormItem, type ResourceFormData } from "../components/resource_form";
 import { configFromMatches, useConfig } from "../hook/config";
 
 export function meta({ matches }: Route.MetaArgs) {
@@ -50,6 +50,11 @@ export default function EditResource({ loaderData }: Route.ComponentProps) {
     galleryImages: resource.gallery ?? [],
     galleryNsfw: resource.galleryNsfw ?? [],
     characters: resource.characters ?? [],
+    relations: (resource.relations ?? []).map((rel): RelationFormItem => ({
+      toId: rel.resource.id,
+      toTitle: rel.resource.title,
+      description: rel.description,
+    })),
   };
 
   const handleSubmit = async (data: ResourceFormData) => {
@@ -65,6 +70,7 @@ export default function EditResource({ loaderData }: Route.ComponentProps) {
       gallery_nsfw: data.galleryNsfw,
       characters: data.characters,
       release_date: data.releaseDate,
+      relations: data.relations.map((r) => ({ to_id: r.toId, description: r.description })),
     });
     if (res.success) {
       navigate("/resources/" + resourceId.toString(), { replace: true });

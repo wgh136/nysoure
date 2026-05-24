@@ -5,8 +5,9 @@ import {
   MdContentCopy,
   MdDelete,
   MdOutlineInfo,
+  MdOutlineSearch,
 } from "react-icons/md";
-import type { CharacterParams, Tag, VndbResourcePrefill } from "../network/models";
+import type { CharacterParams, Resource, Tag, VndbResourcePrefill } from "../network/models";
 import { network } from "../network/network";
 import { useTranslation } from "../hook/i18n";
 import { ErrorAlert } from "./alert";
@@ -29,6 +30,12 @@ const SECTION_LABELS: Record<PrefillSection, string> = {
   characters: "Characters",
 };
 
+export interface RelationFormItem {
+  toId: number;
+  toTitle: string;
+  description: string;
+}
+
 export interface ResourceFormData {
   title: string;
   altTitles: string[];
@@ -41,6 +48,7 @@ export interface ResourceFormData {
   galleryImages: number[];
   galleryNsfw: number[];
   characters: CharacterParams[];
+  relations: RelationFormItem[];
 }
 
 interface ResourceFormProps {
@@ -71,6 +79,7 @@ export default function ResourceForm({
   const [galleryImages, setGalleryImages] = useState<number[]>(initialData.galleryImages);
   const [galleryNsfw, setGalleryNsfw] = useState<number[]>(initialData.galleryNsfw);
   const [characters, setCharacters] = useState<CharacterParams[]>(initialData.characters);
+  const [relations, setRelations] = useState<RelationFormItem[]>(initialData.relations ?? []);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
   const articleRef = useRef<HTMLTextAreaElement>(null);
@@ -148,6 +157,7 @@ export default function ResourceForm({
       gallery_nsfw: galleryNsfw,
       characters,
       release_date: releaseDate,
+      relations,
     };
     const dataString = JSON.stringify(data);
     localStorage.setItem(storageKey, dataString);
@@ -163,6 +173,7 @@ export default function ResourceForm({
     galleryNsfw,
     characters,
     releaseDate,
+    relations,
     storageKey,
   ]);
 
@@ -208,6 +219,7 @@ export default function ResourceForm({
         galleryImages,
         galleryNsfw,
         characters,
+        relations,
       });
       if (storageKey) {
         localStorage.removeItem(storageKey);
@@ -661,6 +673,10 @@ export default function ResourceForm({
             )}
           </div>
         </div>
+        <div className={"h-4"}></div>
+        <p className={"my-1"}>{t("Related Resources")}</p>
+        <RelationEditor relations={relations} setRelations={setRelations} />
+        <div className={"h-4"}></div>
         {error && (
           <div role="alert" className="alert alert-error my-2 shadow">
             <svg
@@ -689,5 +705,112 @@ export default function ResourceForm({
         </div>
       </div>
     </ImageDropArea>
+  );
+}
+
+function RelationEditor({
+  relations,
+  setRelations,
+}: {
+  relations: RelationFormItem[];
+  setRelations: React.Dispatch<React.SetStateAction<RelationFormItem[]>>;
+}) {
+  const [keyword, setKeyword] = useState("");
+  const [results, setResults] = useState<Resource[] | null>(null);
+  const [isSearching, setSearching] = useState(false);
+  const { t } = useTranslation();
+
+  const handleSearch = async () => {
+    if (!keyword.trim()) return;
+    setSearching(true);
+    setResults(null);
+    const res = await network.searchResources(keyword.trim(), 1);
+    setSearching(false);
+    if (res.success && res.data) {
+      setResults(res.data);
+    } else {
+      setResults([]);
+    }
+  };
+
+  const addRelation = (r: Resource) => {
+    if (relations.find((rel) => rel.toId === r.id)) return;
+    setRelations((prev) => [...prev, { toId: r.id, toTitle: r.title, description: "" }]);
+    setResults(null);
+    setKeyword("");
+  };
+
+  const removeRelation = (toId: number) => {
+    setRelations((prev) => prev.filter((rel) => rel.toId !== toId));
+  };
+
+  const updateDescription = (toId: number, description: string) => {
+    setRelations((prev) =>
+      prev.map((rel) => (rel.toId === toId ? { ...rel, description } : rel)),
+    );
+  };
+
+  return (
+    <div>
+      {relations.map((rel) => (
+        <div key={rel.toId} className="flex items-center my-2 gap-2">
+          <span className="badge badge-outline text-sm shrink-0">{rel.toTitle}</span>
+          <input
+            type="text"
+            className="input input-sm flex-1"
+            placeholder={t("Description (optional)")}
+            value={rel.description}
+            onChange={(e) => updateDescription(rel.toId, e.target.value)}
+          />
+          <button
+            className="btn btn-sm btn-square btn-error"
+            type="button"
+            onClick={() => removeRelation(rel.toId)}
+          >
+            <MdDelete size={18} />
+          </button>
+        </div>
+      ))}
+      <div className="flex items-center gap-2 mt-2">
+        <input
+          type="text"
+          className="input input-sm flex-1"
+          placeholder={t("Search resource by title")}
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+        />
+        <button
+          type="button"
+          className="btn btn-sm"
+          onClick={handleSearch}
+          disabled={isSearching || !keyword.trim()}
+        >
+          {isSearching ? (
+            <span className="loading loading-spinner loading-xs" />
+          ) : (
+            <MdOutlineSearch size={18} />
+          )}
+          {t("Search")}
+        </button>
+      </div>
+      {results != null && results.length > 0 && (
+        <div className="border border-base-300 rounded-lg mt-2 max-h-60 overflow-y-auto">
+          {results.map((r) => (
+            <div
+              key={r.id}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-base-200 cursor-pointer"
+              onClick={() => addRelation(r)}
+            >
+              <MdAdd size={18} className="shrink-0 text-primary" />
+              <span className="text-sm">{r.title}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {results != null && results.length === 0 && (
+        <p className="text-sm text-base-content/60 mt-2">{t("No results found")}</p>
+      )}
+    </div>
   );
 }

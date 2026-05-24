@@ -68,6 +68,7 @@ type ResourceDetailView struct {
 	Downloads         uint            `json:"downloads"`
 	Comments          uint            `json:"comments"`
 	Related           []ResourceView  `json:"related"`
+	Relations         []RelationView  `json:"relations"`
 	Gallery           []uint          `json:"gallery"`
 	GalleryNsfw       []uint          `json:"galleryNsfw"`
 	Characters        []CharacterView `json:"characters"`

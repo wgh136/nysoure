@@ -52,6 +52,7 @@ func InitDB() {
 		&model.Collection{},
 		&model.CollectionResource{},
 		&model.Character{},
+		&model.Relation{},
 	)
 }
 
