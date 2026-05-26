@@ -230,12 +230,6 @@ func GetResource(id uint, c ctx.Context) (*model.ResourceDetailView, error) {
 	if err != nil {
 		return nil, err
 	}
-	if c.IsRealUser() {
-		err = dao.AddResourceViewCount(id)
-		if err != nil {
-			log.Error("AddResourceViewCount error: ", err)
-		}
-	}
 	v := r.ToDetailView()
 	if c.Host() != "" {
 		related := findRelatedResources(r, c.Host())
@@ -272,6 +266,17 @@ func GetResource(id uint, c ctx.Context) (*model.ResourceDetailView, error) {
 	}
 
 	return &v, nil
+}
+
+func AddResourceView(id uint, c ctx.Context) error {
+	if !c.IsRealUser() {
+		return nil
+	}
+	if err := dao.AddResourceViewCount(id); err != nil {
+		log.Error("AddResourceViewCount error: ", err)
+		return model.NewInternalServerError("Failed to add resource view")
+	}
+	return nil
 }
 
 func GetResourceList(page int, sort model.RSort) ([]model.ResourceView, int, error) {

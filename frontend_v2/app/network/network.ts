@@ -438,6 +438,12 @@ class Network {
     );
   }
 
+  async addResourceView(id: number): Promise<Response<void>> {
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/resource/${id}/view`),
+    );
+  }
+
   async getRandomResource(): Promise<Response<Resource>> {
     return this._callApi(() => axios.get(`${this.apiBaseUrl}/resource/random`));
   }

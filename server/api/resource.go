@@ -64,6 +64,26 @@ func handleGetResource(c fiber.Ctx) error {
 	})
 }
 
+func handleAddResourceView(c fiber.Ctx) error {
+	idStr := c.Params("id")
+	if idStr == "" {
+		return model.NewRequestError("Resource ID is required")
+	}
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return model.NewRequestError("Invalid resource ID")
+	}
+	err = service.AddResourceView(uint(id), ctx.NewContext(c))
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(model.Response[any]{
+		Success: true,
+		Data:    nil,
+		Message: "Resource view added successfully",
+	})
+}
+
 func handleDeleteResource(c fiber.Ctx) error {
 	idStr := c.Params("id")
 	if idStr == "" {
@@ -568,6 +588,7 @@ func AddResourceRoutes(api fiber.Router) {
 		resource.Get("/images/low-resolution", handleGetLowResolutionResourceImages)
 		resource.Get("/admin/all", handleListAllResourcesForAdmin)
 		resource.Get("/:id", handleGetResource)
+		resource.Post("/:id/view", handleAddResourceView)
 		resource.Delete("/:id", handleDeleteResource)
 		resource.Get("/tag/:tag", handleListResourcesWithTag)
 		resource.Get("/user/:username", handleGetResourcesWithUser)

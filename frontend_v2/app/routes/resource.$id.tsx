@@ -149,6 +149,10 @@ export default function ResourcePage({ loaderData }: Route.ComponentProps) {
     }
   }, [resource]);
 
+  useEffect(() => {
+	  network.addResourceView(resource.id);
+  }, [resource.id]);
+
   return <div>
     <div className="flex bg-base-100/60 backdrop-blur-sm rounded-box mt-4 shadow mb-2 p-2">
       <div className="flex-1">
