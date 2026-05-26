@@ -23,7 +23,7 @@ type Config struct {
 }
 
 func loadConfig() Config {
-	file, err := os.Open(".env")
+	file, err := os.Open("scripts/update_relations/.env")
 	if err == nil {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
@@ -162,7 +162,7 @@ func (c *client) doGet(path string, out any) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	req.Header.Set("Authorization", "Bearer "+c.cfg.AuthToken)
+	req.Header.Set("Cookie", "token=" + c.cfg.AuthToken)
 	resp, err := c.http.Do(req)
 	if err != nil {
 		return 0, err
@@ -184,7 +184,7 @@ func (c *client) doPost(path string, body any) error {
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", "Bearer "+c.cfg.AuthToken)
+	req.Header.Set("Cookie", "token=" + c.cfg.AuthToken)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -277,6 +277,10 @@ func relationTypeZh(rt govndb.RelationType) string {
 		return "Fandisc"
 	case govndb.RelationTypeSameSetting:
 		return "同世界观"
+	case govndb.RelationTypeOriginalWork:
+		return "原作"
+	case govndb.RelationTypeSideStory:
+		return "附加故事"
 	default:
 		return string(rt)
 	}
@@ -392,6 +396,9 @@ func main() {
 		changed := false
 
 		for _, vnRel := range vn.Relations {
+			if vnRel.Relation == govndb.RelationTypeSharedCharacters {
+				continue
+			}
 			related, found, err := c.findByVNID(vnRel.ID)
 			if err != nil {
 				log.Printf("[ERROR] 资源 #%d「%s」查询关联 VNDB %s 时出错: %v", id, detail.Title, vnRel.ID, err)
@@ -407,9 +414,6 @@ func main() {
 			}
 
 			desc := relationTypeZh(vnRel.Relation)
-			if !vnRel.RelationOfficial {
-				desc += "（非官方）"
-			}
 			params.Relations = append(params.Relations, relationParam{
 				ToID:        related.ID,
 				Description: desc,
@@ -429,7 +433,7 @@ func main() {
 		}
 
 		// Be polite to the VNDB API.
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(2000 * time.Millisecond)
 	}
 
 	log.Println("全部处理完成")
