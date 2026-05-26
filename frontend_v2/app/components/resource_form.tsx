@@ -287,17 +287,6 @@ export default function ResourceForm({
           <MdOutlineInfo size={24} />
           <span>{t("All information can be modified after publishing")}</span>
         </div>
-        {showSkipUpdateTimeOption && (
-          <label className="label cursor-pointer justify-start gap-3 mb-2 rounded-box border border-base-300 px-4 py-3">
-            <input
-              type="checkbox"
-              className="checkbox checkbox-primary"
-              checked={skipUpdateTime}
-              onChange={(e) => setSkipUpdateTime(e.target.checked)}
-            />
-            <span className="label-text">{t("Skip updating modified time")}</span>
-          </label>
-        )}
         <p className={"my-1"}>{t("Title")}</p>
         <input
           type="text"
@@ -715,11 +704,23 @@ export default function ResourceForm({
             </span>
           </div>
         )}
-        <div className={"flex flex-row-reverse mt-4"}>
+        <div className={"flex flex-row-reverse mt-4 items-center"}>
           <button className={"btn btn-accent shadow"} onClick={handleSubmit}>
             {isSubmitting && <span className="loading loading-spinner"></span>}
             {submitButtonText}
           </button>
+          <div className="flex-1"></div>
+          {showSkipUpdateTimeOption && (
+            <label className="label cursor-pointer justify-start gap-3 mb-2 rounded-box border border-base-300 px-2 py-2">
+              <input
+                type="checkbox"
+                className="checkbox checkbox-primary checkbox-sm"
+                checked={skipUpdateTime}
+                onChange={(e) => setSkipUpdateTime(e.target.checked)}
+              />
+              <span className="text-sm">{t("Skip updating modified time")}</span>
+            </label>
+          )}
         </div>
       </div>
     </ImageDropArea>

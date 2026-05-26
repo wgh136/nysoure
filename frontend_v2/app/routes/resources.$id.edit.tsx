@@ -42,7 +42,7 @@ export default function EditResource({ loaderData }: Route.ComponentProps) {
     title: resource.title,
     altTitles: resource.alternativeTitles ?? [],
     releaseDate: resource.releaseDate?.split("T")[0] ?? undefined,
-    skipUpdateTime: true,
+    skipUpdateTime: false,
     tags: resource.tags,
     article: resource.article,
     images: resource.images.map((i) => i.id),
