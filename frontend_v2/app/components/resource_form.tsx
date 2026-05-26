@@ -40,6 +40,7 @@ export interface ResourceFormData {
   title: string;
   altTitles: string[];
   releaseDate?: string;
+  skipUpdateTime?: boolean;
   tags: Tag[];
   article: string;
   images: number[];
@@ -59,6 +60,7 @@ interface ResourceFormProps {
   storageKey?: string;
   canUploadCheck?: boolean;
   excludeId?: number;
+  showSkipUpdateTimeOption?: boolean;
 }
 
 export default function ResourceForm({
@@ -69,10 +71,12 @@ export default function ResourceForm({
   storageKey,
   canUploadCheck = false,
   excludeId,
+  showSkipUpdateTimeOption = false,
 }: ResourceFormProps) {
   const [title, setTitle] = useState<string>(initialData.title);
   const [altTitles, setAltTitles] = useState<string[]>(initialData.altTitles);
   const [releaseDate, setReleaseDate] = useState<string | undefined>(initialData.releaseDate);
+  const [skipUpdateTime, setSkipUpdateTime] = useState<boolean>(initialData.skipUpdateTime ?? false);
   const [tags, setTags] = useState<Tag[]>(initialData.tags);
   const [article, setArticle] = useState<string>(initialData.article);
   const [images, setImages] = useState<number[]>(initialData.images);
@@ -213,6 +217,7 @@ export default function ResourceForm({
         title,
         altTitles,
         releaseDate,
+        skipUpdateTime,
         tags,
         article,
         images,
@@ -282,6 +287,17 @@ export default function ResourceForm({
           <MdOutlineInfo size={24} />
           <span>{t("All information can be modified after publishing")}</span>
         </div>
+        {showSkipUpdateTimeOption && (
+          <label className="label cursor-pointer justify-start gap-3 mb-2 rounded-box border border-base-300 px-4 py-3">
+            <input
+              type="checkbox"
+              className="checkbox checkbox-primary"
+              checked={skipUpdateTime}
+              onChange={(e) => setSkipUpdateTime(e.target.checked)}
+            />
+            <span className="label-text">{t("Skip updating modified time")}</span>
+          </label>
+        )}
         <p className={"my-1"}>{t("Title")}</p>
         <input
           type="text"

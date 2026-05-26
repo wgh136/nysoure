@@ -64,6 +64,7 @@ export interface CreateResourceParams {
   alternative_titles: string[];
   links: RLink[];
   release_date?: string;
+  skip_update_time?: boolean;
   tags: number[];
   article: string;
   images: number[];

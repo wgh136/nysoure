@@ -40,6 +40,7 @@ type ResourceParams struct {
 	AlternativeTitles []string          `json:"alternative_titles"`
 	Links             []model.Link      `json:"links"`
 	ReleaseDate       string            `json:"release_date"`
+	SkipUpdateTime    bool              `json:"skip_update_time"`
 	Tags              []uint            `json:"tags"`
 	Article           string            `json:"article"`
 	Images            []uint            `json:"images"`
@@ -652,7 +653,7 @@ func UpdateResource(c ctx.Context, rid uint, params *ResourceParams) error {
 	}
 	r.Images = images
 	r.Tags = tags
-	if err := dao.UpdateResource(r); err != nil {
+	if err := dao.UpdateResource(r, params.SkipUpdateTime); err != nil {
 		log.Error("UpdateResource error: ", err)
 		return model.NewInternalServerError("Failed to update resource")
 	}

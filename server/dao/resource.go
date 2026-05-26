@@ -130,7 +130,7 @@ func GetResourceList(page, pageSize int, sort model.RSort) ([]model.Resource, in
 	return resources, int(totalPages), nil
 }
 
-func UpdateResource(r model.Resource) error {
+func UpdateResource(r model.Resource, skipUpdateTime bool) error {
 	// Update a resource in the database
 	return db.Transaction(func(tx *gorm.DB) error {
 		images := r.Images
@@ -140,18 +140,20 @@ func UpdateResource(r model.Resource) error {
 		r.Images = nil
 		r.Tags = nil
 		r.Files = nil
-		r.ModifiedTime = time.Now()
+		if !skipUpdateTime {
+			r.ModifiedTime = time.Now()
+		}
 		oldCharacters := []model.Character{}
-		if err := db.Model(&model.Character{}).Where("resource_id = ?", r.ID).Find(&oldCharacters).Error; err != nil {
+		if err := tx.Model(&model.Character{}).Where("resource_id = ?", r.ID).Find(&oldCharacters).Error; err != nil {
 			return err
 		}
-		if err := db.Save(&r).Error; err != nil {
+		if err := tx.Save(&r).Error; err != nil {
 			return err
 		}
-		if err := db.Model(&r).Association("Images").Replace(images); err != nil {
+		if err := tx.Model(&r).Association("Images").Replace(images); err != nil {
 			return err
 		}
-		if err := db.Model(&r).Association("Tags").Replace(tags); err != nil {
+		if err := tx.Model(&r).Association("Tags").Replace(tags); err != nil {
 			return err
 		}
 		for _, c := range oldCharacters {

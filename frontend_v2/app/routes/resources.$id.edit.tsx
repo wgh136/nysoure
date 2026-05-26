@@ -42,6 +42,7 @@ export default function EditResource({ loaderData }: Route.ComponentProps) {
     title: resource.title,
     altTitles: resource.alternativeTitles ?? [],
     releaseDate: resource.releaseDate?.split("T")[0] ?? undefined,
+    skipUpdateTime: true,
     tags: resource.tags,
     article: resource.article,
     images: resource.images.map((i) => i.id),
@@ -63,6 +64,7 @@ export default function EditResource({ loaderData }: Route.ComponentProps) {
       alternative_titles: data.altTitles,
       tags: data.tags.map((tag) => tag.id),
       article: data.article,
+      skip_update_time: data.skipUpdateTime,
       images: data.images,
       cover_id: data.coverId,
       links: data.links,
@@ -95,6 +97,7 @@ export default function EditResource({ loaderData }: Route.ComponentProps) {
       submitButtonText={t("Publish")}
       title={t("Edit Resource")}
       excludeId={resourceId}
+      showSkipUpdateTimeOption
     />
   );
 }
