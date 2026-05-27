@@ -89,6 +89,8 @@ export default function ResourceForm({
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
   const articleRef = useRef<HTMLTextAreaElement>(null);
+  const imageListRef = useRef<HTMLDivElement>(null);
+  const previousImageCountRef = useRef(initialData.images.length);
 
   // VNDB import state
   const [vnID, setVNID] = useState("");
@@ -182,6 +184,17 @@ export default function ResourceForm({
     relations,
     storageKey,
   ]);
+
+  useEffect(() => {
+    const previousImageCount = previousImageCountRef.current;
+    if (images.length > previousImageCount) {
+      imageListRef.current?.scrollTo({
+        top: imageListRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+    previousImageCountRef.current = images.length;
+  }, [images]);
 
   const handleSubmit = async () => {
     if (isSubmitting) {
@@ -514,7 +527,8 @@ export default function ResourceForm({
           </div>
         </div>
         <div
-          className={`rounded-box border border-base-content/5 bg-base-100 ${images.length === 0 ? "hidden" : ""}`}
+          ref={imageListRef}
+          className={`rounded-box border border-base-content/5 bg-base-100 max-h-112 overflow-y-auto ${images.length === 0 ? "hidden" : ""}`}
         >
           <table className={"table"}>
             <thead>
