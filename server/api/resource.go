@@ -15,6 +15,11 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
+type updateResourceRequest struct {
+	service.ResourceParams
+	UpdateFields []string `json:"update_fields"`
+}
+
 func updateSiteMapAndRss(baseURL string) {
 	resources, err := dao.GetAllResources()
 	if err != nil {
@@ -268,14 +273,14 @@ func handleUpdateResource(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid resource ID")
 	}
-	var params service.ResourceParams
+	var req updateResourceRequest
 	body := c.Body()
-	err = json.Unmarshal(body, &params)
+	err = json.Unmarshal(body, &req)
 	if err != nil {
 		return model.NewRequestError("Invalid request body")
 	}
 	context := ctx.NewContext(c)
-	err = service.UpdateResource(context, uint(id), &params)
+	err = service.UpdateResource(context, uint(id), &req.ResourceParams, req.UpdateFields)
 	if err != nil {
 		return err
 	}

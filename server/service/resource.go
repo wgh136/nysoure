@@ -59,6 +59,84 @@ type CharacterParams struct {
 	Image uint     `json:"image"`
 }
 
+var allowedResourceUpdateFields = map[string]struct{}{
+	"title":              {},
+	"alternative_titles": {},
+	"links":              {},
+	"release_date":       {},
+	"tags":               {},
+	"article":            {},
+	"images":             {},
+	"cover_id":           {},
+	"gallery":            {},
+	"gallery_nsfw":       {},
+	"characters":         {},
+	"relations":          {},
+}
+
+func normalizeResourceUpdateFields(updateFields []string) (map[string]struct{}, error) {
+	if len(updateFields) == 0 {
+		return nil, nil
+	}
+
+	fieldSet := make(map[string]struct{}, len(updateFields))
+	for _, field := range updateFields {
+		normalized := strings.TrimSpace(field)
+		if normalized == "" {
+			continue
+		}
+		if _, ok := allowedResourceUpdateFields[normalized]; !ok {
+			return nil, model.NewRequestError("Invalid update field: " + normalized)
+		}
+		fieldSet[normalized] = struct{}{}
+	}
+
+	if len(fieldSet) == 0 {
+		return nil, model.NewRequestError("update_fields cannot be empty")
+	}
+
+	return fieldSet, nil
+}
+
+func shouldUpdateResourceField(fieldSet map[string]struct{}, field string) bool {
+	if fieldSet == nil {
+		return true
+	}
+	_, ok := fieldSet[field]
+	return ok
+}
+
+func imageIDsFromModels(images []model.Image) []uint {
+	ids := make([]uint, len(images))
+	for i, image := range images {
+		ids[i] = image.ID
+	}
+	return ids
+}
+
+func filterResourceImageRefs(ids []uint, allowed []uint) []uint {
+	filtered := make([]uint, 0, len(ids))
+	for _, id := range ids {
+		if slices.Contains(allowed, id) {
+			filtered = append(filtered, id)
+		}
+	}
+	return filtered
+}
+
+func normalizeResourceCoverID(coverID *uint, imageIDs []uint, strict bool) (*uint, error) {
+	if coverID == nil || *coverID == 0 {
+		return nil, nil
+	}
+	if !slices.Contains(imageIDs, *coverID) {
+		if strict {
+			return nil, model.NewRequestError("Cover ID must be one of the resource images")
+		}
+		return nil, nil
+	}
+	return coverID, nil
+}
+
 func CreateResource(c ctx.Context, params *ResourceParams) (uint, error) {
 	if c.UserPermission() < model.PermissionUploader {
 		return 0, model.NewUnAuthorizedError("You have not permission to upload resources")
@@ -570,7 +648,7 @@ func GetResourcesWithUser(username string, page int) ([]model.ResourceView, int,
 	return views, totalPages, nil
 }
 
-func UpdateResource(c ctx.Context, rid uint, params *ResourceParams) error {
+func UpdateResource(c ctx.Context, rid uint, params *ResourceParams, updateFields []string) error {
 	uid := c.MustUserID()
 	canUpload := c.UserPermission() >= model.PermissionUploader
 	r, err := dao.GetResourceByID(rid)
@@ -580,101 +658,152 @@ func UpdateResource(c ctx.Context, rid uint, params *ResourceParams) error {
 	if r.UserID != uid && !canUpload {
 		return model.NewUnAuthorizedError("You have not permission to edit this resource")
 	}
+	fieldSet, err := normalizeResourceUpdateFields(updateFields)
+	if err != nil {
+		return err
+	}
+	updateTitle := shouldUpdateResourceField(fieldSet, "title")
+	updateAlternativeTitles := shouldUpdateResourceField(fieldSet, "alternative_titles")
+	updateLinks := shouldUpdateResourceField(fieldSet, "links")
+	updateReleaseDate := shouldUpdateResourceField(fieldSet, "release_date")
+	updateTags := shouldUpdateResourceField(fieldSet, "tags")
+	updateArticle := shouldUpdateResourceField(fieldSet, "article")
+	updateImages := shouldUpdateResourceField(fieldSet, "images")
+	updateCover := shouldUpdateResourceField(fieldSet, "cover_id")
+	updateGallery := shouldUpdateResourceField(fieldSet, "gallery")
+	updateGalleryNsfw := shouldUpdateResourceField(fieldSet, "gallery_nsfw")
+	updateCharacters := shouldUpdateResourceField(fieldSet, "characters")
+	updateRelations := shouldUpdateResourceField(fieldSet, "relations")
 
-	gallery := make([]uint, 0, len(params.Gallery))
-	for _, id := range params.Gallery {
-		if slices.Contains(params.Images, id) {
-			gallery = append(gallery, id)
-		}
-	}
-	nsfw := make([]uint, 0, len(params.GalleryNsfw))
-	for _, id := range params.GalleryNsfw {
-		if slices.Contains(gallery, id) {
-			nsfw = append(nsfw, id)
-		}
-	}
-	characters := make([]model.Character, len(params.Characters))
-	for i, c := range params.Characters {
-		role := c.Role
-		if role == "" {
-			role = "primary"
-		}
-		var imageID *uint
-		if c.Image != 0 {
-			imageID = &c.Image
-		}
-		characters[i] = model.Character{
-			Name:    c.Name,
-			Alias:   c.Alias,
-			CV:      c.CV,
-			Role:    role,
-			ImageID: imageID,
-		}
+	effectiveImageIDs := imageIDsFromModels(r.Images)
+	if updateImages {
+		effectiveImageIDs = append([]uint(nil), params.Images...)
 	}
 
-	var date *time.Time
-	if params.ReleaseDate != "" {
-		parsedDate, err := time.Parse("2006-01-02", params.ReleaseDate)
-		if err != nil {
-			return model.NewRequestError("Invalid release date format, expected YYYY-MM-DD")
-		}
-		date = &parsedDate
+	effectiveGallerySource := r.Gallery
+	if updateGallery {
+		effectiveGallerySource = params.Gallery
+	}
+	gallery := filterResourceImageRefs(effectiveGallerySource, effectiveImageIDs)
+
+	effectiveGalleryNsfwSource := r.GalleryNsfw
+	if updateGalleryNsfw {
+		effectiveGalleryNsfwSource = params.GalleryNsfw
+	}
+	nsfw := filterResourceImageRefs(effectiveGalleryNsfwSource, gallery)
+
+	coverSource := r.CoverID
+	if updateCover {
+		coverSource = params.CoverID
+	}
+	coverID, err := normalizeResourceCoverID(coverSource, effectiveImageIDs, updateCover || fieldSet == nil)
+	if err != nil {
+		return err
 	}
 
-	// Validate CoverID if provided
-	var coverID *uint
-	if params.CoverID != nil && *params.CoverID != 0 {
-		if !slices.Contains(params.Images, *params.CoverID) {
-			return model.NewRequestError("Cover ID must be one of the resource images")
+	characters := r.Characters
+	if updateCharacters {
+		characters = make([]model.Character, len(params.Characters))
+		for i, c := range params.Characters {
+			role := c.Role
+			if role == "" {
+				role = "primary"
+			}
+			var imageID *uint
+			if c.Image != 0 {
+				imageID = &c.Image
+			}
+			characters[i] = model.Character{
+				Name:    c.Name,
+				Alias:   c.Alias,
+				CV:      c.CV,
+				Role:    role,
+				ImageID: imageID,
+			}
 		}
-		coverID = params.CoverID
 	}
 
-	r.Title = params.Title
-	r.AlternativeTitles = params.AlternativeTitles
-	r.Article = params.Article
-	r.Links = params.Links
-	r.ReleaseDate = date
-	r.CoverID = coverID
-	r.Gallery = gallery
-	r.GalleryNsfw = nsfw
-	r.Characters = characters
+	date := r.ReleaseDate
+	if updateReleaseDate {
+		date = nil
+		if params.ReleaseDate != "" {
+			parsedDate, err := time.Parse("2006-01-02", params.ReleaseDate)
+			if err != nil {
+				return model.NewRequestError("Invalid release date format, expected YYYY-MM-DD")
+			}
+			date = &parsedDate
+		}
+	}
 
-	images := make([]model.Image, len(params.Images))
-	for i, id := range params.Images {
-		images[i] = model.Image{
-			Model: gorm.Model{
-				ID: id,
-			},
-		}
+	if updateTitle {
+		r.Title = params.Title
 	}
-	tags := make([]model.Tag, len(params.Tags))
-	for i, id := range params.Tags {
-		tags[i] = model.Tag{
-			Model: gorm.Model{
-				ID: id,
-			},
-		}
+	if updateAlternativeTitles {
+		r.AlternativeTitles = params.AlternativeTitles
 	}
-	r.Images = images
-	r.Tags = tags
+	if updateArticle {
+		r.Article = params.Article
+	}
+	if updateLinks {
+		r.Links = params.Links
+	}
+	if updateReleaseDate {
+		r.ReleaseDate = date
+	}
+	if updateCover || updateImages {
+		r.CoverID = coverID
+	}
+	if updateGallery || updateImages {
+		r.Gallery = gallery
+	}
+	if updateGalleryNsfw || updateGallery || updateImages {
+		r.GalleryNsfw = nsfw
+	}
+	if updateCharacters {
+		r.Characters = characters
+	}
+
+	if updateImages {
+		images := make([]model.Image, len(params.Images))
+		for i, id := range params.Images {
+			images[i] = model.Image{
+				Model: gorm.Model{
+					ID: id,
+				},
+			}
+		}
+		r.Images = images
+	}
+	if updateTags {
+		tags := make([]model.Tag, len(params.Tags))
+		for i, id := range params.Tags {
+			tags[i] = model.Tag{
+				Model: gorm.Model{
+					ID: id,
+				},
+			}
+		}
+		r.Tags = tags
+	}
 	if err := dao.UpdateResource(r, params.SkipUpdateTime); err != nil {
 		log.Error("UpdateResource error: ", err)
 		return model.NewInternalServerError("Failed to update resource")
 	}
-	relations := make([]model.Relation, 0, len(params.Relations))
-	for _, rel := range params.Relations {
-		if rel.ToID == 0 || rel.ToID == rid {
-			continue
+	if updateRelations {
+		relations := make([]model.Relation, 0, len(params.Relations))
+		for _, rel := range params.Relations {
+			if rel.ToID == 0 || rel.ToID == rid {
+				continue
+			}
+			relations = append(relations, model.Relation{
+				FromID:      int64(rid),
+				ToID:        int64(rel.ToID),
+				Description: rel.Description,
+			})
 		}
-		relations = append(relations, model.Relation{
-			FromID:      int64(rid),
-			ToID:        int64(rel.ToID),
-			Description: rel.Description,
-		})
-	}
-	if err := dao.ReplaceRelations(rid, relations); err != nil {
-		log.Error("ReplaceRelations error: ", err)
+		if err := dao.ReplaceRelations(rid, relations); err != nil {
+			log.Error("ReplaceRelations error: ", err)
+		}
 	}
 	err = updateCachedTagList()
 	if err != nil {
