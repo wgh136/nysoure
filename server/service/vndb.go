@@ -64,6 +64,10 @@ func charactersFromVndb(vn *govndb.VN) ([]CharacterParams, error) {
 
 	// 遍历声优信息
 	for _, va := range vn.VoiceActors {
+		if va.Character == nil {
+			continue
+		}
+
 		role := "Unknown"
 		for _, vnc := range va.Character.VNs {
 			if vnc.ID == vn.ID && vnc.Role != nil {
@@ -88,8 +92,11 @@ func charactersFromVndb(vn *govndb.VN) ([]CharacterParams, error) {
 		}
 
 		// 使用 original 字段作为声优名，如果没有则使用 name
-		cvName := strings.ReplaceAll(va.Staff.OriginalName(), " ", "")
-		if cvName == "" {
+		cvName := ""
+		if va.Staff != nil {
+			cvName = strings.ReplaceAll(va.Staff.OriginalName(), " ", "")
+		}
+		if cvName == "" && va.Staff != nil {
 			cvName = va.Staff.Name
 		}
 
@@ -102,7 +109,7 @@ func charactersFromVndb(vn *govndb.VN) ([]CharacterParams, error) {
 		}
 
 		// 下载并保存角色图片
-		if va.Character.Image.URL != "" {
+		if va.Character.Image != nil && va.Character.Image.URL != "" {
 			imageID, err := downloadAndCreateImage(va.Character.Image.URL)
 			if err != nil {
 				log.Error("Failed to download character image:", err)
