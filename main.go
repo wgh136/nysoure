@@ -17,7 +17,11 @@ func main() {
 
 	app := fiber.New(fiber.Config{
 		BodyLimit:   8 * 1024 * 1024,
+		TrustProxy:  true,
 		ProxyHeader: "X-Real-IP",
+		TrustProxyConfig: fiber.TrustProxyConfig{
+			Private: true,
+		},
 	})
 
 	app.Use(logger.New(logger.Config{
