@@ -305,7 +305,6 @@ export const i18nData = {
       "No changes made": "没有修改",
       "Edit Alias": "编辑别名",
       "Related Resources": "相关资源",
-      "Verification successful": "验证成功",
     },
   },
   "zh-TW": {
@@ -604,7 +603,6 @@ export const i18nData = {
       "No changes made": "沒有修改",
       "Edit Alias": "編輯別名",
       "Related Resources": "相關資源",
-      "Verification successful": "驗證成功",
     },
   },
 };
