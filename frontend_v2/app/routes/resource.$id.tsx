@@ -1565,16 +1565,20 @@ function CloudflarePopup({ file, t }: { file: RFile, t: (key: string) => string 
       <h3 className={"font-bold m-2"}>
         {href ? t("Verification successful") : t("Verifying your request")}
       </h3>
-      <div className={"h-20 w-full"}>
-        {showTurnstile ? (
-          <Turnstile
-            siteKey={import.meta.env.CLOUDFLARE_TURNSTILE_SITE_KEY!}
-            onSuccess={(token) => {
-              setCfToken(token);
-            }}
-          ></Turnstile>
-        ) : null}
-      </div>
+      {
+        downloadToken == null && (
+          <div className={"h-20 w-full"}>
+            {showTurnstile ? (
+              <Turnstile
+                siteKey={import.meta.env.CLOUDFLARE_TURNSTILE_SITE_KEY!}
+                onSuccess={(token) => {
+                  setCfToken(token);
+                }}
+              ></Turnstile>
+            ) : null}
+          </div>
+        )
+      }
       {href ? (
         <div className="p-2">
           <a
