@@ -9,6 +9,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"nysoure/server/config"
 	"nysoure/server/dao"
 	"nysoure/server/model"
 	"nysoure/server/storage"
@@ -40,6 +41,7 @@ type ServerDownloadTask struct {
 
 	downloadedBytes atomic.Int64
 	totalBytes      atomic.Int64
+	accountedBytes  atomic.Int64
 
 	mu         sync.RWMutex
 	status     TaskStatus
@@ -63,6 +65,7 @@ func NewServerDownloadTask(fileID uint, fileUUID, url, filename string, storageI
 		status:        TaskStatusPending,
 	}
 	t.totalBytes.Store(contentLength)
+	t.accountedBytes.Store(contentLength)
 	return t
 }
 
@@ -77,7 +80,9 @@ func (t *ServerDownloadTask) Run() error {
 	defer t.cancel()
 
 	defer func() {
-		_ = dao.UpdateStatistic("uploading_size", -t.contentLength)
+		if accounted := t.accountedBytes.Load(); accounted > 0 {
+			_ = dao.UpdateStatistic("uploading_size", -accounted)
+		}
 	}()
 
 	go t.watchFileDeletion()
@@ -247,6 +252,10 @@ func (t *ServerDownloadTask) downloadByBT(tempDir, outputPath string) (hash, upl
 		case <-ticker.C:
 			stats := tor.Stats()
 			if stats.Bytes.Total > 0 {
+				if err := t.syncUploadingSize(stats.Bytes.Total); err != nil {
+					_ = tor.Stop()
+					return "", "", err
+				}
 				t.totalBytes.Store(stats.Bytes.Total)
 			}
 			t.downloadedBytes.Store(stats.Bytes.Completed)
@@ -255,6 +264,9 @@ func (t *ServerDownloadTask) downloadByBT(tempDir, outputPath string) (hash, upl
 
 	stats := tor.Stats()
 	if stats.Bytes.Total > 0 {
+		if err := t.syncUploadingSize(stats.Bytes.Total); err != nil {
+			return "", "", err
+		}
 		t.totalBytes.Store(stats.Bytes.Total)
 	}
 	t.downloadedBytes.Store(stats.Bytes.Completed)
@@ -383,18 +395,43 @@ func copyFile(src, dst string) error {
 func btSeedingDuration() time.Duration {
 	v := strings.TrimSpace(os.Getenv("BT_SEED_DURATION"))
 	if v == "" {
-		return 10 * time.Minute
+		return 0
 	}
 	d, err := time.ParseDuration(v)
 	if err != nil {
-		log.Warnf("invalid BT_SEED_DURATION %q, fallback to default 10m", v)
-		return 10 * time.Minute
+		log.Warnf("invalid BT_SEED_DURATION %q, fallback to default 0", v)
+		return 0
 	}
 	if d < 0 {
 		log.Warn("BT_SEED_DURATION cannot be negative, fallback to 0")
 		return 0
 	}
 	return d
+}
+
+func (t *ServerDownloadTask) syncUploadingSize(total int64) error {
+	if total <= 0 {
+		return nil
+	}
+
+	accounted := t.accountedBytes.Load()
+	if accounted == total {
+		return nil
+	}
+
+	delta := total - accounted
+	if delta > 0 {
+		currentUploadingSize := dao.GetStatistic("uploading_size")
+		if currentUploadingSize+delta > config.MaxUploadingSize() {
+			return model.NewRequestError("server is busy, please try again later")
+		}
+	}
+
+	if err := dao.UpdateStatistic("uploading_size", delta); err != nil {
+		return model.NewInternalServerError("failed to update uploading size")
+	}
+	t.accountedBytes.Store(total)
+	return nil
 }
 
 func (t *ServerDownloadTask) Progress() float64 {
