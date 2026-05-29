@@ -29,6 +29,10 @@ export interface Response<T> {
   data?: T;
 }
 
+export interface DownloadTokenResponse {
+  token: string;
+}
+
 export interface PageResponse<T> {
   success: boolean;
   message: string;

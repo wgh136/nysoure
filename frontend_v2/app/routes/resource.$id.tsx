@@ -289,6 +289,8 @@ export default function ResourcePage({ loaderData }: Route.ComponentProps) {
   </div>;
 }
 
+const unverifiedDownloadSizeLimit = 10 * 1024 * 1024;
+
 function Tags({ tags }: { tags: Tag[] }) {
   const tagsMap = new Map<string, Tag[]>();
 
@@ -1455,7 +1457,7 @@ function FileTile({ file }: { file: RFile }) {
               ref={buttonRef}
               className={"btn btn-primary btn-soft btn-square"}
               onClick={() => {
-                if (!import.meta.env.CLOUDFLARE_TURNSTILE_SITE_KEY) {
+                if (!import.meta.env.CLOUDFLARE_TURNSTILE_SITE_KEY || file.size <= unverifiedDownloadSizeLimit) {
                   const link = network.getFileDownloadLink(file.id, "");
                   window.open(link, "_blank");
                 } else {
@@ -1485,7 +1487,7 @@ function FileTile({ file }: { file: RFile }) {
             ref={buttonRef2}
             className={"btn btn-primary btn-soft btn-sm"}
             onClick={() => {
-              if (!import.meta.env.CLOUDFLARE_TURNSTILE_SITE_KEY) {
+              if (!import.meta.env.CLOUDFLARE_TURNSTILE_SITE_KEY || file.size <= unverifiedDownloadSizeLimit) {
                 const link = network.getFileDownloadLink(file.id, "");
                 window.open(link, "_blank");
               } else {
@@ -1513,8 +1515,39 @@ function CloudflarePopup({ file, t }: { file: RFile, t: (key: string) => string 
   const closePopup = useClosePopup();
 
   const [isLoading, setLoading] = useState(true);
-
   const [downloadToken, setDownloadToken] = useState<string | null>(null);
+  const [cfToken, setCfToken] = useState<string | null>(null);
+  const [showTurnstile, setShowTurnstile] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    async function requestDownloadToken() {
+      const res = await network.createFileDownloadToken(file.id);
+      if (!active) {
+        return;
+      }
+      if (res.success && res.data?.token) {
+        setDownloadToken(res.data.token);
+        setLoading(false);
+        return;
+      }
+      setShowTurnstile(true);
+      setLoading(false);
+    }
+
+    void requestDownloadToken();
+
+    return () => {
+      active = false;
+    };
+  }, [file.id]);
+
+  const href = downloadToken
+    ? network.getFileDownloadLink(file.id, "", downloadToken)
+    : cfToken
+      ? network.getFileDownloadLink(file.id, cfToken)
+      : null;
 
   return (
     <div
@@ -1530,23 +1563,22 @@ function CloudflarePopup({ file, t }: { file: RFile, t: (key: string) => string 
         </div>
       ) : null}
       <h3 className={"font-bold m-2"}>
-        {downloadToken ? t("Verification successful") : t("Verifying your request")}
+        {href ? t("Verification successful") : t("Verifying your request")}
       </h3>
       <div className={"h-20 w-full"}>
-        <Turnstile
-          siteKey={import.meta.env.CLOUDFLARE_TURNSTILE_SITE_KEY!}
-          onWidgetLoad={() => {
-            setLoading(false);
-          }}
-          onSuccess={(token) => {
-            setDownloadToken(token);
-          }}
-        ></Turnstile>
+        {showTurnstile ? (
+          <Turnstile
+            siteKey={import.meta.env.CLOUDFLARE_TURNSTILE_SITE_KEY!}
+            onSuccess={(token) => {
+              setCfToken(token);
+            }}
+          ></Turnstile>
+        ) : null}
       </div>
-      {downloadToken ? (
+      {href ? (
         <div className="p-2">
           <a
-            href={network.getFileDownloadLink(file.id, downloadToken)}
+            href={href}
             target="_blank"
             className="btn btn-primary btn-sm w-full"
             onClick={() => {
@@ -1557,11 +1589,11 @@ function CloudflarePopup({ file, t }: { file: RFile, t: (key: string) => string 
             {t("Download")}
           </a>
         </div>
-      ) : <p className={"text-xs text-base-content/80 m-2"}>
+      ) : showTurnstile ? <p className={"text-xs text-base-content/80 m-2"}>
         {t(
           "Please check your network if the verification takes too long or the captcha does not appear.",
         )}
-      </p>}
+      </p> : null}
     </div>
   );
 }

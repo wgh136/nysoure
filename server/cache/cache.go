@@ -45,3 +45,7 @@ func Get(key string) (string, error) {
 func Set(key, value string, expiration time.Duration) error {
 	return client.Set(ctx, key, value, expiration).Err()
 }
+
+func SetNX(key, value string, expiration time.Duration) (bool, error) {
+	return client.SetNX(ctx, key, value, expiration).Result()
+}

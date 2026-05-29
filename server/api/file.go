@@ -35,6 +35,7 @@ func AddFileRoutes(router fiber.Router) {
 		fileGroup.Get("/:id", getFile)
 		fileGroup.Put("/:id", updateFile)
 		fileGroup.Delete("/:id", deleteFile)
+		fileGroup.Post("/download/token/:id", createDownloadToken)
 		fileGroup.Get("/download/local", downloadLocalFile)
 		fileGroup.Get("/download/:id", downloadFile, middleware.NewDynamicRequestLimiter(config.MaxDownloadsPerDayForSingleIP, 24*time.Hour))
 		fileGroup.Get("/user/:username", listUserFiles)
@@ -248,8 +249,16 @@ func deleteFile(c fiber.Ctx) error {
 
 func downloadFile(c fiber.Ctx) error {
 	cfToken := c.Query("cf_token")
+	temporaryToken := c.Query("download_token")
 	verified := false
-	if cfToken != "" {
+	if temporaryToken != "" {
+		var err error
+		verified, err = service.VerifyTemporaryDownloadToken(temporaryToken, c.Params("id"))
+		if err != nil && cfToken == "" {
+			return model.NewRequestError("Invalid or expired download token")
+		}
+	}
+	if !verified && cfToken != "" {
 		var err error
 		verified, err = service.VerifyCfToken(cfToken)
 		if err != nil {
@@ -297,6 +306,29 @@ func downloadFile(c fiber.Ctx) error {
 		stat.RecordDownload()
 	}
 	return c.Redirect().Status(fiber.StatusFound).To(fmt.Sprintf("%s/api/files/download/local?token=%s", c.BaseURL(), token))
+}
+
+func createDownloadToken(c fiber.Ctx) error {
+	devAccess := c.Locals("dev_access").(bool)
+	if !devAccess && c.Locals("real_user") != true {
+		return fiber.ErrForbidden
+	}
+
+	token, err := service.CreateTemporaryDownloadToken(
+		c.Params("id"),
+		c.IP(),
+		devAccess,
+	)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(model.Response[map[string]string]{
+		Success: true,
+		Data: map[string]string{
+			"token": token,
+		},
+	})
 }
 
 func downloadLocalFile(c fiber.Ctx) error {

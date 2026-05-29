@@ -442,7 +442,7 @@ func DownloadFile(fid string, verified, isRealUser bool) (string, string, error)
 		return "", "", model.NewRequestError("file is not available, please try again later")
 	}
 
-	if !verified && file.Size > MinUnrequireVerifyFileSize && file.RedirectUrl == "" {
+	if !verified && requiresDownloadVerification(file) {
 		log.Info("cf token verification failed")
 		return "", "", model.NewRequestError("cf token verification failed")
 	}

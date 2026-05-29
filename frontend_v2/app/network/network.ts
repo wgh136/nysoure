@@ -1,6 +1,7 @@
 import axios from "axios";
 import type {
   CreateResourceParams,
+  DownloadTokenResponse,
   RFile,
   PageResponse,
   Resource,
@@ -690,8 +691,29 @@ class Network {
     );
   }
 
-  getFileDownloadLink(fileId: string, cfToken: string): string {
-    return `${this.apiBaseUrl}/files/download/${fileId}?cf_token=${cfToken}`;
+  async createFileDownloadToken(fileId: string): Promise<Response<DownloadTokenResponse>> {
+    return this._callApi(() =>
+      axios.post(`${this.apiBaseUrl}/files/download/token/${fileId}`),
+    );
+  }
+
+  getFileDownloadLink(
+    fileId: string,
+    cfToken: string = "",
+    downloadToken: string = "",
+  ): string {
+    const params = new URLSearchParams();
+    if (cfToken) {
+      params.set("cf_token", cfToken);
+    }
+    if (downloadToken) {
+      params.set("download_token", downloadToken);
+    }
+    const query = params.toString();
+    if (!query) {
+      return `${this.apiBaseUrl}/files/download/${fileId}`;
+    }
+    return `${this.apiBaseUrl}/files/download/${fileId}?${query}`;
   }
 
   async createResourceComment(

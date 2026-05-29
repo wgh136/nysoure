@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/url"
@@ -67,10 +68,20 @@ func ParseToken(token string) (uint, error) {
 
 // GenerateTemporaryToken creates a JWT token that expires in 15 minutes
 func GenerateTemporaryToken(data string) (string, error) {
+	return GenerateTemporaryTokenWithExpiration(data, 15*time.Minute)
+}
+
+func GenerateTemporaryTokenWithExpiration(data string, expiration time.Duration) (string, error) {
+	nonce := make([]byte, 16)
+	if _, err := rand.Read(nonce); err != nil {
+		return "", err
+	}
+
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"data": data,
-			"exp":  time.Now().Add(15 * time.Minute).Unix(),
+			"exp":  time.Now().Add(expiration).Unix(),
+			"jti":  hex.EncodeToString(nonce),
 		})
 	s, err := t.SignedString(key)
 	if err != nil {
