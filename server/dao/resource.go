@@ -341,7 +341,7 @@ func GetResourcesByUsername(username string, page, pageSize int) ([]model.Resour
 // It is used to generate a sitemap and rss feed.
 func GetAllResources() ([]model.Resource, error) {
 	var resources []model.Resource
-	if err := db.Find(&resources).Error; err != nil {
+	if err := db.Order("id DESC").Find(&resources).Error; err != nil {
 		return nil, err
 	}
 	return resources, nil

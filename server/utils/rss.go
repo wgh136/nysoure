@@ -2,12 +2,13 @@ package utils
 
 import (
 	"html"
-	"github.com/gofiber/fiber/v3/log"
 	"nysoure/server/model"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/gofiber/fiber/v3/log"
 )
 
 const (
@@ -31,6 +32,9 @@ func GenerateRss(baseURL string, resources []model.Resource) {
 		builder.WriteString("    <link>")
 		builder.WriteString(baseURL + "/resources/" + strconv.Itoa(int(resource.ID)))
 		builder.WriteString("</link>\n")
+		builder.WriteString("    <guid>")
+		builder.WriteString("resource-" + strconv.Itoa(int(resource.ID)))
+		builder.WriteString("</guid>\n")
 		builder.WriteString("    <description>")
 		builder.WriteString(html.EscapeString(ArticleToDescription(resource.Article, 255)))
 		builder.WriteString("</description>\n")
