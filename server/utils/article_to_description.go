@@ -13,6 +13,7 @@ func ArticleToDescription(article string, maxLength int) string {
 	if maxLength < 3 {
 		maxLength = 3
 	}
+	article = stripMarkdownDirectiveLines(article)
 	htmlContent := mdToHTML([]byte(article))
 	plain := html2text.HTML2Text(string(htmlContent))
 	plain = strings.TrimSpace(plain)
@@ -66,6 +67,59 @@ func removeLinks(str string) string {
 		}
 	}
 	return strings.TrimSpace(builder.String())
+}
+
+func stripMarkdownDirectiveLines(str string) string {
+	lines := strings.Split(str, "\n")
+	builder := strings.Builder{}
+	var fence string
+
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if marker := parseFenceMarker(trimmed); marker != "" {
+			if fence == "" {
+				fence = marker
+			} else if fence == marker {
+				fence = ""
+			}
+			builder.WriteString(line)
+			builder.WriteRune('\n')
+			continue
+		}
+
+		if fence == "" && (trimmed == ":::" || isDirectiveLine(trimmed)) {
+			continue
+		}
+
+		builder.WriteString(line)
+		builder.WriteRune('\n')
+	}
+
+	return strings.TrimSpace(builder.String())
+}
+
+func parseFenceMarker(line string) string {
+	if len(line) < 3 {
+		return ""
+	}
+	if strings.HasPrefix(line, "```") {
+		return "`"
+	}
+	if strings.HasPrefix(line, "~~~") {
+		return "~"
+	}
+	return ""
+}
+
+func isDirectiveLine(line string) bool {
+	if len(line) < 4 || line[:3] != ":::" {
+		return false
+	}
+	if len(line) == 3 {
+		return false
+	}
+	next := line[3]
+	return (next >= 'a' && next <= 'z') || (next >= 'A' && next <= 'Z')
 }
 
 func removeMarkdownExtensions(str string) string {
