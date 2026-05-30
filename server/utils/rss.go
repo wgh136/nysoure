@@ -16,6 +16,10 @@ const (
 )
 
 func GenerateRss(baseURL string, resources []model.Resource) {
+	if len(resources) > 500 {
+		resources = resources[:500]
+	}
+
 	path := filepath.Join(GetStoragePath(), RssFileName)
 	builder := strings.Builder{}
 	builder.WriteString(`<?xml version="1.0" encoding="UTF-8"?>`)
