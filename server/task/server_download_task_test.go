@@ -5,6 +5,40 @@ import (
 	"time"
 )
 
+func TestSelectBTMainFileReturnsSingleFileTorrent(t *testing.T) {
+	mainFile, ok := selectBTMainFile([]btFileCandidate{{path: "video.mkv", length: 700 << 20}})
+	if !ok {
+		t.Fatal("expected single file torrent to be treated as main file")
+	}
+	if mainFile.path != "video.mkv" {
+		t.Fatalf("expected main file path to be video.mkv, got %q", mainFile.path)
+	}
+}
+
+func TestSelectBTMainFileReturnsDominantFile(t *testing.T) {
+	mainFile, ok := selectBTMainFile([]btFileCandidate{
+		{path: "movie.mkv", length: 900 << 20},
+		{path: "README.txt", length: 2 << 10},
+		{path: "poster.jpg", length: 3 << 20},
+	})
+	if !ok {
+		t.Fatal("expected dominant file to be selected")
+	}
+	if mainFile.path != "movie.mkv" {
+		t.Fatalf("expected movie.mkv to be selected, got %q", mainFile.path)
+	}
+}
+
+func TestSelectBTMainFileRejectsMultipleLargeFiles(t *testing.T) {
+	if _, ok := selectBTMainFile([]btFileCandidate{
+		{path: "disc1.mkv", length: 700 << 20},
+		{path: "disc2.mkv", length: 650 << 20},
+		{path: "README.txt", length: 2 << 10},
+	}); ok {
+		t.Fatal("expected multi-part torrent to keep archive behavior")
+	}
+}
+
 func TestBTSeedingDurationDefaultsToZero(t *testing.T) {
 	t.Setenv("BT_SEED_DURATION", "")
 

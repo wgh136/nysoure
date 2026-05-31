@@ -26,6 +26,16 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	btMainFileMinSharePercent = 90
+	btAncillaryMaxTotalBytes  = 64 << 20
+)
+
+type btFileCandidate struct {
+	path   string
+	length int64
+}
+
 type ServerDownloadTask struct {
 	id            string
 	fileID        uint
@@ -297,8 +307,16 @@ func (t *ServerDownloadTask) downloadByBT(tempDir, outputPath string) (hash, upl
 	}
 
 	torrentDir := filepath.Join(cfg.DataDir, tor.ID())
-	if len(files) == 1 {
-		singlePath := filepath.Join(torrentDir, filepath.FromSlash(files[0].Path()))
+	candidates := make([]btFileCandidate, 0, len(files))
+	for _, file := range files {
+		candidates = append(candidates, btFileCandidate{
+			path:   file.Path(),
+			length: file.Length(),
+		})
+	}
+
+	if mainFile, ok := selectBTMainFile(candidates); ok {
+		singlePath := filepath.Join(torrentDir, filepath.FromSlash(mainFile.path))
 		if err := copyFile(singlePath, outputPath); err != nil {
 			return "", "", model.NewInternalServerError("failed to prepare bt single file")
 		}
@@ -317,6 +335,43 @@ func (t *ServerDownloadTask) downloadByBT(tempDir, outputPath string) (hash, upl
 		return "", "", model.NewInternalServerError("failed to calculate bt archive md5")
 	}
 	return hash, outputPath, nil
+}
+
+func selectBTMainFile(files []btFileCandidate) (btFileCandidate, bool) {
+	if len(files) == 0 {
+		return btFileCandidate{}, false
+	}
+
+	totalSize := int64(0)
+	mainFile := btFileCandidate{}
+	for _, file := range files {
+		if file.length < 0 || strings.TrimSpace(file.path) == "" {
+			continue
+		}
+		totalSize += file.length
+		if file.length > mainFile.length {
+			mainFile = file
+		}
+	}
+
+	if mainFile.path == "" || totalSize <= 0 {
+		return btFileCandidate{}, false
+	}
+	if len(files) == 1 {
+		return mainFile, true
+	}
+
+	ancillarySize := totalSize - mainFile.length
+	if ancillarySize <= 0 {
+		return mainFile, true
+	}
+	if ancillarySize > btAncillaryMaxTotalBytes {
+		return btFileCandidate{}, false
+	}
+	if mainFile.length*100 < totalSize*btMainFileMinSharePercent {
+		return btFileCandidate{}, false
+	}
+	return mainFile, true
 }
 
 func zipTorrentFiles(zipPath, rootDir string, files []torrent.File) error {
