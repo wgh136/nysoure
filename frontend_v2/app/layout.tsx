@@ -595,7 +595,7 @@ function SearchBar() {
                 <li key={suggestion}>
                   <button
                     type="button"
-                    className="flex items-center gap-2"
+                    className="flex w-full items-center justify-start gap-2"
                     onClick={() => {
                       setSearch(suggestion);
                       doSearch(suggestion);
