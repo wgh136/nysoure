@@ -1,7 +1,7 @@
 import type { Route } from "./+types/tag.$name";
 import { useTranslation } from "../hook/i18n";
 import { useState, useEffect } from "react";
-import type { Tag } from "../network/models";
+import { RSort, type Tag } from "../network/models";
 import Badge from "~/components/badge";
 import showToast from "~/components/toast";
 import { network } from "../network/network";
@@ -9,7 +9,7 @@ import ResourcesView from "~/components/resources_view";
 import Markdown from "react-markdown";
 import { MdAdd, MdClose, MdEdit, MdOutlineLink } from "react-icons/md";
 import { configFromMatches, useConfig, canUpload } from "../hook/config";
-import { useLoaderData, useNavigate } from "react-router";
+import { useLoaderData, useNavigate, useSearchParams } from "react-router";
 
 export function meta({ matches, params }: Route.MetaArgs) {
   const config = configFromMatches(matches);
@@ -20,29 +20,35 @@ export function meta({ matches, params }: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const tagName = params.name;
   if (!tagName) {
     throw new Error("Tag name is required");
   }
+  const url = new URL(request.url);
+  const sortParam = url.searchParams.get("sort");
+  const sort = sortParam ? parseInt(sortParam) : RSort.TimeDesc;
 
   const [tagResponse, firstPageResources] = await Promise.all([
     network.getTagByName(tagName),
-    network.getResourcesByTag(tagName, 1),
+    network.getResourcesByTag(tagName, 1, sort),
   ]);
 
   return {
     tagName,
     tag: tagResponse.success ? tagResponse.data : null,
     firstPageResources: firstPageResources.success ? firstPageResources : undefined,
+    sort,
   };
 }
 
 export default function TaggedResourcesPage() {
   const { t } = useTranslation();
-  const { tagName, tag: initialTag, firstPageResources } = useLoaderData<typeof loader>();
+  const { tagName, tag: initialTag, firstPageResources, sort } = useLoaderData<typeof loader>();
   const [tag, setTag] = useState<Tag | null>(initialTag ?? null);
   const navigate = useNavigate();
+  const [, setSearchParams] = useSearchParams();
+  const order = sort;
 
   if (!tagName) {
     return (
@@ -110,10 +116,35 @@ export default function TaggedResourcesPage() {
           </a>
         ) : null}
       </div>
+      <div className={"flex pt-2 items-center"}>
+        <select
+          value={order}
+          className="select select-primary max-w-72 bg-base-100/80! shadow-xs backdrop-blur-sm"
+          onChange={(e) => {
+            const newOrder = parseInt(e.target.value);
+            setSearchParams({ sort: newOrder.toString() });
+          }}
+        >
+          {[
+            t("Time Ascending"),
+            t("Time Descending"),
+            t("Views Ascending"),
+            t("Views Descending"),
+            t("Downloads Ascending"),
+            t("Downloads Descending"),
+            t("Release Date Ascending"),
+            t("Release Date Descending"),
+          ].map((label, idx) => (
+            <option key={idx} value={idx}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
       <ResourcesView
-        key={tag?.name ?? tagName}
-        storageKey={`tagged-${tag?.name ?? tagName}`}
-        loader={(page) => network.getResourcesByTag(tagName, page)}
+        key={`${tag?.name ?? tagName}_${order}`}
+        storageKey={`tagged-${tag?.name ?? tagName}_${order}`}
+        loader={(page) => network.getResourcesByTag(tagName, page, order)}
         initialData={firstPageResources}
       />
     </div>

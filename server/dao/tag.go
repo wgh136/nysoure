@@ -332,7 +332,7 @@ func ClearUnusedTags() error {
 		if tag.CreatedAt.After(now.Add(-time.Hour * 24 * 7)) {
 			continue
 		}
-		resources, _, err := GetResourceByTag(tag.ID, 1, 1)
+		resources, _, err := GetResourceByTag(tag.ID, 1, 1, model.RSortTimeDesc)
 		if err != nil {
 			return err
 		}

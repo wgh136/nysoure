@@ -189,7 +189,19 @@ func handleListResourcesWithTag(c fiber.Ctx) error {
 	if err != nil {
 		return model.NewRequestError("Invalid page number")
 	}
-	resources, totalPages, err := service.GetResourcesWithTag(tag, page)
+	sortStr := c.Query("sort")
+	if sortStr == "" {
+		sortStr = "1"
+	}
+	sortInt, err := strconv.Atoi(sortStr)
+	if err != nil {
+		return model.NewRequestError("Invalid sort parameter")
+	}
+	if sortInt < 0 || sortInt > 7 {
+		return model.NewRequestError("Sort parameter out of range")
+	}
+	sort := model.RSort(sortInt)
+	resources, totalPages, err := service.GetResourcesWithTag(tag, page, sort)
 	if err != nil {
 		return err
 	}

@@ -78,11 +78,7 @@ func GetResourceByID(id uint) (model.Resource, error) {
 	return r, nil
 }
 
-func GetResourceList(page, pageSize int, sort model.RSort) ([]model.Resource, int, error) {
-	// Retrieve a list of resources with pagination
-	var resources []model.Resource
-	var total int64
-
+func resourceOrderAndWhere(sort model.RSort) (string, string) {
 	order := ""
 	where := ""
 	switch sort {
@@ -107,6 +103,15 @@ func GetResourceList(page, pageSize int, sort model.RSort) ([]model.Resource, in
 	default:
 		order = "modified_time DESC, id DESC" // Default sort order
 	}
+	return order, where
+}
+
+func GetResourceList(page, pageSize int, sort model.RSort) ([]model.Resource, int, error) {
+	// Retrieve a list of resources with pagination
+	var resources []model.Resource
+	var total int64
+
+	order, where := resourceOrderAndWhere(sort)
 
 	countQuery := db.Model(&model.Resource{})
 	if where != "" {
@@ -222,7 +227,7 @@ func DeleteResource(id uint) error {
 	})
 }
 
-func GetResourceByTag(tagID uint, page int, pageSize int) ([]model.Resource, int, error) {
+func GetResourceByTag(tagID uint, page int, pageSize int, sort model.RSort) ([]model.Resource, int, error) {
 	tag, err := GetTagByID(tagID)
 	if err != nil {
 		return nil, 0, err
@@ -243,27 +248,33 @@ func GetResourceByTag(tagID uint, page int, pageSize int) ([]model.Resource, int
 
 	var resources []model.Resource
 	var total int64
+	order, where := resourceOrderAndWhere(sort)
 
 	subQuery := db.Table("resource_tags").
 		Select("resource_id").
 		Where("tag_id IN ?", tagIds).
 		Group("resource_id")
 
-	if err := db.Model(&model.Resource{}).
-		Where("id IN (?)", subQuery).
-		Count(&total).Error; err != nil {
+	countQuery := db.Model(&model.Resource{}).Where("id IN (?)", subQuery)
+	if where != "" {
+		countQuery = countQuery.Where(where)
+	}
+	if err := countQuery.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	if err := db.Where("id IN (?)", subQuery).
+	query := db.Where("id IN (?)", subQuery).
 		Offset((page - 1) * pageSize).
 		Limit(pageSize).
 		Preload("User").
 		Preload("Images").
 		Preload("Tags").
 		Preload("Files").
-		Order("created_at DESC, id DESC").
-		Find(&resources).Error; err != nil {
+		Order(order)
+	if where != "" {
+		query = query.Where(where)
+	}
+	if err := query.Find(&resources).Error; err != nil {
 		return nil, 0, err
 	}
 

@@ -619,13 +619,13 @@ func DeleteResource(c ctx.Context, id uint) error {
 	return nil
 }
 
-func GetResourcesWithTag(tag string, page int) ([]model.ResourceView, int, error) {
+func GetResourcesWithTag(tag string, page int, sort model.RSort) ([]model.ResourceView, int, error) {
 	t, err := dao.GetTagByName(tag)
 	if err != nil {
 		return nil, 0, err
 	}
 	tagID := t.ID
-	resources, totalPages, err := dao.GetResourceByTag(tagID, page, pageSize)
+	resources, totalPages, err := dao.GetResourceByTag(tagID, page, pageSize, sort)
 	if err != nil {
 		return nil, 0, err
 	}

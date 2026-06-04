@@ -401,11 +401,13 @@ class Network {
   async getResourcesByTag(
     tag: string,
     page: number,
+    sort?: RSort,
   ): Promise<PageResponse<Resource>> {
     return this._callApi(() =>
       axios.get(`${this.apiBaseUrl}/resource/tag/${encodeURIComponent(tag)}`, {
         params: {
           page,
+          sort,
         },
       }),
     );
