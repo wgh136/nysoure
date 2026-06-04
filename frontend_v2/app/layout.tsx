@@ -590,7 +590,7 @@ function SearchBar() {
               <span>{t("Searching...")}</span>
             </div>
           ) : (
-            <ul className="menu menu-sm p-1 w-full">
+            <ul className="menu menu-sm p-1 w-full" style={{borderRadius: "4px"}}>
               {suggestions.map((suggestion) => (
                 <li key={suggestion}>
                   <button
