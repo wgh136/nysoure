@@ -58,6 +58,25 @@ func handleSearchTag(c fiber.Ctx) error {
 	})
 }
 
+func handleSearchTagSuggestions(c fiber.Ctx) error {
+	keyword := strings.TrimSpace(c.Query("keyword"))
+	if keyword == "" {
+		return model.NewRequestError("Keyword is required")
+	}
+	suggestions, err := service.SearchTagSuggestions(keyword)
+	if err != nil {
+		return err
+	}
+	if suggestions == nil {
+		suggestions = []string{}
+	}
+	return c.Status(fiber.StatusOK).JSON(model.Response[*[]string]{
+		Success: true,
+		Data:    &suggestions,
+		Message: "Tag suggestions retrieved successfully",
+	})
+}
+
 func handleDeleteTag(c fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
@@ -242,6 +261,7 @@ func AddTagRoutes(api fiber.Router) {
 	tag := api.Group("/tag")
 	{
 		tag.Post("/", handleCreateTag)
+		tag.Get("/suggestions", handleSearchTagSuggestions)
 		tag.Get("/search", handleSearchTag)
 		tag.Delete("/:id", handleDeleteTag)
 		tag.Post("/:id/rename", handleRenameTag)

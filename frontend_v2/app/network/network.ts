@@ -253,7 +253,17 @@ class Network {
       axios.get(`${this.apiBaseUrl}/tag/search`, {
         params: {
           keyword,
-          mainTag,
+          main_tag: mainTag,
+        },
+      }),
+    );
+  }
+
+  async searchTagSuggestions(keyword: string): Promise<Response<string[]>> {
+    return this._callApi(() =>
+      axios.get(`${this.apiBaseUrl}/tag/suggestions`, {
+        params: {
+          keyword,
         },
       }),
     );

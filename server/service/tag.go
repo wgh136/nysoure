@@ -120,6 +120,18 @@ func SearchTag(name string, mainTag bool) ([]model.TagViewWithCount, error) {
 	return tagViewsWithCount, nil
 }
 
+func SearchTagSuggestions(name string) ([]string, error) {
+	tags, err := SearchTag(name, true)
+	if err != nil {
+		return nil, err
+	}
+	suggestions := make([]string, 0, len(tags))
+	for _, tag := range tags {
+		suggestions = append(suggestions, tag.Name)
+	}
+	return suggestions, nil
+}
+
 func DeleteTag(id uint) error {
 	err := updateCachedTagList()
 	if err != nil {
