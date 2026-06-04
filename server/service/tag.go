@@ -121,7 +121,7 @@ func SearchTag(name string, mainTag bool) ([]model.TagViewWithCount, error) {
 }
 
 func SearchTagSuggestions(name string) ([]string, error) {
-	tags, err := SearchTag(name, true)
+	tags, err := SearchTag(name, false)
 	if err != nil {
 		return nil, err
 	}
