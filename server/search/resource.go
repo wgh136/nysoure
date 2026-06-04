@@ -20,6 +20,8 @@ var (
 	mu    = sync.RWMutex{}
 )
 
+const minSearchHit = 0.2
+
 type ResourceParams struct {
 	Id         uint
 	Title      string
@@ -126,6 +128,9 @@ func SearchResource(keyword string) ([]uint, error) {
 	for _, hit := range searchResults.Hits {
 		id, err := strconv.ParseUint(hit.ID, 10, 32)
 		if err != nil {
+			continue
+		}
+		if hit.Score < minSearchHit {
 			continue
 		}
 		results = append(results, uint(id))
