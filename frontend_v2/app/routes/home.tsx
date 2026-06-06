@@ -4,9 +4,10 @@ import { useEffect, useState, useRef } from "react";
 import { RSort } from "~/network/models";
 import type { Resource, Statistics } from "../network/models";
 import ResourcesView from "~/components/resources_view.tsx";
+import ResourceSortControl from "~/components/resource_sort_control";
 import { network } from "../network/network";
 import { configFromMatches, useConfig } from "../hook/config";
-import { useLoaderData, useNavigate, useSearchParams } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 import { MdOutlineClass, MdOutlineArchive, MdOutlineAccessTime, MdOutlineStorage, MdChevronLeft, MdChevronRight } from "react-icons/md";
 
 export function meta({ matches}: Route.MetaArgs) {
@@ -39,46 +40,31 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function Home() {
-  const { t } = useTranslation();
   const { firstPageResources, sort } = useLoaderData<typeof loader>();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [order, setOrder] = useState(sort);
 
-  const order = sort;
+  const updateOrder = (newOrder: RSort) => {
+    setOrder(newOrder);
+    const url = new URL(window.location.href);
+    url.searchParams.set("sort", newOrder.toString());
+    window.history.replaceState(window.history.state, "", url);
+  };
 
   return (
     <>
       <HomeHeader />
       <PinnedResources />
       <div className={"flex pt-4 items-center"}>
-        <select
+        <ResourceSortControl
           value={order}
-          className="select select-primary max-w-72 bg-base-100/80! shadow-xs backdrop-blur-sm"
-          onChange={(e) => {
-            const newOrder = parseInt(e.target.value);
-            setSearchParams({ sort: newOrder.toString() });
-          }}
-        >
-          {[
-            t("Time Ascending"),
-            t("Time Descending"),
-            t("Views Ascending"),
-            t("Views Descending"),
-            t("Downloads Ascending"),
-            t("Downloads Descending"),
-            t("Release Date Ascending"),
-            t("Release Date Descending"),
-          ].map((label, idx) => (
-            <option key={idx} value={idx}>
-              {label}
-            </option>
-          ))}
-        </select>
+          onChange={updateOrder}
+        />
       </div>
       <ResourcesView
         key={`home_page_${order}`}
         storageKey={`home_page_${order}`}
         loader={(page) => network.getResources(page, order)}
-        initialData={firstPageResources}
+        initialData={order === sort ? firstPageResources : undefined}
       />
     </>
   );

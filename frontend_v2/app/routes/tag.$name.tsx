@@ -3,13 +3,14 @@ import { useTranslation } from "../hook/i18n";
 import { useState, useEffect } from "react";
 import { RSort, type Tag } from "../network/models";
 import Badge from "~/components/badge";
+import ResourceSortControl from "~/components/resource_sort_control";
 import showToast from "~/components/toast";
 import { network } from "../network/network";
 import ResourcesView from "~/components/resources_view";
 import Markdown from "react-markdown";
 import { MdAdd, MdClose, MdEdit, MdOutlineLink } from "react-icons/md";
 import { configFromMatches, useConfig, canUpload } from "../hook/config";
-import { useLoaderData, useNavigate, useSearchParams } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 
 export function meta({ matches, params }: Route.MetaArgs) {
   const config = configFromMatches(matches);
@@ -47,8 +48,14 @@ export default function TaggedResourcesPage() {
   const { tagName, tag: initialTag, firstPageResources, sort } = useLoaderData<typeof loader>();
   const [tag, setTag] = useState<Tag | null>(initialTag ?? null);
   const navigate = useNavigate();
-  const [, setSearchParams] = useSearchParams();
-  const order = sort;
+  const [order, setOrder] = useState(sort);
+
+  const updateOrder = (newOrder: RSort) => {
+    setOrder(newOrder);
+    const url = new URL(window.location.href);
+    url.searchParams.set("sort", newOrder.toString());
+    window.history.replaceState(window.history.state, "", url);
+  };
 
   if (!tagName) {
     return (
@@ -117,35 +124,16 @@ export default function TaggedResourcesPage() {
         ) : null}
       </div>
       <div className={"flex pt-2 items-center"}>
-        <select
+        <ResourceSortControl
           value={order}
-          className="select select-primary max-w-72 bg-base-100/80! shadow-xs backdrop-blur-sm"
-          onChange={(e) => {
-            const newOrder = parseInt(e.target.value);
-            setSearchParams({ sort: newOrder.toString() });
-          }}
-        >
-          {[
-            t("Time Ascending"),
-            t("Time Descending"),
-            t("Views Ascending"),
-            t("Views Descending"),
-            t("Downloads Ascending"),
-            t("Downloads Descending"),
-            t("Release Date Ascending"),
-            t("Release Date Descending"),
-          ].map((label, idx) => (
-            <option key={idx} value={idx}>
-              {label}
-            </option>
-          ))}
-        </select>
+          onChange={updateOrder}
+        />
       </div>
       <ResourcesView
         key={`${tag?.name ?? tagName}_${order}`}
         storageKey={`tagged-${tag?.name ?? tagName}_${order}`}
         loader={(page) => network.getResourcesByTag(tagName, page, order)}
-        initialData={firstPageResources}
+        initialData={order === sort ? firstPageResources : undefined}
       />
     </div>
   );
