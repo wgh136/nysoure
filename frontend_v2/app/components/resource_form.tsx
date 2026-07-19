@@ -723,7 +723,7 @@ export default function ResourceForm({
             {isSubmitting && <span className="loading loading-spinner"></span>}
             {submitButtonText}
           </button>
-          <div className="flex-1"></div>
+          <div className="w-2"></div>
           {showSkipUpdateTimeOption && (
             <label className="label cursor-pointer justify-start gap-3 mb-2 rounded-box border border-base-300 px-2 py-2">
               <input
@@ -735,6 +735,7 @@ export default function ResourceForm({
               <span className="text-sm">{t("Skip updating modified time")}</span>
             </label>
           )}
+          <div className="flex-1"></div>
         </div>
       </div>
     </ImageDropArea>
