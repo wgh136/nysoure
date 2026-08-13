@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v3/log"
@@ -46,7 +47,11 @@ func (s *S3Storage) Upload(filePath string, fileName string) (string, error) {
 
 func (s *S3Storage) Download(storageKey string, fileName string) (string, error) {
 	if s.Domain != "" {
-		return "https://" + s.Domain + "/" + storageKey, nil
+		parts := strings.Split(storageKey, "/")
+		for i, p := range parts {
+			parts[i] = url.PathEscape(p)
+		}
+		return "https://" + s.Domain + "/" + strings.Join(parts, "/"), nil
 	}
 
 	minioClient, err := minio.New(s.EndPoint, &minio.Options{
